@@ -1,7 +1,7 @@
 {
   "i18n.reg": "Sign up",
   "i18n.user": "User",
-  "i18n.username": "Username",
+  "i18n.userName": "UserName",
   "i18n.passwd": "Password",
   "i18n.rePasswd": "Retype Password",
   "i18n.nickname": "Nickname",
@@ -12,5 +12,11 @@
   "i18n.logout": "Logout",
   "i18n.about": "About",
   "i18n.createAnAccount": "Create an account.",
-  "i18n.newToNote": "New to Note?"
+  "i18n.newToNote": "New to Note?",
+  "i18n.xCannotEmpty": "%v cannot be empty.",
+  "i18n.xMastNBitsLong": "%v must be 1-16 bits long(letters, numbers, underscores, minus signs)",
+  "i18n.userOrPasswdIncorrect": "The username or password is incorrect.",
+  "i18n.regNotOpen": "Registration function is not open",
+  "i18n.userNameAlreadyExists": "User Name already exists.",
+  "i18n.accountRegSuccess": "Account registration succeeded"
 }

@@ -22,11 +22,11 @@ func route(pEngine *gin.Engine) {
 	{
 		userRouterGroup.Any("/regpage", api.UserRegPage)
 		userRouterGroup.Any("/loginpage", api.UserLoginPage)
-		//userRouterGroup.POST("/login", api.UserLogin)
+		userRouterGroup.POST("/login", api.UserLogin)
 		//userRouterGroup.POST("/logout", api.UserLogout)
 		//userRouterGroup.Any("/settingpage", api.UserSettingPage)
 	}
-	//pEngine.POST("/user", api.UserAdd)
+	pEngine.POST("/user", api.UserAdd)
 	//pEngine.PUT("/user", api.UserUpd)
 
 }

@@ -16,8 +16,8 @@
     <form action="/user/login" method="post">
         <p style="color: red;">{{ .message }}</p>
         <div>
-            *<label for="name">{{ Localize "i18n.username" }}</label>
-            <input id="name" name="name" type="text" value="{{ .username }}">
+            *<label for="name">{{ Localize "i18n.userName" }}</label>
+            <input id="name" name="name" type="text" value="{{ .userName }}">
         </div>
         <div>
             *<label for="passwd">{{ Localize "i18n.passwd" }}</label>

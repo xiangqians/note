@@ -7,6 +7,7 @@ package app
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"note/src/api"
 	"note/src/arg"
 	"strconv"
 )
@@ -17,6 +18,8 @@ func Run() {
 
 	// arg parse
 	arg.Parse()
+
+	api.ValidateTrans()
 
 	// Gin ReleaseMode
 	//gin.SetMode(gin.ReleaseMode)
