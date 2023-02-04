@@ -14,14 +14,7 @@ import (
 	"strings"
 )
 
-// DataSourceName 数据资源名称
-var DataSourceName string
-
-func db() (*sql.DB, error) {
-	return sql.Open("sqlite3", DataSourceName)
-}
-
-func Page[T any](pageReq page.Req, sql string, args ...any) (page.Page[T], error) {
+func Page[T any](dsn string, pageReq page.Req, sql string, args ...any) (page.Page[T], error) {
 	current := pageReq.Current
 	size := pageReq.Size
 	page := page.Page[T]{
@@ -34,7 +27,7 @@ func Page[T any](pageReq page.Req, sql string, args ...any) (page.Page[T], error
 	if strings.Contains(_sql, "GROUP BY") {
 		_sql = fmt.Sprintf("SELECT COUNT(1) FROM (%s) r", _sql)
 	}
-	total, _, err := Qry[int64](_sql, args...)
+	total, _, err := Qry[int64](dsn, _sql, args...)
 	if err != nil {
 		return page, err
 	}
@@ -56,7 +49,7 @@ func Page[T any](pageReq page.Req, sql string, args ...any) (page.Page[T], error
 	sql = fmt.Sprintf("%s LIMIT %v, %v", sql, offset, rows)
 
 	// query
-	data, count, err := Qry[[]T](sql, args...)
+	data, count, err := Qry[[]T](dsn, sql, args...)
 	if err != nil {
 		return page, err
 	}
@@ -69,11 +62,11 @@ func Page[T any](pageReq page.Req, sql string, args ...any) (page.Page[T], error
 	return page, nil
 }
 
-func Qry[T any](sql string, args ...any) (T, int64, error) {
+func Qry[T any](dsn string, sql string, args ...any) (T, int64, error) {
 	var t T
 
 	// db
-	pDb, err := db()
+	pDb, err := db(dsn)
 	if err != nil {
 		return t, 0, err
 	}
@@ -104,8 +97,8 @@ func Qry[T any](sql string, args ...any) (T, int64, error) {
 }
 
 // Add return insertId
-func Add(sql string, args ...any) (int64, error) {
-	pDb, err := db()
+func Add(dsn string, sql string, args ...any) (int64, error) {
+	pDb, err := db(dsn)
 	if err != nil {
 		return 0, err
 	}
@@ -118,17 +111,17 @@ func Add(sql string, args ...any) (int64, error) {
 	return res.LastInsertId()
 }
 
-func Upd(sql string, args ...any) (int64, error) {
-	return exec(sql, args...)
+func Upd(dsn string, sql string, args ...any) (int64, error) {
+	return exec(dsn, sql, args...)
 }
 
-func Del(sql string, args ...any) (int64, error) {
-	return exec(sql, args...)
+func Del(dsn string, sql string, args ...any) (int64, error) {
+	return exec(dsn, sql, args...)
 }
 
 // return affect
-func exec(sql string, args ...any) (int64, error) {
-	pDb, err := db()
+func exec(dsn string, sql string, args ...any) (int64, error) {
+	pDb, err := db(dsn)
 	if err != nil {
 		return 0, err
 	}
@@ -140,6 +133,12 @@ func exec(sql string, args ...any) (int64, error) {
 	}
 
 	return res.RowsAffected()
+}
+
+// db
+// dsn: DataSourceName
+func db(dsn string) (*sql.DB, error) {
+	return sql.Open("sqlite3", dsn)
 }
 
 // 字段集映射
