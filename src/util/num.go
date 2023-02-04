@@ -13,3 +13,31 @@ func RandIntn(n int) int {
 	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(n)
 }
+
+func Int64(i any) int64 {
+	if v, r := i.(int); r {
+		return int64(v)
+	}
+
+	if v, r := i.(int8); r {
+		return int64(v)
+	}
+
+	if v, r := i.(int16); r {
+		return int64(v)
+	}
+
+	if v, r := i.(int32); r {
+		return int64(v)
+	}
+
+	if v, r := i.(int64); r {
+		return v
+	}
+
+	return 0
+}
+
+func Add(i1 any, i2 any) int64 {
+	return Int64(i1) + Int64(i2)
+}

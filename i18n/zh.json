@@ -1,0 +1,16 @@
+{
+  "i18n.reg": "注册",
+  "i18n.user": "用户",
+  "i18n.username": "用户名",
+  "i18n.passwd": "密码",
+  "i18n.rePasswd": "再次输入密码",
+  "i18n.nickname": "昵称",
+  "i18n.rem": "备注",
+  "i18n.alreadyHaveAnAccount": "已有账号？",
+  "i18n.404": "未找到页面",
+  "i18n.login": "登录",
+  "i18n.logout": "登出",
+  "i18n.about": "关于",
+  "i18n.createAnAccount": "创建账号",
+  "i18n.newToNote": "还没有账号？"
+}

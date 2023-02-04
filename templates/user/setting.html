@@ -1,0 +1,54 @@
+<!--
+ | @author xiangqian
+ | @date 15:22 2022/12/19
+ |-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/custom/min.css" type="text/css"/>
+    <title>{{ Localize "i18n.setting" }}</title>
+</head>
+<body>
+
+<content>
+    <form action="/user" method="PUT">
+        <p style="color: red;">{{ .message }}</p>
+        <div>
+            *<label>{{ Localize "i18n.user" }}:</label>
+            <input name="name" type="text" value="{{ .user.Name }}">
+        </div>
+        <div>
+            <label>{{ Localize "i18n.nickname" }}:</label>
+            <input name="nickname" type="text" value="{{ .user.Nickname }}">
+        </div>
+        <div>
+            *<label>{{ Localize "i18n.passwd" }}:</label>
+            <input name="passwd" type="password">
+        </div>
+        <div>
+            *<label>{{ Localize "i18n.rePasswd" }}:</label>
+            <input name="rePasswd" type="password">
+        </div>
+        <div>
+            <label>{{ Localize "i18n.rem" }}:</label>
+            <textarea name="rem" type="text">{{ .user.Rem }}</textarea>
+        </div>
+        <div>
+            <input type="submit" value='{{ Localize "i18n.save" }}'>
+        </div>
+    </form>
+    <br>
+    <br>
+    <div>
+        <a href="/">{{ Localize "i18n.index" }} →</a>
+    </div>
+</content>
+
+{{ template "com/footer.html" . }}
+
+</body>
+</html>
+<script type="text/javascript" src="/static/jquery-v3.6.2/min.js"></script>
+<script type="text/javascript" src="/static/custom/min.js"></script>

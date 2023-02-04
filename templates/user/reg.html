@@ -1,0 +1,52 @@
+<!--
+ | @author xiangqian
+ | @date 15:41 2023/02/04
+ |-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/custom/min.css" type="text/css"/>
+    <title>{{ Localize "i18n.reg" }}</title>
+</head>
+<body>
+
+<content>
+    <form action="/user" method="post">
+        <p style="color: red;">{{ .message }}</p>
+        <div>
+            *<label>{{ Localize "i18n.username" }}:</label>
+            <input name="name" type="text" value="{{ .user.Name }}">
+        </div>
+        <div>
+            <label>{{ Localize "i18n.nickname" }}:</label>
+            <input name="nickname" type="text" value="{{ .user.Nickname }}">
+        </div>
+        <div>
+            *<label>{{ Localize "i18n.passwd" }}:</label>
+            <input name="passwd" type="password">
+        </div>
+        <div>
+            *<label>{{ Localize "i18n.rePasswd" }}:</label>
+            <input name="rePasswd" type="password">
+        </div>
+        <div>
+            <label>{{ Localize "i18n.rem" }}:</label>
+            <textarea name="rem" type="text">{{ .user.Rem }}</textarea>
+        </div>
+        <div>
+            <input type="submit" value='{{ Localize "i18n.reg" }}'>
+        </div>
+
+        <br>
+        <div>
+            {{ Localize "i18n.alreadyHaveAnAccount" }} <a href="/user/loginpage">{{ Localize "i18n.login" }} →</a>
+        </div>
+    </form>
+</content>
+
+{{ template "com/footer.html" . }}
+
+</body>
+</html>

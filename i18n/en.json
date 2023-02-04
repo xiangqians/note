@@ -1,0 +1,16 @@
+{
+  "i18n.reg": "Sign up",
+  "i18n.user": "User",
+  "i18n.username": "Username",
+  "i18n.passwd": "Password",
+  "i18n.rePasswd": "Retype Password",
+  "i18n.nickname": "Nickname",
+  "i18n.rem": "Remark",
+  "i18n.alreadyHaveAnAccount": "Already have an account?",
+  "i18n.404": "404 page not found",
+  "i18n.login": "Sign in",
+  "i18n.logout": "Logout",
+  "i18n.about": "About",
+  "i18n.createAnAccount": "Create an account.",
+  "i18n.newToNote": "New to Note?"
+}

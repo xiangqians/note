@@ -1,0 +1,39 @@
+<!--
+ | @author xiangqian
+ | @date 23:11 2023/01/01
+ |-->
+
+<!--
+. 访问当前位置的上下文
+$ 引用当前模板根级的上下文
+$. 引用模板中的根级上下文
+-->
+
+{{ define "com/header.html" }}
+<header>
+    <div style="text-align: right; padding-right: 50px">
+        <div style="padding: 4px;">
+            <a href="/user/settingpage">{{ .user.Name }}, {{ .user.Nickname }}</a>
+        </div>
+        <div style="padding: 4px;">
+            <a href="/user/logout" method="POST">{{ Localize "i18n.logout" }}</a>
+        </div>
+    </div>
+    <br>
+
+    <div style="text-align: left; padding-left: 50px;">
+        <a name="nav" style='padding: 8px;{{ if eq .url "/" }}background-color: lightgray;{{ end }}'
+           href="/">{{ Localize "i18n.index" }}</a>
+        <a name="nav" style='padding: 8px;{{ if eq .url "/git/list" }}background-color: lightgray;{{ end }}'
+           href="/git/list">{{ Localize "i18n.git" }}</a>
+        <a name="nav" style='padding: 8px;{{ if eq .url "/server/list" }}background-color: lightgray;{{ end }}'
+           href="/server/list">{{ Localize "i18n.server" }}</a>
+        <a name="nav" style='padding: 8px;{{ if eq .url "/item/list" }}background-color: lightgray;{{ end }}'
+           href="/item/list">{{ Localize "i18n.item" }}</a>
+        <a name="nav" style='padding: 8px;{{ if eq .url "/rx/list" }}background-color: lightgray;{{ end }}'
+           href="/rx/list">{{ Localize "i18n.rx" }}</a>
+    </div>
+    <br>
+    <br>
+</header>
+{{ end }}

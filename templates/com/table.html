@@ -1,0 +1,32 @@
+<!--
+ | @author xiangqian
+ | @date 15:36 2023/01/08
+ |-->
+<!-- table -->
+{{ define "com/table_tfoot.html" }}
+<tfoot>
+<tr>
+    <td colspan="{{ .colspan }}">
+        <span style="margin-right: 10px">{{ Localize "i18n.current" }}: {{ .page.Current }}</span>
+        <span style="margin-right: 10px">{{ Localize "i18n.size" }}: {{ .page.Size }}</span>
+        <span style="margin-right: 10px">{{ Localize "i18n.pages" }}: {{ .page.Pages }}</span>
+        <span style="margin-right: 20px">{{ Localize "i18n.total" }}: {{ .page.Total }}</span>
+        <span style="margin-right: 10px">
+            {{ if le .page.Current 1 }}
+            {{ Localize "i18n.prevPage" }}
+            {{ else }}
+            <a href=''>{{ Localize "i18n.prevPage" }}</a>
+            {{  end }}
+        </span>
+        <span>
+        {{ if ge .page.Current .page.Pages }}
+        {{ Localize "i18n.nextPage" }}
+        {{ else }}
+        <a href=''>{{ Localize "i18n.nextPage" }}</a>
+        {{  end }}
+        </span>
+    </td>
+</tr>
+</tfoot>
+{{ end }}
+

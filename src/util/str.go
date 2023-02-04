@@ -4,8 +4,12 @@
 package util
 
 import (
+	"errors"
 	"github.com/google/uuid"
+	"log"
+	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -42,4 +46,20 @@ func NameHumpToUnderline(name string) string {
 		}
 	}
 	return strings.ToLower(strings.Join(res, "_"))
+}
+
+func ConvStrToT[T any](value string) (T, error) {
+	var t T
+	rflVal := reflect.ValueOf(t)
+	log.Println(rflVal)
+	switch rflVal.Type().Kind() {
+	case reflect.Int64:
+		id, err := strconv.ParseInt(value, 10, 64)
+		return any(id).(T), err
+
+	case reflect.String:
+		return any(value).(T), nil
+	}
+
+	return t, errors.New("unknown")
 }
