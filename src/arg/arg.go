@@ -7,6 +7,7 @@ import (
 	"flag"
 	"log"
 	"note/src/util"
+	"path/filepath"
 	"strings"
 )
 
@@ -26,9 +27,8 @@ func Parse() {
 	if !util.IsExistOfPath(DataDir) {
 		util.Mkdir(DataDir)
 	}
-	// "path/filepath"
 	// 获取绝对路径
-	//DataDir, _ = filepath.Abs(DataDir)
+	DataDir, _ = filepath.Abs(DataDir)
 
 	log.Printf("Port: %v\n", Port)
 	log.Printf("DataDir: %v\n", DataDir)

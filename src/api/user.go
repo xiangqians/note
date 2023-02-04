@@ -14,6 +14,7 @@ import (
 	"log"
 	"note/src/arg"
 	"note/src/typ"
+	"note/src/util"
 	"regexp"
 	"strings"
 	"time"
@@ -80,8 +81,25 @@ func UserAdd(pContext *gin.Context) {
 		return
 	}
 
-	DbAdd(nil, "INSERT INTO `user` (`name`, `nickname`, `passwd`, `rem`, `add_time`) VALUES (?, ?, ?, ?, ?)",
+	id, err := DbAdd(nil, "INSERT INTO `user` (`name`, `nickname`, `passwd`, `rem`, `add_time`) VALUES (?, ?, ?, ?, ?)",
 		user.Name, strings.TrimSpace(user.Nickname), PasswdEncrypt(user.Passwd), strings.TrimSpace(user.Rem), time.Now().Unix())
+	if err != nil {
+		redirect(user, err)
+		return
+	}
+
+	// 创建用户数据目录
+	userDataDir := fmt.Sprintf("%s%suser%d", arg.DataDir, util.FileSeparator, id)
+	if !util.IsExistOfPath(userDataDir) {
+		util.Mkdir(userDataDir)
+	}
+	// 初始化用户数据目录
+	pCmd := util.CopyDir(fmt.Sprintf("%s%suser", arg.DataDir, util.FileSeparator), userDataDir)
+	buf, err := pCmd.CombinedOutput()
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(util.DecodeBuf(buf))
 
 	// 用户注册成功后，重定向到登录页
 	Redirect(pContext, "/user/loginpage", i18n.MustGetMessage("i18n.accountRegSuccess"), map[string]any{"userName": user.Name})

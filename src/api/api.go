@@ -20,6 +20,7 @@ import (
 	"note/src/arg"
 	"note/src/db"
 	"note/src/typ"
+	"note/src/util"
 	"strings"
 )
 
@@ -142,11 +143,11 @@ func Redirect(pContext *gin.Context, location string, message any, m map[string]
 
 func dsn(pContext *gin.Context) string {
 	if pContext == nil {
-		return fmt.Sprintf("%s/database.db", arg.DataDir)
+		return fmt.Sprintf("%s%sdatabase.db", arg.DataDir, util.FileSeparator)
 	}
 
 	user, _ := SessionUser(pContext)
-	return fmt.Sprintf("%s/%v/database.db", arg.DataDir, user.Id)
+	return fmt.Sprintf("%s%s%d%sdatabase.db", arg.DataDir, util.FileSeparator, user.Id, util.FileSeparator)
 }
 
 func DbQry[T any](pContext *gin.Context, sql string, args ...any) (T, int64, error) {
