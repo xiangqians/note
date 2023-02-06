@@ -1,10 +1,10 @@
 <!--
  | @author xiangqian
- | @date 14:44 2023/02/04
+ | @date 21:33 2023/02/06
  |-->
 <!DOCTYPE html>
 <!-- 声明url变量 -->
-{{ $url := "/" }}
+{{ $url := "/dir/list" }}
 <!-- url -->
 {{ Put . "url" "/" }}
 <html lang="en" url="{{ .url }}">
@@ -12,15 +12,13 @@
     <meta charset="UTF-8">
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/custom/min.css" type="text/css"/>
-    <title>{{ Localize "i18n.index" }}</title>
+    <title>{{ Localize "i18n.dir" }}</title>
 </head>
 <body>
 
 {{ template "com/header.html" . }}
 
 <content>
-    {{ Put . "pageUrl" "/" }}
-    {{ Put . "colspan" 8 }}
     <!-- 没有消息就是最好的消息 -->
     <p style="color: red;">{{ .message }}</p>
 
@@ -29,44 +27,40 @@
         <thead>
         <tr>
             <td>名称</td>
-            <td>创建时间</td>
-            <td>修改时间</td>
             <td>类型</td>
             <td>大小</td>
+            <td>备注</td>
+            <td>创建时间</td>
+            <td>修改时间</td>
             <td colspan="2">操作</td>
         </tr>
         </thead>
         <tbody>
+        {{ $len := len .dirs }}
+        {{ if gt $len 0 }}
+        {{ range $index,$dir := .dirs }}
         <tr>
-            <td><a href="">..</a></td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>重命名</td>
-            <td>删除</td>
+            <td>..</td>
+            <td>{{ $dir.Name }}</td>
+            <td>{{ $dir.Rem }}</td>
+            <td>{{ $dir.AddTime }}</td>
+            <td>{{ $dir.UpdTime }}</td>
+            <td>{{ $dir.AddTime }}</td>
         </tr>
+        {{ end }}
+        {{ else }}
         <tr>
-            <td>
-                <a href="">dir1</a>
-            </td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>重命名</td>
-            <td>删除</td>
+            <td colspan="7">{{ Localize "i18n.noData" }}</td>
         </tr>
+        {{ end }}
         </tbody>
     </table>
-
     <br>
     <br>
     <a>add</a>
 
     <br>
     <a>upload</a>
-
 
 </content>
 

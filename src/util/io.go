@@ -8,28 +8,30 @@ import (
 	"io"
 )
 
-// Copy
-// bufsize: 缓存大小，byte
-func Copy(dst io.Writer, src io.Reader, bufsize int) error {
+// IOCopy 流拷贝
+// src: io.Reader
+// dst: io.Writer
+// bufSize: 缓存大小，byte
+func IOCopy(src io.Reader, dst io.Writer, bufSize int) error {
 	var pReader *bufio.Reader
 	var pWriter *bufio.Writer
 
-	if bufsize <= 0 {
-		bufsize = 1024 * 4 // bufio.defaultBufSize
+	if bufSize <= 0 {
+		bufSize = 1024 * 4 // bufio.defaultBufSize
 	}
 
 	// 块缓存大小
-	buf := make([]byte, bufsize)
+	buf := make([]byte, bufSize)
 
 	// <= 4KB
-	if bufsize <= 1024*4 {
+	if bufSize <= 1024*4 {
 		pReader = bufio.NewReader(src)
 		pWriter = bufio.NewWriter(dst)
 	} else
 	// > 4KB
 	{
-		pReader = bufio.NewReaderSize(src, bufsize)
-		pWriter = bufio.NewWriterSize(dst, bufsize)
+		pReader = bufio.NewReaderSize(src, bufSize)
+		pWriter = bufio.NewWriterSize(dst, bufSize)
 	}
 
 	for {

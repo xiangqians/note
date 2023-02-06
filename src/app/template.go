@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/render"
 	"html/template"
+	"note/src/page"
 	"note/src/util"
 	"os"
 	"path/filepath"
@@ -37,8 +38,9 @@ func htmlTemplate(pEngine *gin.Engine) {
 		},
 
 		// +1
-		"No_": func(current int64, size uint8, i any) int64 {
-			return util.Add(i, (current-1)*int64(size)) + 1
+		"No_": func(page page.Page[any], i int) int64 {
+			//return util.Add(i, (page.Current-1)*int64(page.Size)) + 1
+			return 0
 		},
 
 		"Put": func(h gin.H, key string, value any) string {

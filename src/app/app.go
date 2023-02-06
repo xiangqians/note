@@ -16,14 +16,15 @@ func Run() {
 	// Logger
 	Logger()
 
-	// arg parse
+	// parse arg
 	arg.Parse()
 
+	// ValidateTrans
 	api.ValidateTrans()
 
 	// Gin ReleaseMode
-	//gin.SetMode(gin.ReleaseMode)
 	gin.SetMode(gin.DebugMode)
+	//gin.SetMode(gin.ReleaseMode)
 
 	// default Engine
 	pEngine := gin.Default()

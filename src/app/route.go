@@ -5,14 +5,13 @@ package app
 
 import (
 	"github.com/gin-gonic/gin"
-	"net/http"
 	"note/src/api"
 )
 
 func route(pEngine *gin.Engine) {
 	// 设置默认路由
 	handler := func(pContext *gin.Context) {
-		pContext.HTML(http.StatusOK, "404.html", gin.H{})
+		api.Html(pContext, "404.html", nil, nil)
 	}
 	pEngine.Any("/404", handler)
 	pEngine.NoRoute(handler)
@@ -28,5 +27,16 @@ func route(pEngine *gin.Engine) {
 	}
 	pEngine.POST("/user", api.UserAdd)
 	//pEngine.PUT("/user", api.UserUpd)
+
+	// dir
+	dirRouterGroup := pEngine.Group("/dir")
+	{
+		dirRouterGroup.Any("/list", api.DirListPage)
+		//dirRouterGroup.Any("/list/*ids", api.DirListPage) // ids路由全部模糊匹配
+		dirRouterGroup.Any("/list/:pid", api.DirListPage)
+	}
+
+	// file
+	pEngine.Any("/file/listpage", api.FileListPage)
 
 }

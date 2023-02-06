@@ -89,12 +89,12 @@ func UserAdd(pContext *gin.Context) {
 	}
 
 	// 创建用户数据目录
-	userDataDir := fmt.Sprintf("%s%suser%d", arg.DataDir, util.FileSeparator, id)
+	userDataDir := fmt.Sprintf("%s%s%d", arg.DataDir, util.FileSeparator, id)
 	if !util.IsExistOfPath(userDataDir) {
 		util.Mkdir(userDataDir)
 	}
 	// 初始化用户数据目录
-	pCmd := util.CopyDir(fmt.Sprintf("%s%suser", arg.DataDir, util.FileSeparator), userDataDir)
+	pCmd := util.CopyDir(fmt.Sprintf("%s%sid", arg.DataDir, util.FileSeparator), userDataDir)
 	buf, err := pCmd.CombinedOutput()
 	if err != nil {
 		log.Println(err)
@@ -152,7 +152,7 @@ func UserLogin(pContext *gin.Context) {
 	SessionKv(pContext, SessionKeyUser, user)
 
 	// 重定向
-	Redirect(pContext, "/", nil, nil)
+	Redirect(pContext, "/dir/list", nil, nil)
 }
 
 // // 用户登出

@@ -16,11 +16,15 @@ import (
 	"github.com/go-playground/validator/v10"
 	en_trans "github.com/go-playground/validator/v10/translations/en"
 	zh_trans "github.com/go-playground/validator/v10/translations/zh"
+	"log"
 	"net/http"
 	"note/src/arg"
 	"note/src/db"
+	"note/src/page"
 	"note/src/typ"
 	"note/src/util"
+	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -29,6 +33,7 @@ var (
 	enTrans ut.Translator
 )
 
+// ValidateTrans 检验器翻译
 func ValidateTrans() {
 	if v, r := binding.Validator.Engine().(*validator.Validate); r {
 		uni := ut.New(zh.New(), // 备用语言
@@ -141,6 +146,27 @@ func Redirect(pContext *gin.Context, location string, message any, m map[string]
 	pContext.Redirect(http.StatusMovedPermanently, location)
 }
 
+func StringToT[T any](value string) (T, error) {
+	var t T
+	rflVal := reflect.ValueOf(t)
+	log.Println(rflVal)
+	switch rflVal.Type().Kind() {
+	case reflect.Int64:
+		id, err := strconv.ParseInt(value, 10, 64)
+		return any(id).(T), err
+
+	case reflect.String:
+		return any(value).(T), nil
+	}
+
+	return t, errors.New("unknown")
+}
+
+func Param[T any](pContext *gin.Context, key string) (T, error) {
+	value := pContext.Param(key)
+	return StringToT[T](value)
+}
+
 func dsn(pContext *gin.Context) string {
 	if pContext == nil {
 		return fmt.Sprintf("%s%sdatabase.db", arg.DataDir, util.FileSeparator)
@@ -156,4 +182,8 @@ func DbQry[T any](pContext *gin.Context, sql string, args ...any) (T, int64, err
 
 func DbAdd(pContext *gin.Context, sql string, args ...any) (int64, error) {
 	return db.Add(dsn(pContext), sql, args...)
+}
+
+func DbPage[T any](pContext *gin.Context, pageReq page.Req, sql string, args ...any) (page.Page[T], error) {
+	return db.Page[T](dsn(pContext), pageReq, sql, args...)
 }

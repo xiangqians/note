@@ -27,13 +27,24 @@ type User struct {
 type File struct {
 	Abs
 	Name string `form:"name" binding:"required,min=1,max=60"` // 文件名称
+	Type string // 文件类型
+	Size int64  // 文件大小，单位：byte
 }
 
 // Dir 文件
 type Dir struct {
 	Abs
-	ParentId int64  `form:"parentId" binding:"gte=0"`             // 父目录id
-	Name     string `form:"name" binding:"required,min=1,max=60"` // 目录名称
+	Pid  int64  `form:"pid" binding:"gte=0"`                  // 父目录id
+	Name string `form:"name" binding:"required,min=1,max=60"` // 目录名称
+}
+
+// DF dir & file
+type DF struct {
+	Abs
+	Pid  int64  // 父目录id
+	Name string // 目录名称
+	Type string // 文件类型
+	Size int64  // 文件大小，单位：byte
 }
 
 // 注册模型

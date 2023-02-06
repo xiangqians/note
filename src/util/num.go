@@ -37,7 +37,3 @@ func Int64(i any) int64 {
 
 	return 0
 }
-
-func Add(i1 any, i2 any) int64 {
-	return Int64(i1) + Int64(i2)
-}
