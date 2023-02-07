@@ -5,6 +5,7 @@ package util
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 )
 
@@ -53,4 +54,10 @@ func IOCopy(src io.Reader, dst io.Writer, bufSize int) error {
 	}
 
 	return nil
+}
+
+// HumanizFileSize 人性化时间大小
+// size: 文件大小，单位：byte
+func HumanizFileSize(size int64) string {
+	return fmt.Sprintf("%v", size)
 }

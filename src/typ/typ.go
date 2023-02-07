@@ -5,6 +5,11 @@ package typ
 
 import "encoding/gob"
 
+const (
+	LocaleZh = "zh"
+	LocaleEn = "en"
+)
+
 // Abs 抽象实体定义
 type Abs struct {
 	Id      int64  `form:"id" binding:"gte=0"`    // 主键id
@@ -26,30 +31,16 @@ type User struct {
 // File 文件
 type File struct {
 	Abs
+	Pid  int64  `form:"pid" binding:"gte=0"`                  // 父id
 	Name string `form:"name" binding:"required,min=1,max=60"` // 文件名称
-	Type string // 文件类型
-	Size int64  // 文件大小，单位：byte
-}
+	Type string `form:"type"`                                 // 文件类型
+	Size int64  `form:"size"`                                 // 文件大小，单位：byte
 
-// Dir 文件
-type Dir struct {
-	Abs
-	Pid  int64  `form:"pid" binding:"gte=0"`                  // 父目录id
-	Name string `form:"name" binding:"required,min=1,max=60"` // 目录名称
-}
-
-// DF dir & file
-type DF struct {
-	Abs
-	Pid  int64  // 父目录id
-	Name string // 目录名称
-	Type string // 文件类型
-	Size int64  // 文件大小，单位：byte
+	Path string // 目录路径
 }
 
 // 注册模型
 func init() {
 	gob.Register(User{})
 	gob.Register(File{})
-	gob.Register(Dir{})
 }

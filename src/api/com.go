@@ -1,4 +1,4 @@
-// api
+// common
 // @author xiangqian
 // @date 14:52 2023/02/04
 package api
@@ -16,15 +16,12 @@ import (
 	"github.com/go-playground/validator/v10"
 	en_trans "github.com/go-playground/validator/v10/translations/en"
 	zh_trans "github.com/go-playground/validator/v10/translations/zh"
-	"log"
 	"net/http"
 	"note/src/arg"
 	"note/src/db"
 	"note/src/page"
 	"note/src/typ"
 	"note/src/util"
-	"reflect"
-	"strconv"
 	"strings"
 )
 
@@ -51,6 +48,45 @@ func ValidateTrans() {
 	}
 }
 
+// SessionV 根据 key 获取 session value
+// key: key
+// del: 是否删除 session 中的key
+func SessionV[T any](pContext *gin.Context, key any, del bool) (T, error) {
+	session := sessions.Default(pContext)
+	value := session.Get(key)
+	if del {
+		session.Delete(key)
+		session.Save()
+	}
+
+	// t
+	if t, r := value.(T); r {
+		return t, nil
+	}
+
+	// default
+	var t T
+	return t, errors.New("unknown")
+}
+
+// SessionKv 设置 session kv
+func SessionKv(pContext *gin.Context, key string, value any) {
+	session := sessions.Default(pContext)
+	session.Set(key, value)
+	session.Save()
+}
+
+// SessionClear 清理 session
+func SessionClear(pContext *gin.Context) {
+	// 解析session
+	session := sessions.Default(pContext)
+	// 清除session
+	session.Clear()
+	// 保存session数据
+	session.Save()
+}
+
+// TransErr 翻译异常
 func TransErr(pContext *gin.Context, err error) error {
 	if errs, r := err.(validator.ValidationErrors); r {
 		session := sessions.Default(pContext)
@@ -90,6 +126,7 @@ func TransErr(pContext *gin.Context, err error) error {
 	return err
 }
 
+// ShouldBind 应该绑定参数
 func ShouldBind(pContext *gin.Context, i any) error {
 	err := pContext.ShouldBind(i)
 	if err != nil {
@@ -98,20 +135,24 @@ func ShouldBind(pContext *gin.Context, i any) error {
 	return err
 }
 
-func Html(pContext *gin.Context, templateName string, h gin.H, err error) {
-	message, _ := SessionV[string](pContext, "message", true)
+func ConvAnyToStr(i any) string {
+	if i == nil {
+		return ""
+	}
 
+	if v, r := i.(error); r {
+		return v.Error()
+	}
+
+	return fmt.Sprintf("%v", i)
+}
+
+func Html(pContext *gin.Context, templateName string, h gin.H, msg any) {
 	if h == nil {
 		h = gin.H{}
 	}
 
-	if err != nil {
-		if message != "" {
-			message += ", "
-		}
-		message += err.Error()
-	}
-
+	// 获取 user
 	_, r := h["user"]
 	if !r {
 		user, _ := SessionUser(pContext)
@@ -119,52 +160,46 @@ func Html(pContext *gin.Context, templateName string, h gin.H, err error) {
 	}
 
 	// 没有消息就是最好的消息
-	h["message"] = message
+	msgStr := ConvAnyToStr(msg)
+	sessionMsg, err := SessionV[string](pContext, "msg", true)
+	if err == nil {
+		if msgStr != "" {
+			msgStr += ", "
+		}
+		msgStr += sessionMsg
+	}
+	h["uri"] = pContext.Request.RequestURI
+	h["url"] = pContext.Request.URL.Path
+	h["msg"] = msgStr
 
 	pContext.HTML(http.StatusOK, templateName, h)
 }
 
-func Redirect(pContext *gin.Context, location string, message any, m map[string]any) {
-	if message != nil {
-		if v, r := message.(error); r {
-			message = v.Error()
-		}
-		if m == nil {
-			m = map[string]any{}
-		}
-		m["message"] = message
-	}
-
-	if m != nil {
-		session := sessions.Default(pContext)
-		for k, v := range m {
+func Redirect(pContext *gin.Context, location string, h gin.H, msg any) {
+	session := sessions.Default(pContext)
+	if h != nil {
+		for k, v := range h {
 			session.Set(k, v)
 		}
-		session.Save()
 	}
-
+	session.Set("msg", ConvAnyToStr(msg))
+	session.Save()
 	pContext.Redirect(http.StatusMovedPermanently, location)
 }
 
-func StringToT[T any](value string) (T, error) {
-	var t T
-	rflVal := reflect.ValueOf(t)
-	log.Println(rflVal)
-	switch rflVal.Type().Kind() {
-	case reflect.Int64:
-		id, err := strconv.ParseInt(value, 10, 64)
-		return any(id).(T), err
-
-	case reflect.String:
-		return any(value).(T), nil
-	}
-
-	return t, errors.New("unknown")
+func PostForm[T any](pContext *gin.Context, key string) (T, error) {
+	value := pContext.PostForm(key)
+	return util.ConvStrToT[T](value)
 }
 
 func Param[T any](pContext *gin.Context, key string) (T, error) {
 	value := pContext.Param(key)
-	return StringToT[T](value)
+	return util.ConvStrToT[T](value)
+}
+
+func Query[T any](pContext *gin.Context, key string) (T, error) {
+	value := pContext.Query(key)
+	return util.ConvStrToT[T](value)
 }
 
 func dsn(pContext *gin.Context) string {
@@ -182,6 +217,14 @@ func DbQry[T any](pContext *gin.Context, sql string, args ...any) (T, int64, err
 
 func DbAdd(pContext *gin.Context, sql string, args ...any) (int64, error) {
 	return db.Add(dsn(pContext), sql, args...)
+}
+
+func DbUpd(pContext *gin.Context, sql string, args ...any) (int64, error) {
+	return db.Upd(dsn(pContext), sql, args...)
+}
+
+func DbDel(pContext *gin.Context, sql string, args ...any) (int64, error) {
+	return db.Del(dsn(pContext), sql, args...)
 }
 
 func DbPage[T any](pContext *gin.Context, pageReq page.Req, sql string, args ...any) (page.Page[T], error) {

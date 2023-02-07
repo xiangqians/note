@@ -5,6 +5,7 @@ package util
 
 import (
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"log"
 	"reflect"
@@ -61,5 +62,5 @@ func ConvStrToT[T any](value string) (T, error) {
 		return any(value).(T), nil
 	}
 
-	return t, errors.New("unknown")
+	return t, errors.New(fmt.Sprintf("Unsupported operation: %v", rflVal.Type().Kind()))
 }

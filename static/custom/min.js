@@ -3,24 +3,19 @@
  * @date 22:24 2022/12/25
  */
 ;
-Custom = function () {
+custom = function () {
     let obj = {}
 
-    obj.reload = function (text) {
-        // 使用 document.write() 覆盖当前文档
-        document.write(text)
-        document.close()
-
-        // 修改当前浏览器地址
-        let $html = $('html')
-        let url = $html.attr('url')
-        if (url) {
-            history.replaceState(undefined, undefined, url)
-        }
+    // 获取指定范围的随机数 [m, n)
+    obj.random = function (m, n) {
+        return Math.round(Math.random() * (n - m) + m)
     }
 
-    obj.addTimestamp = function (url) {
+    // url 添加时间戳
+    obj.urlAddTimestamp = function (url) {
         let timestamp = new Date().getTime()
+        timestamp += obj.random(-1000, 1000)
+        custom.random(1, 1000)
         if (url.indexOf('?') > 0) {
             url += '&t=' + timestamp
         } else {
@@ -29,21 +24,27 @@ Custom = function () {
         return url
     }
 
-    obj.ajaxFormData = function (url, method, data, async, success, error) {
-        url = obj.addTimestamp(url)
+    /**
+     * ajax
+     * @param url       请求url
+     * @param method    请求方法：GET, POST, PUT, DELETE
+     * @param data      请求数据
+     * @param dataType  请求数据类型，form, json
+     * @param async     是否异步请求
+     * @param success   请求成功回调函数
+     * @param error     请求错误回调函数
+     */
+    obj.ajax = function (url, method, data, dataType, async, success, error) {
+        url = obj.urlAddTimestamp(url)
 
-        // console.log(method, url, formData)
-        // application/x-www-form-urlencoded
-        $.ajax({
+        let param = {
             url: url,
             type: method,
             data: data,
-            processData: false,
-            contentType: false,
             async: async,
-            success: function (resp) {
+            success: function (data) {
                 if (success) {
-                    success(resp)
+                    success(data)
                 }
             },
             error: function (e) {
@@ -51,27 +52,84 @@ Custom = function () {
                     error(e)
                 }
             }
-        })
+        }
+
+        // form
+        // application/x-www-form-urlencoded
+        if (dataType === "form") {
+            param.processData = false
+            param.contentType = false
+        }
+        // json
+        else if (dataType === "json") {
+            param.dataType = "json"
+        }
+        // other
+        else {
+            return
+        }
+
+        $.ajax(param)
     }
 
-    obj.ajaxJsonData = function (url, method, data, async, success, error) {
-        url = obj.addTimestamp(url)
-        $.ajax({
-            url: url,
-            type: method,
-            data: data,
-            dataType: "json",
-            async: async,
-            success: function (resp) {
-                if (success) {
-                    success(resp)
+    obj.reload = function (text) {
+        // 使用 document.write() 覆盖当前文档
+        document.write(text)
+        document.close()
+
+        // 修改当前浏览器地址
+        let $html = $('html')
+        let url = $html.attr('uri')
+        if (url) {
+            history.replaceState(undefined, undefined, url)
+        }
+    }
+
+    obj.ajaxE = function ($e) {
+        let data = null
+
+        // pre
+        let pre = $e[0].pre
+        if (pre) {
+            let r = pre($e)
+            // console.log('r', r)
+            if (Object.prototype.toString.call(r) === '[object Object]') {
+                data = new FormData()
+                for (let name in r) {
+                    data.append(name, r[name])
                 }
-            },
-            error: function (e) {
-                if (error) {
-                    error(e)
+
+            } else {
+                return
+            }
+        }
+        // confirm
+        else {
+            let message = $e.attr("confirm")
+            if (message) {
+                if (!confirm(message)) {
+                    return
                 }
             }
+        }
+
+        // ajaxFormData
+        let url = $e.attr("href")
+        // console.log(url)
+        if (!(url)) {
+            url = $e.attr("action")
+        }
+        if (!(url)) {
+            url = $e.attr("url")
+        }
+        // console.log(url)
+
+        let method = $e.attr("method").trim().toUpperCase()
+
+        obj.ajax(url, method, data, "form", true, function (data) {
+            obj.reload(data)
+        }, function (e) {
+            alert(e)
         })
     }
 
@@ -80,141 +138,33 @@ Custom = function () {
 ;
 
 (function () {
-    function ajaxFormData(url, method, data) {
-        Custom.ajaxFormData(url, method, data, true, function (resp) {
-            Custom.reload(resp)
-        }, function (e) {
-            alert(e)
+
+    // 处理 ajaxE
+    let $ajaxEArr = $('[ajaxE]')
+    // console.log('$ajaxEArr', $ajaxEArr)
+    for (let i = 0, len = $ajaxEArr.length; i < len; i++) {
+        let $ajaxE = $($ajaxEArr[i])
+        // console.log($ajaxE)
+        $ajaxE.click(function () {
+            custom.ajaxE($ajaxE)
+
+            // 如果是 <a></a> 标签，则取消 <a></a> 默认行为
+            return false
         })
     }
 
-    let request = function ($e) {
-        let formData = null
-        let flag = true
-
-        // pre func
-        let pre = $e[0]._pre_
-        if (pre) {
-            let r = pre($e)
-            let rarr = null
-            let rl = 0
-            if (Object.prototype.toString.call(r) === '[object Boolean]') {
-                flag = r
-            } else if (Object.prototype.toString.call(r) === '[object Array]' && (rl = (rarr = r).length) > 0) {
-                flag = rarr[0] ? true : false
-                if (flag && rl > 1) {
-                    formData = new FormData()
-                    for (let ri = 1; ri < rl; ri++) {
-                        let robj = rarr[ri]
-                        for (let name in robj) {
-                            formData.append(name, robj[name])
-                        }
-                    }
-                }
-            }
-        }
-        // confirm
-        else {
-            let message = $e.attr("confirm")
-            if (message) {
-                flag = confirm(message)
-            }
-        }
-
-        // ajaxFormData
-        if (flag) {
-            let url = $e.attr("href")
-            // console.log(url)
-            if (!(url)) {
-                url = $e.attr("action")
-            }
-            if (!(url)) {
-                url = $e.attr("url")
-            }
-            // console.log(url)
-            let method = $e.attr("method").trim().toUpperCase()
-            ajaxFormData(url, method, formData)
-        }
-    }
-
-    // <a></a>
-    // let $as = $('a[method]')
-    let $as = $('a')
-    for (let i = 0, l = $as.length; i < l; i++) {
-        let $a = $($as[i])
+    // 为普通的 <a></a> url添加时间戳
+    let $aArr = $('a:not([ajaxE])')
+    // console.log('$aArr', $aArr)
+    for (let i = 0, len = $aArr.length; i < len; i++) {
+        let $a = $($aArr[i])
         // console.log($a)
-        let method = $a.attr('method')
-        if (method) {
-            $a.click(function () {
-                request($a)
-
-                // 取消 <a></a> 默认行为
-                return false
-            })
+        let href = $a.attr('href')
+        if (href.indexOf("https://github.com") >= 0) {
+            continue
         }
-        // 为 href 添加时间戳，预防被Chrome浏览器劫持，认为是”重复提交“。
-        else {
-            let href = $a.attr('href')
-            if (href.indexOf("https://github.com") >= 0) {
-                continue
-            }
 
-            let timestamp = new Date().getTime()
-            if (href.indexOf('?') > 0) {
-                href += '&t=' + timestamp
-            } else {
-                href += '?t=' + timestamp
-            }
-            $a.attr('href', href)
-        }
-    }
-
-    // <form></form>
-    let $formInputs = $('input[type="submit"]')
-    for (let i = 0, l = $formInputs.length; i < l; i++) {
-        let $input = $($formInputs[i])
-        for (let $parent = $input.parent(); !$parent.is('body'); $parent = $parent.parent()) {
-            if ($parent.is('form')) {
-                let $form = $parent
-                let method = $form.attr("method").trim().toUpperCase()
-                if (method !== "POST") {
-                    $input.click(function () {
-                        let url = $form.attr("action")
-                        let method = $form.attr("method").trim().toUpperCase()
-                        let formData = new FormData()
-                        $form.serializeArray().forEach(e => {
-                            formData.append(e.name, e.value);
-                        })
-                        ajaxFormData(url, method, formData)
-                        return false
-                    })
-                }
-                break
-            }
-        }
-    }
-
-    // type=radio, method
-    let $radioInputs = $('input[type="radio"][method]')
-    for (let i = 0, l = $radioInputs.length; i < l; i++) {
-        let $radioInput = $($radioInputs[i])
-        $radioInput.click(function () {
-            request($radioInput)
-        })
-    }
-
-    // <select><option></option></select>
-    let $selects = $('select[method]')
-    for (let i = 0, l = $selects.length; i < l; i++) {
-        let $select = $($selects[i])
-        // console.log($select)
-        $select.on('change', function () {
-            // 获取选中的 <option></option>
-            let $option = $($select.find('option:selected')[0]);
-            // console.log($option)
-            $select.attr('url', $option.attr('url'))
-            request($select)
-        })
+        $a.attr('href', custom.urlAddTimestamp(href))
     }
 
 })()

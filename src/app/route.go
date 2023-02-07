@@ -28,15 +28,12 @@ func route(pEngine *gin.Engine) {
 	pEngine.POST("/user", api.UserAdd)
 	//pEngine.PUT("/user", api.UserUpd)
 
-	// dir
-	dirRouterGroup := pEngine.Group("/dir")
-	{
-		dirRouterGroup.Any("/list", api.DirListPage)
-		//dirRouterGroup.Any("/list/*ids", api.DirListPage) // ids路由全部模糊匹配
-		dirRouterGroup.Any("/list/:pid", api.DirListPage)
-	}
+	// index
+	pEngine.Any("/", api.IndexPage)
 
 	// file
-	pEngine.Any("/file/listpage", api.FileListPage)
+	pEngine.POST("/file", api.FileAdd)
+	pEngine.DELETE("/file/:id", api.FileDel)
+	pEngine.POST("/file/rename", api.FileRename)
 
 }

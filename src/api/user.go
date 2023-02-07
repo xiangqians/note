@@ -44,7 +44,7 @@ func UserRegPage(pContext *gin.Context) {
 func UserAdd(pContext *gin.Context) {
 	// 注册异常时，重定向到注册页
 	redirect := func(user typ.User, message any) {
-		Redirect(pContext, "/user/regpage", message, map[string]any{"user": user})
+		Redirect(pContext, "/user/regpage", gin.H{"user": user}, message)
 	}
 
 	if arg.AllowReg != 1 {
@@ -102,7 +102,9 @@ func UserAdd(pContext *gin.Context) {
 	log.Println(util.DecodeBuf(buf))
 
 	// 用户注册成功后，重定向到登录页
-	Redirect(pContext, "/user/loginpage", i18n.MustGetMessage("i18n.accountRegSuccess"), map[string]any{"userName": user.Name})
+	Redirect(pContext, "/user/loginpage",
+		gin.H{"userName": user.Name},
+		i18n.MustGetMessage("i18n.accountRegSuccess"))
 }
 
 // UserLoginPage 用户登录页
@@ -117,7 +119,7 @@ func UserLogin(pContext *gin.Context) {
 	name := strings.TrimSpace(pContext.PostForm("name"))
 
 	redirect := func(message any) {
-		Redirect(pContext, "/user/loginpage", message, map[string]any{"userName": name})
+		Redirect(pContext, "/user/loginpage", gin.H{"userName": name}, message)
 	}
 
 	err := VerifyUserName(name)
@@ -152,7 +154,7 @@ func UserLogin(pContext *gin.Context) {
 	SessionKv(pContext, SessionKeyUser, user)
 
 	// 重定向
-	Redirect(pContext, "/dir/list", nil, nil)
+	Redirect(pContext, "/", nil, nil)
 }
 
 // // 用户登出

@@ -3,11 +3,7 @@
  | @date 14:44 2023/02/04
  |-->
 <!DOCTYPE html>
-<!-- 声明url变量 -->
-{{ $url := "/" }}
-<!-- url -->
-{{ Put . "url" "/" }}
-<html lang="en" url="{{ .url }}">
+<html lang="en" uri="{{ .uri }}" url="{{ .url }}">
 <head>
     <meta charset="UTF-8">
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
@@ -19,54 +15,66 @@
 {{ template "com/header.html" . }}
 
 <content>
-    {{ Put . "pageUrl" "/" }}
-    {{ Put . "colspan" 8 }}
     <!-- 没有消息就是最好的消息 -->
-    <p style="color: red;">{{ .message }}</p>
+    <p style="color: red;">{{ .msg }}</p>
 
-    <p>/dir/dir</p>
+    <p>
+        <span>{{ .pf.Path }}</span>
+    </p>
     <table cellspacing="0" cellpadding="10" align="center">
         <thead>
         <tr>
-            <td>名称</td>
-            <td>创建时间</td>
-            <td>修改时间</td>
-            <td>类型</td>
-            <td>大小</td>
-            <td colspan="2">操作</td>
+            <td>{{ Localize "i18n.name" }}</td>
+            <td>{{ Localize "i18n.size" }}</td>
+            <td>{{ Localize "i18n.addTime" }}</td>
+            <td>{{ Localize "i18n.updTime" }}</td>
+            <td colspan="2">{{ Localize "i18n.op" }}</td>
         </tr>
         </thead>
         <tbody>
+        {{ if gt .pf.Id 0 }}
         <tr>
-            <td><a href="">..</a></td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>重命名</td>
-            <td>删除</td>
+            <td><a href="/?id={{ .pf.Pid }}">../</a></td>
+            <td colspan="5"></td>
         </tr>
+        {{ end }}
+
+        {{ $len := len .fs }}
+        {{ if gt $len 0 }}
+        {{ range $index,$f := .fs }}
         <tr>
-            <td>
-                <a href="">dir1</a>
+            <td title="{{ $f.Rem }}">
+                {{ if eq $f.Type "d" }}
+                <a href="/?id={{ $f.Id }}">{{ $f.Name }}/</a>
+                {{ else }}
+                <a href="#">{{ $f.Name }}</a>
+                {{ end }}
             </td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>重命名</td>
-            <td>删除</td>
+            <td>{{ $f.Size }}</td>
+            <td>{{ HumanizUnix $f.AddTime }}</td>
+            <td>{{ HumanizUnix $f.UpdTime }}</td>
+            <td>
+                <a ajaxE href="/file/rename" method="POST" id="{{ $f.Id }}" pid="{{ $.pf.Id }}" name="{{ $f.Name }}">
+                    <button>{{ Localize "i18n.rename" }}</button>
+                </a>
+            </td>
+            <td>
+                <a ajaxE href="/file/{{ $f.Id }}" method="DELETE"
+                   confirm='{{ Localize "i18n.del" }} {{ $f.Name }}{{ if eq $f.Type "dir" }}/{{ end }} ?'>
+                    <button>{{ Localize "i18n.del" }}</button>
+                </a>
+            </td>
         </tr>
+        {{ end }}
+        {{ end }}
         </tbody>
     </table>
-
     <br>
     <br>
-    <a>add</a>
 
-    <br>
-    <a>upload</a>
-
+    <div>
+        <a ajaxE href="/file" method="POST">{{ Localize "i18n.add" }} →</a>
+    </div>
 
 </content>
 
@@ -76,3 +84,72 @@
 </html>
 <script type="text/javascript" src="/static/jquery-v3.6.2/min.js"></script>
 <script type="text/javascript" src="/static/custom/min.js"></script>
+<script type="text/javascript">
+
+    ;
+    (function () {
+        // add
+        let $add = $('a[href="/file"]')
+        // console.log($add)
+        if ($add.length > 0) {
+            $add[0]['pre'] = function ($e) {
+                // flag判断是否已点击 'Add →'
+                let flag = $e.attr('flag')
+                if (flag != 1) {
+                    let $input = $('<input name="name" placeholder="name">')
+                    $input.append('<option value=""></option>')
+                    $e.before($input)
+                    $e.html('<span style="margin-left: 10px">{{ Localize "i18n.add" }}</span>')
+                    $e.attr('flag', 1)
+                    return null
+                }
+
+                // 获取上一个 input 兄弟节点
+                let $input = $e.prev('input')
+                // console.log($input)
+                let value = $input.val().trim();
+                $input.val(value)
+                // console.log(value)
+                let legal = true
+                let name = null
+                let type = null
+                if (value.endsWith("/")) {
+                    name = value.substring(0, value.length - 1)
+                    type = 'd'
+                } else if (value.endsWith(".md")) {
+                    name = value
+                    type = 'md'
+                } else {
+                    legal = false
+                }
+                if (value === "" || !legal) {
+                    // 添加 css border
+                    $input.css('border', '2px solid red')
+                    return null
+                }
+
+                // 删除 css border
+                $input.css('border', '')
+
+                // 请求数据
+                return {"pid": "{{ .pf.Id }}", "name": name, "type": type}
+            }
+        }
+
+        // rename
+        // let $renames = $('a[href^="/file"][href$="/rename"]')
+        let $renames = $('a[href="/file/rename"]')
+        for (let i = 0, len = $renames.length; i < len; i++) {
+            $renames[i]['pre'] = function ($e) {
+                let name = prompt('{{ Localize "i18n.name" }}', $e.attr('name'))
+                if (name && (name = name.trim()) !== "") {
+                    // console.log(name)
+                    return {"id": $e.attr('id'), "pid": $e.attr('pid'), "name": name}
+                }
+                return null
+            }
+        }
+    })()
+    ;
+
+</script>
