@@ -53,5 +53,7 @@
   "i18n.save": "Save",
   "i18n.upload": "Upload",
   "i18n.unsupported": "Unsupported",
-  "i18n.download": "Download"
+  "i18n.download": "Download",
+  "i18n.view": "View",
+  "i18n.edit": "Edit"
 }

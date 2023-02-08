@@ -176,18 +176,18 @@ func FileDel(pContext *gin.Context) {
 	return
 }
 
-// FileView 查看文件
-func FileView(pContext *gin.Context) {
+// FileViewPage 查看文件页面
+func FileViewPage(pContext *gin.Context) {
 	id, err := Param[int64](pContext, "id")
 	if err != nil {
-		FileUnsupportedView(pContext, typ.File{}, err)
+		FileUnsupportedViewPage(pContext, typ.File{}, err)
 		return
 	}
 
 	// query
 	f, count, err := DbQry[typ.File](pContext, "SELECT f.id, f.pid, f.`name`, f.`type`, f.`size`, f.add_time, f.upd_time FROM `file` f WHERE f.id = ?", id)
 	if err != nil || count == 0 {
-		FileUnsupportedView(pContext, f, err)
+		FileUnsupportedViewPage(pContext, f, err)
 		return
 	}
 
@@ -195,35 +195,26 @@ func FileView(pContext *gin.Context) {
 	switch f.Type {
 	// markdown
 	case "md":
-		FileMdView(pContext, f)
+		FileMdViewPage(pContext, f)
 		return
 
 	// unsupported
 	default:
-		FileUnsupportedView(pContext, f, err)
+		FileUnsupportedViewPage(pContext, f, err)
 		return
 	}
 }
 
-// FileMdView 查看md文件
+// FileMdViewPage 查看md文件
 // https://github.com/russross/blackfriday
 // https://pkg.go.dev/github.com/russross/blackfriday/v2
-func FileMdView(pContext *gin.Context, f typ.File) {
+func FileMdViewPage(pContext *gin.Context, f typ.File) {
 	html := func(html string, msg any) {
-		Html(pContext, "file/mdview.html", gin.H{"f": f, "html": html}, msg)
+		Html(pContext, "file/md_view.html", gin.H{"f": f, "html": html}, msg)
 	}
-
-	// open
-	fName := FileName(pContext, f)
-	pF, err := os.Open(fName)
-	if err != nil {
-		html("", err)
-		return
-	}
-	defer pF.Close()
 
 	// read
-	buf, err := io.ReadAll(pF)
+	buf, err := FileRead(pContext, f)
 	if err != nil {
 		html("", err)
 		return
@@ -244,7 +235,65 @@ func FileMdView(pContext *gin.Context, f typ.File) {
 	html(string(buf), nil)
 }
 
-// FileUnsupportedView 查看不支持文件
-func FileUnsupportedView(pContext *gin.Context, f typ.File, err error) {
+// FileUnsupportedViewPage 查看不支持文件
+func FileUnsupportedViewPage(pContext *gin.Context, f typ.File, err error) {
 	Html(pContext, "file/unsupported.html", gin.H{"f": f}, err)
+}
+
+// FileEditPage 文件修改页
+func FileEditPage(pContext *gin.Context) {
+	id, err := Param[int64](pContext, "id")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	// query
+	f, count, err := DbQry[typ.File](pContext, "SELECT f.id, f.pid, f.`name`, f.`type`, f.`size`, f.add_time, f.upd_time FROM `file` f WHERE f.id = ?", id)
+	if err != nil || count == 0 {
+		log.Println(err)
+		return
+	}
+
+	// type
+	switch f.Type {
+	// markdown
+	case "md":
+		FileMdEditPage(pContext, f)
+		return
+
+	// unsupported
+	default:
+		return
+	}
+
+}
+
+func FileMdEditPage(pContext *gin.Context, f typ.File) {
+	html := func(content string, msg any) {
+		Html(pContext, "file/md_edit.html", gin.H{"f": f, "content": content}, msg)
+	}
+
+	// read
+	buf, err := FileRead(pContext, f)
+	if err != nil {
+		html("", err)
+		return
+	}
+
+	html(string(buf), nil)
+}
+
+func FileRead(pContext *gin.Context, f typ.File) ([]byte, error) {
+	// open
+	fName := FileName(pContext, f)
+	pF, err := os.Open(fName)
+	if err != nil {
+		return nil, err
+	}
+	defer pF.Close()
+
+	// read
+	buf, err := io.ReadAll(pF)
+	return buf, err
 }

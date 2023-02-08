@@ -33,7 +33,8 @@ func route(pEngine *gin.Engine) {
 
 	// file
 	pEngine.POST("/file", api.FileAdd)
-	pEngine.GET("/file/view/:id", api.FileView) // preview
+	pEngine.Any("/file/:id/viewpage", api.FileViewPage)
+	pEngine.Any("/file/:id/editpage", api.FileEditPage)
 	pEngine.DELETE("/file/:id", api.FileDel)
 	pEngine.PUT("/file/rename", api.FileRename)
 

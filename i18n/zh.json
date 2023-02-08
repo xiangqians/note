@@ -53,5 +53,7 @@
   "i18n.save": "保存",
   "i18n.upload": "上传",
   "i18n.unsupported": "不支持",
-  "i18n.download": "下载"
+  "i18n.download": "下载",
+  "i18n.view": "查看",
+  "i18n.edit": "编辑"
 }

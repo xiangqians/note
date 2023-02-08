@@ -36,7 +36,7 @@
         {{ if gt .pf.Id 0 }}
         <tr>
             <td><a href="/?id={{ .pf.Pid }}">../</a></td>
-            <td colspan="5"></td>
+            <td colspan="6"></td>
         </tr>
         {{ end }}
 
@@ -48,7 +48,7 @@
                 {{ if eq $f.Type "d" }}
                 <a href="/?id={{ $f.Id }}">{{ $f.Name }}/</a>
                 {{ else }}
-                <a href="/file/view/{{ $f.Id }}" target="_blank">{{ $f.Name }}</a>
+                <a href="/file/{{ $f.Id }}/viewpage" target="_blank">{{ $f.Name }}</a>
                 {{ end }}
             </td>
             <td>{{ $f.Type }}</td>
