@@ -24,6 +24,7 @@
   "i18n.recycleBin": "Recycle Bin",
   "i18n.no.": "No.",
   "i18n.name": "Name",
+  "i18n.type": "Type",
   "i18n.size": "Size",
   "i18n.addTime": "Creation time",
   "i18n.updTime": "Update time",
@@ -47,5 +48,10 @@
   "i18n.xDayAgo": "%v day ago",
   "i18n.xHourAgo": "%v hour ago",
   "i18n.xMinuteAgo": "%v minute ago",
-  "i18n.xSecondAgo": "%v second ago"
+  "i18n.xSecondAgo": "%v second ago",
+  "i18n.stg": "Settings",
+  "i18n.save": "Save",
+  "i18n.upload": "Upload",
+  "i18n.unsupported": "Unsupported",
+  "i18n.download": "Download"
 }

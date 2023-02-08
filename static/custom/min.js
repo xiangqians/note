@@ -145,12 +145,38 @@ custom = function () {
     for (let i = 0, len = $ajaxEArr.length; i < len; i++) {
         let $ajaxE = $($ajaxEArr[i])
         // console.log($ajaxE)
-        $ajaxE.click(function () {
-            custom.ajaxE($ajaxE)
+        let tagName = $ajaxE.prop('tagName')
+        // <form></form>
+        if (tagName.toLowerCase() === 'input' && $ajaxE.attr('type') === 'submit') {
+            let $input = $ajaxE
+            for (let $parent = $input.parent(); !$parent.is('body'); $parent = $parent.parent()) {
+                if ($parent.is('form')) {
+                    let $form = $parent
+                    $input.click(function () {
+                        let action = $form.attr("action")
+                        let method = $form.attr("method").trim().toUpperCase()
+                        let data = new FormData()
+                        $form.serializeArray().forEach(e => {
+                            data.append(e.name, e.value);
+                        })
+                        custom.ajax(action, method, data, "form", true, function (data) {
+                            custom.reload(data)
+                        }, function (e) {
+                            alert(e)
+                        })
+                        return false
+                    })
+                    break
+                }
+            }
+        } else {
+            $ajaxE.click(function () {
+                custom.ajaxE($ajaxE)
 
-            // 如果是 <a></a> 标签，则取消 <a></a> 默认行为
-            return false
-        })
+                // 如果是 <a></a> 标签，则取消 <a></a> 默认行为
+                return false
+            })
+        }
     }
 
     // 为普通的 <a></a> url添加时间戳

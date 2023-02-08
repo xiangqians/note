@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	"log"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -52,7 +51,7 @@ func NameHumpToUnderline(name string) string {
 func ConvStrToT[T any](value string) (T, error) {
 	var t T
 	rflVal := reflect.ValueOf(t)
-	log.Println(rflVal)
+	//log.Println(rflVal)
 	switch rflVal.Type().Kind() {
 	case reflect.Int64:
 		id, err := strconv.ParseInt(value, 10, 64)

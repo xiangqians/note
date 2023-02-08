@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/github-markdown-css-5.1.0/github-markdown.css">
+    <title>{{ .f.Name }}</title>
+    <style>
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            /*max-width: 980px;*/
+            margin: 0 auto;
+            padding: 45px;
+        }
+
+        @media (max-width: 767px) {
+            .markdown-body {
+                padding: 15px;
+            }
+        }
+    </style>
+    <style>
+        /* 目录 */
+        .md-dir {
+            width: 20%;
+            float: left;
+            padding-right: 2px;
+            position: fixed;
+            overflow-y: scroll;
+            height: 90%
+        }
+
+        /* 正文 */
+        .md-content {
+            width: 80%;
+            float: right;
+        }
+
+        .float {
+            position: fixed;
+            top: 30px;
+            right: 50px;
+            width: auto;
+            height: auto;
+            /*background: lightgray;*/
+        }
+    </style>
+</head>
+<body>
+
+<a class="float" href="/file/1" target="_blank">{{ Localize "i18n.upd" }}</a>
+
+<p style="color: red;">{{ .msg }}</p>
+
+<div class="md-dir">
+</div>
+
+<article class="md-content markdown-body">
+    <script>
+        document.write('{{ .html }}')
+    </script>
+</article>
+
+</body>
+</html>
+<script type="text/javascript" src="/static/jquery-v3.6.2/min.js"></script>
+
+<!-- md5.js -->
+<script src="/static/md5-2.16.0/main.min.js"></script>
+
+<script>
+
+    ;
+    (function () {
+
+        /**
+         * 目录
+         * @param n     目录数的层次
+         * @param id    目录id
+         * @param text  目录内容
+         * @constructor
+         */
+        function Dir(n, id, text) {
+            this.n = n
+            this.id = id
+            this.text = text
+            this.children = null
+        }
+
+        Dir.prototype.add = function (dir) {
+            if (this.children == null) {
+                this.children = []
+            }
+            this.children.push(dir)
+        }
+
+        let rDir = new Dir(0, null, null)
+
+        function findDir(n, dir) {
+            if (!(dir)) {
+                dir = rDir
+            }
+
+            if (dir.n === n) {
+                return dir
+            }
+
+            let children = dir.children
+            if (children) {
+                return findDir(n, children[children.length - 1])
+            }
+
+            return null
+        }
+
+        let idMap = new Map()
+
+        // 生成id，处理标题包含空格无法跳转 和 标题重名跳转问题
+        function genId(text) {
+            let id = md5(text)
+
+            let count = idMap.get(id)
+            if (!(count)) {
+                count = 0
+            }
+
+            if (count > 0) {
+                id += count
+            }
+
+            count++
+            idMap.set(id, count)
+            return id
+        }
+
+        // 查找h标签
+        $(':header').each(function () {
+            let tagName = $(this).prop('tagName')
+            let n = parseInt(tagName.substring(1), 10)
+            let id = $(this).attr('id')
+            let text = $(this).text()
+
+            // 生成id
+            id = genId(text)
+            $(this).attr('id', id)
+
+            // console.log(n, tagName, text)
+
+            // 处理不规则标题（H）
+            let dir = null
+            let i = 1
+            while (i < 5) {
+                dir = findDir(n - i)
+                if (dir) {
+                    break
+                }
+                i++
+            }
+
+            dir.add(new Dir(n, id, text))
+        });
+        // console.log(rDir)
+
+        // 渲染
+        function render(dir) {
+            let $li = $('<li></li>')
+            let $a = $('<a></a>')
+            $a.attr('href', '#' + dir.id)
+            $a.text(dir.text)
+            $li.append($a)
+            let children = dir.children
+            if (children) {
+                let $ul = $('<ul></ul>')
+                for (let i = 0, len = children.length; i < len; i++) {
+                    $ul.append(render(children[i]))
+                }
+                $li.append($ul)
+            }
+            return $li
+        }
+
+        let $ul = $('<ul></ul>')
+        rDir.children.forEach((dir) => {
+            $ul.append(render(dir))
+        })
+
+        let $dir = $('.md-dir')
+        $dir.append($ul)
+    })()
+    ;
+
+</script>

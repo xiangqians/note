@@ -24,6 +24,7 @@
   "i18n.recycleBin": "回收站",
   "i18n.no.": "序号",
   "i18n.name": "名称",
+  "i18n.type": "类型",
   "i18n.size": "大小",
   "i18n.addTime": "创建时间",
   "i18n.updTime": "更新时间",
@@ -47,5 +48,10 @@
   "i18n.xDayAgo": "%v天前",
   "i18n.xHourAgo": "%v小时前",
   "i18n.xMinuteAgo": "%v分钟前",
-  "i18n.xSecondAgo": "%v秒前"
+  "i18n.xSecondAgo": "%v秒前",
+  "i18n.stg": "设置",
+  "i18n.save": "保存",
+  "i18n.upload": "上传",
+  "i18n.unsupported": "不支持",
+  "i18n.download": "下载"
 }

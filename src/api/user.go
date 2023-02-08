@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"io"
 	"log"
+	"net/http"
 	"note/src/arg"
 	"note/src/typ"
 	"note/src/util"
@@ -47,6 +48,7 @@ func UserAdd(pContext *gin.Context) {
 		Redirect(pContext, "/user/regpage", gin.H{"user": user}, message)
 	}
 
+	// 是否允许用户注册
 	if arg.AllowReg != 1 {
 		redirect(typ.User{}, i18n.MustGetMessage("i18n.regNotOpen"))
 		return
@@ -81,6 +83,7 @@ func UserAdd(pContext *gin.Context) {
 		return
 	}
 
+	// add
 	id, err := DbAdd(nil, "INSERT INTO `user` (`name`, `nickname`, `passwd`, `rem`, `add_time`) VALUES (?, ?, ?, ?, ?)",
 		user.Name, strings.TrimSpace(user.Nickname), PasswdEncrypt(user.Passwd), strings.TrimSpace(user.Rem), time.Now().Unix())
 	if err != nil {
@@ -103,14 +106,14 @@ func UserAdd(pContext *gin.Context) {
 
 	// 用户注册成功后，重定向到登录页
 	Redirect(pContext, "/user/loginpage",
-		gin.H{"userName": user.Name},
+		gin.H{"name": user.Name},
 		i18n.MustGetMessage("i18n.accountRegSuccess"))
 }
 
 // UserLoginPage 用户登录页
 func UserLoginPage(pContext *gin.Context) {
-	userName, _ := SessionV[string](pContext, "userName", true)
-	Html(pContext, "user/login.html", gin.H{"userName": userName}, nil)
+	name, _ := SessionV[string](pContext, "name", true)
+	Html(pContext, "user/login.html", gin.H{"name": name}, nil)
 }
 
 // UserLogin 用户登录
@@ -119,9 +122,10 @@ func UserLogin(pContext *gin.Context) {
 	name := strings.TrimSpace(pContext.PostForm("name"))
 
 	redirect := func(message any) {
-		Redirect(pContext, "/user/loginpage", gin.H{"userName": name}, message)
+		Redirect(pContext, "/user/loginpage", gin.H{"name": name}, message)
 	}
 
+	// name
 	err := VerifyUserName(name)
 	if err != nil {
 		redirect(err)
@@ -136,6 +140,7 @@ func UserLogin(pContext *gin.Context) {
 		return
 	}
 
+	// query
 	user, count, err := DbQry[typ.User](nil,
 		"SELECT u.id, u.`name`, u.nickname, u.rem, u.add_time, u.upd_time FROM `user` u WHERE u.del = 0 AND u.`name` = ? AND u.passwd = ? LIMIT 1",
 		name, PasswdEncrypt(passwd))
@@ -157,91 +162,84 @@ func UserLogin(pContext *gin.Context) {
 	Redirect(pContext, "/", nil, nil)
 }
 
-// // 用户登出
-//
-//	func UserLogout(pContext *gin.Context) {
-//		// 清除session
-//		SessionClear(pContext)
-//
-//		// 重定向
-//		pContext.Redirect(http.StatusMovedPermanently, "/user/loginpage")
-//	}
-//
-//	func UserSettingPage(pContext *gin.Context) {
-//		session := sessions.Default(pContext)
-//		user := session.Get("user")
-//		message := session.Get("message")
-//		session.Delete("user")
-//		session.Delete("message")
-//		session.Save()
-//
-//		if user == nil {
-//			user = SessionUser(pContext)
-//		}
-//		pContext.HTML(http.StatusOK, "user/setting.html", gin.H{
-//			"user":    user,
-//			"message": message,
-//		})
-//	}
-//
-//	func UserUpd(pContext *gin.Context) {
-//		user := typ.User{}
-//		err := ShouldBind(pContext, &user)
-//
-//		if err == nil {
-//			err = VerifyUserNameAndPasswd(user.Name, user.Passwd)
-//		}
-//
-//		sessionUser := SessionUser(pContext)
-//		if err == nil && user.Name != sessionUser.Name {
-//			err = VerifyDbUserName(user.Name)
-//		}
-//
-//		user.Nickname = strings.TrimSpace(user.Nickname)
-//		user.Rem = strings.TrimSpace(user.Rem)
-//
-//		session := sessions.Default(pContext)
-//		if err != nil {
-//			session.Set("user", user)
-//			session.Set("message", err.Error())
-//			session.Save()
-//			pContext.Redirect(http.StatusMovedPermanently, "/user/settingpage")
-//			return
-//		}
-//
-//		db.Add("UPDATE `user` SET `name` = ?, nickname = ?, `passwd` = ?, rem = ?, upd_time = ? WHERE id = ?",
-//			user.Name, user.Nickname, PasswdEncrypt(user.Passwd), user.Rem, time.Now().Unix(), sessionUser.Id)
-//
-//		// 更新session中User信息
-//		sessionUser.Name = user.Name
-//		sessionUser.Nickname = user.Nickname
-//		sessionUser.Rem = user.Rem
-//		session.Set(SessionKeyUser, sessionUser)
-//		session.Save()
-//
-//		pContext.Redirect(http.StatusMovedPermanently, "/user/settingpage")
-//	}
-//
-//	func VerifyUserNameAndPasswd(name, passwd string) error {
-//		err := util.VerifyUserName(name)
-//		if err == nil {
-//			err = util.VerifyPasswd(passwd)
-//		}
-//		return err
-//	}
-//
-//	func VerifyDbUserName(name string) error {
-//		id, count, err := db.Qry[int64]("SELECT u.id FROM `user` u WHERE u.del = 0 AND u.`name` = ? LIMIT 1", name)
-//		if err != nil || count == 0 {
-//			return err
-//		}
-//
-//		if id != 0 {
-//			return errors.New(i18n.MustGetMessage("i18n.userAlreadyExists"))
-//		}
-//
-//		return nil
-//	}
+// UserLogout 用户登出
+func UserLogout(pContext *gin.Context) {
+	// 清除session
+	SessionClear(pContext)
+
+	// 重定向
+	pContext.Redirect(http.StatusMovedPermanently, "/user/loginpage")
+}
+
+// UserStgPage 用户设置页
+func UserStgPage(pContext *gin.Context) {
+	msg, _ := SessionV[string](pContext, "msg", true)
+	user, err := SessionV[typ.User](pContext, "user", true)
+	if err != nil {
+		user, _ = SessionUser(pContext)
+	}
+	Html(pContext, "user/stg.html", gin.H{"user": user}, msg)
+}
+
+// UserUpd 更新用户信息
+func UserUpd(pContext *gin.Context) {
+	// 注册异常时，重定向到设置页
+	redirect := func(user typ.User, message any) {
+		Redirect(pContext, "/user/stgpage", gin.H{"user": user}, message)
+	}
+
+	// bind
+	user := typ.User{}
+	err := ShouldBind(pContext, &user)
+	if err != nil {
+		redirect(user, err)
+		return
+	}
+
+	// name
+	err = VerifyUserName(user.Name)
+	if err != nil {
+		redirect(user, err)
+		return
+	}
+
+	// passwd
+	err = VerifyPasswd(user.Passwd)
+	if err != nil {
+		redirect(user, err)
+		return
+	}
+
+	// name
+	sessionUser, _ := SessionUser(pContext)
+	if err == nil && user.Name != sessionUser.Name {
+		// 校验数据库用户名
+		err = VerifyDbUserName(user.Name)
+		if err != nil {
+			redirect(user, err)
+			return
+		}
+	}
+
+	user.Nickname = strings.TrimSpace(user.Nickname)
+	user.Rem = strings.TrimSpace(user.Rem)
+
+	// update
+	_, err = DbUpd(nil, "UPDATE `user` SET `name` = ?, nickname = ?, `passwd` = ?, rem = ?, upd_time = ? WHERE id = ?",
+		user.Name, user.Nickname, PasswdEncrypt(user.Passwd), user.Rem, time.Now().Unix(), sessionUser.Id)
+	if err != nil {
+		redirect(user, err)
+		return
+	}
+
+	// 更新session中User信息
+	sessionUser.Name = user.Name
+	sessionUser.Nickname = user.Nickname
+	sessionUser.Rem = user.Rem
+	SessionKv(pContext, SessionKeyUser, sessionUser)
+
+	redirect(user, nil)
+}
 
 func VerifyDbUserName(name string) error {
 	_, count, err := DbQry[int64](nil, "SELECT u.id FROM `user` u WHERE u.del = 0 AND u.`name` = ? LIMIT 1", name)

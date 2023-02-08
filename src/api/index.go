@@ -4,10 +4,16 @@
 package api
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/russross/blackfriday/v2"
+	"io"
 	"log"
 	"note/src/typ"
+	"note/src/util"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -17,7 +23,7 @@ func IndexPage(pContext *gin.Context) {
 	}
 
 	id, err := Query[int64](pContext, "id")
-	log.Printf("id = %d\n", id)
+	//log.Printf("id = %d\n", id)
 
 	// pf
 	var pf typ.File
@@ -69,6 +75,24 @@ func IndexPage(pContext *gin.Context) {
 	return
 }
 
+func FileName(pContext *gin.Context, f typ.File) string {
+	dName := f.Type
+	if dName == "" {
+		dName = "unk"
+	}
+
+	// fDir
+	dataDir := DataDir(pContext)
+	fDir := fmt.Sprintf("%s%s%s", dataDir, util.FileSeparator, dName)
+	if !util.IsExistOfPath(fDir) {
+		util.Mkdir(fDir)
+	}
+
+	// fName
+	fName := fmt.Sprintf("%s%s%d", fDir, util.FileSeparator, f.Id)
+	return fName
+}
+
 // FileAdd 新增文件
 func FileAdd(pContext *gin.Context) {
 	redirect := func(id int64, msg any) {
@@ -84,11 +108,24 @@ func FileAdd(pContext *gin.Context) {
 		return
 	}
 
+	f.Type = strings.TrimSpace(f.Type)
+
 	// add
-	_, err = DbAdd(pContext, "INSERT INTO `file` (`pid`, `name`, `type`, `add_time`) VALUES (?, ?, ?, ?)", f.Pid, f.Name, f.Type, time.Now().Unix())
+	id, err := DbAdd(pContext, "INSERT INTO `file` (`pid`, `name`, `type`, `add_time`) VALUES (?, ?, ?, ?)", f.Pid, f.Name, f.Type, time.Now().Unix())
 	if err != nil {
 		redirect(pid, err)
 		return
+	}
+
+	f.Id = id
+
+	if f.Type != "d" {
+		fName := FileName(pContext, f)
+		pFile, fErr := os.Create(fName)
+		if fErr != nil {
+			log.Println(fErr)
+		}
+		defer pFile.Close()
 	}
 
 	redirect(pid, nil)
@@ -137,4 +174,77 @@ func FileDel(pContext *gin.Context) {
 
 	redirect(pid, nil)
 	return
+}
+
+// FileView 查看文件
+func FileView(pContext *gin.Context) {
+	id, err := Param[int64](pContext, "id")
+	if err != nil {
+		FileUnsupportedView(pContext, typ.File{}, err)
+		return
+	}
+
+	// query
+	f, count, err := DbQry[typ.File](pContext, "SELECT f.id, f.pid, f.`name`, f.`type`, f.`size`, f.add_time, f.upd_time FROM `file` f WHERE f.id = ?", id)
+	if err != nil || count == 0 {
+		FileUnsupportedView(pContext, f, err)
+		return
+	}
+
+	// type
+	switch f.Type {
+	// markdown
+	case "md":
+		FileMdView(pContext, f)
+		return
+
+	// unsupported
+	default:
+		FileUnsupportedView(pContext, f, err)
+		return
+	}
+}
+
+// FileMdView 查看md文件
+// https://github.com/russross/blackfriday
+// https://pkg.go.dev/github.com/russross/blackfriday/v2
+func FileMdView(pContext *gin.Context, f typ.File) {
+	html := func(html string, msg any) {
+		Html(pContext, "file/mdview.html", gin.H{"f": f, "html": html}, msg)
+	}
+
+	// open
+	fName := FileName(pContext, f)
+	pF, err := os.Open(fName)
+	if err != nil {
+		html("", err)
+		return
+	}
+	defer pF.Close()
+
+	// read
+	buf, err := io.ReadAll(pF)
+	if err != nil {
+		html("", err)
+		return
+	}
+
+	//output := blackfriday.Run(input)
+	//output := blackfriday.Run(input, blackfriday.WithNoExtensions())
+	//output := blackfriday.Run(input, blackfriday.WithExtensions(blackfriday.CommonExtensions))
+
+	// https://github.com/russross/blackfriday/issues/394
+	buf = bytes.Replace(buf, []byte("\r"), nil, -1)
+	//output := blackfriday.Run(input, blackfriday.WithExtensions(blackfriday.CommonExtensions|blackfriday.HardLineBreak))
+	buf = blackfriday.Run(buf, blackfriday.WithExtensions(blackfriday.CommonExtensions|blackfriday.HardLineBreak|blackfriday.AutoHeadingIDs|blackfriday.Autolink))
+
+	// 安全过滤
+	//buf = bluemonday.UGCPolicy().SanitizeBytes(buf)
+
+	html(string(buf), nil)
+}
+
+// FileUnsupportedView 查看不支持文件
+func FileUnsupportedView(pContext *gin.Context, f typ.File, err error) {
+	Html(pContext, "file/unsupported.html", gin.H{"f": f}, err)
 }

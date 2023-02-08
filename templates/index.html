@@ -25,6 +25,7 @@
         <thead>
         <tr>
             <td>{{ Localize "i18n.name" }}</td>
+            <td>{{ Localize "i18n.type" }}</td>
             <td>{{ Localize "i18n.size" }}</td>
             <td>{{ Localize "i18n.addTime" }}</td>
             <td>{{ Localize "i18n.updTime" }}</td>
@@ -43,18 +44,19 @@
         {{ if gt $len 0 }}
         {{ range $index,$f := .fs }}
         <tr>
-            <td title="{{ $f.Rem }}">
+            <td>
                 {{ if eq $f.Type "d" }}
                 <a href="/?id={{ $f.Id }}">{{ $f.Name }}/</a>
                 {{ else }}
-                <a href="#">{{ $f.Name }}</a>
+                <a href="/file/view/{{ $f.Id }}" target="_blank">{{ $f.Name }}</a>
                 {{ end }}
             </td>
+            <td>{{ $f.Type }}</td>
             <td>{{ $f.Size }}</td>
             <td>{{ HumanizUnix $f.AddTime }}</td>
             <td>{{ HumanizUnix $f.UpdTime }}</td>
             <td>
-                <a ajaxE href="/file/rename" method="POST" id="{{ $f.Id }}" pid="{{ $.pf.Id }}" name="{{ $f.Name }}">
+                <a ajaxE href="/file/rename" method="PUT" id="{{ $f.Id }}" pid="{{ $.pf.Id }}" name="{{ $f.Name }}">
                     <button>{{ Localize "i18n.rename" }}</button>
                 </a>
             </td>
@@ -74,6 +76,10 @@
 
     <div>
         <a ajaxE href="/file" method="POST">{{ Localize "i18n.add" }} →</a>
+    </div>
+    <br>
+    <div>
+        <a href="/">{{ Localize "i18n.upload" }} →</a>
     </div>
 
 </content>

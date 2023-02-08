@@ -18,6 +18,10 @@ import (
 
 // 初始化HTML模板
 func htmlTemplate(pEngine *gin.Engine) {
+
+	// gin内置模板函数
+	// go1.19.3/src/text/template/funcs.go:40
+
 	// 自定义模板函数
 	pEngine.SetFuncMap(template.FuncMap{
 		// 为了获取 i18n 文件中 key 对应的 value

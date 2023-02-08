@@ -22,18 +22,19 @@ func route(pEngine *gin.Engine) {
 		userRouterGroup.Any("/regpage", api.UserRegPage)
 		userRouterGroup.Any("/loginpage", api.UserLoginPage)
 		userRouterGroup.POST("/login", api.UserLogin)
-		//userRouterGroup.POST("/logout", api.UserLogout)
-		//userRouterGroup.Any("/settingpage", api.UserSettingPage)
+		userRouterGroup.Any("/logout", api.UserLogout)
+		userRouterGroup.Any("/stgpage", api.UserStgPage)
 	}
 	pEngine.POST("/user", api.UserAdd)
-	//pEngine.PUT("/user", api.UserUpd)
+	pEngine.PUT("/user", api.UserUpd)
 
 	// index
 	pEngine.Any("/", api.IndexPage)
 
 	// file
 	pEngine.POST("/file", api.FileAdd)
+	pEngine.GET("/file/view/:id", api.FileView) // preview
 	pEngine.DELETE("/file/:id", api.FileDel)
-	pEngine.POST("/file/rename", api.FileRename)
+	pEngine.PUT("/file/rename", api.FileRename)
 
 }

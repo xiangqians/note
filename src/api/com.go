@@ -159,6 +159,9 @@ func Html(pContext *gin.Context, templateName string, h gin.H, msg any) {
 		h["user"] = user
 	}
 
+	h["uri"] = pContext.Request.RequestURI
+	h["url"] = pContext.Request.URL.Path
+
 	// 没有消息就是最好的消息
 	msgStr := ConvAnyToStr(msg)
 	sessionMsg, err := SessionV[string](pContext, "msg", true)
@@ -168,8 +171,6 @@ func Html(pContext *gin.Context, templateName string, h gin.H, msg any) {
 		}
 		msgStr += sessionMsg
 	}
-	h["uri"] = pContext.Request.RequestURI
-	h["url"] = pContext.Request.URL.Path
 	h["msg"] = msgStr
 
 	pContext.HTML(http.StatusOK, templateName, h)
@@ -202,13 +203,18 @@ func Query[T any](pContext *gin.Context, key string) (T, error) {
 	return util.ConvStrToT[T](value)
 }
 
-func dsn(pContext *gin.Context) string {
+func DataDir(pContext *gin.Context) string {
 	if pContext == nil {
-		return fmt.Sprintf("%s%sdatabase.db", arg.DataDir, util.FileSeparator)
+		return arg.DataDir
 	}
 
 	user, _ := SessionUser(pContext)
-	return fmt.Sprintf("%s%s%d%sdatabase.db", arg.DataDir, util.FileSeparator, user.Id, util.FileSeparator)
+	return fmt.Sprintf("%s%s%d", arg.DataDir, util.FileSeparator, user.Id)
+}
+
+func dsn(pContext *gin.Context) string {
+	dataDir := DataDir(pContext)
+	return fmt.Sprintf("%s%sdatabase.db", dataDir, util.FileSeparator)
 }
 
 func DbQry[T any](pContext *gin.Context, sql string, args ...any) (T, int64, error) {
