@@ -17,10 +17,27 @@
     <link rel="stylesheet" href="/static/codemirror-5.65.11/lib/codemirror.css">
 
     <title>{{ Localize "i18n.edit" }}: {{ .f.Name }}</title>
+
+    <style>
+
+        .float {
+            position: fixed;
+            top: 30px;
+            right: 50px;
+            width: auto;
+            height: auto;
+            /*background: lightgray;*/
+        }
+
+    </style>
 </head>
 <body>
 
+<p style="color: red;">{{ .msg }}</p>
+
 <textarea type="text" style="width: 100%; height: 100%;">{{ .content }}</textarea>
+
+<a class="float" href="/file/{{ .f.Id }}/edit" method="PUT" target="_blank">{{ Localize "i18n.save" }}</a>
 
 </body>
 </html>
