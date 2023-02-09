@@ -57,5 +57,7 @@
   "i18n.download": "Download",
   "i18n.view": "View",
   "i18n.edit": "Edit",
-  "i18n.fileTypeUnsupported": "This file type is not supported"
+  "i18n.fileTypeUnsupported": "This file type is not supported",
+  "i18n.success": "Success",
+  "i18n.failure": "Failure"
 }

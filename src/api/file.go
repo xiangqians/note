@@ -4,12 +4,14 @@
 package api
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
 	"io"
 	"log"
+	"net/http"
 	"note/src/typ"
 	"note/src/util"
 	"os"
@@ -89,7 +91,56 @@ func FileUpdName(pContext *gin.Context) {
 
 // FileUpdContent 修改文件内容
 func FileUpdContent(pContext *gin.Context) {
+	json := func(err error) {
+		if err != nil {
+			pContext.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+			return
+		}
 
+		pContext.JSON(http.StatusOK, nil)
+	}
+
+	// id
+	id, err := PostForm[int64](pContext, "id")
+	if err != nil {
+		json(err)
+		return
+	}
+	//log.Println("id", id)
+
+	// f
+	f, count, err := DbQry[typ.File](pContext, "SELECT f.id, f.pid, f.`name`, f.`type`, f.`size`, f.add_time, f.upd_time FROM `file` f WHERE f.del = 0 AND f.id = ?", id)
+	if count == 0 || typ.FileTypeOf(f.Type) != typ.FileTypeMd {
+		json(nil)
+		return
+	}
+
+	// content
+	content, err := PostForm[string](pContext, "content")
+	if err != nil {
+		json(err)
+		return
+	}
+	//log.Println("content", content)
+
+	// os file
+	fPath := FilePath(pContext, f)
+	pFile, err := os.OpenFile(fPath,
+		os.O_WRONLY|os.O_TRUNC, // 只写（O_WRONLY） & 清空文件（O_TRUNC）
+		0666)
+	if err != nil {
+		json(err)
+		return
+	}
+	defer pFile.Close()
+
+	// write
+	pWriter := bufio.NewWriter(pFile)
+	pWriter.WriteString(content)
+	pWriter.Flush()
+
+	json(nil)
+	return
 }
 
 // FileDel 删除文件

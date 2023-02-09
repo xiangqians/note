@@ -20,6 +20,14 @@
 
     <style>
 
+        .CodeMirror {
+            font-size: 16px;
+        }
+
+    </style>
+
+    <style>
+
         .float {
             position: fixed;
             top: 30px;
@@ -37,7 +45,7 @@
 
 <textarea type="text">{{ .content }}</textarea>
 
-<a class="float" href="/file/{{ .f.Id }}/edit" method="PUT" target="_blank">{{ Localize "i18n.save" }}</a>
+<button name="save" class="float">{{ Localize "i18n.save" }}</button>
 
 </body>
 </html>
@@ -68,6 +76,9 @@
             lineWrapping: true, // 自动换行
             matchBrackets: true,  // 括号匹配
             autoRefresh: true,
+
+            // keyMap：快捷键，default使用默认快捷键
+
         })
         editor.setSize('100%', '100%')
 
@@ -80,8 +91,33 @@
             // console.log($textarea.val())
             editor.refresh()
             editor.save()
-            console.log(editor.getValue())
+            // console.log(editor.getValue())
             // console.log($textarea.val())
+        })
+
+        // href=""
+        function save() {
+            alert(123)
+        }
+
+        let $btns = $('button[name="save"]')
+        let $saveBtn = $($btns[$btns.length - 1])
+        // console.log($saveBtn)
+        $saveBtn.click(function () {
+            custom.ajax('/file/content', 'PUT', {
+                    'id': "{{ .f.Id }}",
+                    'content': editor.getValue()
+                },
+                'json',
+                false,
+                function () {
+                    editor.hash = md5(editor.getValue())
+                    alert('{{ Localize "i18n.success" }}')
+                },
+                function (e) {
+                    let msg = e.responseJSON.msg
+                    alert(msg)
+                })
         })
 
         // onbeforeunload
