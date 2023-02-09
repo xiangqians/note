@@ -1,5 +1,3 @@
 # note
-note
 
-# test
-回收站
+note
