@@ -5,16 +5,10 @@ package api
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/russross/blackfriday/v2"
-	"io"
 	"log"
 	"note/src/typ"
-	"note/src/util"
-	"os"
-	"strings"
-	"time"
 )
 
 func IndexPage(pContext *gin.Context) {
@@ -75,107 +69,6 @@ func IndexPage(pContext *gin.Context) {
 	return
 }
 
-func FileName(pContext *gin.Context, f typ.File) string {
-	dName := f.Type
-	if dName == "" {
-		dName = "unk"
-	}
-
-	// fDir
-	dataDir := DataDir(pContext)
-	fDir := fmt.Sprintf("%s%s%s", dataDir, util.FileSeparator, dName)
-	if !util.IsExistOfPath(fDir) {
-		util.Mkdir(fDir)
-	}
-
-	// fName
-	fName := fmt.Sprintf("%s%s%d", fDir, util.FileSeparator, f.Id)
-	return fName
-}
-
-// FileAdd 新增文件
-func FileAdd(pContext *gin.Context) {
-	redirect := func(id int64, msg any) {
-		Redirect(pContext, fmt.Sprintf("/?id=%d", id), nil, msg)
-	}
-
-	// file
-	f := typ.File{}
-	err := ShouldBind(pContext, &f)
-	pid := f.Pid
-	if err != nil {
-		redirect(pid, err)
-		return
-	}
-
-	f.Type = strings.TrimSpace(f.Type)
-
-	// add
-	id, err := DbAdd(pContext, "INSERT INTO `file` (`pid`, `name`, `type`, `add_time`) VALUES (?, ?, ?, ?)", f.Pid, f.Name, f.Type, time.Now().Unix())
-	if err != nil {
-		redirect(pid, err)
-		return
-	}
-
-	f.Id = id
-
-	if f.Type != "d" {
-		fName := FileName(pContext, f)
-		pFile, fErr := os.Create(fName)
-		if fErr != nil {
-			log.Println(fErr)
-		}
-		defer pFile.Close()
-	}
-
-	redirect(pid, nil)
-	return
-}
-
-// FileRename 文件重命名
-func FileRename(pContext *gin.Context) {
-	redirect := func(id int64, msg any) {
-		Redirect(pContext, fmt.Sprintf("/?id=%d", id), nil, msg)
-	}
-
-	// file
-	f := typ.File{}
-	err := ShouldBind(pContext, &f)
-	pid := f.Pid
-	if err != nil {
-		redirect(pid, err)
-		return
-	}
-
-	// update
-	_, err = DbUpd(pContext, "UPDATE `file` SET `name` = ?, `upd_time` = ? WHERE id = ?", f.Name, time.Now().Unix(), f.Id)
-	if err != nil {
-		redirect(pid, err)
-		return
-	}
-
-	redirect(pid, nil)
-	return
-}
-
-// FileDel 删除文件
-func FileDel(pContext *gin.Context) {
-	redirect := func(id int64, msg any) {
-		Redirect(pContext, fmt.Sprintf("/?id=%d", id), nil, msg)
-	}
-
-	id, _ := Param[int64](pContext, "id")
-	pid, _, _ := DbQry[int64](pContext, "SELECT f.pid FROM `file` f WHERE f.del = 0 AND f.id = ?", id)
-	_, err := DbDel(pContext, "UPDATE `file` SET del = 1, `upd_time` = ? WHERE id = ?", time.Now().Unix(), id)
-	if err != nil {
-		redirect(pid, err)
-		return
-	}
-
-	redirect(pid, nil)
-	return
-}
-
 // FileViewPage 查看文件页面
 func FileViewPage(pContext *gin.Context) {
 	id, err := Param[int64](pContext, "id")
@@ -210,7 +103,7 @@ func FileViewPage(pContext *gin.Context) {
 // https://pkg.go.dev/github.com/russross/blackfriday/v2
 func FileMdViewPage(pContext *gin.Context, f typ.File) {
 	html := func(html string, msg any) {
-		Html(pContext, "file/md_view.html", gin.H{"f": f, "html": html}, msg)
+		Html(pContext, "file/md/view.html", gin.H{"f": f, "html": html}, msg)
 	}
 
 	// read
@@ -271,7 +164,7 @@ func FileEditPage(pContext *gin.Context) {
 
 func FileMdEditPage(pContext *gin.Context, f typ.File) {
 	html := func(content string, msg any) {
-		Html(pContext, "file/md_edit.html", gin.H{"f": f, "content": content}, msg)
+		Html(pContext, "file/md/edit.html", gin.H{"f": f, "content": content}, msg)
 	}
 
 	// read
@@ -282,18 +175,4 @@ func FileMdEditPage(pContext *gin.Context, f typ.File) {
 	}
 
 	html(string(buf), nil)
-}
-
-func FileRead(pContext *gin.Context, f typ.File) ([]byte, error) {
-	// open
-	fName := FileName(pContext, f)
-	pF, err := os.Open(fName)
-	if err != nil {
-		return nil, err
-	}
-	defer pF.Close()
-
-	// read
-	buf, err := io.ReadAll(pF)
-	return buf, err
 }

@@ -29,14 +29,14 @@
             <td>{{ Localize "i18n.size" }}</td>
             <td>{{ Localize "i18n.addTime" }}</td>
             <td>{{ Localize "i18n.updTime" }}</td>
-            <td colspan="2">{{ Localize "i18n.op" }}</td>
+            <td colspan="3">{{ Localize "i18n.op" }}</td>
         </tr>
         </thead>
         <tbody>
         {{ if gt .pf.Id 0 }}
         <tr>
             <td><a href="/?id={{ .pf.Pid }}">../</a></td>
-            <td colspan="6"></td>
+            <td colspan="7"></td>
         </tr>
         {{ end }}
 
@@ -56,8 +56,13 @@
             <td>{{ HumanizUnix $f.AddTime }}</td>
             <td>{{ HumanizUnix $f.UpdTime }}</td>
             <td>
-                <a ajaxE href="/file/rename" method="PUT" id="{{ $f.Id }}" pid="{{ $.pf.Id }}" name="{{ $f.Name }}">
+                <a ajaxE href="/file/name" method="PUT" fId="{{ $f.Id }}" fPid="{{ $.pf.Id }}" fName="{{ $f.Name }}">
                     <button>{{ Localize "i18n.rename" }}</button>
+                </a>
+            </td>
+            <td>
+                <a href="/" method="PUT">
+                    <button disabled="disabled">{{ Localize "i18n.move" }}</button>
                 </a>
             </td>
             <td>
@@ -144,13 +149,13 @@
 
         // rename
         // let $renames = $('a[href^="/file"][href$="/rename"]')
-        let $renames = $('a[href="/file/rename"]')
+        let $renames = $('a[href="/file/name"]')
         for (let i = 0, len = $renames.length; i < len; i++) {
             $renames[i]['pre'] = function ($e) {
-                let name = prompt('{{ Localize "i18n.name" }}', $e.attr('name'))
+                let name = prompt('{{ Localize "i18n.name" }}', $e.attr('fName'))
                 if (name && (name = name.trim()) !== "") {
                     // console.log(name)
-                    return {"id": $e.attr('id'), "pid": $e.attr('pid'), "name": name}
+                    return {"id": $e.attr('fId'), "pid": $e.attr('fPid'), "name": name}
                 }
                 return null
             }

@@ -39,6 +39,29 @@ type File struct {
 	Path string // 目录路径
 }
 
+// FileType 文件类型
+type FileType string
+
+const (
+	FileTypeD   FileType = "d"   // 目录
+	FileTypeMd           = "md"  // md文件
+	FileTypePdf          = "pdf" // pdf文件
+	FileTypeZip          = "zip" // zip文件
+	FileTypeUnk          = "unk" // unknown
+)
+
+var fileTypes = [...]FileType{FileTypeD, FileTypeMd, FileTypePdf, FileTypeZip}
+
+func FileTypeOf(value string) FileType {
+	for _, fileType := range fileTypes {
+		if string(fileType) == value {
+			return fileType
+		}
+	}
+
+	return FileTypeUnk
+}
+
 // 注册模型
 func init() {
 	gob.Register(User{})

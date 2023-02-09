@@ -180,16 +180,12 @@ custom = function () {
     }
 
     // 为普通的 <a></a> url添加时间戳
-    let $aArr = $('a:not([ajaxE])')
+    let $aArr = $('a:not([ajaxE])[href^="/"]')
     // console.log('$aArr', $aArr)
     for (let i = 0, len = $aArr.length; i < len; i++) {
         let $a = $($aArr[i])
         // console.log($a)
         let href = $a.attr('href')
-        if (href.indexOf("https://github.com") >= 0) {
-            continue
-        }
-
         $a.attr('href', custom.urlAddTimestamp(href))
     }
 

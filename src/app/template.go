@@ -14,6 +14,7 @@ import (
 	"note/src/util"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // 初始化HTML模板
@@ -61,64 +62,77 @@ func htmlTemplate(pEngine *gin.Engine) {
 		// if gin.DebugMode -> NewDynamic()
 		renderer := multitemplate.NewRenderer()
 
+		// 获取所有匹配的html模板
 		matches, err := filepath.Glob(templatesDir + "/*")
 		if err != nil {
 			panic(err)
 		}
 
+		// 获取公共html模板
 		coms, err := filepath.Glob(templatesDir + "/com/*")
 		if err != nil {
 			panic(err)
 		}
 
-		getFiles := func(s string) []string {
-			files := make([]string, len(coms)+1)
-			i := 0
-			files[i] = s
-			i++
-			for _, e := range coms {
-				files[i] = e
-				i++
-			}
-			return files
-		}
-
 		// Generate our templates map from our layouts/ and includes/ directories
-		for _, matche := range matches {
-			pFile, ferr := os.Open(matche)
-			if ferr != nil {
-				continue
-			}
-
-			fileInfo, fierr := pFile.Stat()
-			if fierr == nil {
-				name := filepath.Base(matche)
-				// /**/*
-				if fileInfo.IsDir() {
-					fname := fileInfo.Name()
-					subFileInfos, sfierr := pFile.Readdir(-1)
-					if sfierr == nil {
-						for _, subFileInfo := range subFileInfos {
-							subfname := subFileInfo.Name()
-							var files []string
-							if fname == "com" {
-								files = []string{fmt.Sprintf("%s/%s", matche, subfname)}
-							} else {
-								files = getFiles(fmt.Sprintf("%s/%s", matche, subfname))
-							}
-							renderer.AddFromFilesFuncs(fmt.Sprintf("%s/%s", fname, subfname), pEngine.FuncMap, files...)
-						}
-					}
-				} else
-				// /*
-				{
-					files := getFiles(matche)
-					renderer.AddFromFilesFuncs(name, pEngine.FuncMap, files...)
-				}
-			}
-			pFile.Close()
+		for _, m := range matches {
+			addFromFilesFuncs(renderer, pEngine.FuncMap, coms, m)
 		}
 
 		return renderer
 	}("./templates")
+}
+
+func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap template.FuncMap, coms []string, name string) {
+	// 打开文件
+	pFile, err := os.Open(name)
+	if err != nil {
+		panic(err)
+	}
+	defer pFile.Close()
+
+	// 获取文件信息
+	fInfo, err := pFile.Stat()
+	if err != nil {
+		panic(err)
+	}
+
+	// /**/*
+	if fInfo.IsDir() {
+		fName := fInfo.Name()
+		sfInfos, err := pFile.Readdir(-1) // sub file info
+		if err == nil {
+			for _, sfInfo := range sfInfos {
+				sfName := sfInfo.Name()
+
+				// 目录
+				if sfInfo.IsDir() {
+					addFromFilesFuncs(renderer, funcMap, coms, fmt.Sprintf("%s%s%s", name, util.FileSeparator, sfName))
+				} else
+				// 文件
+				{
+					var files []string
+					if fName == "com" {
+						files = []string{fmt.Sprintf("%s%s%s", name, util.FileSeparator, sfName)}
+					} else {
+						// len 0, cap ?
+						files = make([]string, 0, len(coms)+1)
+						files = append(files, fmt.Sprintf("%s%s%s", name, util.FileSeparator, sfName))
+						files = append(files, coms...)
+					}
+
+					renderer.AddFromFilesFuncs(strings.ReplaceAll(fmt.Sprintf("%s/%s", name, sfName), "\\", "/")[len("templates/"):], funcMap, files...)
+				}
+			}
+		}
+	} else
+	// /*
+	{
+		// len 0, cap ?
+		files := make([]string, 0, len(coms)+1)
+		files = append(files, name)
+		files = append(files, coms...)
+		//renderer.AddFromFilesFuncs(filepath.Base(name), funcMap, files...)
+		renderer.AddFromFilesFuncs(strings.ReplaceAll(name, "\\", "/")[len("templates/"):], funcMap, files...)
+	}
 }

@@ -41,6 +41,7 @@
   "i18n.nextPage": "下一页",
   "i18n.dir": "目录",
   "i18n.rename": "重命名",
+  "i18n.move": "移动",
   "i18n.dayAbbrev": "天",
   "i18n.hourAbbrev": "小时",
   "i18n.minuteAbbrev": "分",
@@ -55,5 +56,6 @@
   "i18n.unsupported": "不支持",
   "i18n.download": "下载",
   "i18n.view": "查看",
-  "i18n.edit": "编辑"
+  "i18n.edit": "编辑",
+  "i18n.fileTypeUnsupported": "不支持此文件类型"
 }

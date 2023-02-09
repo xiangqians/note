@@ -41,6 +41,7 @@
   "i18n.nextPage": "Next page",
   "i18n.dir": "Directory",
   "i18n.rename": "Rename",
+  "i18n.move": "Move",
   "i18n.dayAbbrev": " day ",
   "i18n.hourAbbrev": "h",
   "i18n.minuteAbbrev": "m",
@@ -55,5 +56,6 @@
   "i18n.unsupported": "Unsupported",
   "i18n.download": "Download",
   "i18n.view": "View",
-  "i18n.edit": "Edit"
+  "i18n.edit": "Edit",
+  "i18n.fileTypeUnsupported": "This file type is not supported"
 }
