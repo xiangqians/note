@@ -56,8 +56,32 @@ func IOCopy(src io.Reader, dst io.Writer, bufSize int) error {
 	return nil
 }
 
-// HumanizFileSize 人性化时间大小
+// HumanizFileSize 人性化文件大小
 // size: 文件大小，单位：byte
 func HumanizFileSize(size int64) string {
-	return fmt.Sprintf("%v", size)
+
+	// 1B  = 8b
+	// 1KB = 1024B
+	// 1MB = 1024KB
+	// 1GB = 1024MB
+	// 1TB = 1024GB
+
+	if size <= 0 {
+		return "0 B"
+	}
+
+	// MB
+	mb := float64(size) / (1024 * 1024)
+	if mb > 1 {
+		return fmt.Sprintf("%.2f MB", mb)
+	}
+
+	// KB
+	kb := float64(size) / 1024
+	if kb > 1 {
+		return fmt.Sprintf("%.2f KB", kb)
+	}
+
+	// B
+	return fmt.Sprintf("%v B", size)
 }

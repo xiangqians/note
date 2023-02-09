@@ -42,6 +42,11 @@ func htmlTemplate(pEngine *gin.Engine) {
 			return util.HumanizUnix(unix)
 		},
 
+		// 人性化文件大小
+		"HumanizFileSize": func(size int64) string {
+			return util.HumanizFileSize(size)
+		},
+
 		// +1
 		"No_": func(page page.Page[any], i int) int64 {
 			//return util.Add(i, (page.Current-1)*int64(page.Size)) + 1

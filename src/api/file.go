@@ -139,6 +139,22 @@ func FileUpdContent(pContext *gin.Context) {
 	pWriter.WriteString(content)
 	pWriter.Flush()
 
+	// file info
+	fInfo, err := pFile.Stat()
+	if err != nil {
+		json(err)
+		return
+	}
+
+	size := fInfo.Size()
+
+	// update
+	_, err = DbUpd(pContext, "UPDATE `file` SET `size` = ?, `upd_time` = ? WHERE id = ?", size, time.Now().Unix(), id)
+	if err != nil {
+		json(err)
+		return
+	}
+
 	json(nil)
 	return
 }

@@ -52,7 +52,7 @@
                 {{ end }}
             </td>
             <td>{{ $f.Type }}</td>
-            <td>{{ $f.Size }}</td>
+            <td>{{ HumanizFileSize $f.Size }}</td>
             <td>{{ HumanizUnix $f.AddTime }}</td>
             <td>{{ HumanizUnix $f.UpdTime }}</td>
             <td>
