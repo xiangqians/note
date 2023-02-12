@@ -121,8 +121,8 @@ func UserLogin(pContext *gin.Context) {
 	// name
 	name := strings.TrimSpace(pContext.PostForm("name"))
 
-	redirect := func(message any) {
-		Redirect(pContext, "/user/loginpage", gin.H{"name": name}, message)
+	redirect := func(msg any) {
+		Redirect(pContext, "/user/loginpage", gin.H{"name": name}, msg)
 	}
 
 	// name

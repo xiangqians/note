@@ -127,10 +127,10 @@ func sessionMiddleware(pEngine *gin.Engine) {
 
 	// store配置
 	store.Options(sessions.Options{
-		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
-		Path:     "/",
-		MaxAge:   60 * 60 * 24, // 设置session过期时间，seconds
+		//Secure: true,
+		//SameSite: http.SameSiteNoneMode,
+		Path:   "/",
+		MaxAge: 60 * 60 * 12, // 12h，设置session过期时间，seconds
 	})
 
 	// 设置session中间件

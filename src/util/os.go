@@ -37,15 +37,22 @@ func init() {
 }
 
 func OS() OperatingSystem {
-	if runtime.GOOS == "windows" {
+	os := runtime.GOOS
+	switch os {
+	// windows
+	case "windows":
 		return OSWindows
-	}
 
-	if runtime.GOOS == "linux" {
+	// linux
+	case "linux":
+		fallthrough // 执行穿透
+	case "android":
 		return OSLinux
-	}
 
-	return OSUnknown
+	// unknown
+	default:
+		return OSUnknown
+	}
 }
 
 func Cd(path string) (string, error) {
