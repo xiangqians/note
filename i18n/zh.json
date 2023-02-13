@@ -61,5 +61,6 @@
   "i18n.success": "成功",
   "i18n.failure": "失败",
   "i18n.copy": "复制",
-  "i18n.copied": "已复制"
+  "i18n.copied": "已复制",
+  "i18n.paste": "粘贴"
 }

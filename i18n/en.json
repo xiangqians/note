@@ -61,5 +61,6 @@
   "i18n.success": "Success",
   "i18n.failure": "Failure",
   "i18n.copy": "Copy",
-  "i18n.copied": "Copied"
+  "i18n.copied": "Copied",
+  "i18n.paste": "Paste"
 }

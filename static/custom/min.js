@@ -85,6 +85,16 @@ custom = function () {
         }
     }
 
+    // 判断是否是 object
+    obj.isObj = function (v) {
+        return Object.prototype.toString.call(v) === '[object Object]'
+    }
+
+    // 判断是否是 string
+    obj.isStr = function (v) {
+        return Object.prototype.toString.call(v) === '[object String]'
+    }
+
     obj.ajaxE = function ($e) {
         let data = null
 
@@ -93,7 +103,7 @@ custom = function () {
         if (pre) {
             let r = pre($e)
             // console.log('r', r)
-            if (Object.prototype.toString.call(r) === '[object Object]') {
+            if (obj.isObj(r)) {
                 data = new FormData()
                 for (let name in r) {
                     data.append(name, r[name])
@@ -132,6 +142,36 @@ custom = function () {
             alert(e)
         })
     }
+
+    // 存储
+    function Storage() {
+    }
+
+    Storage.prototype.vToStr = function (v) {
+        if (!obj.isStr(v)) {
+            v = JSON.stringify(v)
+        }
+        return v
+    }
+
+    // 存储数据
+    Storage.prototype.set = function (key, value) {
+        window.localStorage.setItem(this.vToStr(key), this.vToStr(value));
+        return true
+    }
+
+    // 获取数据
+    Storage.prototype.get = function (key) {
+        return window.localStorage.getItem(this.vToStr(key));
+    }
+
+    // 删除数据
+    Storage.prototype.remove = function (key) {
+        window.localStorage.removeItem(this.vToStr(key))
+        return true
+    }
+
+    obj.storage = new Storage()
 
     return obj
 }()
