@@ -63,6 +63,10 @@ func FileAdd(pContext *gin.Context) {
 	return
 }
 
+func FileView(pContext *gin.Context) {
+
+}
+
 // FileUpdName 文件重命名
 func FileUpdName(pContext *gin.Context) {
 	redirect := func(id int64, msg any) {
@@ -172,7 +176,7 @@ func FileDel(pContext *gin.Context) {
 	pid, _, _ := DbQry[int64](pContext, "SELECT f.pid FROM `file` f WHERE f.del = 0 AND f.id = ?", id)
 
 	// update
-	_, err := DbDel(pContext, "UPDATE `file` SET del = 1, `upd_time` = ? WHERE id = ?", time.Now().Unix(), id)
+	_, err := DbDel(pContext, "UPDATE `file` SET `del` = 1, `upd_time` = ? WHERE `id` = ?", time.Now().Unix(), id)
 	if err != nil {
 		redirect(pid, err)
 		return

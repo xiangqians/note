@@ -233,6 +233,18 @@ func DbDel(pContext *gin.Context, sql string, args ...any) (int64, error) {
 	return db.Del(dsn(pContext), sql, args...)
 }
 
-func DbPage[T any](pContext *gin.Context, pageReq page.Req, sql string, args ...any) (page.Page[T], error) {
-	return db.Page[T](dsn(pContext), pageReq, sql, args...)
+func DbPage[T any](pContext *gin.Context, req page.Req, sql string, args ...any) (page.Page[T], error) {
+	return db.Page[T](dsn(pContext), req, sql, args...)
+}
+
+func PageReq(pContext *gin.Context) (page.Req, error) {
+	req := page.Req{Size: 10}
+	err := ShouldBind(pContext, &req)
+	if req.Current <= 0 {
+		req.Current = 1
+	}
+	if req.Size <= 0 {
+		req.Size = 10
+	}
+	return req, err
 }

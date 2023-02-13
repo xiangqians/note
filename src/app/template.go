@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/render"
 	"html/template"
-	"note/src/page"
 	"note/src/util"
 	"os"
 	"path/filepath"
@@ -47,10 +46,14 @@ func htmlTemplate(pEngine *gin.Engine) {
 			return util.HumanizFileSize(size)
 		},
 
-		// +1
-		"No_": func(page page.Page[any], i int) int64 {
-			//return util.Add(i, (page.Current-1)*int64(page.Size)) + 1
-			return 0
+		// No.
+		"No_": func(current int64, size uint8, i int) int64 {
+			return (current-1)*int64(size) + int64(i) + 1
+		},
+
+		// add
+		"Add": func(i1 any, i2 any) int64 {
+			return util.Int64(i1) + util.Int64(i2)
 		},
 
 		"Put": func(h gin.H, key string, value any) string {

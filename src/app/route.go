@@ -39,4 +39,12 @@ func route(pEngine *gin.Engine) {
 	pEngine.PUT("/file/content", api.FileUpdContent)
 	pEngine.DELETE("/file/:id", api.FileDel)
 
+	// img
+	pEngine.Any("/img/listpage", api.ImgListPage)
+	pEngine.Any("/img/:id/view", api.ImgView)
+	pEngine.Any("/img/:id/viewpage", api.ImgViewPage)
+	pEngine.POST("/img/upload", api.ImgUpload)
+	pEngine.PUT("/img/name", api.ImgUpdName)
+	pEngine.DELETE("/img/:id", api.ImgDel)
+
 }

@@ -20,7 +20,7 @@
   "i18n.userNameAlreadyExists": "用户名已存在",
   "i18n.accountRegSuccess": "账号注册成功",
   "i18n.index": "首页",
-  "i18n.imgLib": "图片库",
+  "i18n.img": "图片",
   "i18n.recycleBin": "回收站",
   "i18n.no.": "序号",
   "i18n.name": "名称",
@@ -59,5 +59,7 @@
   "i18n.edit": "编辑",
   "i18n.fileTypeUnsupported": "不支持此文件类型",
   "i18n.success": "成功",
-  "i18n.failure": "失败"
+  "i18n.failure": "失败",
+  "i18n.copy": "复制",
+  "i18n.copied": "已复制"
 }

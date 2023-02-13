@@ -3,7 +3,10 @@
 // @date 14:07 2023/02/04
 package typ
 
-import "encoding/gob"
+import (
+	"encoding/gob"
+	"strings"
+)
 
 const (
 	LocaleZh = "zh"
@@ -39,22 +42,54 @@ type File struct {
 	Path string // 目录路径
 }
 
+// Img 图片
+type Img struct {
+	Abs
+	Name string `form:"name" binding:"required,min=1,max=60"` // 图片名称
+	Type string `form:"type"`                                 // 图片类型
+	Size int64  `form:"size"`                                 // 图片大小，单位：byte
+
+	Url string // 图片url
+}
+
 // FileType 文件类型
 type FileType string
 
 const (
-	FileTypeD   FileType = "d"   // 目录
-	FileTypeMd           = "md"  // md文件
-	FileTypePdf          = "pdf" // pdf文件
-	FileTypeZip          = "zip" // zip文件
-	FileTypeUnk          = "unk" // unknown
+	FileTypeD    FileType = "d"    // 目录
+	FileTypeMd            = "md"   // md文件
+	FileTypePdf           = "pdf"  // pdf文件
+	FileTypeZip           = "zip"  // zip文件
+	FileTypeIco           = "ico"  // ico文件
+	FileTypeGif           = "gif"  // gif文件
+	FileTypeJpg           = "jpg"  // jpg文件
+	FileTypeJpeg          = "jpeg" // jpeg文件
+	FileTypePng           = "png"  // png文件
+	FileTypeWebp          = "webp" //webp文件
+	FileTypeUnk           = "unk"  // unknown
 )
 
-var fileTypes = [...]FileType{FileTypeD, FileTypeMd, FileTypePdf, FileTypeZip}
+var fileTypes = [...]FileType{
+	FileTypeD,
+	FileTypeMd, FileTypePdf, FileTypeZip,
+	FileTypeIco, FileTypeGif, FileTypeJpg, FileTypeJpeg, FileTypePng, FileTypeWebp,
+}
+
+var imgFileTypes = [...]FileType{FileTypeIco, FileTypeGif, FileTypeJpg, FileTypeJpeg, FileTypePng, FileTypeWebp}
+
+func FileTypeImgOf(value string) FileType {
+	for _, imgFileType := range imgFileTypes {
+		if strings.ToLower(string(imgFileType)) == strings.ToLower(value) {
+			return imgFileType
+		}
+	}
+
+	return FileTypeUnk
+}
 
 func FileTypeOf(value string) FileType {
 	for _, fileType := range fileTypes {
-		if string(fileType) == value {
+		if strings.ToLower(string(fileType)) == strings.ToLower(value) {
 			return fileType
 		}
 	}
@@ -66,4 +101,5 @@ func FileTypeOf(value string) FileType {
 func init() {
 	gob.Register(User{})
 	gob.Register(File{})
+	gob.Register(Img{})
 }

@@ -1,0 +1,163 @@
+<!--
+ | @author xiangqian
+ | @date 11:49 2023/02/12
+ |-->
+<!DOCTYPE html>
+<html lang="en" uri="{{ .uri }}" url="{{ .url }}">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/custom/min.css" type="text/css"/>
+    <title>{{ Localize "i18n.img" }}</title>
+</head>
+<body>
+
+{{ template "com/header.html" . }}
+
+<content>
+    <!-- 没有消息就是最好的消息 -->
+    <p style="color: red;">{{ .msg }}</p>
+
+    <table border="1" cellspacing="0" cellpadding="10" align="center">
+        <thead>
+        <tr>
+            <td>{{ Localize "i18n.no." }}</td>
+            <td>{{ Localize "i18n.name" }}</td>
+            <td>{{ Localize "i18n.type" }}</td>
+            <td>{{ Localize "i18n.size" }}</td>
+            <td>{{ Localize "i18n.addTime" }}</td>
+            <td>{{ Localize "i18n.updTime" }}</td>
+            <td colspan="3">{{ Localize "i18n.op" }}</td>
+        </tr>
+        </thead>
+        <tbody>
+        {{ $len := len .page.Data }}
+        {{ if gt $len 0 }}
+        {{ range $index,$img := .page.Data }}
+        <tr>
+            <td>{{ No_ $.page.Current $.page.Size $index }}</td>
+            <td><a href="/img/{{ $img.Id }}/viewpage" target="_blank">{{ $img.Name }}</a></td>
+            <td>{{ $img.Type }}</td>
+            <td>{{ HumanizFileSize $img.Size }}</td>
+            <td>{{ HumanizUnix $img.AddTime }}</td>
+            <td>{{ HumanizUnix $img.UpdTime }}</td>
+            <td>
+                <button name="copy" value="/img/{{ $img.Id }}/view">
+                    {{ Localize "i18n.copy" }} URL
+                </button>
+            </td>
+            <td>
+                <a ajaxE href="/img/name" method="PUT" imgId="{{ $img.Id }}" imgName="{{ $img.Name }}">
+                    <button>{{ Localize "i18n.rename" }}</button>
+                </a>
+            </td>
+            <td>
+                <a ajaxE href="/img/{{ $img.Id }}" method="DELETE"
+                   confirm='{{ Localize "i18n.del" }} {{ $img.Name }} ?'>
+                    <button>{{ Localize "i18n.del" }}</button>
+                </a>
+            </td>
+        </tr>
+        {{ end }}
+        {{ else }}
+        <tr>
+            <td colspan="9">{{ Localize "i18n.noData" }}</td>
+        </tr>
+        {{ end }}
+        </tbody>
+        <tfoot>
+        <tr>
+            <td colspan="9">
+                <span style="margin-right: 10px">{{ Localize "i18n.page.current" }}: {{ .page.Current }}</span>
+                <span style="margin-right: 10px">{{ Localize "i18n.page.size" }}: {{ .page.Size }}</span>
+                <span style="margin-right: 10px">{{ Localize "i18n.pages" }}: {{ .page.Pages }}</span>
+                <span style="margin-right: 20px">{{ Localize "i18n.total" }}: {{ .page.Total }}</span>
+                <span style="margin-right: 10px">
+                    {{ if le .page.Current 1 }}
+                    {{ Localize "i18n.prevPage" }}
+                    {{ else }}
+                    <a href="/img/listpage?current={{ Add $.page.Current -1 }}">{{ Localize "i18n.prevPage" }}</a>
+                    {{  end }}
+                </span>
+                <span>
+                    {{ if ge .page.Current .page.Pages }}
+                    {{ Localize "i18n.nextPage" }}
+                    {{ else }}
+                    <a href="/img/listpage?current={{ Add $.page.Current 1 }}">{{ Localize "i18n.nextPage" }}</a>
+                    {{  end }}
+                </span>
+            </td>
+        </tr>
+        </tfoot>
+    </table>
+    <br>
+    <br>
+
+    <div>
+        <form action="/img/upload" method="POST" enctype="multipart/form-data">
+            <input name="file" type="file"/>
+            <button type="submit">{{ Localize "i18n.upload" }}</button>
+        </form>
+    </div>
+
+</content>
+
+{{ template "com/footer.html" . }}
+
+</body>
+</html>
+<script type="text/javascript" src="/static/jquery-v3.6.2/min.js"></script>
+<script type="text/javascript" src="/static/clipboard-v2.0.11/min.js"></script>
+<script type="text/javascript" src="/static/custom/min.js"></script>
+
+<script type="text/javascript">
+
+    ;
+    (function () {
+        // rename
+        // let $renames = $('a[href^="/file"][href$="/rename"]')
+        let $renames = $('a[href="/img/name"]')
+        for (let i = 0, len = $renames.length; i < len; i++) {
+            $renames[i]['pre'] = function ($e) {
+                let name = prompt('{{ Localize "i18n.name" }}', $e.attr('imgName'))
+                if (name && (name = name.trim()) !== "") {
+                    // console.log(name)
+                    return {"id": $e.attr('imgId'), "name": name}
+                }
+                return null
+            }
+        }
+
+        // copy
+        // 销毁 clipboard, 如果存在的话
+        if (window.clipboard) {
+            window.clipboard.destroy()
+            window.clipboard = null
+        }
+        // clipboard
+        let clipboard = new ClipboardJS('button[name="copy"]', {
+            text: function (elem) {
+                let $elem = $(elem)
+                return $elem.val();
+            },
+        });
+        // on success
+        clipboard.on('success', function (e) {
+            // console.info('Action:', e.action)
+            // console.info('Text:', e.text)
+            // console.info('Trigger:', e.trigger)
+            alert('{{ Localize "i18n.copied" }}')
+        });
+        // on error
+        clipboard.on('error', function (e) {
+            // console.info('Action:', e.action)
+            // console.info('Text:', e.text)
+            // console.info('Trigger:', e.trigger)
+            alert(e)
+        });
+        window.clipboard = clipboard
+
+    })()
+    ;
+
+</script>
