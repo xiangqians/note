@@ -61,9 +61,10 @@
                 </a>
             </td>
             <td>
-                <a href="/" method="PUT">
-                    <button disabled="disabled">{{ Localize "i18n.move" }}</button>
-                </a>
+                <button name="cut" fId="{{ $f.Id }}"
+                        fName='{{ $.pf.Path }}{{ if ne $.pf.Path "/"}}/{{ end }}{{ $f.Name }}'>
+                    {{ Localize "i18n.cut" }}
+                </button>
             </td>
             <td>
                 <a ajaxE href="/file/{{ $f.Id }}" method="DELETE"
@@ -78,13 +79,21 @@
     </table>
     <br>
     <br>
+    <br>
 
     <div>
         <a ajaxE href="/file" method="POST">{{ Localize "i18n.add" }} →</a>
     </div>
-    <br>
+    <hr width="30%">
     <div>
-        <a href="/">{{ Localize "i18n.upload" }} →</a>
+        <form action="/img/upload" method="POST" enctype="multipart/form-data">
+            <input name="file" type="file"/>
+            <button type="submit">{{ Localize "i18n.upload" }}</button>
+        </form>
+    </div>
+    <hr width="30%">
+    <div>
+        <button name="paste" value="{{ .pf.Id }}">{{ Localize "i18n.paste" }}</button>
     </div>
 
 </content>
@@ -97,8 +106,7 @@
 <script type="text/javascript" src="/static/custom/min.js"></script>
 <script type="text/javascript">
 
-    ;
-    (function () {
+    ;(function () {
         // add
         let $add = $('a[href="/file"]')
         // console.log($add)
@@ -160,7 +168,52 @@
                 return null
             }
         }
+
+
     })()
-    ;
+
+    // cut
+    ;(function () {
+        let $arr = $('button[name="cut"]')
+        let value = custom.storage.get('copy')
+        let id = null
+        if (value) {
+            id = JSON.parse(value).id;
+        }
+        // console.log('value', value)
+        // console.log('id', id)
+        for (let i = 0, len = $arr.length; i < len; i++) {
+            let $e = $($arr[i])
+            if ($e.attr('fId') === id) {
+                $e.attr('disabled', 'disabled')
+            }
+            $e.click(function () {
+                for (let i = 0, len = $arr.length; i < len; i++) {
+                    let $e = $($arr[i])
+                    $e.removeAttr('disabled')
+                }
+                $(this).attr('disabled', 'disabled')
+                custom.storage.set('copy', {'id': $(this).attr('fId'), 'name': $(this).attr('fName')})
+
+                $($('button[name="paste"]')[0]).removeAttr('disabled')
+            })
+        }
+    })()
+
+    // paste
+    ;(function () {
+        let $paste = $($('button[name="paste"]')[0])
+        let value = custom.storage.get('copy')
+        if (!(value)) {
+            $paste.attr('disabled', 'disabled')
+        }
+        $paste.click(function () {
+            let value = custom.storage.get('copy')
+            let obj = JSON.parse(value);
+            if (!confirm('{{ Localize "i18n.cut" }} "' + obj.name + '" {{ Localize "i18n.to" }} "{{ .pf.Path }}{{ if ne .pf.Path "/"}}/{{ end }}" ?')) {
+                return
+            }
+        })
+    })()
 
 </script>
