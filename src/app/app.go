@@ -16,6 +16,9 @@ func Run() {
 	// Logger
 	Logger()
 
+	// 设置时区
+	Local()
+
 	// parse arg
 	arg.Parse()
 
