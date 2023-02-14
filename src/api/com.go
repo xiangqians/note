@@ -159,7 +159,9 @@ func Html(pContext *gin.Context, templateName string, h gin.H, msg any) {
 		h["user"] = user
 	}
 
+	// uri
 	h["uri"] = pContext.Request.RequestURI
+	// url
 	h["url"] = pContext.Request.URL.Path
 
 	// 没有消息就是最好的消息

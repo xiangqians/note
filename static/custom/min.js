@@ -95,6 +95,14 @@ custom = function () {
         return Object.prototype.toString.call(v) === '[object String]'
     }
 
+    obj.ajaxDefault = function (url, method, data, dataType, async) {
+        obj.ajax(url, method, data, dataType, async, function (data) {
+            obj.reload(data)
+        }, function (e) {
+            alert(JSON.stringify(e))
+        })
+    }
+
     obj.ajaxE = function ($e) {
         let data = null
 
@@ -136,11 +144,7 @@ custom = function () {
 
         let method = $e.attr("method").trim().toUpperCase()
 
-        obj.ajax(url, method, data, "form", true, function (data) {
-            obj.reload(data)
-        }, function (e) {
-            alert(e)
-        })
+        obj.ajaxDefault(url, method, data, "form", true)
     }
 
     // 存储
@@ -187,7 +191,7 @@ custom = function () {
         // console.log($ajaxE)
         let tagName = $ajaxE.prop('tagName')
         // <form></form>
-        if (tagName.toLowerCase() === 'input' && $ajaxE.attr('type') === 'submit') {
+        if ((tagName.toLowerCase() === 'input' || tagName.toLowerCase() === 'button') && $ajaxE.attr('type') === 'submit') {
             let $input = $ajaxE
             for (let $parent = $input.parent(); !$parent.is('body'); $parent = $parent.parent()) {
                 if ($parent.is('form')) {
@@ -199,11 +203,7 @@ custom = function () {
                         $form.serializeArray().forEach(e => {
                             data.append(e.name, e.value);
                         })
-                        custom.ajax(action, method, data, "form", true, function (data) {
-                            custom.reload(data)
-                        }, function (e) {
-                            alert(e)
-                        })
+                        custom.ajaxDefault(action, method, data, 'form', true)
                         return false
                     })
                     break

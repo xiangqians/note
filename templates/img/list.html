@@ -42,7 +42,7 @@
             <td>{{ HumanizUnix $img.AddTime }}</td>
             <td>{{ HumanizUnix $img.UpdTime }}</td>
             <td>
-                <button name="copy" value="/img/{{ $img.Id }}/view">
+                <button name="copy" value="![{{ $img.Name }}](/img/{{ $img.Id }}/view)">
                     {{ Localize "i18n.copy" }} URL
                 </button>
             </td>
@@ -92,6 +92,7 @@
     </table>
     <br>
     <br>
+    <br>
 
     <div>
         <form action="/img/upload" method="POST" enctype="multipart/form-data">
@@ -109,12 +110,10 @@
 <script type="text/javascript" src="/static/jquery-v3.6.2/min.js"></script>
 <script type="text/javascript" src="/static/clipboard-v2.0.11/min.js"></script>
 <script type="text/javascript" src="/static/custom/min.js"></script>
-
 <script type="text/javascript">
 
-    ;
-    (function () {
-        // rename
+    // rename
+    ;(function () {
         // let $renames = $('a[href^="/file"][href$="/rename"]')
         let $renames = $('a[href="/img/name"]')
         for (let i = 0, len = $renames.length; i < len; i++) {
@@ -127,13 +126,16 @@
                 return null
             }
         }
+    })()
 
-        // copy
+    // copy
+    ;(function () {
         // 销毁 clipboard, 如果存在的话
         if (window.clipboard) {
             window.clipboard.destroy()
             window.clipboard = null
         }
+
         // clipboard
         let clipboard = new ClipboardJS('button[name="copy"]', {
             text: function (elem) {
@@ -141,6 +143,7 @@
                 return $elem.val();
             },
         });
+
         // on success
         clipboard.on('success', function (e) {
             // console.info('Action:', e.action)
@@ -148,6 +151,7 @@
             // console.info('Trigger:', e.trigger)
             alert('{{ Localize "i18n.copied" }}')
         });
+
         // on error
         clipboard.on('error', function (e) {
             // console.info('Action:', e.action)
@@ -155,9 +159,8 @@
             // console.info('Trigger:', e.trigger)
             alert(e)
         });
-        window.clipboard = clipboard
 
+        window.clipboard = clipboard
     })()
-    ;
 
 </script>

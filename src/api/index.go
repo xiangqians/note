@@ -4,20 +4,22 @@
 package api
 
 import (
-	"bytes"
 	"github.com/gin-gonic/gin"
-	"github.com/russross/blackfriday/v2"
-	"log"
 	"note/src/typ"
 )
 
+// IndexPage index页面
 func IndexPage(pContext *gin.Context) {
 	html := func(pf typ.File, fs []typ.File, err error) {
 		Html(pContext, "index.html", gin.H{"pf": pf, "fs": fs}, err)
 	}
 
+	// id
 	id, err := Query[int64](pContext, "id")
 	//log.Printf("id = %d\n", id)
+	if id < 0 {
+		id = 0
+	}
 
 	// pf
 	var pf typ.File
@@ -55,124 +57,11 @@ func IndexPage(pContext *gin.Context) {
 	}
 
 	// 查询目录下的所有目录和文件
-	fs, count, err := DbQry[[]typ.File](pContext, "SELECT f.id, f.pid, f.`name`, f.`type`, f.`size`, f.add_time, f.upd_time FROM `file` f WHERE f.del = 0 AND f.pid = ?", id)
-	if err != nil {
-		html(pf, nil, err)
-		return
-	}
-
-	if count == 0 {
+	fs, count, err := DbQry[[]typ.File](pContext, "SELECT f.id, f.pid, f.`name`, f.`type`, f.`size`, f.`add_time`, f.`upd_time` FROM `file` f WHERE f.`del` = 0 AND f.`pid` = ? ORDER BY f.`type`", id)
+	if err != nil || count == 0 {
 		fs = nil
 	}
 
-	html(pf, fs, nil)
+	html(pf, fs, err)
 	return
-}
-
-// FileViewPage 查看文件页面
-func FileViewPage(pContext *gin.Context) {
-	id, err := Param[int64](pContext, "id")
-	if err != nil {
-		FileUnsupportedViewPage(pContext, typ.File{}, err)
-		return
-	}
-
-	// query
-	f, count, err := DbQry[typ.File](pContext, "SELECT f.id, f.pid, f.`name`, f.`type`, f.`size`, f.add_time, f.upd_time FROM `file` f WHERE f.id = ?", id)
-	if err != nil || count == 0 {
-		FileUnsupportedViewPage(pContext, f, err)
-		return
-	}
-
-	// type
-	switch f.Type {
-	// markdown
-	case "md":
-		FileMdViewPage(pContext, f)
-		return
-
-	// unsupported
-	default:
-		FileUnsupportedViewPage(pContext, f, err)
-		return
-	}
-}
-
-// FileMdViewPage 查看md文件
-// https://github.com/russross/blackfriday
-// https://pkg.go.dev/github.com/russross/blackfriday/v2
-func FileMdViewPage(pContext *gin.Context, f typ.File) {
-	html := func(html string, msg any) {
-		Html(pContext, "file/md/view.html", gin.H{"f": f, "html": html}, msg)
-	}
-
-	// read
-	buf, err := FileRead(pContext, f)
-	if err != nil {
-		html("", err)
-		return
-	}
-
-	//output := blackfriday.Run(input)
-	//output := blackfriday.Run(input, blackfriday.WithNoExtensions())
-	//output := blackfriday.Run(input, blackfriday.WithExtensions(blackfriday.CommonExtensions))
-
-	// https://github.com/russross/blackfriday/issues/394
-	buf = bytes.Replace(buf, []byte("\r"), nil, -1)
-	//output := blackfriday.Run(input, blackfriday.WithExtensions(blackfriday.CommonExtensions|blackfriday.HardLineBreak))
-	buf = blackfriday.Run(buf, blackfriday.WithExtensions(blackfriday.CommonExtensions|blackfriday.HardLineBreak|blackfriday.AutoHeadingIDs|blackfriday.Autolink))
-
-	// 安全过滤
-	//buf = bluemonday.UGCPolicy().SanitizeBytes(buf)
-
-	html(string(buf), nil)
-}
-
-// FileUnsupportedViewPage 查看不支持文件
-func FileUnsupportedViewPage(pContext *gin.Context, f typ.File, err error) {
-	Html(pContext, "file/unsupported.html", gin.H{"f": f}, err)
-}
-
-// FileEditPage 文件修改页
-func FileEditPage(pContext *gin.Context) {
-	id, err := Param[int64](pContext, "id")
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	// query
-	f, count, err := DbQry[typ.File](pContext, "SELECT f.id, f.pid, f.`name`, f.`type`, f.`size`, f.add_time, f.upd_time FROM `file` f WHERE f.id = ?", id)
-	if err != nil || count == 0 {
-		log.Println(err)
-		return
-	}
-
-	// type
-	switch f.Type {
-	// markdown
-	case "md":
-		FileMdEditPage(pContext, f)
-		return
-
-	// unsupported
-	default:
-		return
-	}
-
-}
-
-func FileMdEditPage(pContext *gin.Context, f typ.File) {
-	html := func(content string, msg any) {
-		Html(pContext, "file/md/edit.html", gin.H{"f": f, "content": content}, msg)
-	}
-
-	// read
-	buf, err := FileRead(pContext, f)
-	if err != nil {
-		html("", err)
-		return
-	}
-
-	html(string(buf), nil)
 }

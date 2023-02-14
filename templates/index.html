@@ -86,14 +86,17 @@
     </div>
     <hr width="30%">
     <div>
-        <form action="/img/upload" method="POST" enctype="multipart/form-data">
+        <form action="/file/upload" method="POST" enctype="multipart/form-data">
+            <input name="pid" type="text" value="{{ .pf.Id }}" hidden/>
             <input name="file" type="file"/>
             <button type="submit">{{ Localize "i18n.upload" }}</button>
         </form>
     </div>
     <hr width="30%">
     <div>
-        <button name="paste" value="{{ .pf.Id }}">{{ Localize "i18n.paste" }}</button>
+        <a ajaxE href="#" method="PUT" name="paste" value="{{ .pf.Id }}">
+            <button name="paste">{{ Localize "i18n.paste" }}</button>
+        </a>
     </div>
 
 </content>
@@ -186,6 +189,7 @@
             let $e = $($arr[i])
             if ($e.attr('fId') === id) {
                 $e.attr('disabled', 'disabled')
+                custom.storage.set('copy', {'id': $e.attr('fId'), 'name': $e.attr('fName')})
             }
             $e.click(function () {
                 for (let i = 0, len = $arr.length; i < len; i++) {
@@ -202,18 +206,29 @@
 
     // paste
     ;(function () {
-        let $paste = $($('button[name="paste"]')[0])
+        let $paste = $($('a[name="paste"]')[0])
         let value = custom.storage.get('copy')
         if (!(value)) {
-            $paste.attr('disabled', 'disabled')
+            $($('button[name="paste"]')[0]).attr('disabled', 'disabled')
         }
-        $paste.click(function () {
+        $paste[0]['pre'] = function ($e) {
             let value = custom.storage.get('copy')
-            let obj = JSON.parse(value);
-            if (!confirm('{{ Localize "i18n.cut" }} "' + obj.name + '" {{ Localize "i18n.to" }} "{{ .pf.Path }}{{ if ne .pf.Path "/"}}/{{ end }}" ?')) {
+            let src = JSON.parse(value);
+            if (!confirm('{{ Localize "i18n.cut" }} "' + src.name + '" {{ Localize "i18n.to" }} "{{ .pf.Path }}{{ if ne .pf.Path "/"}}/{{ end }}" ?')) {
                 return
             }
-        })
+
+            // put
+            let url = '/file/cut/' + src.id + '/to/{{ .pf.Id }}'
+            // console.log(url)
+            $e.attr('href', url)
+
+            // remove attr
+            custom.storage.remove('copy')
+            $($('button[name="paste"]')[0]).attr('disabled', 'disabled')
+
+            return {};
+        }
     })()
 
 </script>

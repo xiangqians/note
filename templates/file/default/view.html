@@ -1,0 +1,39 @@
+<!--
+ | @author xiangqian
+ | @date 22:32 2023/02/08
+ |-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/custom/min.css" type="text/css"/>
+    <title>{{ Localize "i18n.view" }}: {{ .f.Name }}</title>
+    <style>
+        .float {
+            position: fixed;
+            top: 30px;
+            right: 50px;
+            width: auto;
+            height: auto;
+            /*background: lightgray;*/
+        }
+    </style>
+</head>
+<body>
+
+<p style="color: red;">{{ .msg }}</p>
+
+<!--
+只有 Firefox 和 Chrome 支持 download 属性。
+download 属性规定被下载的超链接目标。
+该属性也可以设置一个值来规定下载文件的名称。所允许的值没有限制，浏览器将自动检测正确的文件扩展名并添加到文件 (.img, .pdf, .txt, .html, 等等)。
+-->
+<a href="/file/{{ .f.Id }}/view" download="{{ .f.Name }}">{{ Localize "i18n.download" }}</a>
+
+<a class="float" href="/file/{{ .f.Id }}/editpage" target="_blank">{{ Localize "i18n.edit" }} →</a>
+
+</body>
+</html>
+<script type="text/javascript" src="/static/jquery-v3.6.2/min.js"></script>
+<script type="text/javascript" src="/static/custom/min.js"></script>

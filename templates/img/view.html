@@ -1,12 +1,30 @@
 <!--
  | @author xiangqian
  | @date 12:33 2023/02/12
- |--><!DOCTYPE html>
+ |-->
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
-    <title>{{ .img.Name }}</title></head>
+    <title>{{ Localize "i18n.view" }}: {{ .img.Name }}</title>
+    <style>
+        body {
+            text-align: center
+        }
+    </style>
+    <style>
+        .float {
+            position: fixed;
+            top: 30px;
+            right: 50px;
+            width: auto;
+            height: auto;
+            /*background: lightgray;*/
+        }
+    </style>
+
+</head>
 <body>
 
 <p style="color: red;">{{ .msg }}</p>
@@ -14,5 +32,9 @@
 <img src="{{ .img.Url }}">
 <!--<img src="{{ .url }}" alt="{{ .img.Name }}">-->
 
+<a class="float" href="/img/{{ .img.Id }}/editpage" target="_blank">{{ Localize "i18n.edit" }} →</a>
+
 </body>
 </html>
+<script type="text/javascript" src="/static/jquery-v3.6.2/min.js"></script>
+<script type="text/javascript" src="/static/custom/min.js"></script>

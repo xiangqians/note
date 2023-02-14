@@ -75,18 +75,6 @@ var fileTypes = [...]FileType{
 	FileTypeIco, FileTypeGif, FileTypeJpg, FileTypeJpeg, FileTypePng, FileTypeWebp,
 }
 
-var imgFileTypes = [...]FileType{FileTypeIco, FileTypeGif, FileTypeJpg, FileTypeJpeg, FileTypePng, FileTypeWebp}
-
-func FileTypeImgOf(value string) FileType {
-	for _, imgFileType := range imgFileTypes {
-		if strings.ToLower(string(imgFileType)) == strings.ToLower(value) {
-			return imgFileType
-		}
-	}
-
-	return FileTypeUnk
-}
-
 func FileTypeOf(value string) FileType {
 	for _, fileType := range fileTypes {
 		if strings.ToLower(string(fileType)) == strings.ToLower(value) {

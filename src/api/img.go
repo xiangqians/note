@@ -4,9 +4,12 @@
 package api
 
 import (
+	"errors"
 	"fmt"
+	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
 	"log"
+	"net/http"
 	"note/src/typ"
 	"note/src/util"
 	"os"
@@ -21,101 +24,102 @@ func ImgListPage(pContext *gin.Context) {
 	Html(pContext, "img/list.html", gin.H{"page": page}, err)
 }
 
-func ImgView(pContext *gin.Context) {
-	// img
-	img, err := ImgQry(pContext)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+// ImgUpload 图片上传
+func ImgUpload(pContext *gin.Context) {
+	method := pContext.Request.Method
+	redirect := func(id int64, msg any) {
+		switch method {
+		case http.MethodPost:
+			Redirect(pContext, fmt.Sprintf("/img/listpage"), nil, msg)
 
-	path, err := ImgPath(pContext, img.Id)
-	if err != nil {
-		return
-	}
-
-	buf, err := os.ReadFile(path)
-	if err != nil {
-		return
-	}
-
-	pContext.Writer.Write(buf)
-	return
-}
-
-func ImgViewPage(pContext *gin.Context) {
-	html := func(img typ.Img, msg any) {
-		Html(pContext, "img/view.html", gin.H{"img": img}, msg)
+		case http.MethodPut:
+			Redirect(pContext, fmt.Sprintf("/img/%d/editpage", id), nil, msg)
+		}
 	}
 
 	// id
-	id, err := Param[int64](pContext, "id")
-	if err != nil {
-		html(typ.Img{}, err)
+	var id int64
+	var err error
+	if method == http.MethodPut {
+		id, err = PostForm[int64](pContext, "id")
+		if err != nil {
+			redirect(id, err)
+			return
+		}
+	}
+
+	// fh
+	fh, err := pContext.FormFile("file")
+	if err != nil || fh == nil {
+		redirect(id, err)
 		return
 	}
 
-	// img
-	img, _, err := DbQry[typ.Img](pContext, "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = 0 AND i.`id` = ?", id)
-	img.Url = fmt.Sprintf("/img/%v/view", id)
-	html(img, err)
-	return
-}
+	// name
+	fn := fh.Filename
 
-// ImgUpload 图片上传
-func ImgUpload(pContext *gin.Context) {
-	redirect := func(msg any) {
-		Redirect(pContext, fmt.Sprintf("/img/listpage"), nil, msg)
-	}
-
-	// file
-	file, _ := pContext.FormFile("file")
-	if file == nil {
-		redirect(nil)
-		return
-	}
-
-	//log.Printf("Filename: %v\n", file.Filename)
-	//log.Printf("Size: %v\n", file.Size)
-	//log.Printf("Header: %v\n", file.Header)
-
-	// img
-	fName := file.Filename
-	index := strings.LastIndex(fName, ".")
-	fTypeStr := ""
+	// type
+	index := strings.LastIndex(fn, ".")
+	ftStr := ""
 	if index > 0 {
-		fTypeStr = fName[index+1:]
+		ftStr = fn[index+1:]
 	}
-	fType := string(typ.FileTypeOf(fTypeStr))
-	if !(fType == typ.FileTypeIco ||
-		fType == typ.FileTypeJpg ||
-		fType == typ.FileTypeJpeg ||
-		fType == typ.FileTypePng ||
-		fType == typ.FileTypeWebp) {
-		redirect(fmt.Sprintf("不支持此类型文件上传：%s", fTypeStr))
-		return
-	}
-	fSize := file.Size
-
-	// add
-	id, err := DbAdd(pContext, "INSERT INTO `img` (`name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?)", fName, fType, fSize, time.Now().Unix())
-	if err != nil {
-		redirect(err)
+	ft := FileTypeImgOf(ftStr)
+	if ft == typ.FileTypeUnk {
+		redirect(id, fmt.Sprintf("%s, %s", errors.New(i18n.MustGetMessage("i18n.fileTypeUnsupported")), ftStr))
 		return
 	}
 
-	// img path
-	fPath, err := ImgPath(pContext, id)
+	// size
+	fs := fh.Size
+
+	// 操作数据库
+	switch method {
+	case http.MethodPost:
+		id, err = DbAdd(pContext, "INSERT INTO `img` (`name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?)",
+			fn, ft, fs, time.Now().Unix())
+
+	case http.MethodPut:
+		_, err = DbUpd(pContext, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?",
+			fn, ft, fs, time.Now().Unix(), id)
+	}
 	if err != nil {
-		redirect(err)
+		redirect(id, err)
 		return
+	}
+
+	// path
+	img := typ.Img{}
+	img.Id = id
+	img.Type = string(ft)
+	fp, err := ImgPath(pContext, img)
+	if err != nil {
+		redirect(id, err)
+		return
+	}
+
+	// 清空文件
+	if method == http.MethodPut && util.IsExistOfPath(fp) {
+		pFile, err := os.OpenFile(fp,
+			os.O_WRONLY|os.O_TRUNC, // 只写（O_WRONLY） & 清空文件（O_TRUNC）
+			0666)
+		if err != nil {
+			redirect(id, err)
+			return
+		}
+		pFile.Close()
 	}
 
 	// 保存文件
-	err = pContext.SaveUploadedFile(file, fPath)
+	err = pContext.SaveUploadedFile(fh, fp)
 
-	redirect(err)
+	redirect(id, err)
 	return
+}
+
+func ImgReUpload(pContext *gin.Context) {
+	pContext.Request.Method = http.MethodPut
+	ImgUpload(pContext)
 }
 
 // ImgUpdName 图片重命名
@@ -133,7 +137,7 @@ func ImgUpdName(pContext *gin.Context) {
 	}
 
 	// update
-	_, err = DbUpd(pContext, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE id = ?", img.Name, time.Now().Unix(), img.Id)
+	_, err = DbUpd(pContext, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", img.Name, time.Now().Unix(), img.Id)
 	redirect(err)
 	return
 }
@@ -156,12 +160,84 @@ func ImgDel(pContext *gin.Context) {
 	return
 }
 
+// ImgView 查看图片
+func ImgView(pContext *gin.Context) {
+	// id
+	id, err := Param[int64](pContext, "id")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	// img
+	img, count, err := ImgQry(pContext, id)
+	if err != nil || count == 0 {
+		log.Println(err)
+		return
+	}
+
+	// path
+	path, err := ImgPath(pContext, img)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	// read
+	buf, err := os.ReadFile(path)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	pContext.Writer.Write(buf)
+	return
+}
+
+func ImgViewPage(pContext *gin.Context) {
+	html := func(img typ.Img, msg any) {
+		Html(pContext, "img/view.html", gin.H{"img": img}, msg)
+	}
+
+	// id
+	id, err := Param[int64](pContext, "id")
+	if err != nil {
+		html(typ.Img{}, err)
+		return
+	}
+
+	// img
+	img, _, err := ImgQry(pContext, id)
+	img.Url = fmt.Sprintf("/img/%v/view", id)
+
+	html(img, err)
+	return
+}
+
+func ImgEditPage(pContext *gin.Context) {
+	html := func(img typ.Img, msg any) {
+		Html(pContext, "img/edit.html", gin.H{"img": img}, msg)
+	}
+
+	// id
+	id, err := Param[int64](pContext, "id")
+	if err != nil {
+		html(typ.Img{}, err)
+		return
+	}
+
+	// img
+	img, _, err := ImgQry(pContext, id)
+	html(img, err)
+	return
+}
+
 // ImgPath 图片物理路径
 // id: 图片主键id
-func ImgPath(pContext *gin.Context, id int64) (string, error) {
+func ImgPath(pContext *gin.Context, img typ.Img) (string, error) {
 	// dir
 	dataDir := DataDir(pContext)
-	imgDir := fmt.Sprintf("%s%simg", dataDir, util.FileSeparator)
+	imgDir := fmt.Sprintf("%s%s%s%s%s", dataDir, util.FileSeparator, "img", util.FileSeparator, img.Type)
 	if !util.IsExistOfPath(imgDir) {
 		err := util.Mkdir(imgDir)
 		if err != nil {
@@ -170,17 +246,22 @@ func ImgPath(pContext *gin.Context, id int64) (string, error) {
 	}
 
 	// path
-	return fmt.Sprintf("%s%s%v", imgDir, util.FileSeparator, id), nil
+	return fmt.Sprintf("%s%s%d", imgDir, util.FileSeparator, img.Id), nil
 }
 
-func ImgQry(pContext *gin.Context) (typ.Img, error) {
-	// id
-	id, err := Param[int64](pContext, "id")
-	if err != nil {
-		return typ.Img{}, err
+func ImgQry(pContext *gin.Context, id int64) (typ.Img, int64, error) {
+	img, count, err := DbQry[typ.Img](pContext, "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = 0 AND i.`id` = ?", id)
+	return img, count, err
+}
+
+var imgFileTypes = [...]typ.FileType{typ.FileTypeIco, typ.FileTypeGif, typ.FileTypeJpg, typ.FileTypeJpeg, typ.FileTypePng, typ.FileTypeWebp}
+
+func FileTypeImgOf(value string) typ.FileType {
+	for _, imgFileType := range imgFileTypes {
+		if strings.ToLower(string(imgFileType)) == strings.ToLower(value) {
+			return imgFileType
+		}
 	}
 
-	// img
-	img, _, err := DbQry[typ.Img](pContext, "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = 0 AND i.`id` = ?", id)
-	return img, err
+	return typ.FileTypeUnk
 }
