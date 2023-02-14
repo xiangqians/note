@@ -6,6 +6,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"note/src/typ"
+	"strings"
 )
 
 // IndexPage index页面
@@ -17,13 +18,17 @@ func IndexPage(pContext *gin.Context) {
 	// id
 	id, err := Query[int64](pContext, "id")
 	//log.Printf("id = %d\n", id)
-	if id < 0 {
-		id = 0
-	}
+
+	// name
+	name, err := Query[string](pContext, "name")
+	name = strings.TrimSpace(name)
+	//log.Printf("name = %s\n", name)
 
 	// pf
 	var pf typ.File
-	if id == 0 {
+	if id < 0 {
+		pf.Path = ""
+	} else if id == 0 {
 		pf.Path = "/"
 	} else {
 		sql := "SELECT f1.id, f1.pid, f1.`name`, f1.`type`, f1.`size`, f1.add_time, f1.upd_time, " +
@@ -56,8 +61,24 @@ func IndexPage(pContext *gin.Context) {
 		}
 	}
 
-	// 查询目录下的所有目录和文件
-	fs, count, err := DbQry[[]typ.File](pContext, "SELECT f.id, f.pid, f.`name`, f.`type`, f.`size`, f.`add_time`, f.`upd_time` FROM `file` f WHERE f.`del` = 0 AND f.`pid` = ? ORDER BY f.`type`", id)
+	// 查询
+	args := make([]any, 0, 2)
+	var fs []typ.File = nil
+	var count int64
+	sql := "SELECT f.`id`, f.`pid`, f.`name`, f.`type`, f.`size`, f.`add_time`, f.`upd_time` FROM `file` f WHERE f.`del` = 0 "
+	if id >= 0 {
+		sql += "AND f.`pid` = ? "
+		args = append(args, id)
+	}
+	if name != "" {
+		sql += "AND f.`name` LIKE '%' || ? || '%' "
+		args = append(args, name)
+	}
+	sql += "ORDER BY f.`type` "
+	if id < 0 {
+		sql += "LIMIT 10000"
+	}
+	fs, count, err = DbQry[[]typ.File](pContext, sql, args...)
 	if err != nil || count == 0 {
 		fs = nil
 	}
