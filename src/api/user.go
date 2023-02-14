@@ -91,13 +91,28 @@ func UserAdd(pContext *gin.Context) {
 		return
 	}
 
+	// 模板数据
+	idDataDir := fmt.Sprintf("%s%s%s", arg.DataDir, util.FileSeparator, "id")
+
 	// 创建用户数据目录
 	userDataDir := fmt.Sprintf("%s%s%d", arg.DataDir, util.FileSeparator, id)
 	if !util.IsExistOfPath(userDataDir) {
 		util.Mkdir(userDataDir)
 	}
+
 	// 初始化用户数据目录
-	pCmd := util.CopyDir(fmt.Sprintf("%s%sid", arg.DataDir, util.FileSeparator), userDataDir)
+	switch util.OS() {
+	case util.OSWindows:
+		// ...
+	case util.OSLinux:
+		idDataDir += "/*"
+		userDataDir += "/"
+	default:
+		panic("未知操作系统")
+	}
+	log.Printf("idDataDir: %v\n", idDataDir)
+	log.Printf("userDataDir: %v\n", userDataDir)
+	pCmd := util.CopyDir(idDataDir, userDataDir)
 	buf, err := pCmd.CombinedOutput()
 	if err != nil {
 		log.Println(err)

@@ -4,15 +4,24 @@
 package app
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
 	"log"
+	"note/src/util"
 	"os"
+	"path/filepath"
 )
 
 func Logger() {
+	// dir
+	dir, err := filepath.Abs("./")
+	if err != nil {
+		panic(err)
+	}
+
 	// 创建日志文件夹，如果不存在的话
-	logDir := "./logs"
+	logDir := fmt.Sprintf("%s%s%s", dir, util.FileSeparator, "logs")
 	fileInfo, err := os.Stat(logDir)
 	if err != nil || !fileInfo.IsDir() {
 		err = os.Mkdir(logDir, 0666)
@@ -39,4 +48,6 @@ func Logger() {
 
 	// 设置日志输出
 	log.SetOutput(writer)
+
+	log.Printf("logDir: %s\n", logDir)
 }

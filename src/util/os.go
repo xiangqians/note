@@ -97,7 +97,7 @@ func CommandWindows(cmd string) *exec.Cmd {
 }
 
 func CommandLinux(cmd string) *exec.Cmd {
-	return exec.Command("cmd", "/C", cmd)
+	return exec.Command("bash", "-c", cmd)
 }
 
 // Command 执行命令行
