@@ -73,6 +73,19 @@ func ImgUpload(pContext *gin.Context) {
 	// size
 	fs := fh.Size
 
+	// 限制只能重传相同文件类型
+	if method == http.MethodPut {
+		img, count, err := ImgQry(pContext, id)
+		if err != nil || count == 0 {
+			redirect(id, err)
+			return
+		}
+		if ft != FileTypeImgOf(img.Type) {
+			redirect(id, "重传必须是相同文件类型")
+			return
+		}
+	}
+
 	// 操作数据库
 	switch method {
 	case http.MethodPost:

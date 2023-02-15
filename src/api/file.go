@@ -103,7 +103,6 @@ func FileUpload(pContext *gin.Context) {
 	case http.MethodPut:
 		id, err = PostForm[int64](pContext, "id")
 	}
-
 	if err != nil {
 		redirect(id, pid, err)
 		return
@@ -119,28 +118,6 @@ func FileUpload(pContext *gin.Context) {
 	//log.Printf("Filename: %v\n", fh.Filename)
 	//log.Printf("Size: %v\n", fh.Size)
 	//log.Printf("Header: %v\n", fh.Header)
-
-	// 校验 id 或 pid
-	switch method {
-	case http.MethodPost:
-		// 校验 pid 是否存在
-		if pid != 0 {
-			f, count, err := DbQry[typ.File](pContext, "SELECT f.id, f.pid, f.`name`, f.`type`, f.`size`, f.`add_time`, f.`upd_time` FROM `file` f WHERE f.`del` = 0 AND f.`id` = ?", pid)
-			if err != nil || count == 0 || typ.FileTypeOf(f.Type) != typ.FileTypeD {
-				redirect(id, pid, err)
-				return
-			}
-		}
-
-	case http.MethodPut:
-		// 校验 id 是否存在
-		f, count, err := DbQry[typ.File](pContext, "SELECT f.id, f.pid, f.`name`, f.`type`, f.`size`, f.`add_time`, f.`upd_time` FROM `file` f WHERE f.`del` = 0 AND f.`id` = ?", id)
-		ft := typ.FileTypeOf(f.Type)
-		if err != nil || count == 0 || !(ft == typ.FileTypePdf || ft == typ.FileTypeZip) {
-			redirect(id, pid, err)
-			return
-		}
-	}
 
 	// name
 	fn := fh.Filename
@@ -160,6 +137,32 @@ func FileUpload(pContext *gin.Context) {
 
 	// size
 	fs := fh.Size
+
+	// 校验 id 或 pid
+	switch method {
+	case http.MethodPost:
+		// 校验 pid 是否存在
+		if pid != 0 {
+			f, count, err := DbQry[typ.File](pContext, "SELECT f.id, f.pid, f.`name`, f.`type`, f.`size`, f.`add_time`, f.`upd_time` FROM `file` f WHERE f.`del` = 0 AND f.`id` = ?", pid)
+			if err != nil || count == 0 || typ.FileTypeOf(f.Type) != typ.FileTypeD {
+				redirect(id, pid, err)
+				return
+			}
+		}
+
+	case http.MethodPut:
+		// 校验 id 是否存在
+		f, count, err := DbQry[typ.File](pContext, "SELECT f.id, f.pid, f.`name`, f.`type`, f.`size`, f.`add_time`, f.`upd_time` FROM `file` f WHERE f.`del` = 0 AND f.`id` = ?", id)
+		if err != nil || count == 0 {
+			redirect(id, pid, err)
+			return
+		}
+
+		if ft != typ.FileTypeOf(f.Type) {
+			redirect(id, pid, "重传必须是相同文件类型")
+			return
+		}
+	}
 
 	// 操作数据库
 	switch method {
