@@ -57,6 +57,12 @@ func ImgUpload(pContext *gin.Context) {
 
 	// name
 	fn := fh.Filename
+	fn = strings.TrimSpace(fn)
+	err = util.VerifyFileName(fn)
+	if err != nil {
+		redirect(id, err)
+		return
+	}
 
 	// type
 	index := strings.LastIndex(fn, ".")
@@ -144,6 +150,14 @@ func ImgUpdName(pContext *gin.Context) {
 	// img
 	img := typ.Img{}
 	err := ShouldBind(pContext, &img)
+	if err != nil {
+		redirect(err)
+		return
+	}
+
+	// name
+	img.Name = strings.TrimSpace(img.Name)
+	err = util.VerifyFileName(img.Name)
 	if err != nil {
 		redirect(err)
 		return

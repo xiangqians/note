@@ -5,8 +5,10 @@ package util
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
+	"regexp"
 )
 
 // IOCopy 流拷贝
@@ -84,4 +86,22 @@ func HumanizFileSize(size int64) string {
 
 	// B
 	return fmt.Sprintf("%v B", size)
+}
+
+// VerifyFileName 校验文件名
+func VerifyFileName(dirName string) error {
+	// 文件名不能包含字符：
+	// \ / : * ? " < > |
+
+	// ^[^\\/:*?"<>|]*$
+	matched, err := regexp.MatchString("^[^\\\\/:*?\"<>|]*$", dirName)
+	if err != nil {
+		return err
+	}
+
+	if !matched {
+		return errors.New("文件名不能包含字符：\\ / : * ? \" < > |")
+	}
+
+	return nil
 }

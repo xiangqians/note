@@ -35,7 +35,14 @@ func FileAdd(pContext *gin.Context) {
 		redirect(pid, err)
 		return
 	}
+
+	// name
 	f.Name = strings.TrimSpace(f.Name)
+	err = util.VerifyFileName(f.Name)
+	if err != nil {
+		redirect(pid, err)
+		return
+	}
 
 	// 校验文件类型
 	// 只支持添加 目录 和 md文件
@@ -228,7 +235,14 @@ func FileUpdName(pContext *gin.Context) {
 		redirect(pid, err)
 		return
 	}
+
+	// name
 	f.Name = strings.TrimSpace(f.Name)
+	err = util.VerifyFileName(f.Name)
+	if err != nil {
+		redirect(pid, err)
+		return
+	}
 
 	// update
 	_, err = DbUpd(pContext, "UPDATE `file` SET `name` = ?, `upd_time` = ? WHERE `id` = ? AND `name` <> ?", f.Name, time.Now().Unix(), f.Id, f.Name)
