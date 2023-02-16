@@ -4,6 +4,7 @@
 package api
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"note/src/typ"
 	"strings"
@@ -32,16 +33,16 @@ func IndexPage(pContext *gin.Context) {
 		pf.Path = "/"
 	} else {
 		sql := "SELECT f1.id, f1.pid, f1.`name`, f1.`type`, f1.`size`, f1.add_time, f1.upd_time, " +
-			"((CASE WHEN f10.`name` IS NULL THEN '' ELSE '/' || f10.`name` END) " +
-			"|| (CASE WHEN f9.`name` IS NULL THEN '' ELSE '/' || f9.`name` END) " +
-			"|| (CASE WHEN f8.`name` IS NULL THEN '' ELSE '/' || f8.`name` END) " +
-			"|| (CASE WHEN f7.`name` IS NULL THEN '' ELSE '/' || f7.`name` END) " +
-			"|| (CASE WHEN f6.`name` IS NULL THEN '' ELSE '/' || f6.`name` END) " +
-			"|| (CASE WHEN f5.`name` IS NULL THEN '' ELSE '/' || f5.`name` END) " +
-			"|| (CASE WHEN f4.`name` IS NULL THEN '' ELSE '/' || f4.`name` END) " +
-			"|| (CASE WHEN f3.`name` IS NULL THEN '' ELSE '/' || f3.`name` END) " +
-			"|| (CASE WHEN f2.`name` IS NULL THEN '' ELSE '/' || f2.`name` END) " +
-			"|| (CASE WHEN f1.`name` IS NULL THEN '' ELSE '/' || f1.`name` END))  AS 'path' " +
+			"( (CASE WHEN f10.`id` IS NULL THEN '' ELSE '/' ||f10.`id` || ':' ||f10.`name` END) " +
+			"|| (CASE WHEN f9.`id` IS NULL THEN '' ELSE '/' || f9.`id` || ':' || f9.`name` END) " +
+			"|| (CASE WHEN f8.`id` IS NULL THEN '' ELSE '/' || f8.`id` || ':' || f8.`name` END) " +
+			"|| (CASE WHEN f7.`id` IS NULL THEN '' ELSE '/' || f7.`id` || ':' || f7.`name` END) " +
+			"|| (CASE WHEN f6.`id` IS NULL THEN '' ELSE '/' || f6.`id` || ':' || f6.`name` END) " +
+			"|| (CASE WHEN f5.`id` IS NULL THEN '' ELSE '/' || f5.`id` || ':' || f5.`name` END) " +
+			"|| (CASE WHEN f4.`id` IS NULL THEN '' ELSE '/' || f4.`id` || ':' || f4.`name` END) " +
+			"|| (CASE WHEN f3.`id` IS NULL THEN '' ELSE '/' || f3.`id` || ':' || f3.`name` END) " +
+			"|| (CASE WHEN f2.`id` IS NULL THEN '' ELSE '/' || f2.`id` || ':' || f2.`name` END) " +
+			"|| (CASE WHEN f1.`id` IS NULL THEN '' ELSE '/' || f1.`id` || ':' || f1.`name` END))  AS 'path' " +
 			"FROM `file` f1 " +
 			"LEFT JOIN `file` f2 ON f2.del = 0 AND f2.`type` = 'd' AND f2.id = f1.pid " +
 			"LEFT JOIN `file` f3 ON f3.del = 0 AND f3.`type` = 'd' AND f3.id = f2.pid " +
@@ -59,6 +60,23 @@ func IndexPage(pContext *gin.Context) {
 			html(pf, nil, err)
 			return
 		}
+
+		pathArr := strings.Split(pf.Path, "/")
+		for i, l := 0, len(pathArr); i < l; i++ {
+			v := pathArr[i]
+			if v == "" {
+				continue
+			}
+
+			vArr := strings.Split(v, ":")
+			if i == l-1 {
+				v = vArr[1]
+			} else {
+				v = fmt.Sprintf("<a href=\"/?id=%s\">%s</a>\n", vArr[0], vArr[1])
+			}
+			pathArr[i] = v
+		}
+		pf.Path = strings.Join(pathArr, "/")
 	}
 
 	// 查询

@@ -19,7 +19,14 @@
     <p style="color: red;">{{ .msg }}</p>
 
     <p>
+        <!--
         <span>{{ .pf.Path }}</span>
+        -->
+        <span>
+        <script>
+            document.write('{{ .pf.Path }}')
+        </script>
+        </span>
     </p>
     <table cellspacing="0" cellpadding="10" align="center">
         <thead>
