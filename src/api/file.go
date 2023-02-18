@@ -272,10 +272,12 @@ func FileCut(pContext *gin.Context) {
 	}
 
 	// dst
-	f, _, err := DbQry[typ.File](pContext, "SELECT f.id, f.pid, f.`name`, f.`type`, f.`size`, f.`add_time`, f.`upd_time` FROM `file` f WHERE f.`del` = 0 AND f.`id` = ?", dstId)
-	if err != nil || typ.FileTypeD != typ.FileTypeOf(f.Type) {
-		redirect(dstId, err)
-		return
+	if dstId != 0 {
+		f, _, err := DbQry[typ.File](pContext, "SELECT f.id, f.pid, f.`name`, f.`type`, f.`size`, f.`add_time`, f.`upd_time` FROM `file` f WHERE f.`del` = 0 AND f.`id` = ?", dstId)
+		if err != nil || typ.FileTypeD != typ.FileTypeOf(f.Type) {
+			redirect(dstId, err)
+			return
+		}
 	}
 
 	// update
