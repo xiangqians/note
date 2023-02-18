@@ -39,7 +39,8 @@ type File struct {
 	Type string `form:"type"`                                 // 文件类型
 	Size int64  `form:"size"`                                 // 文件大小，单位：byte
 
-	Path string // 目录路径
+	Path     string // 目录路径
+	PathLink string // 目录路径链接
 }
 
 // Img 图片

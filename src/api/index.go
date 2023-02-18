@@ -29,8 +29,12 @@ func IndexPage(pContext *gin.Context) {
 	var pf typ.File
 	if id < 0 {
 		pf.Path = ""
+		pf.PathLink = ""
+
 	} else if id == 0 {
 		pf.Path = "/"
+		pf.PathLink = "/"
+
 	} else {
 		sql := "SELECT f1.id, f1.pid, f1.`name`, f1.`type`, f1.`size`, f1.add_time, f1.upd_time, " +
 			"( (CASE WHEN f10.`id` IS NULL THEN '' ELSE '/' ||f10.`id` || ':' ||f10.`name` END) " +
@@ -62,21 +66,28 @@ func IndexPage(pContext *gin.Context) {
 		}
 
 		pathArr := strings.Split(pf.Path, "/")
-		for i, l := 0, len(pathArr); i < l; i++ {
+		l := len(pathArr)
+		pathLinkArr := make([]string, 0, l) // len 0, cap ?
+		for i := 0; i < l; i++ {
 			v := pathArr[i]
 			if v == "" {
+				pathLinkArr = append(pathLinkArr, "")
 				continue
 			}
 
 			vArr := strings.Split(v, ":")
+			pathArr[i] = vArr[1]
+
+			pathLink := ""
 			if i == l-1 {
-				v = vArr[1]
+				pathLink = vArr[1]
 			} else {
-				v = fmt.Sprintf("<a href=\"/?id=%s\">%s</a>\n", vArr[0], vArr[1])
+				pathLink = fmt.Sprintf("<a href=\"/?id=%s\">%s</a>\n", vArr[0], vArr[1])
 			}
-			pathArr[i] = v
+			pathLinkArr = append(pathLinkArr, pathLink)
 		}
 		pf.Path = strings.Join(pathArr, "/")
+		pf.PathLink = strings.Join(pathLinkArr, "/")
 	}
 
 	// 查询
