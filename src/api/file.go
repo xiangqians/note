@@ -395,7 +395,7 @@ func FileViewPage(pContext *gin.Context) {
 	case typ.FileTypeMd:
 		FileMdViewPage(pContext, f)
 
-		// pdf
+	// pdf
 	case typ.FileTypePdf:
 		FilePdfViewPage(pContext, f)
 
@@ -407,7 +407,7 @@ func FileViewPage(pContext *gin.Context) {
 
 // FileDefaultViewPage 默认查看文件
 func FileDefaultViewPage(pContext *gin.Context, f typ.File, err error) {
-	Html(pContext, "file/default/view.html", gin.H{"f": f}, err)
+	HtmlOk(pContext, "file/default/view.html", gin.H{"f": f}, err)
 }
 
 // FileMdViewPage 查看md文件
@@ -415,7 +415,7 @@ func FileDefaultViewPage(pContext *gin.Context, f typ.File, err error) {
 // https://pkg.go.dev/github.com/russross/blackfriday/v2
 func FileMdViewPage(pContext *gin.Context, f typ.File) {
 	html := func(html string, msg any) {
-		Html(pContext, "file/md/view.html", gin.H{"f": f, "html": html}, msg)
+		HtmlOk(pContext, "file/md/view.html", gin.H{"f": f, "html": html}, msg)
 	}
 
 	// read
@@ -442,7 +442,17 @@ func FileMdViewPage(pContext *gin.Context, f typ.File) {
 
 // FilePdfViewPage 查看pdf文件
 func FilePdfViewPage(pContext *gin.Context, f typ.File) {
-	Html(pContext, "file/pdf/view.html", gin.H{"f": f}, nil)
+	v, _ := Query[string](pContext, "v")
+	v = strings.TrimSpace(v)
+	switch v {
+	case "1.0":
+		// v1.0
+	case "2.0":
+		// v2.0
+	default:
+		v = "2.0"
+	}
+	HtmlOk(pContext, fmt.Sprintf("file/pdf/view_v%s.html", v), gin.H{"f": f}, nil)
 }
 
 // FileEditPage 文件修改页
@@ -475,13 +485,13 @@ func FileEditPage(pContext *gin.Context) {
 
 // FileDefaultEditPage 默认文件修改页
 func FileDefaultEditPage(pContext *gin.Context, f typ.File, err error) {
-	Html(pContext, "file/default/edit.html", gin.H{"f": f}, err)
+	HtmlOk(pContext, "file/default/edit.html", gin.H{"f": f}, err)
 }
 
 // FileMdEditPage md文件修改页
 func FileMdEditPage(pContext *gin.Context, f typ.File) {
 	html := func(content string, msg any) {
-		Html(pContext, "file/md/edit.html", gin.H{"f": f, "content": content}, msg)
+		HtmlOk(pContext, "file/md/edit.html", gin.H{"f": f, "content": content}, msg)
 	}
 
 	// read

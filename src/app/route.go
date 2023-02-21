@@ -5,13 +5,14 @@ package app
 
 import (
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"note/src/api"
 )
 
 func route(pEngine *gin.Engine) {
 	// 设置默认路由
 	handler := func(pContext *gin.Context) {
-		api.Html(pContext, "404.html", nil, nil)
+		api.Html(pContext, http.StatusNotFound, "404.html", nil, nil)
 	}
 	pEngine.Any("/404", handler)
 	pEngine.NoRoute(handler)

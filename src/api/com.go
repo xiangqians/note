@@ -147,7 +147,11 @@ func ConvAnyToStr(i any) string {
 	return fmt.Sprintf("%v", i)
 }
 
-func Html(pContext *gin.Context, templateName string, h gin.H, msg any) {
+func HtmlOk(pContext *gin.Context, templateName string, h gin.H, msg any) {
+	Html(pContext, http.StatusOK, templateName, h, msg)
+}
+
+func Html(pContext *gin.Context, code int, templateName string, h gin.H, msg any) {
 	if h == nil {
 		h = gin.H{}
 	}
@@ -175,7 +179,7 @@ func Html(pContext *gin.Context, templateName string, h gin.H, msg any) {
 	}
 	h["msg"] = msgStr
 
-	pContext.HTML(http.StatusOK, templateName, h)
+	pContext.HTML(code, templateName, h)
 }
 
 func Redirect(pContext *gin.Context, location string, h gin.H, msg any) {

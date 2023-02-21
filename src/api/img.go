@@ -21,7 +21,7 @@ import (
 func ImgListPage(pContext *gin.Context) {
 	req, _ := PageReq(pContext)
 	page, err := DbPage[typ.Img](pContext, req, "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = 0 ORDER BY i.`add_time` DESC")
-	Html(pContext, "img/list.html", gin.H{"page": page}, err)
+	HtmlOk(pContext, "img/list.html", gin.H{"page": page}, err)
 }
 
 // ImgUpload 图片上传
@@ -223,7 +223,7 @@ func ImgView(pContext *gin.Context) {
 
 func ImgViewPage(pContext *gin.Context) {
 	html := func(img typ.Img, msg any) {
-		Html(pContext, "img/view.html", gin.H{"img": img}, msg)
+		HtmlOk(pContext, "img/view.html", gin.H{"img": img}, msg)
 	}
 
 	// id
@@ -243,7 +243,7 @@ func ImgViewPage(pContext *gin.Context) {
 
 func ImgEditPage(pContext *gin.Context) {
 	html := func(img typ.Img, msg any) {
-		Html(pContext, "img/edit.html", gin.H{"img": img}, msg)
+		HtmlOk(pContext, "img/edit.html", gin.H{"img": img}, msg)
 	}
 
 	// id

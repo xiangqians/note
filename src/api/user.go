@@ -38,7 +38,7 @@ func UserRegPage(pContext *gin.Context) {
 	if err != nil {
 		user = typ.User{}
 	}
-	Html(pContext, "user/reg.html", gin.H{"user": user}, nil)
+	HtmlOk(pContext, "user/reg.html", gin.H{"user": user}, nil)
 }
 
 // UserAdd 添加用户
@@ -128,7 +128,7 @@ func UserAdd(pContext *gin.Context) {
 // UserLoginPage 用户登录页
 func UserLoginPage(pContext *gin.Context) {
 	name, _ := SessionV[string](pContext, "name", true)
-	Html(pContext, "user/login.html", gin.H{"name": name}, nil)
+	HtmlOk(pContext, "user/login.html", gin.H{"name": name}, nil)
 }
 
 // UserLogin 用户登录
@@ -193,7 +193,7 @@ func UserStgPage(pContext *gin.Context) {
 	if err != nil {
 		user, _ = SessionUser(pContext)
 	}
-	Html(pContext, "user/stg.html", gin.H{"user": user}, msg)
+	HtmlOk(pContext, "user/stg.html", gin.H{"user": user}, msg)
 }
 
 // UserUpd 更新用户信息

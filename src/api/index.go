@@ -13,7 +13,7 @@ import (
 // IndexPage index页面
 func IndexPage(pContext *gin.Context) {
 	html := func(pf typ.File, fs []typ.File, err error) {
-		Html(pContext, "index.html", gin.H{"pf": pf, "fs": fs}, err)
+		HtmlOk(pContext, "index.html", gin.H{"pf": pf, "fs": fs}, err)
 	}
 
 	// id
