@@ -345,14 +345,31 @@ func FileView(pContext *gin.Context) {
 		return
 	}
 
-	// read
-	buf, err := os.ReadFile(fPath)
+	// （弃用）
+	// read all
+	//buf, err := os.ReadFile(fPath)
+	//if err != nil {
+	//	log.Println(err)
+	//	return
+	//}
+	//writer := pContext.Writer
+	//writer.Write(buf)
+	//writer.Flush()
+
+	// open
+	pFile, err := os.Open(fPath)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	pContext.Writer.Write(buf)
+	// write
+	err = util.IOCopy(pFile, pContext.Writer, 0)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
 	return
 }
 
