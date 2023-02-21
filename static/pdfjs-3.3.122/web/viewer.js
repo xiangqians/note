@@ -760,16 +760,7 @@ const defaultOptions = {
 {
   defaultOptions.defaultUrl = {
     // value: "compressed.tracemonkey-pldi-09.pdf",
-    value: function () {
-      try {
-        if (defPdfSrc) {
-          return defPdfSrc
-        }
-      } catch (e) {
-        // console.warn(e)
-      }
-      return "compressed.tracemonkey-pldi-09.pdf"
-    }(),
+    value: defPdfSrc,
     kind: OptionKind.VIEWER
   };
   defaultOptions.disablePreferences = {
@@ -1833,9 +1824,20 @@ const PDFViewerApplication = {
         title = url;
       }
     }
+
+    // 如果标题已存在，则不设置
+    if (this._title) {
+      return
+    }
+
     this.setTitle(title);
   },
   setTitle(title = this._title) {
+    // console.log('title', title)
+
+    // 查看方法调用栈
+    // console.trace()
+
     this._title = title;
     if (this.isViewerEmbedded) {
       return;
