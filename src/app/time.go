@@ -15,7 +15,9 @@ func Local() {
 	// 修改为北京时区
 	loc, err := time.LoadLocation("Asia/Shanghai")
 	if err != nil {
-		panic(err)
+		//panic(err)
+		log.Println(err)
+		return
 	}
 	time.Local = loc
 
