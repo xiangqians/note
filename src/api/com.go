@@ -18,7 +18,6 @@ import (
 	zh_trans "github.com/go-playground/validator/v10/translations/zh"
 	"net/http"
 	"note/src/db"
-	"note/src/page"
 	"note/src/typ"
 	"note/src/util"
 	"strings"
@@ -53,10 +52,17 @@ func ValidateTrans() {
 	}
 }
 
-// SessionV 根据 key 获取 session value
+// SetSessionKv 设置session kv
+func SetSessionKv(pContext *gin.Context, key string, value any) {
+	session := sessions.Default(pContext)
+	session.Set(key, value)
+	session.Save()
+}
+
+// GetSessionV 根据key获取session value
 // key: key
-// del: 是否删除 session 中的key
-func SessionV[T any](pContext *gin.Context, key any, del bool) (T, error) {
+// del: 是否删除session中的key
+func GetSessionV[T any](pContext *gin.Context, key any, del bool) (T, error) {
 	session := sessions.Default(pContext)
 	value := session.Get(key)
 	if del {
@@ -74,15 +80,8 @@ func SessionV[T any](pContext *gin.Context, key any, del bool) (T, error) {
 	return t, errors.New("unknown")
 }
 
-// SessionKv 设置 session kv
-func SessionKv(pContext *gin.Context, key string, value any) {
-	session := sessions.Default(pContext)
-	session.Set(key, value)
-	session.Save()
-}
-
-// SessionClear 清理 session
-func SessionClear(pContext *gin.Context) {
+// ClearSession 清空session
+func ClearSession(pContext *gin.Context) {
 	// 解析session
 	session := sessions.Default(pContext)
 	// 清除session
@@ -175,7 +174,7 @@ func Html(pContext *gin.Context, code int, templateName string, h gin.H, msg any
 
 	// 没有消息就是最好的消息
 	msgStr := ConvAnyToStr(msg)
-	sessionMsg, err := SessionV[string](pContext, "msg", true)
+	sessionMsg, err := GetSessionV[string](pContext, "msg", true)
 	if err == nil {
 		if msgStr != "" {
 			msgStr += ", "
@@ -244,12 +243,12 @@ func DbDel(pContext *gin.Context, sql string, args ...any) (int64, error) {
 	return db.Del(dsn(pContext), sql, args...)
 }
 
-func DbPage[T any](pContext *gin.Context, req page.Req, sql string, args ...any) (page.Page[T], error) {
+func DbPage[T any](pContext *gin.Context, req typ.PageReq, sql string, args ...any) (typ.Page[T], error) {
 	return db.Page[T](dsn(pContext), req, sql, args...)
 }
 
-func PageReq(pContext *gin.Context) (page.Req, error) {
-	req := page.Req{Size: 10}
+func PageReq(pContext *gin.Context) (typ.PageReq, error) {
+	req := typ.PageReq{Size: 10}
 	err := ShouldBind(pContext, &req)
 	if req.Current <= 0 {
 		req.Current = 1

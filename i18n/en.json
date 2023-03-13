@@ -42,11 +42,11 @@
   "i18n.dir": "Directory",
   "i18n.rename": "Rename",
   "i18n.cut": "Cut",
-  "i18n.to": "to",
-  "i18n.dayAbbrev": " day ",
-  "i18n.hourAbbrev": "h",
-  "i18n.minuteAbbrev": "m",
-  "i18n.secondAbbrev": "s",
+  "i18n.to": "To",
+  "i18n.day": "day",
+  "i18n.hour": "h",
+  "i18n.minute": "m",
+  "i18n.second": "s",
   "i18n.xDayAgo": "%v day ago",
   "i18n.xHourAgo": "%v hour ago",
   "i18n.xMinuteAgo": "%v minute ago",
@@ -62,5 +62,6 @@
   "i18n.failure": "Failure",
   "i18n.copy": "Copy",
   "i18n.copied": "Copied",
-  "i18n.paste": "Paste"
+  "i18n.paste": "Paste",
+  "i18n.search": "Search"
 }

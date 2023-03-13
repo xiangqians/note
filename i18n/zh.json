@@ -43,10 +43,10 @@
   "i18n.rename": "重命名",
   "i18n.cut": "剪切",
   "i18n.to": "到",
-  "i18n.dayAbbrev": "天",
-  "i18n.hourAbbrev": "小时",
-  "i18n.minuteAbbrev": "分",
-  "i18n.secondAbbrev": "秒",
+  "i18n.day": "天",
+  "i18n.hour": "小时",
+  "i18n.minute": "分",
+  "i18n.second": "秒",
   "i18n.xDayAgo": "%v天前",
   "i18n.xHourAgo": "%v小时前",
   "i18n.xMinuteAgo": "%v分钟前",
@@ -62,5 +62,6 @@
   "i18n.failure": "失败",
   "i18n.copy": "复制",
   "i18n.copied": "已复制",
-  "i18n.paste": "粘贴"
+  "i18n.paste": "粘贴",
+  "i18n.search": "搜索"
 }

@@ -23,7 +23,7 @@ import (
 const SessionKeyUser = "_user_"
 
 func SessionUser(pContext *gin.Context) (typ.User, error) {
-	user, err := SessionV[typ.User](pContext, SessionKeyUser, false)
+	user, err := GetSessionV[typ.User](pContext, SessionKeyUser, false)
 
 	// 如果返回指针值，有可能会发生逃逸
 	//return &user
@@ -33,7 +33,7 @@ func SessionUser(pContext *gin.Context) (typ.User, error) {
 
 // UserRegPage 用户注册页
 func UserRegPage(pContext *gin.Context) {
-	user, err := SessionV[typ.User](pContext, "user", true)
+	user, err := GetSessionV[typ.User](pContext, "user", true)
 	if err != nil {
 		user = typ.User{}
 	}
@@ -101,9 +101,9 @@ func UserAdd(pContext *gin.Context) {
 
 	// 初始化用户数据目录
 	switch util.OS() {
-	case util.OSWindows:
+	case typ.WindowsOS:
 		// ...
-	case util.OSLinux:
+	case typ.LinuxOS:
 		idDataDir += "/*"
 		userDataDir += "/"
 	default:
@@ -126,7 +126,7 @@ func UserAdd(pContext *gin.Context) {
 
 // UserLoginPage 用户登录页
 func UserLoginPage(pContext *gin.Context) {
-	name, _ := SessionV[string](pContext, "name", true)
+	name, _ := GetSessionV[string](pContext, "name", true)
 	HtmlOk(pContext, "user/login.html", gin.H{"name": name}, nil)
 }
 
@@ -170,7 +170,7 @@ func UserLogin(pContext *gin.Context) {
 	}
 
 	// 保存用户信息到session
-	SessionKv(pContext, SessionKeyUser, user)
+	SetSessionKv(pContext, SessionKeyUser, user)
 
 	// 重定向
 	Redirect(pContext, "/", nil, nil)
@@ -179,7 +179,7 @@ func UserLogin(pContext *gin.Context) {
 // UserLogout 用户登出
 func UserLogout(pContext *gin.Context) {
 	// 清除session
-	SessionClear(pContext)
+	ClearSession(pContext)
 
 	// 重定向
 	pContext.Redirect(http.StatusMovedPermanently, "/user/loginpage")
@@ -187,8 +187,8 @@ func UserLogout(pContext *gin.Context) {
 
 // UserStgPage 用户设置页
 func UserStgPage(pContext *gin.Context) {
-	msg, _ := SessionV[string](pContext, "msg", true)
-	user, err := SessionV[typ.User](pContext, "user", true)
+	msg, _ := GetSessionV[string](pContext, "msg", true)
+	user, err := GetSessionV[typ.User](pContext, "user", true)
 	if err != nil {
 		user, _ = SessionUser(pContext)
 	}
@@ -250,7 +250,7 @@ func UserUpd(pContext *gin.Context) {
 	sessionUser.Name = user.Name
 	sessionUser.Nickname = user.Nickname
 	sessionUser.Rem = user.Rem
-	SessionKv(pContext, SessionKeyUser, sessionUser)
+	SetSessionKv(pContext, SessionKeyUser, sessionUser)
 
 	redirect(user, nil)
 }

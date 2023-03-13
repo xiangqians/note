@@ -78,12 +78,7 @@ func IndexPage(pContext *gin.Context) {
 			vArr := strings.Split(v, ":")
 			pathArr[i] = vArr[1]
 
-			pathLink := ""
-			if i == l-1 {
-				pathLink = vArr[1]
-			} else {
-				pathLink = fmt.Sprintf("<a href=\"/?id=%s\">%s</a>\n", vArr[0], vArr[1])
-			}
+			pathLink := fmt.Sprintf("<a href=\"/?id=%s\">%s</a>\n", vArr[0], vArr[1])
 			pathLinkArr = append(pathLinkArr, pathLink)
 		}
 		pf.Path = strings.Join(pathArr, "/")

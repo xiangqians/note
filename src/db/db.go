@@ -8,16 +8,16 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
-	"note/src/page"
+	"note/src/typ"
 	"note/src/util"
 	"reflect"
 	"strings"
 )
 
-func Page[T any](dsn string, pageReq page.Req, sql string, args ...any) (page.Page[T], error) {
+func Page[T any](dsn string, pageReq typ.PageReq, sql string, args ...any) (typ.Page[T], error) {
 	current := pageReq.Current
 	size := pageReq.Size
-	page := page.Page[T]{
+	page := typ.Page[T]{
 		Current: current,
 		Size:    size,
 	}

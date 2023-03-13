@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/custom/min.css" type="text/css"/>
-    <title>{{ Localize "i18n.index" }}</title>
+    <title>{{ Localize "i18n.index" }} {{ .pf.Path }}</title>
 </head>
 <body>
 
@@ -27,6 +27,8 @@
             document.write('{{ .pf.PathLink }}')
         </script>
         </span>
+        &nbsp;&nbsp;
+        <span><input name="searchName" type="text" size="15"><a name="search" ajaxE method="GET"><button>{{ Localize "i18n.search" }}</button></a></span>
     </p>
     <table cellspacing="0" cellpadding="10" align="center">
         <thead>
@@ -179,6 +181,13 @@
             }
         }
 
+        // search
+        let $search = $('a[name="search"]')
+        $search[0]['pre'] = function ($e) {
+            let searchName = $($('input[name="searchName"]')[0]).val()
+            $e.attr('href', '/?id=-1&name=' + searchName)
+            return {}
+        }
 
     })()
 

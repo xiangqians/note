@@ -1,12 +1,12 @@
 // page
 // @author xiangqian
 // @date 10:52 2023/02/04
-package page
+package typ
 
 import "encoding/gob"
 
-// Req 分页请求
-type Req struct {
+// PageReq 分页请求
+type PageReq struct {
 	Current int64 `json:"current" form:"current"  binding:"gt=0"` // 当前页
 	Size    uint8 `json:"size" form:"size" binding:"gt=0"`        // 页数量
 }
@@ -22,5 +22,5 @@ type Page[T any] struct {
 
 // 注册模型
 func init() {
-	gob.Register(Req{})
+	gob.Register(PageReq{})
 }
