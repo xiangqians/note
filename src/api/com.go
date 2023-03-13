@@ -17,7 +17,7 @@ import (
 	en_trans "github.com/go-playground/validator/v10/translations/en"
 	zh_trans "github.com/go-playground/validator/v10/translations/zh"
 	"net/http"
-	"note/src/arg"
+	"note/src/app"
 	"note/src/db"
 	"note/src/page"
 	"note/src/typ"
@@ -211,11 +211,11 @@ func Query[T any](pContext *gin.Context, key string) (T, error) {
 
 func DataDir(pContext *gin.Context) string {
 	if pContext == nil {
-		return arg.DataDir
+		return app.DataDir
 	}
 
 	user, _ := SessionUser(pContext)
-	return fmt.Sprintf("%s%s%d", arg.DataDir, util.FileSeparator, user.Id)
+	return fmt.Sprintf("%s%s%d", app.DataDir, util.FileSeparator, user.Id)
 }
 
 func dsn(pContext *gin.Context) string {

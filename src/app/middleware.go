@@ -17,6 +17,7 @@ import (
 	"strings"
 )
 
+// 权限中间件
 func permMiddleware(pEngine *gin.Engine) {
 	// 未授权拦截
 	pEngine.Use(func(pContext *gin.Context) {
@@ -59,12 +60,14 @@ func permMiddleware(pEngine *gin.Engine) {
 	})
 }
 
+// 静态资源处理中间件
 func staticMiddleware(pEngine *gin.Engine) {
 	// 静态资源处理
 	// https://github.com/gin-contrib/static
 	pEngine.Use(static.Serve("/static", static.LocalFile("./static", false)))
 }
 
+// i18n中间件
 func i18nMiddleware(pEngine *gin.Engine) {
 	// apply i18n middleware
 	// https://github.com/gin-contrib/i18n
@@ -117,9 +120,11 @@ func i18nMiddleware(pEngine *gin.Engine) {
 	)))
 }
 
+// session中间件
 func sessionMiddleware(pEngine *gin.Engine) {
 	// 密钥
 	keyPairs := []byte("123456")
+
 	// 创建基于cookie的存储引擎
 	//store := cookie.NewStore(keyPairs)
 	// 创建基于mem（内存）的存储引擎，其实就是一个 map[interface]interface 对象

@@ -1,4 +1,4 @@
-// time
+// local
 // @author xiangqian
 // @date 22:59 2023/02/14
 package app
@@ -8,7 +8,8 @@ import (
 	"time"
 )
 
-func Local() {
+// 时区
+func local() {
 	// GoLang time 包默认是UTC
 	time.Local = time.UTC
 

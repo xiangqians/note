@@ -8,40 +8,42 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"note/src/api"
-	"note/src/arg"
 	"strconv"
 )
 
 func Run() {
-	// Logger
-	Logger()
+	// 日志记录器
+	logger()
 
 	// 设置时区
-	Local()
+	local()
 
-	// parse arg
-	arg.Parse()
+	// 解析应用参数
+	arg()
 
 	// ValidateTrans
 	api.ValidateTrans()
 
-	// Gin ReleaseMode
+	// gin模式：DebugMode、ReleaseMode、TestMode
 	gin.SetMode(gin.DebugMode)
-	//gin.SetMode(gin.ReleaseMode)
 
 	// default Engine
 	pEngine := gin.Default()
 
-	// init
+	// template
 	htmlTemplate(pEngine)
+
+	// middleware
 	sessionMiddleware(pEngine)
 	i18nMiddleware(pEngine)
 	staticMiddleware(pEngine)
 	permMiddleware(pEngine)
+
+	// route
 	route(pEngine)
 
 	// addr
-	addr := fmt.Sprintf(":%v", strconv.FormatInt(int64(arg.Port), 10))
+	addr := fmt.Sprintf(":%v", strconv.FormatInt(int64(Port), 10))
 
 	// run
 	pEngine.Run(addr)

@@ -1,7 +1,7 @@
 // arg
 // @author xiangqian
 // @date 00:11 2022/12/31
-package arg
+package app
 
 import (
 	"flag"
@@ -15,7 +15,8 @@ var Port int       // 监听端口
 var DataDir string // 数据目录
 var AllowReg int   // 是否允许用户注册，0-不允许，1-允许
 
-func Parse() {
+// 解析应用参数
+func arg() {
 	// parse
 	flag.IntVar(&Port, "port", 8080, "-port 8080")
 	flag.StringVar(&DataDir, "dataDir", "./data", "-dataDir ./data")
