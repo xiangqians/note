@@ -6,34 +6,47 @@ package app
 import (
 	"flag"
 	"log"
+	"note/src/api"
+	"note/src/typ"
 	"note/src/util"
 	"path/filepath"
 	"strings"
 )
 
-var Port int       // 监听端口
-var DataDir string // 数据目录
-var AllowReg int   // 是否允许用户注册，0-不允许，1-允许
+var appArg typ.AppArg
 
 // 解析应用参数
-func arg() {
+func parseAppArg() {
+	var port int
+	var dataDir string
+	var allowReg int
+
+	// -dataDir "C:\Users\xiangqian\Desktop\tmp\note\data"
+
 	// parse
-	flag.IntVar(&Port, "port", 8080, "-port 8080")
-	flag.StringVar(&DataDir, "dataDir", "./data", "-dataDir ./data")
-	flag.IntVar(&AllowReg, "allowReg", 1, "-allowReg 1")
+	flag.IntVar(&port, "port", 8080, "-port 8080")
+	flag.StringVar(&dataDir, "dataDir", "./data", "-dataDir ./data")
+	flag.IntVar(&allowReg, "allowReg", 1, "-allowReg 1")
 	flag.Parse()
 
 	// DataDir
-	DataDir = strings.TrimSpace(DataDir)
-	if !util.IsExistOfPath(DataDir) {
-		util.Mkdir(DataDir)
+	dataDir = strings.TrimSpace(dataDir)
+	if !util.IsExistOfPath(dataDir) {
+		util.Mkdir(dataDir)
 	}
 	// 获取绝对路径
-	DataDir, _ = filepath.Abs(DataDir)
+	dataDir, _ = filepath.Abs(dataDir)
 
-	log.Printf("Port: %v\n", Port)
-	log.Printf("DataDir: %v\n", DataDir)
-	log.Printf("AllowReg: %v\n", AllowReg)
+	log.Printf("Port: %v\n", port)
+	log.Printf("DataDir: %v\n", dataDir)
+	log.Printf("AllowReg: %v\n", allowReg)
 
-	// -dataDir "C:\Users\xiangqian\Desktop\tmp\note\data"
+	appArg = typ.AppArg{
+		Port:     port,
+		DataDir:  dataDir,
+		AllowReg: allowReg,
+	}
+
+	// 设置api arg
+	api.SetAppArg(appArg)
 }

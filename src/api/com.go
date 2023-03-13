@@ -17,7 +17,6 @@ import (
 	en_trans "github.com/go-playground/validator/v10/translations/en"
 	zh_trans "github.com/go-playground/validator/v10/translations/zh"
 	"net/http"
-	"note/src/app"
 	"note/src/db"
 	"note/src/page"
 	"note/src/typ"
@@ -25,10 +24,16 @@ import (
 	"strings"
 )
 
+var appArg typ.AppArg
+
 var (
 	zhTrans ut.Translator
 	enTrans ut.Translator
 )
+
+func SetAppArg(appArg0 typ.AppArg) {
+	appArg = appArg0
+}
 
 // ValidateTrans 检验器翻译
 func ValidateTrans() {
@@ -211,11 +216,11 @@ func Query[T any](pContext *gin.Context, key string) (T, error) {
 
 func DataDir(pContext *gin.Context) string {
 	if pContext == nil {
-		return app.DataDir
+		return appArg.DataDir
 	}
 
 	user, _ := SessionUser(pContext)
-	return fmt.Sprintf("%s%s%d", app.DataDir, util.FileSeparator, user.Id)
+	return fmt.Sprintf("%s%s%d", appArg.DataDir, util.FileSeparator, user.Id)
 }
 
 func dsn(pContext *gin.Context) string {
