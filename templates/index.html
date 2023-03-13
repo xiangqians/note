@@ -184,7 +184,13 @@
         // search
         let $search = $('a[name="search"]')
         $search[0]['pre'] = function ($e) {
-            let searchName = $($('input[name="searchName"]')[0]).val()
+            let $searchName = $($('input[name="searchName"]')[0])
+            let searchName = $searchName.val().trim()
+            $searchName.val(searchName)
+            if (searchName === '') {
+                return
+            }
+            
             $e.attr('href', '/?id=-1&name=' + searchName)
             return {}
         }
