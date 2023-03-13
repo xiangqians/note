@@ -20,6 +20,7 @@
   "i18n.userNameAlreadyExists": "User Name already exists.",
   "i18n.accountRegSuccess": "Account registration succeeded",
   "i18n.index": "Index",
+  "i18n.file": "File",
   "i18n.img": "Image",
   "i18n.recycleBin": "Recycle Bin",
   "i18n.no.": "No.",

@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/custom/min.css" type="text/css"/>
-    <title>{{ Localize "i18n.index" }} {{ .pf.Path }}</title>
+    <title>{{ Localize "i18n.file" }} {{ .pf.Path }}</title>
 </head>
 <body>
 
@@ -190,7 +190,7 @@
             if (searchName === '') {
                 return
             }
-            
+
             $e.attr('href', '/?id=-1&name=' + searchName)
             return {}
         }
