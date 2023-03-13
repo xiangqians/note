@@ -24,15 +24,15 @@ import (
 	"strings"
 )
 
-var appArg typ.AppArg
+var arg typ.Arg
 
 var (
 	zhTrans ut.Translator
 	enTrans ut.Translator
 )
 
-func SetAppArg(appArg0 typ.AppArg) {
-	appArg = appArg0
+func SetArg(arg0 typ.Arg) {
+	arg = arg0
 }
 
 // ValidateTrans 检验器翻译
@@ -216,11 +216,11 @@ func Query[T any](pContext *gin.Context, key string) (T, error) {
 
 func DataDir(pContext *gin.Context) string {
 	if pContext == nil {
-		return appArg.DataDir
+		return arg.DataDir
 	}
 
 	user, _ := SessionUser(pContext)
-	return fmt.Sprintf("%s%s%d", appArg.DataDir, util.FileSeparator, user.Id)
+	return fmt.Sprintf("%s%s%d", arg.DataDir, util.FileSeparator, user.Id)
 }
 
 func dsn(pContext *gin.Context) string {

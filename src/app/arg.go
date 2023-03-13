@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-var appArg typ.AppArg
+var arg typ.Arg
 
 // 解析应用参数
 func parseAppArg() {
@@ -41,12 +41,12 @@ func parseAppArg() {
 	log.Printf("DataDir: %v\n", dataDir)
 	log.Printf("AllowReg: %v\n", allowReg)
 
-	appArg = typ.AppArg{
+	arg = typ.Arg{
 		Port:     port,
 		DataDir:  dataDir,
 		AllowReg: allowReg,
 	}
 
 	// 设置api arg
-	api.SetAppArg(appArg)
+	api.SetArg(arg)
 }

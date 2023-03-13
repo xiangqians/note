@@ -48,7 +48,7 @@ func UserAdd(pContext *gin.Context) {
 	}
 
 	// 是否允许用户注册
-	if appArg.AllowReg != 1 {
+	if arg.AllowReg != 1 {
 		redirect(typ.User{}, i18n.MustGetMessage("i18n.regNotOpen"))
 		return
 	}
@@ -91,10 +91,10 @@ func UserAdd(pContext *gin.Context) {
 	}
 
 	// 模板数据
-	idDataDir := fmt.Sprintf("%s%s%s", appArg.DataDir, util.FileSeparator, "id")
+	idDataDir := fmt.Sprintf("%s%s%s", arg.DataDir, util.FileSeparator, "id")
 
 	// 创建用户数据目录
-	userDataDir := fmt.Sprintf("%s%s%d", appArg.DataDir, util.FileSeparator, id)
+	userDataDir := fmt.Sprintf("%s%s%d", arg.DataDir, util.FileSeparator, id)
 	if !util.IsExistOfPath(userDataDir) {
 		util.Mkdir(userDataDir)
 	}
