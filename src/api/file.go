@@ -244,8 +244,17 @@ func FileUpdName(pContext *gin.Context) {
 		return
 	}
 
-	// update
-	_, err = DbUpd(pContext, "UPDATE `file` SET `name` = ?, `upd_time` = ? WHERE `id` = ? AND `name` <> ?", f.Name, time.Now().Unix(), f.Id, f.Name)
+	fType, count, err := DbQry[string](pContext, "SELECT `type` FROM `file` WHERE `del` = 0 AND `id` = ?", f.Id)
+	if count > 0 {
+		name := f.Name
+		ft := typ.FileTypeOf(fType)
+		if ft != typ.FileTypeD && ft != typ.FileTypeUnk && !strings.HasSuffix(name, string(ft)) {
+			name = fmt.Sprintf("%s.%s", name, string(ft))
+		}
+
+		// update
+		_, err = DbUpd(pContext, "UPDATE `file` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", name, time.Now().Unix(), f.Id, name)
+	}
 
 	redirect(pid, err)
 	return

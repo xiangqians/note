@@ -163,8 +163,18 @@ func ImgUpdName(pContext *gin.Context) {
 		return
 	}
 
-	// update
-	_, err = DbUpd(pContext, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", img.Name, time.Now().Unix(), img.Id)
+	imgType, count, err := DbQry[string](pContext, "SELECT `type` FROM `img` WHERE `del` = 0 AND `id` = ?", img.Id)
+	if count > 0 {
+		name := img.Name
+		ft := FileTypeImgOf(imgType)
+		if ft != typ.FileTypeUnk && !strings.HasSuffix(name, string(ft)) {
+			name = fmt.Sprintf("%s.%s", name, string(ft))
+		}
+
+		// update
+		_, err = DbUpd(pContext, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", name, time.Now().Unix(), img.Id, name)
+	}
+
 	redirect(err)
 	return
 }
