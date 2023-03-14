@@ -1,0 +1,28 @@
+<!--
+ | @author xiangqian
+ | @date 22:55 2023/03/14
+ |-->
+<script>
+    document.write('{{ .html }}')
+    window.onload = function () {
+        // title
+        let titleElem = document.getElementsByTagName("title")[0]
+        titleElem.text = '{{ Localize "i18n.view" }}: {{ .f.Name }}'
+
+        // <link rel="shortcut icon" href="/static/favicon.ico">
+        let links = document.getElementsByTagName("link")
+        let link = null
+        for (let i = 0, len = links.length; i < len; i++) {
+            if ('shortcut icon'.toLowerCase() === links[i].getAttribute('rel').toLowerCase()) {
+                link = links[i]
+            }
+        }
+        if (link == null) {
+            link = document.createElement('link')
+            link.setAttribute('rel', 'shortcut icon')
+            let headElem = document.getElementsByTagName("head")[0]
+            headElem.appendChild(link)
+        }
+        link.setAttribute('href', '/static/favicon.ico')
+    }
+</script>

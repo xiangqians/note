@@ -137,7 +137,7 @@ func FileUpload(pContext *gin.Context) {
 		ftStr = fn[index+1:]
 	}
 	ft := typ.FileTypeOf(strings.TrimSpace(ftStr))
-	if ft == typ.FileTypeUnk || !(ft == typ.FileTypePdf || ft == typ.FileTypeZip) {
+	if ft == typ.FileTypeUnk || !(ft == typ.FileTypeHtml || ft == typ.FileTypePdf || ft == typ.FileTypeZip) {
 		redirect(id, pid, fmt.Sprintf("%s, %s", errors.New(i18n.MustGetMessage("i18n.fileTypeUnsupported")), ftStr))
 		return
 	}
@@ -409,6 +409,10 @@ func FileViewPage(pContext *gin.Context) {
 	case typ.FileTypeMd:
 		FileMdViewPage(pContext, f)
 
+	// html
+	case typ.FileTypeHtml:
+		FileHtmlViewPage(pContext, f)
+
 	// pdf
 	case typ.FileTypePdf:
 		FilePdfViewPage(pContext, f)
@@ -450,6 +454,22 @@ func FileMdViewPage(pContext *gin.Context, f typ.File) {
 
 	// 安全过滤
 	//buf = bluemonday.UGCPolicy().SanitizeBytes(buf)
+
+	html(string(buf), nil)
+}
+
+// FileHtmlViewPage 查看html文件
+func FileHtmlViewPage(pContext *gin.Context, f typ.File) {
+	html := func(html string, msg any) {
+		HtmlOk(pContext, "file/html/view.html", gin.H{"f": f, "html": html}, msg)
+	}
+
+	// read
+	buf, err := FileRead(pContext, f)
+	if err != nil {
+		html("", err)
+		return
+	}
 
 	html(string(buf), nil)
 }

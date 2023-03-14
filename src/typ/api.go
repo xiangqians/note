@@ -59,6 +59,7 @@ type FileType string
 const (
 	FileTypeD    FileType = "d"    // 目录
 	FileTypeMd            = "md"   // md文件
+	FileTypeHtml          = "html" // html文件
 	FileTypePdf           = "pdf"  // pdf文件
 	FileTypeZip           = "zip"  // zip文件
 	FileTypeIco           = "ico"  // ico文件
@@ -72,7 +73,7 @@ const (
 
 var fileTypes = [...]FileType{
 	FileTypeD,
-	FileTypeMd, FileTypePdf, FileTypeZip,
+	FileTypeMd, FileTypeHtml, FileTypePdf, FileTypeZip,
 	FileTypeIco, FileTypeGif, FileTypeJpg, FileTypeJpeg, FileTypePng, FileTypeWebp,
 }
 
