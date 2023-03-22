@@ -61,6 +61,6 @@ textarea[name="rem"] {
 
 canvas {
     display: block;
-    margin: 10px auto;
+    margin: 2px auto;
     border: 1px solid #000;
 }

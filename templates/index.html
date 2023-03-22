@@ -17,17 +17,19 @@
 <content>
     <p style="color: red;">{{ .resp.Msg }}</p>
 
-    {{ Localize "i18n.file" }}
-    <canvas id="fileStat" width="600" height="400">
-        你的浏览器不支持 canvas，请升级你的浏览器。
-    </canvas>
-    <br>
+    <div style="float: left; margin-left: 17%;">
+        {{ Localize "i18n.file" }}
+        <canvas id="fileStat" width="600" height="400">
+            你的浏览器不支持 canvas，请升级你的浏览器。
+        </canvas>
+    </div>
 
-    {{ Localize "i18n.img" }}
-    <canvas id="imgStat" width="600" height="400">
-        你的浏览器不支持 canvas，请升级你的浏览器。
-    </canvas>
-
+    <div style="float: left; margin-left: 5px;">
+        {{ Localize "i18n.img" }}
+        <canvas id="imgStat" width="600" height="400">
+            你的浏览器不支持 canvas，请升级你的浏览器。
+        </canvas>
+    </div>
 </content>
 
 {{ template "com/footer.html" . }}
