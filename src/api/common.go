@@ -200,17 +200,17 @@ func Redirect(pContext *gin.Context, location string, h gin.H, msg any) {
 
 func PostForm[T any](pContext *gin.Context, key string) (T, error) {
 	value := pContext.PostForm(key)
-	return util.ConvStrToT[T](value)
+	return util.StrAsType[T](value)
 }
 
 func Param[T any](pContext *gin.Context, key string) (T, error) {
 	value := pContext.Param(key)
-	return util.ConvStrToT[T](value)
+	return util.StrAsType[T](value)
 }
 
 func Query[T any](pContext *gin.Context, key string) (T, error) {
 	value := pContext.Query(key)
-	return util.ConvStrToT[T](value)
+	return util.StrAsType[T](value)
 }
 
 func DataDir(pContext *gin.Context) string {

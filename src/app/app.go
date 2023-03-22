@@ -19,7 +19,7 @@ func Run() {
 	local()
 
 	// 解析应用参数
-	parseAppArg()
+	parseArg()
 
 	// ValidateTrans
 	api.ValidateTrans()

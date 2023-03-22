@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/custom/min.css" type="text/css"/>
-    <title>{{ Localize "i18n.index" }}</title>
+    <title>{{ Localize "i18n.file" }} {{ .pf.Path }}</title>
 </head>
 <body>
 
@@ -18,11 +18,95 @@
     <!-- 没有消息就是最好的消息 -->
     <p style="color: red;">{{ .msg }}</p>
 
-    <br>
-    <br>
-    <br>
-    统计文件数量，
+    <p>
+        <!--
+        <span>{{ .pf.Path }}</span>
+        -->
+        <span>
+        <script>
+            document.write('{{ .pf.PathLink }}')
+        </script>
+        </span>
+        &nbsp;&nbsp;
+        <span><input name="searchName" type="text" size="15"><a name="search" ajaxE method="GET"><button>{{ Localize "i18n.search" }}</button></a></span>
+    </p>
+    <table cellspacing="0" cellpadding="10" align="center">
+        <thead>
+        <tr>
+            <td>{{ Localize "i18n.name" }}</td>
+            <td>{{ Localize "i18n.type" }}</td>
+            <td>{{ Localize "i18n.size" }}</td>
+            <td>{{ Localize "i18n.addTime" }}</td>
+            <td>{{ Localize "i18n.updTime" }}</td>
+            <td colspan="3">{{ Localize "i18n.op" }}</td>
+        </tr>
+        </thead>
+        <tbody>
+        {{ if gt .pf.Id 0 }}
+        <tr>
+            <td><a href="/?id={{ .pf.Pid }}">../</a></td>
+            <td colspan="7"></td>
+        </tr>
+        {{ end }}
 
+        {{ $len := len .fs }}
+        {{ if gt $len 0 }}
+        {{ range $index,$f := .fs }}
+        <tr>
+            <td>
+                {{ if eq $f.Type "d" }}
+                <a href="/?id={{ $f.Id }}">{{ $f.Name }}/</a>
+                {{ else }}
+                <a href="/file/{{ $f.Id }}/viewpage" target="_blank">{{ $f.Name }}</a>
+                {{ end }}
+            </td>
+            <td>{{ $f.Type }}</td>
+            <td>{{ HumanizFileSize $f.Size }}</td>
+            <td>{{ HumanizUnix $f.AddTime }}</td>
+            <td>{{ HumanizUnix $f.UpdTime }}</td>
+            <td>
+                <a ajaxE href="/file/name" method="PUT" fId="{{ $f.Id }}" fPid="{{ $.pf.Id }}" fName="{{ $f.Name }}">
+                    <button>{{ Localize "i18n.rename" }}</button>
+                </a>
+            </td>
+            <td>
+                <button name="cut" fId="{{ $f.Id }}"
+                        fName='{{ $.pf.Path }}{{ if ne $.pf.Path "/"}}/{{ end }}{{ $f.Name }}'>
+                    {{ Localize "i18n.cut" }}
+                </button>
+            </td>
+            <td>
+                <a ajaxE href="/file/{{ $f.Id }}" method="DELETE"
+                   confirm='{{ Localize "i18n.del" }} {{ $f.Name }}{{ if eq $f.Type "dir" }}/{{ end }} ?'>
+                    <button>{{ Localize "i18n.del" }}</button>
+                </a>
+            </td>
+        </tr>
+        {{ end }}
+        {{ end }}
+        </tbody>
+    </table>
+    <br>
+    <br>
+    <br>
+
+    <div>
+        <a ajaxE href="/file" method="POST">{{ Localize "i18n.add" }} →</a>
+    </div>
+    <hr width="30%">
+    <div>
+        <form action="/file/upload" method="POST" enctype="multipart/form-data">
+            <input name="pid" type="text" value="{{ .pf.Id }}" hidden/>
+            <input name="file" type="file"/>
+            <button type="submit">{{ Localize "i18n.upload" }}</button>
+        </form>
+    </div>
+    <hr width="30%">
+    <div>
+        <a ajaxE href="#" method="PUT" name="paste" value="{{ .pf.Id }}">
+            <button name="paste">{{ Localize "i18n.paste" }}</button>
+        </a>
+    </div>
 
 </content>
 

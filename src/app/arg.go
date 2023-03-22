@@ -16,7 +16,7 @@ import (
 var arg typ.Arg
 
 // 解析应用参数
-func parseAppArg() {
+func parseArg() {
 	var port int
 	var dataDir string
 	var allowReg int

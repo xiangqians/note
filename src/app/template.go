@@ -77,21 +77,21 @@ func htmlTemplate(pEngine *gin.Engine) {
 		}
 
 		// 获取公共html模板
-		coms, err := filepath.Glob(templatesDir + "/com/*")
+		commons, err := filepath.Glob(templatesDir + "/common/*")
 		if err != nil {
 			panic(err)
 		}
 
 		// Generate our templates map from our layouts/ and includes/ directories
 		for _, m := range matches {
-			addFromFilesFuncs(renderer, pEngine.FuncMap, coms, m)
+			addFromFilesFuncs(renderer, pEngine.FuncMap, commons, m)
 		}
 
 		return renderer
 	}("./templates")
 }
 
-func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap template.FuncMap, coms []string, name string) {
+func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap template.FuncMap, commons []string, name string) {
 	// 打开文件
 	pFile, err := os.Open(name)
 	if err != nil {
@@ -115,7 +115,7 @@ func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap template.FuncMap
 
 				// 目录
 				if sfInfo.IsDir() {
-					addFromFilesFuncs(renderer, funcMap, coms, fmt.Sprintf("%s%s%s", name, util.FileSeparator, sfName))
+					addFromFilesFuncs(renderer, funcMap, commons, fmt.Sprintf("%s%s%s", name, util.FileSeparator, sfName))
 				} else
 				// 文件
 				{
@@ -124,9 +124,9 @@ func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap template.FuncMap
 						files = []string{fmt.Sprintf("%s%s%s", name, util.FileSeparator, sfName)}
 					} else {
 						// len 0, cap ?
-						files = make([]string, 0, len(coms)+1)
+						files = make([]string, 0, len(commons)+1)
 						files = append(files, fmt.Sprintf("%s%s%s", name, util.FileSeparator, sfName))
-						files = append(files, coms...)
+						files = append(files, commons...)
 					}
 
 					renderer.AddFromFilesFuncs(strings.ReplaceAll(fmt.Sprintf("%s/%s", name, sfName), "\\", "/")[len("templates/"):], funcMap, files...)
@@ -137,9 +137,9 @@ func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap template.FuncMap
 	// /*
 	{
 		// len 0, cap ?
-		files := make([]string, 0, len(coms)+1)
+		files := make([]string, 0, len(commons)+1)
 		files = append(files, name)
-		files = append(files, coms...)
+		files = append(files, commons...)
 		//renderer.AddFromFilesFuncs(filepath.Base(name), funcMap, files...)
 		renderer.AddFromFilesFuncs(strings.ReplaceAll(name, "\\", "/")[len("templates/"):], funcMap, files...)
 	}

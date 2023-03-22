@@ -48,7 +48,7 @@ func NameHumpToUnderline(name string) string {
 	return strings.ToLower(strings.Join(res, "_"))
 }
 
-func ConvStrToT[T any](value string) (T, error) {
+func StrAsType[T any](value string) (T, error) {
 	var t T
 	rflVal := reflect.ValueOf(t)
 	//log.Println(rflVal)

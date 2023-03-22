@@ -1,4 +1,6 @@
-// app
+// app type
+// @author xiangqian
+// @date 20:53 2023/03/13
 package typ
 
 // Arg 应用参数

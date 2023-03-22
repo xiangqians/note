@@ -1,4 +1,4 @@
-// page
+// page type
 // @author xiangqian
 // @date 10:52 2023/02/04
 package typ

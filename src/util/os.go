@@ -21,10 +21,10 @@ var FileSeparator string
 
 func init() {
 	switch OS() {
-	case typ.WindowsOS:
+	case typ.OSWindows:
 		FileSeparator = "\\"
 
-	case typ.LinuxOS:
+	case typ.OSLinux:
 		FileSeparator = "/"
 
 	default:
@@ -38,27 +38,27 @@ func OS() typ.OS {
 	switch os {
 	// windows
 	case "windows":
-		return typ.WindowsOS
+		return typ.OSWindows
 
 	// linux
 	case "linux":
 		fallthrough // 执行穿透
 	case "android":
-		return typ.LinuxOS
+		return typ.OSLinux
 
 	// unknown
 	default:
-		return typ.UnknownOS
+		return typ.OSUnk
 	}
 }
 
 // CdCmd cd命令
 func CdCmd(path string) (string, error) {
 	switch OS() {
-	case typ.WindowsOS:
+	case typ.OSWindows:
 		return fmt.Sprintf("cd /d %s", path), nil
 
-	case typ.LinuxOS:
+	case typ.OSLinux:
 		return fmt.Sprintf("cd %s", path), nil
 
 	default:
@@ -101,10 +101,10 @@ func CommandLinux(cmd string) *exec.Cmd {
 // Command 执行命令行
 func Command(cmd string) (*exec.Cmd, error) {
 	switch OS() {
-	case typ.WindowsOS:
+	case typ.OSWindows:
 		return CommandWindows(cmd), nil
 
-	case typ.LinuxOS:
+	case typ.OSLinux:
 		return CommandLinux(cmd), nil
 
 	default:
@@ -114,10 +114,10 @@ func Command(cmd string) (*exec.Cmd, error) {
 
 func CopyDir(srcDir, dstDir string) *exec.Cmd {
 	switch OS() {
-	case typ.WindowsOS:
+	case typ.OSWindows:
 		return CommandWindows(fmt.Sprintf("xcopy %s %s /s /e /h /i /y", srcDir, dstDir))
 
-	case typ.LinuxOS:
+	case typ.OSLinux:
 		return CommandLinux(fmt.Sprintf("cp -r %s %s", srcDir, dstDir))
 
 	default:
@@ -133,7 +133,7 @@ func DecodeBuf(buf []byte) string {
 	switch OS() {
 	// 解决windows乱码问题
 	// GB18030编码
-	case typ.WindowsOS:
+	case typ.OSWindows:
 		var decodeBytes, _ = simplifiedchinese.GB18030.NewDecoder().Bytes(buf)
 		return string(decodeBytes)
 

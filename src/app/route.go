@@ -33,6 +33,7 @@ func route(pEngine *gin.Engine) {
 	pEngine.Any("/", api.IndexPage)
 
 	// file
+	pEngine.Any("/file/listpage", api.FileListPage)
 	pEngine.POST("/file", api.FileAdd)
 	pEngine.POST("/file/upload", api.FileUpload)
 	pEngine.POST("/file/reupload", api.FileReUpload)
