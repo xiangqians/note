@@ -17,13 +17,13 @@ import (
 )
 
 // 初始化HTML模板
-func htmlTemplate(pEngine *gin.Engine) {
+func htmlTemplate(engine *gin.Engine) {
 
 	// gin内置模板函数
 	// go1.19.3/src/text/template/funcs.go:40
 
 	// 自定义模板函数
-	pEngine.SetFuncMap(template.FuncMap{
+	engine.SetFuncMap(template.FuncMap{
 		// 为了获取 i18n 文件中 key 对应的 value
 		"Localize": i18n.GetMessage,
 
@@ -63,10 +63,10 @@ func htmlTemplate(pEngine *gin.Engine) {
 	})
 
 	// HTML模板
-	//pEngine.LoadHTMLGlob("templates/*")
-	//pEngine.LoadHTMLGlob("templates/**/*")
+	//engine.LoadHTMLGlob("templates/*")
+	//engine.LoadHTMLGlob("templates/**/*")
 	// https://github.com/gin-contrib/multitemplate
-	pEngine.HTMLRender = func(templatesDir string) render.HTMLRender {
+	engine.HTMLRender = func(templatesDir string) render.HTMLRender {
 		// if gin.DebugMode -> NewDynamic()
 		renderer := multitemplate.NewRenderer()
 
@@ -84,7 +84,7 @@ func htmlTemplate(pEngine *gin.Engine) {
 
 		// Generate our templates map from our layouts/ and includes/ directories
 		for _, m := range matches {
-			addFromFilesFuncs(renderer, pEngine.FuncMap, commons, m)
+			addFromFilesFuncs(renderer, engine.FuncMap, commons, m)
 		}
 
 		return renderer
@@ -93,14 +93,14 @@ func htmlTemplate(pEngine *gin.Engine) {
 
 func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap template.FuncMap, commons []string, name string) {
 	// 打开文件
-	pFile, err := os.Open(name)
+	file, err := os.Open(name)
 	if err != nil {
 		panic(err)
 	}
-	defer pFile.Close()
+	defer file.Close()
 
 	// 获取文件信息
-	fInfo, err := pFile.Stat()
+	fInfo, err := file.Stat()
 	if err != nil {
 		panic(err)
 	}
@@ -108,7 +108,7 @@ func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap template.FuncMap
 	// /**/*
 	if fInfo.IsDir() {
 		fName := fInfo.Name()
-		sfInfos, err := pFile.Readdir(-1) // sub file info
+		sfInfos, err := file.Readdir(-1) // sub file info
 		if err == nil {
 			for _, sfInfo := range sfInfos {
 				sfName := sfInfo.Name()

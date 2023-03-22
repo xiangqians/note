@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"note/src/api/common"
 	"note/src/typ"
 	"note/src/util"
 	"os"
@@ -19,9 +20,9 @@ import (
 
 // ImgListPage 图片列表页面
 func ImgListPage(pContext *gin.Context) {
-	req, _ := PageReq(pContext)
-	page, err := DbPage[typ.Img](pContext, req, "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = 0 ORDER BY i.`add_time` DESC")
-	HtmlOk(pContext, "img/list.html", gin.H{"page": page}, err)
+	req, _ := common.PageReq(pContext)
+	page, err := common.DbPage[typ.Img](pContext, req, "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = 0 ORDER BY i.`add_time` DESC")
+	common.HtmlOk(pContext, "img/list.html", gin.H{"page": page}, err)
 }
 
 // ImgUpload 图片上传
@@ -30,10 +31,10 @@ func ImgUpload(pContext *gin.Context) {
 	redirect := func(id int64, msg any) {
 		switch method {
 		case http.MethodPost:
-			Redirect(pContext, fmt.Sprintf("/img/listpage"), nil, msg)
+			common.Redirect(pContext, fmt.Sprintf("/img/listpage"), nil, msg)
 
 		case http.MethodPut:
-			Redirect(pContext, fmt.Sprintf("/img/%d/editpage", id), nil, msg)
+			common.Redirect(pContext, fmt.Sprintf("/img/%d/editpage", id), nil, msg)
 		}
 	}
 
@@ -41,7 +42,7 @@ func ImgUpload(pContext *gin.Context) {
 	var id int64
 	var err error
 	if method == http.MethodPut {
-		id, err = PostForm[int64](pContext, "id")
+		id, err = common.PostForm[int64](pContext, "id")
 		if err != nil {
 			redirect(id, err)
 			return
@@ -95,11 +96,11 @@ func ImgUpload(pContext *gin.Context) {
 	// 操作数据库
 	switch method {
 	case http.MethodPost:
-		id, err = DbAdd(pContext, "INSERT INTO `img` (`name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?)",
+		id, err = common.DbAdd(pContext, "INSERT INTO `img` (`name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?)",
 			fn, ft, fs, time.Now().Unix())
 
 	case http.MethodPut:
-		_, err = DbUpd(pContext, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?",
+		_, err = common.DbUpd(pContext, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?",
 			fn, ft, fs, time.Now().Unix(), id)
 	}
 	if err != nil {
@@ -144,12 +145,12 @@ func ImgReUpload(pContext *gin.Context) {
 // ImgUpdName 图片重命名
 func ImgUpdName(pContext *gin.Context) {
 	redirect := func(msg any) {
-		Redirect(pContext, fmt.Sprintf("/img/listpage"), nil, msg)
+		common.Redirect(pContext, fmt.Sprintf("/img/listpage"), nil, msg)
 	}
 
 	// img
 	img := typ.Img{}
-	err := ShouldBind(pContext, &img)
+	err := common.ShouldBind(pContext, &img)
 	if err != nil {
 		redirect(err)
 		return
@@ -163,7 +164,7 @@ func ImgUpdName(pContext *gin.Context) {
 		return
 	}
 
-	imgType, count, err := DbQry[string](pContext, "SELECT `type` FROM `img` WHERE `del` = 0 AND `id` = ?", img.Id)
+	imgType, count, err := common.DbQry[string](pContext, "SELECT `type` FROM `img` WHERE `del` = 0 AND `id` = ?", img.Id)
 	if count > 0 {
 		name := img.Name
 		ft := FileTypeImgOf(imgType)
@@ -172,7 +173,7 @@ func ImgUpdName(pContext *gin.Context) {
 		}
 
 		// update
-		_, err = DbUpd(pContext, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", name, time.Now().Unix(), img.Id, name)
+		_, err = common.DbUpd(pContext, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", name, time.Now().Unix(), img.Id, name)
 	}
 
 	redirect(err)
@@ -181,18 +182,18 @@ func ImgUpdName(pContext *gin.Context) {
 
 func ImgDel(pContext *gin.Context) {
 	redirect := func(msg any) {
-		Redirect(pContext, fmt.Sprintf("/img/listpage"), nil, msg)
+		common.Redirect(pContext, fmt.Sprintf("/img/listpage"), nil, msg)
 	}
 
 	// id
-	id, err := Param[int64](pContext, "id")
+	id, err := common.Param[int64](pContext, "id")
 	if err != nil {
 		redirect(err)
 		return
 	}
 
 	// delete
-	_, err = DbDel(pContext, "UPDATE `img` SET `del` = 1, `upd_time` = ? WHERE `id` = ?", time.Now().Unix(), id)
+	_, err = common.DbDel(pContext, "UPDATE `img` SET `del` = 1, `upd_time` = ? WHERE `id` = ?", time.Now().Unix(), id)
 	redirect(err)
 	return
 }
@@ -200,7 +201,7 @@ func ImgDel(pContext *gin.Context) {
 // ImgView 查看图片
 func ImgView(pContext *gin.Context) {
 	// id
-	id, err := Param[int64](pContext, "id")
+	id, err := common.Param[int64](pContext, "id")
 	if err != nil {
 		log.Println(err)
 		return
@@ -233,11 +234,11 @@ func ImgView(pContext *gin.Context) {
 
 func ImgViewPage(pContext *gin.Context) {
 	html := func(img typ.Img, msg any) {
-		HtmlOk(pContext, "img/view.html", gin.H{"img": img}, msg)
+		common.HtmlOk(pContext, "img/view.html", gin.H{"img": img}, msg)
 	}
 
 	// id
-	id, err := Param[int64](pContext, "id")
+	id, err := common.Param[int64](pContext, "id")
 	if err != nil {
 		html(typ.Img{}, err)
 		return
@@ -253,11 +254,11 @@ func ImgViewPage(pContext *gin.Context) {
 
 func ImgEditPage(pContext *gin.Context) {
 	html := func(img typ.Img, msg any) {
-		HtmlOk(pContext, "img/edit.html", gin.H{"img": img}, msg)
+		common.HtmlOk(pContext, "img/edit.html", gin.H{"img": img}, msg)
 	}
 
 	// id
-	id, err := Param[int64](pContext, "id")
+	id, err := common.Param[int64](pContext, "id")
 	if err != nil {
 		html(typ.Img{}, err)
 		return
@@ -273,7 +274,7 @@ func ImgEditPage(pContext *gin.Context) {
 // id: 图片主键id
 func ImgPath(pContext *gin.Context, img typ.Img) (string, error) {
 	// dir
-	dataDir := DataDir(pContext)
+	dataDir := common.DataDir(pContext)
 	imgDir := fmt.Sprintf("%s%s%s%s%s", dataDir, util.FileSeparator, "img", util.FileSeparator, img.Type)
 	if !util.IsExistOfPath(imgDir) {
 		err := util.Mkdir(imgDir)
@@ -287,7 +288,7 @@ func ImgPath(pContext *gin.Context, img typ.Img) (string, error) {
 }
 
 func ImgQry(pContext *gin.Context, id int64) (typ.Img, int64, error) {
-	img, count, err := DbQry[typ.Img](pContext, "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = 0 AND i.`id` = ?", id)
+	img, count, err := common.DbQry[typ.Img](pContext, "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = 0 AND i.`id` = ?", id)
 	return img, count, err
 }
 

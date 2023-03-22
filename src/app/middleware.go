@@ -12,82 +12,81 @@ import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/text/language"
 	"net/http"
-	"note/src/api"
+	api_common "note/src/api/common"
 	"note/src/typ"
 	"strings"
 )
 
 // 权限中间件
-func permMiddleware(pEngine *gin.Engine) {
+func permMiddleware(engine *gin.Engine) {
 	// 未授权拦截
-	pEngine.Use(func(pContext *gin.Context) {
-		reqPath := pContext.Request.URL.Path
+	engine.Use(func(context *gin.Context) {
+		reqPath := context.Request.URL.Path
 
 		// 静态资源放行
 		if strings.HasPrefix(reqPath, "/static") {
-			pContext.Next()
+			context.Next()
 			return
 		}
 
 		// isLogin
 		isLogin := false
-		_, err := api.SessionUser(pContext)
+		_, err := api_common.GetSessionUser(context)
 		if err == nil {
 			isLogin = true
 		}
 
 		if reqPath == "/user/regpage" || reqPath == "/user/loginpage" ||
-			(reqPath == "/user" && pContext.Request.Method == http.MethodPost) || reqPath == "/user/login" {
+			(reqPath == "/user" && context.Request.Method == http.MethodPost) || reqPath == "/user/login" {
 			if isLogin {
-				pContext.Redirect(http.StatusMovedPermanently, "/")
-				pContext.Abort()
+				context.Redirect(http.StatusMovedPermanently, "/")
+				context.Abort()
 			} else {
-				pContext.Next()
+				context.Next()
 			}
 			return
 		}
 
 		if !isLogin {
 			// 重定向
-			//pContext.Request.URL.Path = "/user/loginpage"
-			//pEngine.HandleContext(pContext)
-			pContext.Redirect(http.StatusMovedPermanently, "/user/loginpage")
+			//context.Request.URL.Path = "/user/loginpage"
+			//engine.HandleContext(context)
+			context.Redirect(http.StatusMovedPermanently, "/user/loginpage")
 
 			// 中止调用链
-			pContext.Abort()
+			context.Abort()
 			return
 		}
 	})
 }
 
 // 静态资源处理中间件
-func staticMiddleware(pEngine *gin.Engine) {
+func staticMiddleware(engine *gin.Engine) {
 	// 静态资源处理
 	// https://github.com/gin-contrib/static
-	pEngine.Use(static.Serve("/static", static.LocalFile("./static", false)))
+	engine.Use(static.Serve("/static", static.LocalFile("./static", false)))
 }
 
 // i18n中间件
-func i18nMiddleware(pEngine *gin.Engine) {
+func i18nMiddleware(engine *gin.Engine) {
 	// apply i18n middleware
 	// https://github.com/gin-contrib/i18n
-	pEngine.Use(i18n.Localize(i18n.WithBundle(&i18n.BundleCfg{
+	engine.Use(i18n.Localize(i18n.WithBundle(&i18n.BundleCfg{
 		RootPath:         "./i18n",
 		AcceptLanguage:   []language.Tag{language.Chinese, language.English},
 		DefaultLanguage:  language.Chinese,
 		UnmarshalFunc:    json.Unmarshal,
 		FormatBundleFile: "json",
 	}), i18n.WithGetLngHandle(
-		func(pContext *gin.Context, defaultLang string) string {
+		func(context *gin.Context, defaultLang string) string {
 			// 从url中获取lang
-			lang := strings.ToLower(strings.TrimSpace(pContext.Query("lang")))
+			lang := strings.ToLower(strings.TrimSpace(context.Query("lang")))
 			if lang != "" && !(lang == typ.LocaleZh || lang == typ.LocaleEn) {
 				lang = ""
 			}
 
 			// 从session中获取lang
-			//session := sessions.Default(pContext)
-			session := sessions.Default(pContext)
+			session := api_common.Session(context)
 			sessionLang := ""
 			if v, r := session.Get("lang").(string); r {
 				sessionLang = v
@@ -98,7 +97,7 @@ func i18nMiddleware(pEngine *gin.Engine) {
 
 			if lang == "" {
 				// 从请求头获取 Accept-Language
-				acceptLanguage := pContext.GetHeader("Accept-Language")
+				acceptLanguage := context.GetHeader("Accept-Language")
 				// en,zh-CN;q=0.9,zh;q=0.8
 				if strings.HasPrefix(acceptLanguage, typ.LocaleZh) {
 					lang = typ.LocaleZh
@@ -121,7 +120,7 @@ func i18nMiddleware(pEngine *gin.Engine) {
 }
 
 // session中间件
-func sessionMiddleware(pEngine *gin.Engine) {
+func sessionMiddleware(engine *gin.Engine) {
 	// 密钥
 	keyPairs := []byte("123456")
 
@@ -140,6 +139,6 @@ func sessionMiddleware(pEngine *gin.Engine) {
 
 	// 设置session中间件
 	// session中间件基于内存（其他存储引擎支持：redis、mysql等）实现
-	pEngine.Use(sessions.Sessions("NoteSessionId", // session & cookie 名称
+	engine.Use(sessions.Sessions("NoteSessionId", // session & cookie 名称
 		store))
 }

@@ -6,14 +6,14 @@ package app
 import (
 	"flag"
 	"log"
-	"note/src/api"
+	api_common "note/src/api/common"
 	"note/src/typ"
 	"note/src/util"
 	"path/filepath"
 	"strings"
 )
 
-var arg typ.Arg
+var appArg typ.AppArg
 
 // 解析应用参数
 func parseArg() {
@@ -41,12 +41,12 @@ func parseArg() {
 	log.Printf("DataDir: %v\n", dataDir)
 	log.Printf("AllowReg: %v\n", allowReg)
 
-	arg = typ.Arg{
+	appArg = typ.AppArg{
 		Port:     port,
 		DataDir:  dataDir,
 		AllowReg: allowReg,
 	}
 
-	// 设置api arg
-	api.SetArg(arg)
+	// 设置api AppArg
+	api_common.AppArg = appArg
 }

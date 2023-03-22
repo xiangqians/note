@@ -32,13 +32,13 @@ func logger() {
 	}
 
 	// 创建日志文件（如果存在则覆盖）
-	pLogFile, err := os.Create(logDir + "/debug.log")
+	logFile, err := os.Create(logDir + "/debug.log")
 	if err != nil {
 		panic(err)
 	}
 
 	// 设置gin日志默认输出到：日志文件和控制台
-	writer := io.MultiWriter(pLogFile, os.Stdout)
+	writer := io.MultiWriter(logFile, os.Stdout)
 	gin.DefaultWriter = writer
 
 	// log

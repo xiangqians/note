@@ -7,7 +7,7 @@ package app
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"note/src/api"
+	"note/src/api/common"
 	"strconv"
 )
 
@@ -22,29 +22,29 @@ func Run() {
 	parseArg()
 
 	// ValidateTrans
-	api.ValidateTrans()
+	common.ValidateTrans()
 
 	// gin模式：DebugMode、ReleaseMode、TestMode
 	gin.SetMode(gin.DebugMode)
 
 	// default Engine
-	pEngine := gin.Default()
+	engine := gin.Default()
 
 	// template
-	htmlTemplate(pEngine)
+	htmlTemplate(engine)
 
 	// middleware
-	sessionMiddleware(pEngine)
-	i18nMiddleware(pEngine)
-	staticMiddleware(pEngine)
-	permMiddleware(pEngine)
+	sessionMiddleware(engine)
+	i18nMiddleware(engine)
+	staticMiddleware(engine)
+	permMiddleware(engine)
 
 	// route
-	route(pEngine)
+	route(engine)
 
 	// addr
-	addr := fmt.Sprintf(":%v", strconv.FormatInt(int64(arg.Port), 10))
+	addr := fmt.Sprintf(":%v", strconv.FormatInt(int64(appArg.Port), 10))
 
 	// run
-	pEngine.Run(addr)
+	engine.Run(addr)
 }

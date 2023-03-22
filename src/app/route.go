@@ -7,18 +7,20 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"note/src/api"
+	"note/src/api/common"
+	api_index "note/src/api/index"
 )
 
-func route(pEngine *gin.Engine) {
+func route(engine *gin.Engine) {
 	// 设置默认路由
 	handler := func(pContext *gin.Context) {
-		api.Html(pContext, http.StatusNotFound, "404.html", nil, nil)
+		common.Html(pContext, http.StatusNotFound, "404.html", nil, nil)
 	}
-	pEngine.Any("/404", handler)
-	pEngine.NoRoute(handler)
+	engine.Any("/404", handler)
+	engine.NoRoute(handler)
 
 	// user
-	userRouterGroup := pEngine.Group("/user")
+	userRouterGroup := engine.Group("/user")
 	{
 		userRouterGroup.Any("/regpage", api.UserRegPage)
 		userRouterGroup.Any("/loginpage", api.UserLoginPage)
@@ -26,32 +28,32 @@ func route(pEngine *gin.Engine) {
 		userRouterGroup.Any("/logout", api.UserLogout)
 		userRouterGroup.Any("/stgpage", api.UserStgPage)
 	}
-	pEngine.POST("/user", api.UserAdd)
-	pEngine.PUT("/user", api.UserUpd)
+	engine.POST("/user", api.UserAdd)
+	engine.PUT("/user", api.UserUpd)
 
 	// index
-	pEngine.Any("/", api.IndexPage)
+	engine.Any("/", api_index.IndexPage)
 
 	// file
-	pEngine.Any("/file/listpage", api.FileListPage)
-	pEngine.POST("/file", api.FileAdd)
-	pEngine.POST("/file/upload", api.FileUpload)
-	pEngine.POST("/file/reupload", api.FileReUpload)
-	pEngine.Any("/file/:id/view", api.FileView)
-	pEngine.Any("/file/:id/viewpage", api.FileViewPage)
-	pEngine.Any("/file/:id/editpage", api.FileEditPage)
-	pEngine.PUT("/file/name", api.FileUpdName)
-	pEngine.PUT("/file/content", api.FileUpdContent)
-	pEngine.PUT("/file/cut/:srcId/to/:dstId", api.FileCut)
-	pEngine.DELETE("/file/:id", api.FileDel)
+	engine.Any("/file/listpage", api.FileListPage)
+	engine.POST("/file", api.FileAdd)
+	engine.POST("/file/upload", api.FileUpload)
+	engine.POST("/file/reupload", api.FileReUpload)
+	engine.Any("/file/:id/view", api.FileView)
+	engine.Any("/file/:id/viewpage", api.FileViewPage)
+	engine.Any("/file/:id/editpage", api.FileEditPage)
+	engine.PUT("/file/name", api.FileUpdName)
+	engine.PUT("/file/content", api.FileUpdContent)
+	engine.PUT("/file/cut/:srcId/to/:dstId", api.FileCut)
+	engine.DELETE("/file/:id", api.FileDel)
 
 	// img
-	pEngine.Any("/img/listpage", api.ImgListPage)
-	pEngine.POST("/img/upload", api.ImgUpload)
-	pEngine.POST("/img/reupload", api.ImgReUpload)
-	pEngine.PUT("/img/name", api.ImgUpdName)
-	pEngine.DELETE("/img/:id", api.ImgDel)
-	pEngine.Any("/img/:id/view", api.ImgView)
-	pEngine.Any("/img/:id/viewpage", api.ImgViewPage)
-	pEngine.Any("/img/:id/editpage", api.ImgEditPage)
+	engine.Any("/img/listpage", api.ImgListPage)
+	engine.POST("/img/upload", api.ImgUpload)
+	engine.POST("/img/reupload", api.ImgReUpload)
+	engine.PUT("/img/name", api.ImgUpdName)
+	engine.DELETE("/img/:id", api.ImgDel)
+	engine.Any("/img/:id/view", api.ImgView)
+	engine.Any("/img/:id/viewpage", api.ImgViewPage)
+	engine.Any("/img/:id/editpage", api.ImgEditPage)
 }

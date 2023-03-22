@@ -48,6 +48,18 @@ func NameHumpToUnderline(name string) string {
 	return strings.ToLower(strings.Join(res, "_"))
 }
 
+func TypeAsStr(i any) string {
+	if i == nil {
+		return ""
+	}
+
+	if v, r := i.(error); r {
+		return v.Error()
+	}
+
+	return fmt.Sprintf("%v", i)
+}
+
 func StrAsType[T any](value string) (T, error) {
 	var t T
 	rflVal := reflect.ValueOf(t)

@@ -66,18 +66,18 @@ func Qry[T any](dsn string, sql string, args ...any) (T, int64, error) {
 	var t T
 
 	// db
-	pDb, err := db(dsn)
+	_db, err := db(dsn)
 	if err != nil {
 		return t, 0, err
 	}
-	defer pDb.Close()
+	defer _db.Close()
 
 	// query
-	pRows, err := pDb.Query(sql, args...)
+	rows, err := _db.Query(sql, args...)
 	if err != nil {
 		return t, 0, err
 	}
-	defer pRows.Close()
+	defer rows.Close()
 
 	// 通过反射初始化实例
 	rflVal := reflect.ValueOf(t)
@@ -88,7 +88,7 @@ func Qry[T any](dsn string, sql string, args ...any) (T, int64, error) {
 	}
 
 	// 行映射
-	count, err := rowsMapper(pRows, &t)
+	count, err := rowsMapper(rows, &t)
 	if err != nil {
 		return t, count, err
 	}
@@ -98,13 +98,13 @@ func Qry[T any](dsn string, sql string, args ...any) (T, int64, error) {
 
 // Add return insertId
 func Add(dsn string, sql string, args ...any) (int64, error) {
-	pDb, err := db(dsn)
+	_db, err := db(dsn)
 	if err != nil {
 		return 0, err
 	}
-	defer pDb.Close()
+	defer _db.Close()
 
-	res, err := pDb.Exec(sql, args...)
+	res, err := _db.Exec(sql, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -121,13 +121,13 @@ func Del(dsn string, sql string, args ...any) (int64, error) {
 
 // return affect
 func exec(dsn string, sql string, args ...any) (int64, error) {
-	pDb, err := db(dsn)
+	_db, err := db(dsn)
 	if err != nil {
 		return 0, err
 	}
-	defer pDb.Close()
+	defer _db.Close()
 
-	res, err := pDb.Exec(sql, args...)
+	res, err := _db.Exec(sql, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -143,8 +143,8 @@ func db(dsn string) (*sql.DB, error) {
 
 // 字段集映射
 // 支持 1）一个或多个属性映射；2）结构体映射；3）结构体切片映射
-func rowsMapper(pRows *sql.Rows, i any) (int64, error) {
-	cols, err := pRows.Columns()
+func rowsMapper(rows *sql.Rows, i any) (int64, error) {
+	cols, err := rows.Columns()
 	if err != nil {
 		return 0, err
 	}
@@ -155,10 +155,10 @@ func rowsMapper(pRows *sql.Rows, i any) (int64, error) {
 	switch rflType.Kind() {
 	// 结构体
 	case reflect.Struct:
-		if pRows.Next() {
+		if rows.Next() {
 			record++
 			dest := getDest(cols, rflType, rflVal)
-			err = pRows.Scan(dest...)
+			err = rows.Scan(dest...)
 		}
 
 	// 切片
@@ -172,7 +172,7 @@ func rowsMapper(pRows *sql.Rows, i any) (int64, error) {
 			eRflType := reflect.TypeOf(e)
 			var eRflVal reflect.Value
 			idx := 0
-			for pRows.Next() {
+			for rows.Next() {
 				record++
 				if idx < l {
 					eRflVal = rflVal.Index(idx).Addr().Elem()
@@ -181,7 +181,7 @@ func rowsMapper(pRows *sql.Rows, i any) (int64, error) {
 					eRflVal = reflect.ValueOf(pE).Elem()
 				}
 				dest := getDest(cols, eRflType, eRflVal)
-				err = pRows.Scan(dest...)
+				err = rows.Scan(dest...)
 				if err != nil {
 					return record, err
 				}
@@ -198,22 +198,22 @@ func rowsMapper(pRows *sql.Rows, i any) (int64, error) {
 
 		// 普通指针类型数组
 		default:
-			if pRows.Next() {
+			if rows.Next() {
 				record++
 				dest := make([]any, l)
 				for ei := 0; ei < l; ei++ {
 					e := rflVal.Index(ei).Interface()
 					dest[ei] = e
 				}
-				err = pRows.Scan(dest...)
+				err = rows.Scan(dest...)
 			}
 		}
 
 	// 普通指针类型
 	default:
-		if pRows.Next() {
+		if rows.Next() {
 			record++
-			err = pRows.Scan(i)
+			err = rows.Scan(i)
 		}
 	}
 

@@ -1,7 +1,7 @@
 // index
 // @author xiangqian
 // @date 17:21 2023/02/04
-package api
+package index
 
 import (
 	"github.com/gin-gonic/gin"
