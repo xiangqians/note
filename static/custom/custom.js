@@ -248,6 +248,17 @@ custom = function () {
         this.cxt.fill()
     }
 
+    obj.PieChart.prototype.drawTotal = function (total, n) {
+        this.beginPath()
+        let rectEndT = this.rectT * (n + 1) + this.rectH * (n)
+        // 配套相应的文字
+        this.cxt.font = '12px Miscrosoft Yahei'
+        this.cxt.textBaseline = 'middle'
+        this.cxt.fillStyle = `rgb(0, 0, 0)`
+        this.cxt.fillText('total: ' + total, this.rectL + this.rectT, rectEndT + this.rectH / 2)
+        this.cxt.fill()
+    }
+
     /**
      * draw
      * @param data [{ title: '', num: '' }]
@@ -284,6 +295,9 @@ custom = function () {
             this.drawTitle(start, data[i].pct, color, title)
             this.drawRect(title, i, color)
         }
+
+        // total
+        this.drawTotal(total + '', data.length)
     }
 
     return obj
