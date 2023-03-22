@@ -59,3 +59,8 @@ textarea[name="rem"] {
     height: 100px;
 }
 
+canvas {
+    display: block;
+    margin: 10px auto;
+    border: 1px solid #000;
+}

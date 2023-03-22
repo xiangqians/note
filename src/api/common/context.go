@@ -10,6 +10,32 @@ import (
 	"note/src/util"
 )
 
+func HtmlNotFound[T any](context *gin.Context, name string, resp typ.Resp[T]) {
+	HtmlNew(context, http.StatusNotFound, name, resp)
+}
+
+func HtmlOkNew[T any](context *gin.Context, name string, resp typ.Resp[T]) {
+	HtmlNew(context, http.StatusOK, name, resp)
+}
+
+// HtmlNew
+// name: templateName
+func HtmlNew[T any](context *gin.Context, code int, name string, resp typ.Resp[T]) {
+	// user
+	user, _ := GetSessionUser(context)
+	// uri
+	uri := context.Request.RequestURI
+	// url
+	url := context.Request.URL.Path
+	// html
+	context.HTML(code, name, gin.H{
+		"resp": resp,
+		"user": user,
+		"uri":  uri,
+		"url":  url,
+	})
+}
+
 func HtmlOk(context *gin.Context, templateName string, h gin.H, msg any) {
 	Html(context, http.StatusOK, templateName, h, msg)
 }
@@ -31,7 +57,6 @@ func Html(context *gin.Context, code int, templateName string, h gin.H, msg any)
 	// url
 	h["url"] = context.Request.URL.Path
 
-	// 没有消息就是最好的消息
 	msgStr := util.TypeAsStr(msg)
 	sessionMsg, err := GetSessionV[string](context, "msg", true)
 	if err == nil {
@@ -43,6 +68,11 @@ func Html(context *gin.Context, code int, templateName string, h gin.H, msg any)
 	h["msg"] = msgStr
 
 	context.HTML(code, templateName, h)
+}
+
+func RedirectNew(context *gin.Context, location string, resp typ.Resp[any]) {
+	SetSessionKv(context, "resp", resp)
+	context.Redirect(http.StatusMovedPermanently, location)
 }
 
 func Redirect(context *gin.Context, location string, h gin.H, msg any) {

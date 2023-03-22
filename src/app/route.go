@@ -19,6 +19,9 @@ func route(engine *gin.Engine) {
 	engine.Any("/404", handler)
 	engine.NoRoute(handler)
 
+	// index
+	engine.Any("/", api_index.Page)
+
 	// user
 	userRouterGroup := engine.Group("/user")
 	{
@@ -30,9 +33,6 @@ func route(engine *gin.Engine) {
 	}
 	engine.POST("/user", api.UserAdd)
 	engine.PUT("/user", api.UserUpd)
-
-	// index
-	engine.Any("/", api_index.IndexPage)
 
 	// file
 	engine.Any("/file/listpage", api.FileListPage)

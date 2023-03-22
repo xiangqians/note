@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
-    <link rel="stylesheet" href="/static/custom/min.css" type="text/css"/>
+    <link rel="stylesheet" href="/static/custom/custom.css" type="text/css"/>
     <title>{{ Localize "i18n.index" }}</title>
 </head>
 <body>
@@ -15,14 +15,18 @@
 {{ template "com/header.html" . }}
 
 <content>
-    <!-- 没有消息就是最好的消息 -->
-    <p style="color: red;">{{ .msg }}</p>
+    <p style="color: red;">{{ .resp.Msg }}</p>
 
+    {{ Localize "i18n.file" }}
+    <canvas id="fileStat" width="600" height="400">
+        你的浏览器不支持 canvas，请升级你的浏览器。
+    </canvas>
     <br>
-    <br>
-    <br>
-    统计文件数量，
 
+    {{ Localize "i18n.img" }}
+    <canvas id="imgStat" width="600" height="400">
+        你的浏览器不支持 canvas，请升级你的浏览器。
+    </canvas>
 
 </content>
 
@@ -31,142 +35,37 @@
 </body>
 </html>
 <script type="text/javascript" src="/static/jquery-v3.6.2/min.js"></script>
-<script type="text/javascript" src="/static/custom/min.js"></script>
-<script type="text/javascript">
+<script type="text/javascript" src="/static/custom/custom.js"></script>
+<script>
+    ;
+    (function () {
 
-    ;(function () {
-        // add
-        let $add = $('a[href="/file"]')
-        // console.log($add)
-        if ($add.length > 0) {
-            $add[0]['pre'] = function ($e) {
-                // flag判断是否已点击 'Add →'
-                let flag = $e.attr('flag')
-                if (flag != 1) {
-                    let $input = $('<input name="name" placeholder="name">')
-                    $input.append('<option value=""></option>')
-                    $e.before($input)
-                    $e.html('<span style="margin-left: 10px">{{ Localize "i18n.add" }}</span>')
-                    $e.attr('flag', 1)
-                    return null
-                }
-
-                // 获取上一个 input 兄弟节点
-                let $input = $e.prev('input')
-                // console.log($input)
-                let value = $input.val().trim();
-                $input.val(value)
-                // console.log(value)
-                let legal = true
-                let name = null
-                let type = null
-                if (value.endsWith("/")) {
-                    name = value.substring(0, value.length - 1)
-                    type = 'd'
-                } else if (value.endsWith(".md")) {
-                    name = value
-                    type = 'md'
-                } else {
-                    legal = false
-                }
-                if (value === "" || !legal) {
-                    // 添加 css border
-                    $input.css('border', '2px solid red')
-                    return null
-                }
-
-                // 删除 css border
-                $input.css('border', '')
-
-                // 请求数据
-                return {"pid": "{{ .pf.Id }}", "name": name, "type": type}
-            }
-        }
-
-        // rename
-        // let $renames = $('a[href^="/file"][href$="/rename"]')
-        let $renames = $('a[href="/file/name"]')
-        for (let i = 0, len = $renames.length; i < len; i++) {
-            $renames[i]['pre'] = function ($e) {
-                let name = prompt('{{ Localize "i18n.name" }}', $e.attr('fName'))
-                if (name && (name = name.trim()) !== "") {
-                    // console.log(name)
-                    return {"id": $e.attr('fId'), "pid": $e.attr('fPid'), "name": name}
-                }
-                return null
-            }
-        }
-
-        // search
-        let $search = $('a[name="search"]')
-        $search[0]['pre'] = function ($e) {
-            let $searchName = $($('input[name="searchName"]')[0])
-            let searchName = $searchName.val().trim()
-            $searchName.val(searchName)
-            if (searchName === '') {
+        function drawPieChart(id, stats) {
+            if (!(stats) && !(stats.length)) {
                 return
             }
 
-            $e.attr('href', '/?id=-1&name=' + searchName)
-            return {}
-        }
-
-    })()
-
-    // cut
-    ;(function () {
-        let $arr = $('button[name="cut"]')
-        let value = custom.storage.get('copy')
-        let id = null
-        if (value) {
-            id = JSON.parse(value).id;
-        }
-        // console.log('value', value)
-        // console.log('id', id)
-        for (let i = 0, len = $arr.length; i < len; i++) {
-            let $e = $($arr[i])
-            if ($e.attr('fId') === id) {
-                $e.attr('disabled', 'disabled')
-                custom.storage.set('copy', {'id': $e.attr('fId'), 'name': $e.attr('fName')})
-            }
-            $e.click(function () {
-                for (let i = 0, len = $arr.length; i < len; i++) {
-                    let $e = $($arr[i])
-                    $e.removeAttr('disabled')
-                }
-                $(this).attr('disabled', 'disabled')
-                custom.storage.set('copy', {'id': $(this).attr('fId'), 'name': $(this).attr('fName')})
-
-                $($('button[name="paste"]')[0]).removeAttr('disabled')
+            // console.log('stats', stats)
+            let data = []
+            stats.forEach(stat => {
+                data.push({
+                    title: stat.Type,
+                    num: stat.Num
+                })
             })
+            // console.log('data', data)
+            let pieChart = new custom.PieChart(document.getElementById(id))
+            pieChart.draw(data)
         }
+
+        // resp
+        let resp = JSON.parse(`{{ .resp }}`)
+        // console.log('resp', resp)
+
+        // file stat
+        drawPieChart('fileStat', resp.Data.FileStats)
+
+        // img stat
+        drawPieChart('imgStat', resp.Data.ImgStats)
     })()
-
-    // paste
-    ;(function () {
-        let $paste = $($('a[name="paste"]')[0])
-        let value = custom.storage.get('copy')
-        if (!(value)) {
-            $($('button[name="paste"]')[0]).attr('disabled', 'disabled')
-        }
-        $paste[0]['pre'] = function ($e) {
-            let value = custom.storage.get('copy')
-            let src = JSON.parse(value);
-            if (!confirm('{{ Localize "i18n.cut" }} "' + src.name + '" {{ Localize "i18n.to" }} "{{ .pf.Path }}{{ if ne .pf.Path "/"}}/{{ end }}" ?')) {
-                return
-            }
-
-            // put
-            let url = '/file/cut/' + src.id + '/to/{{ .pf.Id }}'
-            // console.log(url)
-            $e.attr('href', url)
-
-            // remove attr
-            custom.storage.remove('copy')
-            $($('button[name="paste"]')[0]).attr('disabled', 'disabled')
-
-            return {};
-        }
-    })()
-
 </script>

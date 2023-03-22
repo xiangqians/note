@@ -6,5 +6,5 @@ package typ
 // Resp 响应数据
 type Resp[T any] struct {
 	Msg  string // 消息（没有消息就是最好的消息）
-	Data []T    // 数据
+	Data T      // 数据
 }
