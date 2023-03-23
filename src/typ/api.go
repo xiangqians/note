@@ -43,6 +43,16 @@ type File struct {
 	PathLink string // 目录路径链接
 }
 
+// Img 图片
+type Img struct {
+	Abs
+	Name string `form:"name" binding:"required,min=1,max=60"` // 图片名称
+	Type string `form:"type"`                                 // 图片类型
+	Size int64  `form:"size"`                                 // 图片大小，单位：byte
+
+	Url string // 图片url
+}
+
 // FileType 文件类型
 type FileType string
 
@@ -77,14 +87,16 @@ func FileTypeOf(value string) FileType {
 	return FileTypeUnk
 }
 
-// Img 图片
-type Img struct {
-	Abs
-	Name string `form:"name" binding:"required,min=1,max=60"` // 图片名称
-	Type string `form:"type"`                                 // 图片类型
-	Size int64  `form:"size"`                                 // 图片大小，单位：byte
+var imgFileTypes = [...]FileType{FileTypeIco, FileTypeGif, FileTypeJpg, FileTypeJpeg, FileTypePng, FileTypeWebp}
 
-	Url string // 图片url
+func FileTypeImgOf(value string) FileType {
+	for _, imgFileType := range imgFileTypes {
+		if strings.ToLower(string(imgFileType)) == strings.ToLower(value) {
+			return imgFileType
+		}
+	}
+
+	return FileTypeUnk
 }
 
 // Stat 统计（file和img）

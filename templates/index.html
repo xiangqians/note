@@ -47,7 +47,7 @@
                 return
             }
 
-            console.log('stats', stats)
+            // console.log('stats', stats)
             let pieChart = new custom.PieChart(document.getElementById(id))
             pieChart.draw(stats, e => e.Type, e => e.Type + ' (' + e.Num + ',  ' + custom.humanizFileSize(e.Size) + ')', e => e.Num)
         }

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"note/src/api"
 	"note/src/api/common"
+	api_img "note/src/api/img"
 	api_index "note/src/api/index"
 )
 
@@ -48,12 +49,13 @@ func route(engine *gin.Engine) {
 	engine.DELETE("/file/:id", api.FileDel)
 
 	// img
-	engine.Any("/img/listpage", api.ImgListPage)
-	engine.POST("/img/upload", api.ImgUpload)
-	engine.POST("/img/reupload", api.ImgReUpload)
-	engine.PUT("/img/name", api.ImgUpdName)
-	engine.DELETE("/img/:id", api.ImgDel)
-	engine.Any("/img/:id/view", api.ImgView)
-	engine.Any("/img/:id/viewpage", api.ImgViewPage)
-	engine.Any("/img/:id/editpage", api.ImgEditPage)
+	imgGroup := engine.Group("/img")
+	imgGroup.Any("/list", api_img.List) // page
+	imgGroup.POST("/upload", api_img.Upload)
+	imgGroup.PUT("/upload", api_img.Upload)
+	imgGroup.PUT("/name", api_img.UpdName)
+	imgGroup.DELETE("/:id", api_img.Del)
+	imgGroup.GET("/:id", api_img.Get)
+	imgGroup.Any("/:id/view", api_img.View) // page
+	imgGroup.Any("/:id/edit", api_img.Edit) // page
 }

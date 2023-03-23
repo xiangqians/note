@@ -16,6 +16,9 @@ func UnixToTime(unix int64) time.Time {
 
 // FormatUnix 格式化日期时间戳（s）
 func FormatUnix(unix int64) string {
+	if unix <= 0 {
+		return "-"
+	}
 	return UnixToTime(unix).Format("2006/01/02 15:04:05")
 }
 

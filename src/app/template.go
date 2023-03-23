@@ -29,10 +29,6 @@ func htmlTemplate(engine *gin.Engine) {
 
 		// 格式化日期时间戳（s）
 		"FormatUnix": func(unix int64) string {
-			if unix == 0 {
-				return "-"
-			}
-
 			return util.FormatUnix(unix)
 		},
 
@@ -47,8 +43,10 @@ func htmlTemplate(engine *gin.Engine) {
 		},
 
 		// No.
-		"No_": func(current int64, size uint8, i int) int64 {
-			return (current-1)*int64(size) + int64(i) + 1
+		"No_": func(page any, index int) int64 {
+			current := util.CallField[int64](page, "Current", nil)
+			size := util.CallField[int64](page, "Size", nil)
+			return (current-1)*size + int64(index) + 1
 		},
 
 		// add

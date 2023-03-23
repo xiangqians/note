@@ -25,11 +25,9 @@ $. 引用模板中的根级上下文
         <a name="nav" style='padding: 8px;{{ if eq .url "/" }}background-color: lightgray;{{ end }}'
            href="/">{{ Localize "i18n.index" }}</a>
         <a name="nav" style='padding: 8px;{{ if eq .url "/file/listpage" }}background-color: lightgray;{{ end }}'
-           href="/">{{ Localize "i18n.file" }}</a>
+           href="/file/list">{{ Localize "i18n.file" }}</a>
         <a name="nav" style='padding: 8px;{{ if eq .url "/img/listpage" }}background-color: lightgray;{{ end }}'
-           href="/img/listpage">{{ Localize "i18n.img" }}</a>
-        <a name="nav" style='padding: 8px;{{ if eq .url "/recyclebin/listpage" }}background-color: lightgray;{{ end }}'
-           href="/recyclebin/listpage">{{ Localize "i18n.recycleBin" }}</a>
+           href="/img/list">{{ Localize "i18n.img" }}</a>
     </div>
     <br>
     <br>
