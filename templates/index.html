@@ -47,17 +47,9 @@
                 return
             }
 
-            // console.log('stats', stats)
-            let data = []
-            stats.forEach(stat => {
-                data.push({
-                    title: stat.Type,
-                    num: stat.Num
-                })
-            })
-            // console.log('data', data)
+            console.log('stats', stats)
             let pieChart = new custom.PieChart(document.getElementById(id))
-            pieChart.draw(data)
+            pieChart.draw(stats, e => e.Type, e => e.Type + ' (' + e.Num + ',  ' + custom.humanizFileSize(e.Size) + ')', e => e.Num)
         }
 
         // resp

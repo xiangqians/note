@@ -193,6 +193,7 @@ func IOCopy(src io.Reader, dst io.Writer, bufSize int) error {
 // size: 文件大小，单位：byte
 func HumanizFileSize(size int64) string {
 
+	// B, Byte
 	// 1B  = 8b
 	// 1KB = 1024B
 	// 1MB = 1024KB
@@ -201,6 +202,12 @@ func HumanizFileSize(size int64) string {
 
 	if size <= 0 {
 		return "0 B"
+	}
+
+	// GB
+	gb := float64(size) / (1024 * 1024 * 1024)
+	if gb > 1 {
+		return fmt.Sprintf("%.2f GB", gb)
 	}
 
 	// MB

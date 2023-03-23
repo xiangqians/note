@@ -6,6 +6,60 @@
 custom = function () {
     let obj = {}
 
+    // 判断是否是 object
+    obj.isObj = function (v) {
+        return Object.prototype.toString.call(v) === '[object Object]'
+    }
+
+    // 判断是否是 string
+    obj.isStr = function (v) {
+        return Object.prototype.toString.call(v) === '[object String]'
+    }
+
+    /**
+     * 人性化文件大小
+     * @param size 文件大小，单位：byte
+     */
+    obj.humanizFileSize = function (size) {
+
+        // B, Byte
+        // 1B  = 8b
+        // 1KB = 1024B
+        // 1MB = 1024KB
+        // 1GB = 1024MB
+        // 1TB = 1024GB
+
+        if (size <= 0) {
+            return "0 B"
+        }
+
+        function format(num) {
+            // Math.floor()，不四舍五入 ，向下取整
+            return Math.floor(num * 100) / 100
+        }
+
+        // GB
+        let gb = size / (1024 * 1024 * 1024)
+        if (gb > 1) {
+            return format(gb) + ' GB'
+        }
+
+        // MB
+        let mb = size / (1024 * 1024)
+        if (mb > 1) {
+            return format(mb) + ' MB'
+        }
+
+        // KB
+        let kb = size / 1024
+        if (kb > 1) {
+            return format(kb) + ' KB'
+        }
+
+        // B
+        return size + ' B'
+    }
+
     // 获取指定范围的随机数 [m, n)
     obj.random = function (m, n) {
         return Math.round(Math.random() * (n - m) + m)
@@ -72,29 +126,6 @@ custom = function () {
         $.ajax(param)
     }
 
-    obj.reload = function (text) {
-        // 使用 document.write() 覆盖当前文档
-        document.write(text)
-        document.close()
-
-        // 修改当前浏览器地址
-        let $html = $('html')
-        let url = $html.attr('uri')
-        if (url) {
-            history.replaceState(undefined, undefined, url)
-        }
-    }
-
-    // 判断是否是 object
-    obj.isObj = function (v) {
-        return Object.prototype.toString.call(v) === '[object Object]'
-    }
-
-    // 判断是否是 string
-    obj.isStr = function (v) {
-        return Object.prototype.toString.call(v) === '[object String]'
-    }
-
     obj.ajaxDefault = function (url, method, data, dataType, async) {
         obj.ajax(url, method, data, dataType, async, function (data) {
             obj.reload(data)
@@ -147,6 +178,21 @@ custom = function () {
         obj.ajaxDefault(url, method, data, "form", true)
     }
 
+    obj.reload = function (text) {
+        // 使用 document.write() 覆盖当前文档
+        document.write(text)
+        document.close()
+
+        // 修改当前浏览器地址
+        let $html = $('html')
+        let url = $html.attr('uri')
+        if (url) {
+            history.replaceState(undefined, undefined, url)
+        }
+    }
+
+    // ------------------------------ storage ------------------------------
+
     // 存储
     function Storage() {
     }
@@ -177,7 +223,9 @@ custom = function () {
 
     obj.storage = new Storage()
 
-    // pie-chart
+
+    // ------------------------------ pie-chart ------------------------------
+
     obj.PieChart = function (canvas) {
         this.canvas = canvas
         this.cxt = canvas.getContext('2d')
@@ -213,7 +261,7 @@ custom = function () {
         this.cxt.fill()
     }
 
-    obj.PieChart.prototype.drawTitle = function (sAngle, angle, color, title) {
+    obj.PieChart.prototype.drawLabelDetails = function (sAngle, angle, color, labelDetails) {
         this.beginPath()
         this.endX = Math.cos(sAngle + angle / 2) * (this.r + this.line) + this.x
         this.endY = Math.sin(sAngle + angle / 2) * (this.r + this.line) + this.y
@@ -223,7 +271,7 @@ custom = function () {
         this.cxt.stroke()
 
         this.beginPath()
-        this.textWidth = this.cxt.measureText(title).width
+        this.textWidth = this.cxt.measureText(labelDetails).width
         this.cxt.moveTo(this.endX, this.endY)
         this.lineEndX = this.endX > this.x ? this.endX + this.textWidth : this.endX - this.textWidth
         this.cxt.lineTo(this.lineEndX, this.endY)
@@ -233,49 +281,40 @@ custom = function () {
         // 绘制标题
         this.beginPath()
         this.cxt.textBaseline = 'bottom'
-        this.cxt.fillText(title, this.x > this.endX ? this.lineEndX : this.endX, this.endY)
+        this.cxt.fillText(labelDetails, this.x > this.endX ? this.lineEndX : this.endX, this.endY)
     }
 
-    obj.PieChart.prototype.drawRect = function (title, n, rectColor) {
+    obj.PieChart.prototype.drawRect = function (label, n, rectColor) {
         this.beginPath()
         let rectEndT = this.rectT * (n + 1) + this.rectH * (n)
         this.cxt.fillRect(this.rectL, rectEndT, this.rectW, this.rectH)
         // 配套相应的文字
         this.cxt.font = '12px Miscrosoft Yahei'
         this.cxt.textBaseline = 'middle'
-        this.cxt.fillText(title, this.rectL + this.rectW + this.rectT, rectEndT + this.rectH / 2)
+        this.cxt.fillText(label, this.rectL + this.rectW + this.rectT, rectEndT + this.rectH / 2)
         this.cxt.fillStyle = rectColor
-        this.cxt.fill()
-    }
-
-    obj.PieChart.prototype.drawTotal = function (total, n) {
-        this.beginPath()
-        let rectEndT = this.rectT * (n + 1) + this.rectH * (n)
-        // 配套相应的文字
-        this.cxt.font = '12px Miscrosoft Yahei'
-        this.cxt.textBaseline = 'middle'
-        this.cxt.fillStyle = `rgb(0, 0, 0)`
-        this.cxt.fillText('total: ' + total, this.rectL + this.rectT, rectEndT + this.rectH / 2)
         this.cxt.fill()
     }
 
     /**
      * draw
-     * @param data [{ title: '', num: '' }]
+     * @param data array数据
+     * @param getLabel 获取标签
+     * @param getLabelDetails 获取标签详情
+     * @param getNum 获取数量
      */
-    obj.PieChart.prototype.draw = function (data) {
+    obj.PieChart.prototype.draw = function (data, getLabel, getLabelDetails, getNum) {
         if (!(data) || !(data.length)) {
             return
         }
 
         // total
         let total = 0
-        data.forEach(item => total += item.num)
+        data.forEach(e => total += getNum(e))
 
         // percentage（百分比）
-        data.map(item => {
-            item.pct = item.num / total * Math.PI * 2
-            return item
+        data.forEach(e => {
+            e._pct = getNum(e) / total * Math.PI * 2
         })
 
         let start = 0
@@ -285,19 +324,20 @@ custom = function () {
             this.beginPath()
             if (i == 0) {
                 start = 0
-                end = data[i].pct
+                end = data[i]._pct
             } else {
-                start += data[i - 1].pct
-                end += data[i].pct
+                start += data[i - 1]._pct
+                end += data[i]._pct
             }
-            this.drawArc(start, end, color)
-            let title = data[i].title + ' (' + data[i].num + ')'
-            this.drawTitle(start, data[i].pct, color, title)
-            this.drawRect(title, i, color)
-        }
 
-        // total
-        this.drawTotal(total + '', data.length)
+            // 绘制弧
+            this.drawArc(start, end, color)
+            // 绘制标签详情
+            this.drawLabelDetails(start, data[i]._pct, color, getLabelDetails(data[i]))
+
+            // 绘制左上角标签
+            this.drawRect(getLabel(data[i]), i, color)
+        }
     }
 
     return obj

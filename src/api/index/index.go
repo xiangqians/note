@@ -28,7 +28,7 @@ func Page(context *gin.Context) {
 	imgStats := []typ.Stat{}
 
 	// file
-	stats, count, err := common.DbQry[[]typ.Stat](context, "SELECT `type`, COUNT(id) AS 'num' FROM file WHERE del = 0 GROUP BY `type` ORDER BY COUNT(id) DESC")
+	stats, count, err := common.DbQry[[]typ.Stat](context, "SELECT `type`, COUNT(id) AS 'num', SUM(`size`) AS 'size' FROM file WHERE del = 0 GROUP BY `type` ORDER BY COUNT(id) DESC")
 	if err != nil {
 		html(fileStats, imgStats, err)
 		return
@@ -38,7 +38,7 @@ func Page(context *gin.Context) {
 	}
 
 	// img
-	stats, count, err = common.DbQry[[]typ.Stat](context, "SELECT `type`, COUNT(id) AS 'num' FROM img WHERE del = 0 GROUP BY `type` ORDER BY COUNT(id) DESC")
+	stats, count, err = common.DbQry[[]typ.Stat](context, "SELECT `type`, COUNT(id) AS 'num', SUM(`size`) AS 'size' FROM img WHERE del = 0 GROUP BY `type` ORDER BY COUNT(id) DESC")
 	if count > 0 {
 		imgStats = stats
 	}
