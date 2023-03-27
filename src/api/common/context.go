@@ -11,11 +11,11 @@ import (
 )
 
 func HtmlNotFound[T any](context *gin.Context, name string, resp typ.Resp[T]) {
-	HtmlNew(context, http.StatusNotFound, name, resp)
+	HtmlNew[T](context, http.StatusNotFound, name, resp)
 }
 
 func HtmlOkNew[T any](context *gin.Context, name string, resp typ.Resp[T]) {
-	HtmlNew(context, http.StatusOK, name, resp)
+	HtmlNew[T](context, http.StatusOK, name, resp)
 }
 
 // HtmlNew

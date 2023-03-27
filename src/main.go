@@ -6,5 +6,7 @@ package main
 import "note/src/app"
 
 func main() {
+
 	app.Run()
+
 }

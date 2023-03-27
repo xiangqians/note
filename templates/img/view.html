@@ -3,11 +3,12 @@
  | @date 12:33 2023/02/12
  |-->
 <!DOCTYPE html>
+{{ $data := .resp.Data }}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
-    <title>{{ Localize "i18n.view" }}: {{ .img.Name }}</title>
+    <title>{{ $data.Name }}</title>
     <style>
         body {
             text-align: center
@@ -27,12 +28,11 @@
 </head>
 <body>
 
-<p style="color: red;">{{ .msg }}</p>
+<p style="color: red;">{{ .resp.Msg }}</p>
 
-<img src="{{ .img.Url }}">
-<!--<img src="{{ .url }}" alt="{{ .img.Name }}">-->
+<img src="{{ $data.Url }}" alt="{{ $data.Name }}">
 
-<a class="float" href="/img/{{ .img.Id }}/editpage" target="_blank">{{ Localize "i18n.edit" }} →</a>
+<a class="float" href="/img/{{ $data.Id }}/edit" target="_blank">{{ Localize "i18n.edit" }} →</a>
 
 </body>
 </html>
