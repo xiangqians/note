@@ -117,7 +117,7 @@ func List(pContext *gin.Context) {
 		sql += "AND f.`name` LIKE '%' || ? || '%' "
 		args = append(args, name)
 	}
-	sql += "ORDER BY f.`type`, (CASE WHEN f.`upd_time` > f.`add_time` THEN f.`upd_time` ELSE f.`add_time` END) DESC "
+	sql += "ORDER BY f.`type`, f.`name`, (CASE WHEN f.`upd_time` > f.`add_time` THEN f.`upd_time` ELSE f.`add_time` END) DESC "
 	if id < 0 {
 		sql += "LIMIT 10000"
 	}
@@ -409,8 +409,9 @@ func Cut(pContext *gin.Context) {
 
 // Del 删除文件
 func Del(pContext *gin.Context) {
-	redirect := func(id int64, msg any) {
-		common.Redirect(pContext, fmt.Sprintf("/?id=%d", id), nil, msg)
+	redirect := func(id int64, err any) {
+		resp := typ.Resp[any]{Msg: util.TypeAsStr(err)}
+		common.RedirectNew(pContext, fmt.Sprintf("/file/list?id=%d", id), resp)
 	}
 
 	// id
@@ -426,6 +427,10 @@ func Del(pContext *gin.Context) {
 		redirect(pid, err)
 		return
 	}
+
+	// Delete not supported
+	redirect(pid, "Delete not supported")
+	return
 
 	// update
 	_, err = common.DbDel(pContext, "UPDATE `file` SET `del` = 1, `upd_time` = ? WHERE `id` = ?", time.Now().Unix(), id)
