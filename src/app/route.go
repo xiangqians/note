@@ -57,5 +57,4 @@ func route(engine *gin.Engine) {
 	imgGroup.DELETE("/:id", api_img.Del)
 	imgGroup.GET("/:id", api_img.Get)
 	imgGroup.Any("/:id/view", api_img.View) // page
-	imgGroup.Any("/:id/edit", api_img.Edit) // page
 }

@@ -50,9 +50,27 @@ func List(context *gin.Context) {
 
 // Upload 图片上传
 func Upload(context *gin.Context) {
+	// method
 	method := context.Request.Method
-	redirect := func(id int64, msg any) {
-		resp := typ.Resp[any]{Msg: util.TypeAsStr(msg)}
+
+	// id
+	var id int64
+	var err error
+	//if method == http.MethodPut {
+	//	id, err = common.PostForm[int64](context, "id")
+	//	if err != nil {
+	//		redirect(id, err)
+	//		return
+	//	}
+	//}
+	id, err = common.PostForm[int64](context, "id")
+	if err == nil && id > 0 {
+		method = http.MethodPut
+	}
+
+	// redirect
+	redirect := func(id int64, err any) {
+		resp := typ.Resp[any]{Msg: util.TypeAsStr(err)}
 		switch method {
 		// 上传
 		case http.MethodPost:
@@ -60,18 +78,7 @@ func Upload(context *gin.Context) {
 
 		// 重传
 		case http.MethodPut:
-			common.RedirectNew(context, fmt.Sprintf("/img/%d/edit", id), resp)
-		}
-	}
-
-	// id
-	var id int64
-	var err error
-	if method == http.MethodPut {
-		id, err = common.PostForm[int64](context, "id")
-		if err != nil {
-			redirect(id, err)
-			return
+			common.RedirectNew(context, fmt.Sprintf("/img/%v/view", id), resp)
 		}
 	}
 
@@ -106,18 +113,15 @@ func Upload(context *gin.Context) {
 	// size
 	fs := fh.Size
 
-	// 限制只能重传相同文件类型
-	//if method == http.MethodPut {
-	//	img, count, err := Qry(context, id)
-	//	if err != nil || count == 0 {
-	//		redirect(id, err)
-	//		return
-	//	}
-	//	if ft != FileTypeImgOf(img.Type) {
-	//		redirect(id, "重传必须是相同文件类型")
-	//		return
-	//	}
-	//}
+	// 原图片信息
+	oldImg := typ.Img{}
+	if method == http.MethodPut {
+		var count int64
+		oldImg, count, err = DbQry(context, id)
+		if err != nil || count == 0 {
+			oldImg.Id = 0
+		}
+	}
 
 	// 操作数据库
 	switch method {
@@ -159,7 +163,18 @@ func Upload(context *gin.Context) {
 	// 保存文件
 	err = context.SaveUploadedFile(fh, fp)
 
+	// 保存文件成功时，判断如果重传不是同一个文件类型，则删除之前文件
+	if method == http.MethodPut && err == nil && oldImg.Id > 0 && oldImg.Type != img.Type {
+		var oldImgPath string
+		oldImgPath, err = Path(context, oldImg)
+		if err == nil {
+			util.DelFile(oldImgPath)
+		}
+	}
+
+	// redirect
 	redirect(id, err)
+
 	return
 }
 
@@ -231,7 +246,7 @@ func Get(context *gin.Context) {
 	}
 
 	// img
-	img, count, err := Qry(context, id)
+	img, count, err := DbQry(context, id)
 	if err != nil || count == 0 {
 		log.Println(err)
 		return
@@ -252,10 +267,12 @@ func Get(context *gin.Context) {
 	}
 
 	// write
-	context.Writer.Write(buf)
+	n, err := context.Writer.Write(buf)
+	log.Println("view", path, n, err)
 	return
 }
 
+// View 查看图片页面
 func View(context *gin.Context) {
 	html := func(img typ.Img, msg any) {
 		resp := typ.Resp[typ.Img]{
@@ -273,31 +290,18 @@ func View(context *gin.Context) {
 	}
 
 	// img
-	img, _, err := Qry(context, id)
+	img, _, err := DbQry(context, id)
 	img.Url = fmt.Sprintf("/img/%v", id)
 
-	html(img, err)
-	return
-}
-
-func Edit(context *gin.Context) {
-	html := func(img typ.Img, msg any) {
-		resp := typ.Resp[typ.Img]{
-			Msg:  util.TypeAsStr(msg),
-			Data: img,
+	// msg
+	resp, redirectErr := common.GetSessionV[any](context, "resp", true)
+	if redirectErr == nil {
+		msg := util.CallField[string](resp, "Msg", nil)
+		if msg != "" {
+			err = errors.New(msg)
 		}
-		common.HtmlOkNew(context, "img/edit.html", resp)
 	}
 
-	// id
-	id, err := common.Param[int64](context, "id")
-	if err != nil {
-		html(typ.Img{}, err)
-		return
-	}
-
-	// img
-	img, _, err := Qry(context, id)
 	html(img, err)
 	return
 }
@@ -318,7 +322,7 @@ func Path(context *gin.Context, img typ.Img) (string, error) {
 	return fmt.Sprintf("%s%s%d", imgDir, util.FileSeparator, img.Id), nil
 }
 
-func Qry(context *gin.Context, id int64) (typ.Img, int64, error) {
+func DbQry(context *gin.Context, id int64) (typ.Img, int64, error) {
 	img, count, err := common.DbQry[typ.Img](context, "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = 0 AND i.`id` = ?", id)
 	return img, count, err
 }

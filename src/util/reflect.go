@@ -26,7 +26,8 @@ func CallField[T any](i any, name string, in []reflect.Value) T {
 	}
 
 	switch fKind {
-	case reflect.Int64:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.String:
 		return field.Interface().(T)
 
 	default:

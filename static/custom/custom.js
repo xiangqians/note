@@ -363,7 +363,9 @@ custom = function () {
                         let action = $form.attr("action")
                         let method = $form.attr("method").trim().toUpperCase()
                         let data = new FormData()
+                        // console.log($form)
                         $form.serializeArray().forEach(e => {
+                            // console.log(e.name)
                             data.append(e.name, e.value);
                         })
                         custom.ajaxDefault(action, method, data, 'form', true)
