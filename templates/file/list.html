@@ -45,7 +45,7 @@
         <tbody>
         {{ if gt $data.pfile.Id 0 }}
         <tr>
-            <td><a href="/?id={{ $data.pfile.Pid }}">../</a></td>
+            <td><a href="/file/list?id={{ $data.pfile.Pid }}">../</a></td>
             <td colspan="7"></td>
         </tr>
         {{ end }}
@@ -56,7 +56,7 @@
         <tr>
             <td>
                 {{ if eq $file.Type "d" }}
-                <a href="/?id={{ $file.Id }}">{{ $file.Name }}/</a>
+                <a href="/file/list?id={{ $file.Id }}">{{ $file.Name }}/</a>
                 {{ else }}
                 <a href="/file/{{ $file.Id }}/view" target="_blank">{{ $file.Name }}</a>
                 {{ end }}
@@ -67,7 +67,7 @@
             <td>{{ HumanizUnix $file.UpdTime }}</td>
             <td>
                 <a ajaxE href="/file/name" method="PUT"
-                   fId="{{ $file.Id }}" fPid="{{ $.data.pfile.Id }}"
+                   fId="{{ $file.Id }}" fPid="{{ $data.pfile.Id }}"
                    fName="{{ $file.Name }}">
                     <button>{{ Localize "i18n.rename" }}</button>
                 </a>
@@ -75,7 +75,7 @@
             <td>
                 <button name="cut"
                         fId="{{ $file.Id }}"
-                        fName='{{ $.data.pfile.Path }}{{ if ne $.data.pfile.Path "/"}}/{{ end }}{{ $file.Name }}'>
+                        fName='{{ $data.pfile.Path }}{{ if ne $data.pfile.Path "/"}}/{{ end }}{{ $file.Name }}'>
                     {{ Localize "i18n.cut" }}
                 </button>
             </td>
@@ -196,7 +196,7 @@
                 return
             }
 
-            $e.attr('href', '/?id=-1&name=' + searchName)
+            $e.attr('href', '/file/list?id=-1&name=' + searchName)
             return {}
         }
 
