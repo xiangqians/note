@@ -153,7 +153,7 @@
                     name = value.substring(0, value.length - 1)
                     type = 'd'
                 } else if (value.endsWith(".md")) {
-                    name = value
+                    name = value.substring(0, value.length - 3)
                     type = 'md'
                 } else {
                     legal = false

@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"note/src/api"
 	"note/src/api/common"
-	"note/src/api/file"
+	api_file "note/src/api/file"
 	api_img "note/src/api/img"
 	api_index "note/src/api/index"
 )
@@ -38,17 +38,17 @@ func route(engine *gin.Engine) {
 
 	// file
 	fileGroup := engine.Group("/file")
-	fileGroup.Any("/list", file.List) // page
-	engine.POST("/file", file.FileAdd)
-	engine.POST("/file/upload", file.FileUpload)
-	engine.POST("/file/reupload", file.FileReUpload)
-	engine.Any("/file/:id/view", file.FileView)
-	engine.Any("/file/:id/viewpage", file.FileViewPage)
-	engine.Any("/file/:id/editpage", file.FileEditPage)
-	engine.PUT("/file/name", file.FileUpdName)
-	engine.PUT("/file/content", file.FileUpdContent)
-	engine.PUT("/file/cut/:srcId/to/:dstId", file.FileCut)
-	engine.DELETE("/file/:id", file.FileDel)
+	fileGroup.Any("/list", api_file.List) // page
+	fileGroup.POST("", api_file.Add)
+	fileGroup.POST("/upload", api_file.Upload)
+	fileGroup.PUT("/upload", api_file.Upload)
+	fileGroup.GET("/:id", api_file.Get)
+	fileGroup.Any("/:id/view", api_file.View) // page
+	fileGroup.Any("/:id/edit", api_file.Edit) // page
+	fileGroup.PUT("/name", api_file.UpdName)
+	fileGroup.PUT("/content", api_file.UpdContent)
+	fileGroup.PUT("/cut/:srcId/to/:dstId", api_file.Cut)
+	fileGroup.DELETE("/:id", api_file.Del)
 
 	// img
 	imgGroup := engine.Group("/img")

@@ -22,7 +22,7 @@ import (
 // List 图片列表页面
 func List(context *gin.Context) {
 	req, _ := common.PageReq(context)
-	page, err := common.DbPage[typ.Img](context, req, "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = 0")
+	page, err := common.DbPage[typ.Img](context, req, "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = 0 ORDER BY (CASE WHEN i.`upd_time` > i.`add_time` THEN i.`upd_time` ELSE i.`add_time` END) DESC")
 	imgs := page.Data
 	if imgs != nil && len(imgs) > 0 {
 		sort.Slice(imgs, func(i, j int) bool {
