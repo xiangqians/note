@@ -4,6 +4,7 @@
 package common
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"note/src/typ"
@@ -21,6 +22,15 @@ func HtmlOkNew[T any](context *gin.Context, name string, resp typ.Resp[T]) {
 // HtmlNew
 // name: templateName
 func HtmlNew[T any](context *gin.Context, code int, name string, resp typ.Resp[T]) {
+	// msg
+	redirectResp, err := GetSessionV[typ.Resp[any]](context, "resp", true)
+	if err == nil {
+		msg := util.CallField[string](redirectResp, "Msg", nil)
+		if msg != "" {
+			resp.Msg = fmt.Sprintf("%s\n%s", msg, resp.Msg)
+		}
+	}
+
 	// user
 	user, _ := GetSessionUser(context)
 	// uri

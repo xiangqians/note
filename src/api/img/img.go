@@ -223,6 +223,10 @@ func Del(context *gin.Context) {
 		common.RedirectNew(context, fmt.Sprintf("/img/list"), resp)
 	}
 
+	// Delete not supported
+	redirect("Delete not supported")
+	return
+
 	// id
 	id, err := common.Param[int64](context, "id")
 	if err != nil {
@@ -292,15 +296,6 @@ func View(context *gin.Context) {
 	// img
 	img, _, err := DbQry(context, id)
 	img.Url = fmt.Sprintf("/img/%v", id)
-
-	// msg
-	resp, redirectErr := common.GetSessionV[any](context, "resp", true)
-	if redirectErr == nil {
-		msg := util.CallField[string](resp, "Msg", nil)
-		if msg != "" {
-			err = errors.New(msg)
-		}
-	}
 
 	html(img, err)
 	return
