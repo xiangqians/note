@@ -8,22 +8,24 @@
     <meta charset="UTF-8">
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/custom/custom.css" type="text/css"/>
-    <title>{{ Localize "i18n.file" }} {{ .pf.Path }}</title>
+    <title>{{ Localize "i18n.file" }}</title>
 </head>
 <body>
 
 {{ template "com/header.html" . }}
 
 <content>
-    <p style="color: red;">{{ .msg }}</p>
+    <p style="color: red;">{{ .resp.Msg }}</p>
+
+    {{ $data := .resp.Data }}
 
     <p>
         <!--
-        <span>{{ .pf.Path }}</span>
+        <span>{{ $data.pfile.Path }}</span>
         -->
         <span>
         <script>
-            document.write('{{ .pf.PathLink }}')
+            document.write('{{ $data.pfile.PathLink }}')
         </script>
         </span>
         &nbsp;&nbsp;
@@ -41,42 +43,46 @@
         </tr>
         </thead>
         <tbody>
-        {{ if gt .pf.Id 0 }}
+        {{ if gt $data.pfile.Id 0 }}
         <tr>
-            <td><a href="/?id={{ .pf.Pid }}">../</a></td>
+            <td><a href="/?id={{ $data.pfile.Pid }}">../</a></td>
             <td colspan="7"></td>
         </tr>
         {{ end }}
 
-        {{ $len := len .fs }}
+        {{ $len := len $data.files }}
         {{ if gt $len 0 }}
-        {{ range $index,$f := .fs }}
+        {{ range $index,$file := $data.files }}
         <tr>
             <td>
-                {{ if eq $f.Type "d" }}
-                <a href="/?id={{ $f.Id }}">{{ $f.Name }}/</a>
+                {{ if eq $file.Type "d" }}
+                <a href="/?id={{ $file.Id }}">{{ $file.Name }}/</a>
                 {{ else }}
-                <a href="/file/{{ $f.Id }}/viewpage" target="_blank">{{ $f.Name }}</a>
+                <a href="/file/{{ $file.Id }}/view" target="_blank">{{ $file.Name }}</a>
                 {{ end }}
             </td>
-            <td>{{ $f.Type }}</td>
-            <td>{{ HumanizFileSize $f.Size }}</td>
-            <td>{{ HumanizUnix $f.AddTime }}</td>
-            <td>{{ HumanizUnix $f.UpdTime }}</td>
+            <td>{{ $file.Type }}</td>
+            <td>{{ HumanizFileSize $file.Size }}</td>
+            <td>{{ HumanizUnix $file.AddTime }}</td>
+            <td>{{ HumanizUnix $file.UpdTime }}</td>
             <td>
-                <a ajaxE href="/file/name" method="PUT" fId="{{ $f.Id }}" fPid="{{ $.pf.Id }}" fName="{{ $f.Name }}">
+                <a ajaxE href="/file/name" method="PUT"
+                   fId="{{ $file.Id }}" fPid="{{ $.data.pfile.Id }}"
+                   fName="{{ $file.Name }}">
                     <button>{{ Localize "i18n.rename" }}</button>
                 </a>
             </td>
             <td>
-                <button name="cut" fId="{{ $f.Id }}"
-                        fName='{{ $.pf.Path }}{{ if ne $.pf.Path "/"}}/{{ end }}{{ $f.Name }}'>
+                <button name="cut"
+                        fId="{{ $file.Id }}"
+                        fName='{{ $.data.pfile.Path }}{{ if ne $.data.pfile.Path "/"}}/{{ end }}{{ $file.Name }}'>
                     {{ Localize "i18n.cut" }}
                 </button>
             </td>
             <td>
-                <a ajaxE href="/file/{{ $f.Id }}" method="DELETE"
-                   confirm='{{ Localize "i18n.del" }} {{ $f.Name }}{{ if eq $f.Type "dir" }}/{{ end }} ?'>
+                <a ajaxE href="/file/{{ $file.Id }}"
+                   method="DELETE"
+                   confirm='{{ Localize "i18n.del" }} {{ $file.Name }}{{ if eq $file.Type "dir" }}/{{ end }} ?'>
                     <button>{{ Localize "i18n.del" }}</button>
                 </a>
             </td>
@@ -95,14 +101,14 @@
     <hr width="30%">
     <div>
         <form action="/file/upload" method="POST" enctype="multipart/form-data">
-            <input name="pid" type="text" value="{{ .pf.Id }}" hidden/>
+            <input name="pid" type="text" value="{{ $data.pfile.Id }}" hidden/>
             <input name="file" type="file"/>
             <button type="submit">{{ Localize "i18n.upload" }}</button>
         </form>
     </div>
     <hr width="30%">
     <div>
-        <a ajaxE href="#" method="PUT" name="paste" value="{{ .pf.Id }}">
+        <a ajaxE href="#" method="PUT" name="paste" value="{{ $data.pfile.Id }}">
             <button name="paste">{{ Localize "i18n.paste" }}</button>
         </a>
     </div>
@@ -162,7 +168,7 @@
                 $input.css('border', '')
 
                 // 请求数据
-                return {"pid": "{{ .pf.Id }}", "name": name, "type": type}
+                return {"pid": "{{ $data.pfile.Id }}", "name": name, "type": type}
             }
         }
 
@@ -235,12 +241,12 @@
         $paste[0]['pre'] = function ($e) {
             let value = custom.storage.get('copy')
             let src = JSON.parse(value);
-            if (!confirm('{{ Localize "i18n.cut" }} "' + src.name + '" {{ Localize "i18n.to" }} "{{ .pf.Path }}{{ if ne .pf.Path "/"}}/{{ end }}" ?')) {
+            if (!confirm('{{ Localize "i18n.cut" }} "' + src.name + '" {{ Localize "i18n.to" }} "{{ $data.pfile.Path }}{{ if ne $data.pfile.Path "/"}}/{{ end }}" ?')) {
                 return
             }
 
             // put
-            let url = '/file/cut/' + src.id + '/to/{{ .pf.Id }}'
+            let url = '/file/cut/' + src.id + '/to/{{ $data.pfile.Id }}'
             // console.log(url)
             $e.attr('href', url)
 

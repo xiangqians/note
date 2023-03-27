@@ -1,7 +1,7 @@
 // file
 // @author xiangqian
 // @date 17:50 2023/02/04
-package api
+package file
 
 import (
 	"bufio"
@@ -22,10 +22,17 @@ import (
 	"time"
 )
 
-// FileListPage 文件列表页面
-func FileListPage(pContext *gin.Context) {
-	html := func(pf typ.File, fs []typ.File, err error) {
-		common.HtmlOk(pContext, "index.html", gin.H{"pf": pf, "fs": fs}, err)
+// List 文件列表页面
+func List(pContext *gin.Context) {
+	html := func(pfile typ.File, files []typ.File, err error) {
+		resp := typ.Resp[map[string]any]{
+			Msg: util.TypeAsStr(err),
+			Data: map[string]any{
+				"pfile": pfile,
+				"files": files,
+			},
+		}
+		common.HtmlOkNew(pContext, "file/list.html", resp)
 	}
 
 	// id
@@ -38,14 +45,14 @@ func FileListPage(pContext *gin.Context) {
 	//log.Printf("name = %s\n", name)
 
 	// pf
-	var pf typ.File
+	var pfile typ.File
 	if id < 0 {
-		pf.Path = ""
-		pf.PathLink = ""
+		pfile.Path = ""
+		pfile.PathLink = ""
 
 	} else if id == 0 {
-		pf.Path = "/"
-		pf.PathLink = "/"
+		pfile.Path = "/"
+		pfile.PathLink = "/"
 
 	} else {
 		sql := "SELECT f1.id, f1.pid, f1.`name`, f1.`type`, f1.`size`, f1.add_time, f1.upd_time, " +
@@ -71,13 +78,13 @@ func FileListPage(pContext *gin.Context) {
 			"LEFT JOIN `file` f10 ON f10.del = 0 AND f10.`type` = 'd' AND f10.id = f9.pid " +
 			"WHERE f1.del = 0 AND f1.`type` = 'd' AND f1.id = ? " +
 			"GROUP BY f1.id"
-		pf, _, err = common.DbQry[typ.File](pContext, sql, id)
+		pfile, _, err = common.DbQry[typ.File](pContext, sql, id)
 		if err != nil {
-			html(pf, nil, err)
+			html(pfile, nil, err)
 			return
 		}
 
-		pathArr := strings.Split(pf.Path, "/")
+		pathArr := strings.Split(pfile.Path, "/")
 		l := len(pathArr)
 		pathLinkArr := make([]string, 0, l) // len 0, cap ?
 		for i := 0; i < l; i++ {
@@ -93,13 +100,13 @@ func FileListPage(pContext *gin.Context) {
 			pathLink := fmt.Sprintf("<a href=\"/?id=%s\">%s</a>\n", vArr[0], vArr[1])
 			pathLinkArr = append(pathLinkArr, pathLink)
 		}
-		pf.Path = strings.Join(pathArr, "/")
-		pf.PathLink = strings.Join(pathLinkArr, "/")
+		pfile.Path = strings.Join(pathArr, "/")
+		pfile.PathLink = strings.Join(pathLinkArr, "/")
 	}
 
 	// 查询
 	args := make([]any, 0, 2)
-	var fs []typ.File = nil
+	var files []typ.File = nil
 	var count int64
 	sql := "SELECT f.`id`, f.`pid`, f.`name`, f.`type`, f.`size`, f.`add_time`, f.`upd_time` FROM `file` f WHERE f.`del` = 0 "
 	if id >= 0 {
@@ -114,12 +121,12 @@ func FileListPage(pContext *gin.Context) {
 	if id < 0 {
 		sql += "LIMIT 10000"
 	}
-	fs, count, err = common.DbQry[[]typ.File](pContext, sql, args...)
+	files, count, err = common.DbQry[[]typ.File](pContext, sql, args...)
 	if err != nil || count == 0 {
-		fs = nil
+		files = nil
 	}
 
-	html(pf, fs, err)
+	html(pfile, files, err)
 	return
 }
 
@@ -166,7 +173,7 @@ func FileAdd(pContext *gin.Context) {
 	// 如果不是目录，则创建物理文件
 	if fType != typ.FileTypeD {
 		// file path
-		fp, err := FilePath(pContext, f)
+		fp, err := Path(pContext, f)
 		if err != nil {
 			redirect(pid, err)
 			return
@@ -292,7 +299,7 @@ func FileUpload(pContext *gin.Context) {
 	f := typ.File{}
 	f.Id = id
 	f.Type = string(ft)
-	fp, err := FilePath(pContext, f)
+	fp, err := Path(pContext, f)
 	if err != nil {
 		redirect(id, pid, err)
 		return
@@ -450,7 +457,7 @@ func FileView(pContext *gin.Context) {
 	}
 
 	// path
-	fPath, err := FilePath(pContext, f)
+	fPath, err := Path(pContext, f)
 	if err != nil {
 		log.Println(err)
 		return
@@ -675,7 +682,7 @@ func FileUpdContent(pContext *gin.Context) {
 	//log.Println("content", content)
 
 	// os file
-	fPath, err := FilePath(pContext, f)
+	fPath, err := Path(pContext, f)
 	if err != nil {
 		json(err)
 		return
@@ -717,7 +724,7 @@ func FileUpdContent(pContext *gin.Context) {
 // FileRead 读取文件
 func FileRead(pContext *gin.Context, f typ.File) ([]byte, error) {
 	// file path
-	fPath, err := FilePath(pContext, f)
+	fPath, err := Path(pContext, f)
 	if err != nil {
 		return nil, err
 	}
@@ -734,8 +741,8 @@ func FileRead(pContext *gin.Context, f typ.File) ([]byte, error) {
 	return buf, err
 }
 
-// FilePath 获取文件物理路径
-func FilePath(pContext *gin.Context, f typ.File) (string, error) {
+// Path 获取文件物理路径
+func Path(pContext *gin.Context, f typ.File) (string, error) {
 	// dir
 	dataDir := common.DataDir(pContext)
 	fDir := fmt.Sprintf("%s%s%s%s%s", dataDir, util.FileSeparator, "file", util.FileSeparator, f.Type)
