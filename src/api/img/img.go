@@ -110,6 +110,8 @@ func Upload(context *gin.Context) {
 		return
 	}
 
+	fn = fn[:index]
+
 	// size
 	fs := fh.Size
 
@@ -201,17 +203,20 @@ func UpdName(context *gin.Context) {
 		return
 	}
 
-	imgType, count, err := common.DbQry[string](context, "SELECT `type` FROM `img` WHERE `del` = 0 AND `id` = ?", img.Id)
-	if count > 0 {
-		name := img.Name
-		ft := typ.FileTypeImgOf(imgType)
-		if ft != typ.FileTypeUnk && !strings.HasSuffix(name, string(ft)) {
-			name = fmt.Sprintf("%s.%s", name, string(ft))
-		}
+	//imgType, count, err := common.DbQry[string](context, "SELECT `type` FROM `img` WHERE `del` = 0 AND `id` = ?", img.Id)
+	//if count > 0 {
+	//	name := img.Name
+	//	ft := typ.FileTypeImgOf(imgType)
+	//	if ft != typ.FileTypeUnk && !strings.HasSuffix(name, string(ft)) {
+	//		name = fmt.Sprintf("%s.%s", name, string(ft))
+	//	}
+	//
+	//	// update
+	//	_, err = common.DbUpd(context, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", name, time.Now().Unix(), img.Id, name)
+	//}
 
-		// update
-		_, err = common.DbUpd(context, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", name, time.Now().Unix(), img.Id, name)
-	}
+	// update
+	_, err = common.DbUpd(context, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", img.Name, time.Now().Unix(), img.Id, img.Name)
 
 	redirect(err)
 	return
