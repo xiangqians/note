@@ -104,7 +104,7 @@
         let $saveBtn = $($btns[$btns.length - 1])
         // console.log($saveBtn)
         $saveBtn.click(function () {
-            custom.ajax('/file/content', 'PUT', {
+            custom.ajax('/note/content', 'PUT', {
                     'id': "{{ .f.Id }}",
                     'content': editor.getValue()
                 },

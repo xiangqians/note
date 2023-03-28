@@ -512,7 +512,7 @@ See https://github.com/adobe-type-tools/cmap-resources
 
 <input type="file" id="fileInput" class="hidden">
 
-<a class="float" href="/file/{{ .f.Id }}/editpage" target="_blank">{{ Localize "i18n.edit" }} →</a>
+<a class="float" href="/note/{{ .f.Id }}/editpage" target="_blank">{{ Localize "i18n.edit" }} →</a>
 
 </body>
 </html>
@@ -521,7 +521,7 @@ See https://github.com/adobe-type-tools/cmap-resources
 <script src="/static/pdfjs-3.3.122/build/pdf.js"></script>
 <script>
     ;
-    let defPdfSrc = "/file/{{ .f.Id }}/view"
+    let defPdfSrc = "/note/{{ .f.Id }}/view"
     ;
 </script>
 <script src="/static/pdfjs-3.3.122/web/viewer.js"></script>

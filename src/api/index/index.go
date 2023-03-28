@@ -10,13 +10,13 @@ import (
 	"note/src/util"
 )
 
-// Page index页面
-func Page(context *gin.Context) {
-	html := func(fileStats, imgStats []typ.Stat, err error) {
+// Index index页面
+func Index(context *gin.Context) {
+	html := func(noteStats, imgStats []typ.Stat, err error) {
 		resp := typ.Resp[map[string][]typ.Stat]{
 			Msg: util.TypeAsStr(err),
 			Data: map[string][]typ.Stat{
-				"FileStats": fileStats,
+				"NoteStats": noteStats,
 				"ImgStats":  imgStats,
 			},
 		}
@@ -24,17 +24,17 @@ func Page(context *gin.Context) {
 	}
 
 	// stat
-	fileStats := []typ.Stat{}
+	noteStats := []typ.Stat{}
 	imgStats := []typ.Stat{}
 
-	// file
-	stats, count, err := common.DbQry[[]typ.Stat](context, "SELECT `type`, COUNT(id) AS 'num', SUM(`size`) AS 'size' FROM file WHERE del = 0 GROUP BY `type` ORDER BY COUNT(id) DESC")
+	// note
+	stats, count, err := common.DbQry[[]typ.Stat](context, "SELECT `type`, COUNT(id) AS 'num', SUM(`size`) AS 'size' FROM `note` WHERE del = 0 GROUP BY `type` ORDER BY COUNT(id) DESC")
 	if err != nil {
-		html(fileStats, imgStats, err)
+		html(noteStats, imgStats, err)
 		return
 	}
 	if count > 0 {
-		fileStats = stats
+		noteStats = stats
 	}
 
 	// img
@@ -44,5 +44,5 @@ func Page(context *gin.Context) {
 	}
 
 	// html
-	html(fileStats, imgStats, err)
+	html(noteStats, imgStats, err)
 }

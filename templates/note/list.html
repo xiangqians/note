@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/custom/custom.css" type="text/css"/>
-    <title>{{ Localize "i18n.file" }}</title>
+    <title>{{ Localize "i18n.note" }}</title>
 </head>
 <body>
 
@@ -21,11 +21,11 @@
 
     <p>
         <!--
-        <span>{{ $data.pfile.Path }}</span>
+        <span>{{ $data.pnote.Path }}</span>
         -->
         <span>
         <script>
-            document.write('{{ $data.pfile.PathLink }}')
+            document.write('{{ $data.pnote.PathLink }}')
         </script>
         </span>
         &nbsp;&nbsp;
@@ -43,46 +43,46 @@
         </tr>
         </thead>
         <tbody>
-        {{ if gt $data.pfile.Id 0 }}
+        {{ if gt $data.pnote.Id 0 }}
         <tr>
-            <td><a href="/file/list?id={{ $data.pfile.Pid }}">../</a></td>
+            <td><a href="/note/list?id={{ $data.pnote.Pid }}">../</a></td>
             <td colspan="7"></td>
         </tr>
         {{ end }}
 
-        {{ $len := len $data.files }}
+        {{ $len := len $data.notes }}
         {{ if gt $len 0 }}
-        {{ range $index,$file := $data.files }}
+        {{ range $index,$note := $data.notes }}
         <tr>
             <td>
-                {{ if eq $file.Type "d" }}
-                <a href="/file/list?id={{ $file.Id }}">{{ $file.Name }}/</a>
+                {{ if eq $note.Type "d" }}
+                <a href="/note/list?id={{ $note.Id }}">{{ $note.Name }}/</a>
                 {{ else }}
-                <a href="/file/{{ $file.Id }}/view" target="_blank">{{ $file.Name }}</a>
+                <a href="/note/{{ $note.Id }}/view" target="_blank">{{ $note.Name }}</a>
                 {{ end }}
             </td>
-            <td>{{ $file.Type }}</td>
-            <td>{{ HumanizFileSize $file.Size }}</td>
-            <td>{{ HumanizUnix $file.AddTime }}</td>
-            <td>{{ HumanizUnix $file.UpdTime }}</td>
+            <td>{{ $note.Type }}</td>
+            <td>{{ HumanizFileSize $note.Size }}</td>
+            <td>{{ HumanizUnix $note.AddTime }}</td>
+            <td>{{ HumanizUnix $note.UpdTime }}</td>
             <td>
-                <a ajaxE href="/file/name" method="PUT"
-                   fId="{{ $file.Id }}" fPid="{{ $data.pfile.Id }}"
-                   fName="{{ $file.Name }}">
+                <a ajaxE href="/note/name" method="PUT"
+                   fId="{{ $note.Id }}" fPid="{{ $data.pnote.Id }}"
+                   fName="{{ $note.Name }}">
                     <button>{{ Localize "i18n.rename" }}</button>
                 </a>
             </td>
             <td>
                 <button name="cut"
-                        fId="{{ $file.Id }}"
-                        fName='{{ $data.pfile.Path }}{{ if ne $data.pfile.Path "/"}}/{{ end }}{{ $file.Name }}'>
+                        fId="{{ $note.Id }}"
+                        fName='{{ $data.pnote.Path }}{{ if ne $data.pnote.Path "/"}}/{{ end }}{{ $note.Name }}'>
                     {{ Localize "i18n.cut" }}
                 </button>
             </td>
             <td>
-                <a ajaxE href="/file/{{ $file.Id }}"
+                <a ajaxE href="/note/{{ $note.Id }}"
                    method="DELETE"
-                   confirm='{{ Localize "i18n.del" }} {{ $file.Name }}{{ if eq $file.Type "dir" }}/{{ end }} ?'>
+                   confirm='{{ Localize "i18n.del" }} {{ $note.Name }}{{ if eq $note.Type "dir" }}/{{ end }} ?'>
                     <button>{{ Localize "i18n.del" }}</button>
                 </a>
             </td>
@@ -96,19 +96,19 @@
     <br>
 
     <div>
-        <a ajaxE href="/file" method="POST">{{ Localize "i18n.add" }} →</a>
+        <a ajaxE href="/note" method="POST">{{ Localize "i18n.add" }} →</a>
     </div>
     <hr width="30%">
     <div>
-        <form action="/file/upload" method="POST" enctype="multipart/form-data">
-            <input name="pid" type="text" value="{{ $data.pfile.Id }}" hidden/>
+        <form action="/note/upload" method="POST" enctype="multipart/form-data">
+            <input name="pid" type="text" value="{{ $data.pnote.Id }}" hidden/>
             <input name="file" type="file"/>
             <button type="submit">{{ Localize "i18n.upload" }}</button>
         </form>
     </div>
     <hr width="30%">
     <div>
-        <a ajaxE href="#" method="PUT" name="paste" value="{{ $data.pfile.Id }}">
+        <a ajaxE href="#" method="PUT" name="paste" value="{{ $data.pnote.Id }}">
             <button name="paste">{{ Localize "i18n.paste" }}</button>
         </a>
     </div>
@@ -125,7 +125,7 @@
 
     ;(function () {
         // add
-        let $add = $('a[href="/file"]')
+        let $add = $('a[href="/note"]')
         // console.log($add)
         if ($add.length > 0) {
             $add[0]['pre'] = function ($e) {
@@ -168,13 +168,13 @@
                 $input.css('border', '')
 
                 // 请求数据
-                return {"pid": "{{ $data.pfile.Id }}", "name": name, "type": type}
+                return {"pid": "{{ $data.pnote.Id }}", "name": name, "type": type}
             }
         }
 
         // rename
-        // let $renames = $('a[href^="/file"][href$="/rename"]')
-        let $renames = $('a[href="/file/name"]')
+        // let $renames = $('a[href^="/note"][href$="/rename"]')
+        let $renames = $('a[href="/note/name"]')
         for (let i = 0, len = $renames.length; i < len; i++) {
             $renames[i]['pre'] = function ($e) {
                 let name = prompt('{{ Localize "i18n.name" }}', $e.attr('fName'))
@@ -196,7 +196,7 @@
                 return
             }
 
-            $e.attr('href', '/file/list?id=-1&name=' + searchName)
+            $e.attr('href', '/note/list?id=-1&name=' + searchName)
             return {}
         }
 
@@ -241,12 +241,12 @@
         $paste[0]['pre'] = function ($e) {
             let value = custom.storage.get('copy')
             let src = JSON.parse(value);
-            if (!confirm('{{ Localize "i18n.cut" }} "' + src.name + '" {{ Localize "i18n.to" }} "{{ $data.pfile.Path }}{{ if ne $data.pfile.Path "/"}}/{{ end }}" ?')) {
+            if (!confirm('{{ Localize "i18n.cut" }} "' + src.name + '" {{ Localize "i18n.to" }} "{{ $data.pnote.Path }}{{ if ne $data.pnote.Path "/"}}/{{ end }}" ?')) {
                 return
             }
 
             // put
-            let url = '/file/cut/' + src.id + '/to/{{ $data.pfile.Id }}'
+            let url = '/note/cut/' + src.id + '/to/{{ $data.pnote.Id }}'
             // console.log(url)
             $e.attr('href', url)
 

@@ -1,8 +1,8 @@
 -- ------------------------
--- Table structure for file
+-- Table structure for note
 -- ------------------------
-DROP TABLE IF EXISTS `file`;
-CREATE TABLE `file` -- 文件信息表
+DROP TABLE IF EXISTS `note`;
+CREATE TABLE `note` -- 笔记信息表
 (
     `id`       INTEGER PRIMARY KEY AUTOINCREMENT, -- id
     `pid`      INTEGER      DEFAULT 0,            -- 父id

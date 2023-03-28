@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"note/src/api"
 	"note/src/api/common"
-	api_file "note/src/api/file"
 	api_img "note/src/api/img"
 	api_index "note/src/api/index"
+	api_note "note/src/api/note"
 )
 
 func route(engine *gin.Engine) {
@@ -22,7 +22,7 @@ func route(engine *gin.Engine) {
 	engine.NoRoute(handler)
 
 	// index
-	engine.Any("/", api_index.Page)
+	engine.Any("/", api_index.Index)
 
 	// user
 	userRouterGroup := engine.Group("/user")
@@ -36,19 +36,19 @@ func route(engine *gin.Engine) {
 	engine.POST("/user", api.UserAdd)
 	engine.PUT("/user", api.UserUpd)
 
-	// file
-	fileGroup := engine.Group("/file")
-	fileGroup.Any("/list", api_file.List) // page
-	fileGroup.POST("", api_file.Add)
-	fileGroup.POST("/upload", api_file.Upload)
-	fileGroup.PUT("/upload", api_file.Upload)
-	fileGroup.GET("/:id", api_file.Get)
-	fileGroup.Any("/:id/view", api_file.View) // page
-	fileGroup.Any("/:id/edit", api_file.Edit) // page
-	fileGroup.PUT("/name", api_file.UpdName)
-	fileGroup.PUT("/content", api_file.UpdContent)
-	fileGroup.PUT("/cut/:srcId/to/:dstId", api_file.Cut)
-	fileGroup.DELETE("/:id", api_file.Del)
+	// note
+	noteGroup := engine.Group("/note")
+	noteGroup.Any("/list", api_note.List) // page
+	noteGroup.POST("", api_note.Add)
+	noteGroup.POST("/upload", api_note.Upload)
+	noteGroup.PUT("/upload", api_note.Upload)
+	noteGroup.GET("/:id", api_note.Get)
+	noteGroup.Any("/:id/view", api_note.View) // page
+	noteGroup.Any("/:id/edit", api_note.Edit) // page
+	noteGroup.PUT("/name", api_note.UpdName)
+	noteGroup.PUT("/content", api_note.UpdContent)
+	noteGroup.PUT("/cut/:srcId/to/:dstId", api_note.Cut)
+	noteGroup.DELETE("/:id", api_note.Del)
 
 	// img
 	imgGroup := engine.Group("/img")

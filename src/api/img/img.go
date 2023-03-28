@@ -14,7 +14,6 @@ import (
 	"note/src/typ"
 	"note/src/util"
 	"os"
-	"sort"
 	"strings"
 	"time"
 )
@@ -23,25 +22,25 @@ import (
 func List(context *gin.Context) {
 	req, _ := common.PageReq(context)
 	page, err := common.DbPage[typ.Img](context, req, "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = 0 ORDER BY (CASE WHEN i.`upd_time` > i.`add_time` THEN i.`upd_time` ELSE i.`add_time` END) DESC")
-	imgs := page.Data
-	if imgs != nil && len(imgs) > 0 {
-		sort.Slice(imgs, func(i, j int) bool {
-			// i
-			iImg := imgs[i]
-			iTime := iImg.AddTime
-			if iImg.UpdTime > iImg.AddTime {
-				iTime = iImg.UpdTime
-			}
-
-			// j
-			jImg := imgs[j]
-			jTime := jImg.AddTime
-			if jImg.UpdTime > jImg.AddTime {
-				jTime = jImg.UpdTime
-			}
-			return iTime > jTime
-		})
-	}
+	//imgs := page.Data
+	//if imgs != nil && len(imgs) > 0 {
+	//	sort.Slice(imgs, func(i, j int) bool {
+	//		// i
+	//		iImg := imgs[i]
+	//		iTime := iImg.AddTime
+	//		if iImg.UpdTime > iImg.AddTime {
+	//			iTime = iImg.UpdTime
+	//		}
+	//
+	//		// j
+	//		jImg := imgs[j]
+	//		jTime := jImg.AddTime
+	//		if jImg.UpdTime > jImg.AddTime {
+	//			jTime = jImg.UpdTime
+	//		}
+	//		return iTime > jTime
+	//	})
+	//}
 	common.HtmlOkNew(context, "img/list.html", typ.Resp[typ.Page[typ.Img]]{
 		Msg:  util.TypeAsStr(err),
 		Data: page,

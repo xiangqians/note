@@ -36,14 +36,14 @@
 <body>
 
 <!--
-<object class="internal container" data="/file/{{ .f.Id }}/view" type="application/pdf">
+<object class="internal container" data="/note/{{ .f.Id }}/view" type="application/pdf">
     This browser does not support PDFs. Please download the PDF to view it:
-    <a href="/file/{{ .f.Id }}/view">Download PDF</a>
+    <a href="/note/{{ .f.Id }}/view">Download PDF</a>
 </object>
 -->
-<embed class="internal container" title="214435" src="/file/{{ .f.Id }}/view" type="application/pdf">
+<embed class="internal container" title="214435" src="/note/{{ .f.Id }}/view" type="application/pdf">
 
-<a class="float" href="/file/{{ .f.Id }}/editpage" target="_blank">{{ Localize "i18n.edit" }} →</a>
+<a class="float" href="/note/{{ .f.Id }}/editpage" target="_blank">{{ Localize "i18n.edit" }} →</a>
 
 </body>
 </html>

@@ -24,10 +24,12 @@ $. 引用模板中的根级上下文
     <div style="text-align: left; padding-left: 50px;">
         <a name="nav" style='padding: 8px;{{ if eq .url "/" }}background-color: lightgray;{{ end }}'
            href="/">{{ Localize "i18n.index" }}</a>
-        <a name="nav" style='padding: 8px;{{ if eq .url "/file/list" }}background-color: lightgray;{{ end }}'
-           href="/file/list">{{ Localize "i18n.file" }}</a>
+        <a name="nav" style='padding: 8px;{{ if eq .url "/note/list" }}background-color: lightgray;{{ end }}'
+           href="/note/list">{{ Localize "i18n.note" }}</a>
         <a name="nav" style='padding: 8px;{{ if eq .url "/img/list" }}background-color: lightgray;{{ end }}'
            href="/img/list">{{ Localize "i18n.img" }}</a>
+        <a name="nav" style='padding: 8px;{{ if eq .url "/img/recycleBin" }}background-color: lightgray;{{ end }}'
+           href="/recycleBin/list">{{ Localize "i18n.recycleBin" }}</a>
     </div>
     <br>
     <br>

@@ -18,8 +18,8 @@
     <p style="color: red;">{{ .resp.Msg }}</p>
 
     <div style="float: left; margin-left: 17%;">
-        {{ Localize "i18n.file" }}
-        <canvas id="fileStat" width="600" height="400">
+        {{ Localize "i18n.note" }}
+        <canvas id="noteStat" width="600" height="400">
             你的浏览器不支持 canvas，请升级你的浏览器。
         </canvas>
     </div>
@@ -56,8 +56,8 @@
         let resp = JSON.parse(`{{ .resp }}`)
         // console.log('resp', resp)
 
-        // file stat
-        drawPieChart('fileStat', resp.Data.FileStats)
+        // note stat
+        drawPieChart('noteStat', resp.Data.NoteStats)
 
         // img stat
         drawPieChart('imgStat', resp.Data.ImgStats)

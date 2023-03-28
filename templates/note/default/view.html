@@ -29,9 +29,9 @@
 download 属性规定被下载的超链接目标。
 该属性也可以设置一个值来规定下载文件的名称。所允许的值没有限制，浏览器将自动检测正确的文件扩展名并添加到文件 (.img, .pdf, .txt, .html, 等等)。
 -->
-<a href="/file/{{ .f.Id }}/view" download="{{ .f.Name }}">{{ Localize "i18n.download" }}</a>
+<a href="/note/{{ .f.Id }}/view" download="{{ .f.Name }}">{{ Localize "i18n.download" }}</a>
 
-<a class="float" href="/file/{{ .f.Id }}/editpage" target="_blank">{{ Localize "i18n.edit" }} →</a>
+<a class="float" href="/note/{{ .f.Id }}/editpage" target="_blank">{{ Localize "i18n.edit" }} →</a>
 
 </body>
 </html>

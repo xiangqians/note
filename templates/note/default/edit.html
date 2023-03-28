@@ -14,7 +14,7 @@
 
 <p style="color: red;">{{ .msg }}</p>
 
-<form action="/file/reupload" method="POST" enctype="multipart/form-data">
+<form action="/note/reupload" method="POST" enctype="multipart/form-data">
     <input name="id" type="text" value="{{ .f.Id }}" hidden/>
     <input name="file" type="file"/>
     <button type="submit">{{ Localize "i18n.upload" }}</button>
