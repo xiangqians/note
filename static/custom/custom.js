@@ -96,14 +96,14 @@ custom = function () {
             type: method,
             data: data,
             async: async,
-            success: function (data) {
+            success: function (resp) {
                 if (success) {
-                    success(data)
+                    success(resp)
                 }
             },
-            error: function (e) {
+            error: function (resp) {
                 if (error) {
-                    error(e)
+                    error(resp)
                 }
             }
         }

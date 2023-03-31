@@ -6,7 +6,7 @@ package common
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"note/src/util"
+	util_os "note/src/util/os"
 )
 
 func DataDir(context *gin.Context) string {
@@ -15,5 +15,5 @@ func DataDir(context *gin.Context) string {
 	}
 
 	user, _ := GetSessionUser(context)
-	return fmt.Sprintf("%s%s%d", AppArg.DataDir, util.FileSeparator, user.Id)
+	return fmt.Sprintf("%s%s%d", AppArg.DataDir, util_os.FileSeparator, user.Id)
 }

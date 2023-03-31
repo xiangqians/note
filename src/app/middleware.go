@@ -13,7 +13,7 @@ import (
 	"golang.org/x/text/language"
 	"net/http"
 	api_common "note/src/api/common"
-	"note/src/typ"
+	typ_locale "note/src/typ/locale"
 	"strings"
 )
 
@@ -22,6 +22,7 @@ func permMiddleware(engine *gin.Engine) {
 	// 未授权拦截
 	engine.Use(func(context *gin.Context) {
 		reqPath := context.Request.URL.Path
+		reqMethod := context.Request.Method
 
 		// 静态资源放行
 		if strings.HasPrefix(reqPath, "/static") {
@@ -36,8 +37,9 @@ func permMiddleware(engine *gin.Engine) {
 			isLogin = true
 		}
 
-		if reqPath == "/user/regpage" || reqPath == "/user/loginpage" ||
-			(reqPath == "/user" && context.Request.Method == http.MethodPost) || reqPath == "/user/login" {
+		// 用户注册和登录放行
+		if reqPath == "/user/reg" || reqPath == "/user/login" ||
+			(reqMethod == http.MethodPost && (reqPath == "/user" || reqPath == "/user/login0")) {
 			if isLogin {
 				context.Redirect(http.StatusMovedPermanently, "/")
 				context.Abort()
@@ -49,9 +51,10 @@ func permMiddleware(engine *gin.Engine) {
 
 		if !isLogin {
 			// 重定向
-			//context.Request.URL.Path = "/user/loginpage"
+			//context.Request.URL.Path = "/user/login"
 			//engine.HandleContext(context)
-			context.Redirect(http.StatusMovedPermanently, "/user/loginpage")
+			//
+			context.Redirect(http.StatusMovedPermanently, "/user/login")
 
 			// 中止调用链
 			context.Abort()
@@ -81,7 +84,7 @@ func i18nMiddleware(engine *gin.Engine) {
 		func(context *gin.Context, defaultLang string) string {
 			// 从url中获取lang
 			lang := strings.ToLower(strings.TrimSpace(context.Query("lang")))
-			if lang != "" && !(lang == typ.LocaleZh || lang == typ.LocaleEn) {
+			if lang != "" && !(lang == typ_locale.Zh || lang == typ_locale.En) {
 				lang = ""
 			}
 
@@ -99,10 +102,10 @@ func i18nMiddleware(engine *gin.Engine) {
 				// 从请求头获取 Accept-Language
 				acceptLanguage := context.GetHeader("Accept-Language")
 				// en,zh-CN;q=0.9,zh;q=0.8
-				if strings.HasPrefix(acceptLanguage, typ.LocaleZh) {
-					lang = typ.LocaleZh
-				} else if strings.HasPrefix(acceptLanguage, typ.LocaleEn) {
-					lang = typ.LocaleEn
+				if strings.HasPrefix(acceptLanguage, typ_locale.Zh) {
+					lang = typ_locale.Zh
+				} else if strings.HasPrefix(acceptLanguage, typ_locale.En) {
+					lang = typ_locale.En
 				}
 			}
 

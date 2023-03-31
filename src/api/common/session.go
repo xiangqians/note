@@ -7,14 +7,18 @@ import (
 	"errors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"note/src/typ"
+	typ_api "note/src/typ/api"
 )
 
-const sessionKeyUser = "_user_"
+const userSessionKey = "__user__"
+const UserSessionKey = "user"
+const RespSessionKey = "resp"
+const UriSessionKey = "uri"
+const UrlSessionKey = "url"
 
 // GetSessionUser 获取session用户信息
-func GetSessionUser(context *gin.Context) (typ.User, error) {
-	user, err := GetSessionV[typ.User](context, sessionKeyUser, false)
+func GetSessionUser(context *gin.Context) (typ_api.User, error) {
+	user, err := GetSessionV[typ_api.User](context, userSessionKey, false)
 
 	// 如果返回指针值，有可能会发生逃逸
 	//return &user
@@ -23,8 +27,8 @@ func GetSessionUser(context *gin.Context) (typ.User, error) {
 }
 
 // SetSessionUser 保存用户信息到session
-func SetSessionUser(context *gin.Context, user typ.User) {
-	SetSessionKv(context, sessionKeyUser, user)
+func SetSessionUser(context *gin.Context, user typ_api.User) {
+	SetSessionKv(context, userSessionKey, user)
 }
 
 // SetSessionKv 设置session kv

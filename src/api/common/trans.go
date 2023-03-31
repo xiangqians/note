@@ -15,7 +15,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	en_trans "github.com/go-playground/validator/v10/translations/en"
 	zh_trans "github.com/go-playground/validator/v10/translations/zh"
-	"note/src/typ"
+	typ_locale "note/src/typ/locale"
 	"strings"
 )
 
@@ -31,11 +31,11 @@ func ValidateTrans() {
 			// 支持的语言
 			zh.New(),
 			en.New())
-		if trans, r := uni.GetTranslator(typ.LocaleZh); r {
+		if trans, r := uni.GetTranslator(typ_locale.Zh); r {
 			zh_trans.RegisterDefaultTranslations(v, trans)
 			zhTrans = trans
 		}
-		if trans, r := uni.GetTranslator(typ.LocaleEn); r {
+		if trans, r := uni.GetTranslator(typ_locale.En); r {
 			en_trans.RegisterDefaultTranslations(v, trans)
 			enTrans = trans
 		}
@@ -52,9 +52,7 @@ func TransErr(context *gin.Context, err error) error {
 		}
 		var validationErrTrans validator.ValidationErrorsTranslations
 		switch lang {
-		//case com.LocaleZh:
-		//	validationErrTrans = errs.Translate(zhTrans)
-		case typ.LocaleEn:
+		case typ_locale.En:
 			validationErrTrans = errs.Translate(enTrans)
 		default:
 			validationErrTrans = errs.Translate(zhTrans)
@@ -69,7 +67,7 @@ func TransErr(context *gin.Context, err error) error {
 			}
 			if errMsg != "" {
 				switch lang {
-				case typ.LocaleEn:
+				case typ_locale.En:
 					errMsg += ", "
 				default:
 					errMsg += "、"

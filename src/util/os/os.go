@@ -1,7 +1,7 @@
 // os
 // @author xiangqian
 // @date 11:08 2023/02/04
-package util
+package os
 
 import (
 	"bufio"
@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"io"
-	"note/src/typ"
+	typ_os "note/src/typ/os"
 	"os"
 	"os/exec"
 	"regexp"
@@ -21,10 +21,10 @@ var FileSeparator string
 
 func init() {
 	switch OS() {
-	case typ.OSWindows:
+	case typ_os.Windows:
 		FileSeparator = "\\"
 
-	case typ.OSLinux:
+	case typ_os.Linux:
 		FileSeparator = "/"
 
 	default:
@@ -33,41 +33,60 @@ func init() {
 }
 
 // OS 获取操作系统标识
-func OS() typ.OS {
+func OS() typ_os.OS {
 	os := runtime.GOOS
 	switch os {
 	// windows
 	case "windows":
-		return typ.OSWindows
+		return typ_os.Windows
 
 	// linux
 	case "linux":
 		fallthrough // 执行穿透
 	case "android":
-		return typ.OSLinux
+		return typ_os.Linux
 
 	// unknown
 	default:
-		return typ.OSUnk
+		return typ_os.Unk
 	}
 }
 
-// CdCmd cd命令
-func CdCmd(path string) (string, error) {
-	switch OS() {
-	case typ.OSWindows:
-		return fmt.Sprintf("cd /d %s", path), nil
+// NotSupportedError 不支持当前系统错误
+func NotSupportedError() error {
+	return errors.New(fmt.Sprintf("The current system is not supported, %v", runtime.GOOS))
+}
 
-	case typ.OSLinux:
-		return fmt.Sprintf("cd %s", path), nil
+// Cmd 执行命令
+func Cmd(cmd string) (*exec.Cmd, error) {
+	switch OS() {
+	case typ_os.Windows:
+		return exec.Command("cmd", "/C", cmd), nil
+
+	case typ_os.Linux:
+		return exec.Command("bash", "-c", cmd), nil
 
 	default:
-		return "", errors.New(fmt.Sprintf("The current system is not supported, %v", runtime.GOOS))
+		return nil, NotSupportedError()
 	}
 }
 
-// IsExistOfPath 判断所给路径（文件/文件夹）是否存在
-func IsExistOfPath(path string) bool {
+// Cd 执行cd命令
+func Cd(path string) (*exec.Cmd, error) {
+	switch OS() {
+	case typ_os.Windows:
+		return Cmd(fmt.Sprintf("cd /d %s", path))
+
+	case typ_os.Linux:
+		return Cmd(fmt.Sprintf("cd %s", path))
+
+	default:
+		return nil, NotSupportedError()
+	}
+}
+
+// IsExist 判断所给路径（文件/文件夹）是否存在
+func IsExist(path string) bool {
 	_, err := os.Stat(path)
 	if err != nil {
 		return os.IsExist(err)
@@ -85,43 +104,22 @@ func DelDir(path string) error {
 	return os.RemoveAll(path)
 }
 
-// Mkdir 创建目录
-func Mkdir(path string) error {
+// MkDir make directories, 创建目录
+func MkDir(path string) error {
 	return os.MkdirAll(path, os.ModePerm)
 }
 
-func CommandWindows(cmd string) *exec.Cmd {
-	return exec.Command("cmd", "/C", cmd)
-}
-
-func CommandLinux(cmd string) *exec.Cmd {
-	return exec.Command("bash", "-c", cmd)
-}
-
-// Command 执行命令行
-func Command(cmd string) (*exec.Cmd, error) {
+// CopyDir 拷贝目录
+func CopyDir(srcDir, dstDir string) (*exec.Cmd, error) {
 	switch OS() {
-	case typ.OSWindows:
-		return CommandWindows(cmd), nil
+	case typ_os.Windows:
+		return Cmd(fmt.Sprintf("xcopy %s %s /s /e /h /i /y", srcDir, dstDir))
 
-	case typ.OSLinux:
-		return CommandLinux(cmd), nil
+	case typ_os.Linux:
+		return Cmd(fmt.Sprintf("cp -r %s %s", srcDir, dstDir))
 
 	default:
-		return nil, errors.New(fmt.Sprintf("The current system is not supported, %v", runtime.GOOS))
-	}
-}
-
-func CopyDir(srcDir, dstDir string) *exec.Cmd {
-	switch OS() {
-	case typ.OSWindows:
-		return CommandWindows(fmt.Sprintf("xcopy %s %s /s /e /h /i /y", srcDir, dstDir))
-
-	case typ.OSLinux:
-		return CommandLinux(fmt.Sprintf("cp -r %s %s", srcDir, dstDir))
-
-	default:
-		panic(fmt.Sprintf("The current system is not supported, %v", runtime.GOOS))
+		return nil, NotSupportedError()
 	}
 }
 
@@ -133,7 +131,7 @@ func DecodeBuf(buf []byte) string {
 	switch OS() {
 	// 解决windows乱码问题
 	// GB18030编码
-	case typ.OSWindows:
+	case typ_os.Windows:
 		var decodeBytes, _ = simplifiedchinese.GB18030.NewDecoder().Bytes(buf)
 		return string(decodeBytes)
 
@@ -147,8 +145,8 @@ func DecodeBuf(buf []byte) string {
 // dst: io.Writer
 // bufSize: 缓存大小，byte
 func IOCopy(src io.Reader, dst io.Writer, bufSize int) error {
-	var pReader *bufio.Reader
-	var pWriter *bufio.Writer
+	var reader *bufio.Reader
+	var writer *bufio.Writer
 
 	if bufSize <= 0 {
 		bufSize = 1024 * 4 // bufio.defaultBufSize
@@ -159,21 +157,21 @@ func IOCopy(src io.Reader, dst io.Writer, bufSize int) error {
 
 	// <= 4KB
 	if bufSize <= 1024*4 {
-		pReader = bufio.NewReader(src)
-		pWriter = bufio.NewWriter(dst)
+		reader = bufio.NewReader(src)
+		writer = bufio.NewWriter(dst)
 	} else
 	// > 4KB
 	{
-		pReader = bufio.NewReaderSize(src, bufSize)
-		pWriter = bufio.NewWriterSize(dst, bufSize)
+		reader = bufio.NewReaderSize(src, bufSize)
+		writer = bufio.NewWriterSize(dst, bufSize)
 	}
 
 	for {
-		n, err := pReader.Read(buf)
+		n, err := reader.Read(buf)
 		if err == io.EOF {
 			if n > 0 {
-				pWriter.Write(buf[:n])
-				pWriter.Flush()
+				writer.Write(buf[:n])
+				writer.Flush()
 			}
 			break
 		}
@@ -182,8 +180,8 @@ func IOCopy(src io.Reader, dst io.Writer, bufSize int) error {
 			return err
 		}
 
-		pWriter.Write(buf[:n])
-		pWriter.Flush()
+		writer.Write(buf[:n])
+		writer.Flush()
 	}
 
 	return nil
@@ -227,12 +225,12 @@ func HumanizFileSize(size int64) string {
 }
 
 // VerifyFileName 校验文件名
-func VerifyFileName(dirName string) error {
+func VerifyFileName(name string) error {
 	// 文件名不能包含字符：
 	// \ / : * ? " < > |
 
 	// ^[^\\/:*?"<>|]*$
-	matched, err := regexp.MatchString("^[^\\\\/:*?\"<>|]*$", dirName)
+	matched, err := regexp.MatchString("^[^\\\\/:*?\"<>|]*$", name)
 	if err != nil {
 		return err
 	}

@@ -1,9 +1,12 @@
 // response
 // @author xiangqian
 // @date 20:24 2023/03/22
-package typ
+package resp
 
-import "encoding/gob"
+import (
+	"encoding/gob"
+	"note/src/typ/api"
+)
 
 // Resp 响应数据
 type Resp[T any] struct {
@@ -14,4 +17,5 @@ type Resp[T any] struct {
 // 注册模型
 func init() {
 	gob.Register(Resp[any]{})
+	gob.Register(Resp[api.User]{})
 }

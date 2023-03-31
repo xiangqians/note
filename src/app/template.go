@@ -10,7 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/render"
 	"html/template"
-	"note/src/util"
+	util_num "note/src/util/num"
+	util_os "note/src/util/os"
+	util_reflect "note/src/util/reflect"
+	util_time "note/src/util/time"
 	"os"
 	"path/filepath"
 	"strings"
@@ -29,31 +32,32 @@ func htmlTemplate(engine *gin.Engine) {
 
 		// 格式化日期时间戳（s）
 		"FormatUnix": func(unix int64) string {
-			return util.FormatUnix(unix)
+			return util_time.FormatUnix(unix)
 		},
 
 		// 人性化日期时间戳（s）
 		"HumanizUnix": func(unix int64) string {
-			return util.HumanizUnix(unix)
+			return util_time.HumanizUnix(unix)
 		},
 
 		// 人性化文件大小
 		"HumanizFileSize": func(size int64) string {
-			return util.HumanizFileSize(size)
+			return util_os.HumanizFileSize(size)
 		},
 
 		// No.
 		"No_": func(page any, index int) int64 {
-			current := util.CallField[int64](page, "Current", nil)
-			size := util.CallField[int64](page, "Size", nil)
+			current := util_reflect.CallField[int64](page, "Current")
+			size := util_reflect.CallField[int64](page, "Size")
 			return (current-1)*size + int64(index) + 1
 		},
 
-		// add
+		// add 两数相加
 		"Add": func(i1 any, i2 any) int64 {
-			return util.Int64(i1) + util.Int64(i2)
+			return util_num.Int64(i1) + util_num.Int64(i2)
 		},
 
+		// put
 		"Put": func(h gin.H, key string, value any) string {
 			h[key] = value
 			return ""
@@ -113,17 +117,17 @@ func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap template.FuncMap
 
 				// 目录
 				if sfInfo.IsDir() {
-					addFromFilesFuncs(renderer, funcMap, commons, fmt.Sprintf("%s%s%s", name, util.FileSeparator, sfName))
+					addFromFilesFuncs(renderer, funcMap, commons, fmt.Sprintf("%s%s%s", name, util_os.FileSeparator, sfName))
 				} else
 				// 文件
 				{
 					var files []string
-					if fName == "com" {
-						files = []string{fmt.Sprintf("%s%s%s", name, util.FileSeparator, sfName)}
+					if fName == "common" {
+						files = []string{fmt.Sprintf("%s%s%s", name, util_os.FileSeparator, sfName)}
 					} else {
 						// len 0, cap ?
 						files = make([]string, 0, len(commons)+1)
-						files = append(files, fmt.Sprintf("%s%s%s", name, util.FileSeparator, sfName))
+						files = append(files, fmt.Sprintf("%s%s%s", name, util_os.FileSeparator, sfName))
 						files = append(files, commons...)
 					}
 

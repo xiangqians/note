@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"io"
 	"log"
-	"note/src/util"
+	os2 "note/src/util/os"
 	"os"
 	"path/filepath"
 )
@@ -22,7 +22,7 @@ func logger() {
 	}
 
 	// 创建日志文件夹，如果不存在的话
-	logDir := fmt.Sprintf("%s%s%s", dir, util.FileSeparator, "logs")
+	logDir := fmt.Sprintf("%s%s%s", dir, os2.FileSeparator, "logs")
 	fileInfo, err := os.Stat(logDir)
 	if err != nil || !fileInfo.IsDir() {
 		err = os.Mkdir(logDir, 0666)

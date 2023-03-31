@@ -4,7 +4,7 @@
 package common
 
 import (
-	"note/src/typ"
+	typ_app "note/src/typ/app"
 )
 
-var AppArg typ.AppArg
+var AppArg typ_app.Arg

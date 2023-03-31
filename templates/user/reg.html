@@ -14,14 +14,17 @@
 
 <content>
     <form action="/user" method="post">
-        <p style="color: red;">{{ .msg }}</p>
+        <p style="color: red;">{{ .resp.Msg }}</p>
+
+        {{ $data := .resp.Data }}
+
         <div>
             *<label>{{ Localize "i18n.userName" }}:</label>
-            <input name="name" type="text" value="{{ .user.Name }}">
+            <input name="name" type="text" value="{{ $data.Name }}">
         </div>
         <div>
             <label>{{ Localize "i18n.nickname" }}:</label>
-            <input name="nickname" type="text" value="{{ .user.Nickname }}">
+            <input name="nickname" type="text" value="{{ $data.Nickname }}">
         </div>
         <div>
             *<label>{{ Localize "i18n.passwd" }}:</label>
@@ -33,7 +36,7 @@
         </div>
         <div>
             <label>{{ Localize "i18n.rem" }}:</label>
-            <textarea name="rem" type="text">{{ .user.Rem }}</textarea>
+            <textarea name="rem" type="text">{{ $data.Rem }}</textarea>
         </div>
         <div>
             <input type="submit" value='{{ Localize "i18n.reg" }}'>
@@ -41,12 +44,12 @@
 
         <br>
         <div>
-            {{ Localize "i18n.alreadyHaveAnAccount" }} <a href="/user/loginpage">{{ Localize "i18n.login" }} →</a>
+            {{ Localize "i18n.alreadyHaveAnAccount" }} <a href="/user/login">{{ Localize "i18n.login" }}</a>
         </div>
     </form>
 </content>
 
-{{ template "com/footer.html" . }}
+{{ template "common/footer.html" . }}
 
 </body>
 </html>

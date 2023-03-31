@@ -1,16 +1,11 @@
 // api type
 // @author xiangqian
 // @date 14:07 2023/02/04
-package typ
+package api
 
 import (
 	"encoding/gob"
 	"strings"
-)
-
-const (
-	LocaleZh = "zh"
-	LocaleEn = "en"
 )
 
 // Abs 抽象实体定义
@@ -31,16 +26,15 @@ type User struct {
 	RePasswd string `form:"rePasswd" binding:"required,excludes= ,max=100,eqfield=Passwd"` // retype Passwd
 }
 
-// File 文件
-type File struct {
+// Note 笔记
+type Note struct {
 	Abs
 	Pid  int64  `form:"pid" binding:"gte=0"`                  // 父id
 	Name string `form:"name" binding:"required,min=1,max=60"` // 文件名称
 	Type string `form:"type"`                                 // 文件类型
 	Size int64  `form:"size"`                                 // 文件大小，单位：byte
-
-	Path     string // 目录路径
-	PathLink string // 目录路径链接
+	Path string // 目录路径
+	Url  string // 笔记url
 }
 
 // Img 图片
@@ -49,8 +43,7 @@ type Img struct {
 	Name string `form:"name" binding:"required,min=1,max=60"` // 图片名称
 	Type string `form:"type"`                                 // 图片类型
 	Size int64  `form:"size"`                                 // 图片大小，单位：byte
-
-	Url string // 图片url
+	Url  string // 图片url
 }
 
 // FileType 文件类型
@@ -67,7 +60,7 @@ const (
 	FileTypeJpg           = "jpg"  // jpg文件
 	FileTypeJpeg          = "jpeg" // jpeg文件
 	FileTypePng           = "png"  // png文件
-	FileTypeWebp          = "webp" //webp文件
+	FileTypeWebp          = "webp" // webp文件
 	FileTypeUnk           = "unk"  // unknown
 )
 
@@ -109,6 +102,7 @@ type Stat struct {
 // 注册模型
 func init() {
 	gob.Register(User{})
-	gob.Register(File{})
+	gob.Register(Note{})
 	gob.Register(Img{})
+	gob.Register(Stat{})
 }

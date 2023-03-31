@@ -29,12 +29,13 @@ Adobe CMap resources are covered by their own copyright but the same license:
 See https://github.com/adobe-type-tools/cmap-resources
 -->
 <html dir="ltr" mozdisallowselectionprint>
+{{ $data := .resp.Data }}
 <head>
     <meta charset="utf-8">
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="google" content="notranslate">
-    <title>{{ Localize "i18n.view" }}: {{ .f.Name }}</title>
+    <title>{{ $data.Name }}</title>
 
     <link rel="stylesheet" href="/static/pdfjs-3.3.122/web/viewer.css">
 
@@ -512,7 +513,7 @@ See https://github.com/adobe-type-tools/cmap-resources
 
 <input type="file" id="fileInput" class="hidden">
 
-<a class="float" href="/note/{{ .f.Id }}/editpage" target="_blank">{{ Localize "i18n.edit" }} →</a>
+<a class="float" href="/note/{{ $data.Id }}/edit" target="_blank">{{ Localize "i18n.edit" }} →</a>
 
 </body>
 </html>
@@ -521,7 +522,8 @@ See https://github.com/adobe-type-tools/cmap-resources
 <script src="/static/pdfjs-3.3.122/build/pdf.js"></script>
 <script>
     ;
-    let defPdfSrc = "/note/{{ .f.Id }}/view"
+    let defPdfSrc = "{{ $data.Url }}"
+    // console.log('defPdfSrc', defPdfSrc)
     ;
 </script>
 <script src="/static/pdfjs-3.3.122/web/viewer.js"></script>

@@ -12,7 +12,7 @@
 </head>
 <body>
 
-{{ template "com/header.html" . }}
+{{ template "common/header.html" . }}
 
 <content>
     <p style="color: red;">{{ .resp.Msg }}</p>
@@ -25,7 +25,7 @@
         -->
         <span>
         <script>
-            document.write('{{ $data.pnote.PathLink }}')
+            document.write('{{ $data.pnote.Path }}')
         </script>
         </span>
         &nbsp;&nbsp;
@@ -45,7 +45,7 @@
         <tbody>
         {{ if gt $data.pnote.Id 0 }}
         <tr>
-            <td><a href="/note/list?id={{ $data.pnote.Pid }}">../</a></td>
+            <td><a href="/note/list?pid={{ $data.pnote.Pid }}">../</a></td>
             <td colspan="7"></td>
         </tr>
         {{ end }}
@@ -56,7 +56,7 @@
         <tr>
             <td>
                 {{ if eq $note.Type "d" }}
-                <a href="/note/list?id={{ $note.Id }}">{{ $note.Name }}/</a>
+                <a href="/note/list?pid={{ $note.Id }}">{{ $note.Name }}/</a>
                 {{ else }}
                 <a href="/note/{{ $note.Id }}/view" target="_blank">{{ $note.Name }}</a>
                 {{ end }}
@@ -115,7 +115,7 @@
 
 </content>
 
-{{ template "com/footer.html" . }}
+{{ template "common/footer.html" . }}
 
 </body>
 </html>
@@ -196,7 +196,7 @@
                 return
             }
 
-            $e.attr('href', '/note/list?id=-1&name=' + searchName)
+            $e.attr('href', '/note/list?pid=-1&name=' + searchName)
             return {}
         }
 

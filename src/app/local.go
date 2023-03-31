@@ -13,14 +13,13 @@ func local() {
 	// GoLang time 包默认是UTC
 	time.Local = time.UTC
 
-	// 修改为北京时区
+	// 修改为上海时区
 	loc, err := time.LoadLocation("Asia/Shanghai")
 	if err != nil {
-		//panic(err)
 		log.Println(err)
 		return
 	}
 	time.Local = loc
 
-	log.Printf("loc: %s\n", time.Local)
+	log.Printf("local: %s\n", time.Local)
 }

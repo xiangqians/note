@@ -7,7 +7,7 @@ package app
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"note/src/api/common"
+	api_common "note/src/api/common"
 	"strconv"
 )
 
@@ -15,16 +15,16 @@ func Run() {
 	// 日志记录器
 	logger()
 
-	// 设置时区
-	local()
-
 	// 解析应用参数
 	parseArg()
 
-	// ValidateTrans
-	common.ValidateTrans()
+	// 设置时区
+	local()
 
-	// gin模式：DebugMode、ReleaseMode、TestMode
+	// ValidateTrans
+	api_common.ValidateTrans()
+
+	// gin模式：DebugMode、TestMode、ReleaseMode
 	gin.SetMode(gin.DebugMode)
 
 	// default Engine
@@ -43,7 +43,7 @@ func Run() {
 	route(engine)
 
 	// addr
-	addr := fmt.Sprintf(":%v", strconv.FormatInt(int64(appArg.Port), 10))
+	addr := fmt.Sprintf(":%v", strconv.FormatInt(int64(arg.Port), 10))
 
 	// run
 	engine.Run(addr)

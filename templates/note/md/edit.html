@@ -4,6 +4,7 @@
  |-->
 <!DOCTYPE html>
 <html lang="en">
+{{ $data := .resp.Data }}
 <head>
     <meta charset="UTF-8">
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
@@ -16,7 +17,7 @@
     <!-- 引入codemirror核心css文件 codemirror.css -->
     <link rel="stylesheet" href="/static/codemirror-5.65.11/lib/codemirror.css">
 
-    <title>{{ Localize "i18n.edit" }}: {{ .f.Name }}</title>
+    <title>{{ $data.note.Name }}</title>
 
     <style>
 
@@ -25,27 +26,12 @@
         }
 
     </style>
-
-    <style>
-
-        .float {
-            position: fixed;
-            top: 30px;
-            right: 50px;
-            width: auto;
-            height: auto;
-            /*background: lightgray;*/
-        }
-
-    </style>
 </head>
 <body>
 
-<p style="color: red;">{{ .msg }}</p>
+<p style="color: red;">{{ .resp.Msg }}</p>
 
-<textarea type="text">{{ .content }}</textarea>
-
-<button name="save" class="float">{{ Localize "i18n.save" }}</button>
+<textarea type="text">{{ $data.content }}</textarea>
 
 </body>
 </html>
@@ -66,6 +52,7 @@
 <script>
     ;
     (function () {
+
         let $textarea = $('textarea')
         let editor = CodeMirror.fromTextArea($textarea[0], {
             mode: 'markdown', // 语言模式
@@ -95,17 +82,9 @@
             // console.log($textarea.val())
         })
 
-        // href=""
         function save() {
-            alert(123)
-        }
-
-        let $btns = $('button[name="save"]')
-        let $saveBtn = $($btns[$btns.length - 1])
-        // console.log($saveBtn)
-        $saveBtn.click(function () {
             custom.ajax('/note/content', 'PUT', {
-                    'id': "{{ .f.Id }}",
+                    'id': "{{ $data.note.Id }}",
                     'content': editor.getValue()
                 },
                 'json',
@@ -118,8 +97,124 @@
                     let msg = e.responseJSON.msg
                     alert(msg)
                 })
+        }
+        ;
+
+        // 监听 ctrl + s 按键
+        document.onkeydown = function (event) {
+            // ctrl + s
+            if ((navigator.platform.match("Mac") ? event.metaKey : event.ctrlKey) // ctrl
+                && event.keyCode == 83) { // s
+                // console.log("Ctrl + S", event)
+                save()
+
+                // Prevent the default handler from running.
+                // 阻止默认行为
+                event.preventDefault()
+                return
+            }
+        }
+
+        ;
+
+        // 前端js获取剪切板中的文本或者图片文件数据
+        // 监听paste事件，在进行粘贴的时候会触发
+        // https://developer.mozilla.org/en-US/docs/Web/API/Element/paste_event
+        document.addEventListener('paste', function (event) {
+            // clipboardData
+            // 粘贴事件提供了一个clipboardData的属性
+            let clipboardData = event.clipboardData
+            // console.log('clipboardData', clipboardData)
+            if (!(clipboardData)) {
+                return
+            }
+
+            // 如果是 Safari 直接 return
+            if (!(event.clipboardData && event.clipboardData.items)) {
+                console.warn("不支持当前浏览器")
+                return
+            }
+
+            // dropEffect
+            // String，默认是 none
+            // let dropEffect = clipboardData.dropEffect
+            // console.log('dropEffect', dropEffect)
+
+            // effectAllowed
+            // String，默认是 uninitialized
+            // let effectAllowed = clipboardData.effectAllowed
+            // console.log('effectAllowed', effectAllowed)
+
+            // files
+            // FileList，文件列表
+            // let files = clipboardData.files
+            // console.log('files', files)
+
+            // items
+            // DataTransferItemList，剪切板中的各项数据，Chrome有该属性，Safari没有。
+            //
+            // DataTransferItem属性：
+            // 1、kind：一般为string或者file
+            // 2、type：具体的数据类型，例如具体是哪种类型字符串或者哪种类型的文件，即MIME-Type
+            // DataTransferItem方法：
+            // 1、getAsFile：如果kind是file，可以用该方法获取到文件
+            // 2、getAsString：入参是回调函数；如果kind是string，可以用该方法获取到字符串，字符串需要用回调函数得到，回调函数的第一个参数就是剪切板中的字符串
+            //
+            // let items = clipboardData.items
+            // console.log('items', items)
+
+            // types
+            // Array，剪切板中的数据类型 该属性在Safari下比较混乱
+            // 一般types中常见的值有：text/plain（普通字符串）、text/html（带有样式的html）、Files（文件）。
+            // let types = clipboardData.types
+            // console.log('types', types)
+
+            // -----------------------------
+
+            // Chrome浏览器
+
+            // 上传图片
+            function uploadImg(file) {
+                // console.log('file:', file)
+
+                // 上传
+                let formData = new FormData()
+                formData.append('file', file)
+                formData.append('dataType', 'json')
+                custom.ajax('/img/upload', 'POST', formData, 'form', false, function (resp) {
+                    // console.log(resp)
+                    document.execCommand('insertText', false, '![image](/img/' + resp.Data + ')');
+                }, function (resp) {
+                    alert(JSON.stringify(resp))
+                })
+            }
+
+            let items = clipboardData.items
+            // console.log('items', items)
+            for (let i = 0, len = items.length; i < len; i++) {
+                let item = items[i]
+                // console.log('item', item)
+                if (item.kind === 'file' && (/^image\/[jpeg|png|gif|jpg]/.test(item.type))) {
+                    // blob 就是从剪切板获得的文件 可以进行上传或其他操作
+                    let blob = item.getAsFile()
+                    if (blob.size === 0) {
+                        continue
+                    }
+
+                    uploadImg(blob)
+
+                    // Prevent the default handler from running.
+                    // 阻止默认行为
+                    event.preventDefault()
+                    return
+
+                } else if (item.kind === 'file') {
+                    console.warn('type', item.type)
+                }
+            }
         })
 
+        ;
         // onbeforeunload
         window.onbeforeunload = function (e) {
             var e = window.event || e

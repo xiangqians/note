@@ -7,13 +7,13 @@ import (
 	"flag"
 	"log"
 	api_common "note/src/api/common"
-	"note/src/typ"
-	"note/src/util"
+	typ_app "note/src/typ/app"
+	util_os "note/src/util/os"
 	"path/filepath"
 	"strings"
 )
 
-var appArg typ.AppArg
+var arg typ_app.Arg
 
 // 解析应用参数
 func parseArg() {
@@ -31,8 +31,8 @@ func parseArg() {
 
 	// DataDir
 	dataDir = strings.TrimSpace(dataDir)
-	if !util.IsExistOfPath(dataDir) {
-		util.Mkdir(dataDir)
+	if !util_os.IsExist(dataDir) {
+		util_os.MkDir(dataDir)
 	}
 	// 获取绝对路径
 	dataDir, _ = filepath.Abs(dataDir)
@@ -41,12 +41,12 @@ func parseArg() {
 	log.Printf("DataDir: %v\n", dataDir)
 	log.Printf("AllowReg: %v\n", allowReg)
 
-	appArg = typ.AppArg{
+	arg = typ_app.Arg{
 		Port:     port,
 		DataDir:  dataDir,
 		AllowReg: allowReg,
 	}
 
-	// 设置api AppArg
-	api_common.AppArg = appArg
+	// 设置api App Arg
+	api_common.AppArg = arg
 }

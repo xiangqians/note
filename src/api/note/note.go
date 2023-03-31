@@ -15,8 +15,10 @@ import (
 	"log"
 	"net/http"
 	"note/src/api/common"
-	"note/src/typ"
-	"note/src/util"
+	typ_api "note/src/typ/api"
+	typ_resp "note/src/typ/resp"
+	util_os "note/src/util/os"
+	util_str "note/src/util/str"
 	"os"
 	"strings"
 	"time"
@@ -24,19 +26,19 @@ import (
 
 // List 文件列表页面
 func List(context *gin.Context) {
-	html := func(pnote typ.File, notes []typ.File, err error) {
-		resp := typ.Resp[map[string]any]{
-			Msg: util.TypeAsStr(err),
+	html := func(pnote typ_api.Note, notes []typ_api.Note, err error) {
+		resp := typ_resp.Resp[map[string]any]{
+			Msg: util_str.TypeToStr(err),
 			Data: map[string]any{
 				"pnote": pnote,
 				"notes": notes,
 			},
 		}
-		common.HtmlOkNew(context, "note/list.html", resp)
+		common.HtmlOk(context, "note/list.html", resp)
 	}
 
 	// id
-	id, err := common.Query[int64](context, "id")
+	pid, err := common.Query[int64](context, "pid")
 	//log.Printf("id = %d\n", id)
 
 	// name
@@ -44,15 +46,13 @@ func List(context *gin.Context) {
 	name = strings.TrimSpace(name)
 	//log.Printf("name = %s\n", name)
 
-	// pf
-	var pnote typ.File
-	if id < 0 {
+	// pnote
+	var pnote typ_api.Note
+	if pid < 0 {
 		pnote.Path = ""
-		pnote.PathLink = ""
 
-	} else if id == 0 {
+	} else if pid == 0 {
 		pnote.Path = "/"
-		pnote.PathLink = "/"
 
 	} else {
 		sql := "SELECT n1.id, n1.pid, n1.`name`, n1.`type`, n1.`size`, n1.add_time, n1.upd_time, " +
@@ -78,7 +78,7 @@ func List(context *gin.Context) {
 			"LEFT JOIN `note` n10 ON n10.del = 0 AND n10.`type` = 'd' AND n10.id = n9.pid " +
 			"WHERE n1.del = 0 AND n1.`type` = 'd' AND n1.id = ? " +
 			"GROUP BY n1.id"
-		pnote, _, err = common.DbQry[typ.File](context, sql, id)
+		pnote, _, err = common.DbQry[typ_api.Note](context, sql, pid)
 		if err != nil {
 			html(pnote, nil, err)
 			return
@@ -97,22 +97,22 @@ func List(context *gin.Context) {
 			vArr := strings.Split(v, ":")
 			pathArr[i] = vArr[1]
 
-			pathLink := fmt.Sprintf("<a href=\"/note/list?id=%s\">%s</a>\n", vArr[0], vArr[1])
+			pathLink := fmt.Sprintf("<a href=\"/note/list?pid=%s\">%s</a>\n", vArr[0], vArr[1])
 			pathLinkArr = append(pathLinkArr, pathLink)
 		}
-		pnote.Path = strings.Join(pathArr, "/")
-		pnote.PathLink = strings.Join(pathLinkArr, "/")
+		//pnote.Path = strings.Join(pathArr, "/")
+		pnote.Path = strings.Join(pathLinkArr, "/")
 	}
 
 	// 查询
 	args := make([]any, 0, 2)
-	var notes []typ.File = nil
+	var notes []typ_api.Note = nil
 	var count int64
 	sql := "SELECT `id`, `pid`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = 0 "
 	// id
-	if id >= 0 {
+	if pid >= 0 {
 		sql += "AND `pid` = ? "
-		args = append(args, id)
+		args = append(args, pid)
 	}
 	// name
 	if name != "" {
@@ -120,10 +120,10 @@ func List(context *gin.Context) {
 		args = append(args, name)
 	}
 	sql += "ORDER BY `type`, `name`, (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC "
-	if id < 0 {
+	if pid < 0 {
 		sql += "LIMIT 10000"
 	}
-	notes, count, err = common.DbQry[[]typ.File](context, sql, args...)
+	notes, count, err = common.DbQry[[]typ_api.Note](context, sql, args...)
 	if err != nil || count == 0 {
 		notes = nil
 	}
@@ -134,23 +134,23 @@ func List(context *gin.Context) {
 
 // Add 新增文件
 func Add(context *gin.Context) {
-	redirect := func(id int64, err any) {
-		resp := typ.Resp[any]{Msg: util.TypeAsStr(err)}
-		common.RedirectNew(context, fmt.Sprintf("/note/list?id=%d", id), resp)
+	redirect := func(pid int64, err any) {
+		resp := typ_resp.Resp[any]{Msg: util_str.TypeToStr(err)}
+		common.Redirect(context, fmt.Sprintf("/note/list?pid=%d", pid), resp)
 	}
 
-	// file
-	f := typ.File{}
-	err := common.ShouldBind(context, &f)
-	pid := f.Pid
+	// note
+	note := typ_api.Note{}
+	err := common.ShouldBind(context, &note)
+	pid := note.Pid
 	if err != nil {
 		redirect(pid, err)
 		return
 	}
 
 	// name
-	f.Name = strings.TrimSpace(f.Name)
-	err = util.VerifyFileName(f.Name)
+	note.Name = strings.TrimSpace(note.Name)
+	err = util_os.VerifyFileName(note.Name)
 	if err != nil {
 		redirect(pid, err)
 		return
@@ -158,37 +158,37 @@ func Add(context *gin.Context) {
 
 	// 校验文件类型
 	// 只支持添加 目录 和 md文件
-	fType := typ.FileTypeOf(strings.TrimSpace(f.Type))
-	if !(fType == typ.FileTypeD || fType == typ.FileTypeMd) {
-		redirect(pid, fmt.Sprintf("%s, %s", errors.New(i18n.MustGetMessage("i18n.fileTypeUnsupported")), f.Type))
+	fType := typ_api.FileTypeOf(strings.TrimSpace(note.Type))
+	if !(fType == typ_api.FileTypeD || fType == typ_api.FileTypeMd) {
+		redirect(pid, fmt.Sprintf("%s, %s", errors.New(i18n.MustGetMessage("i18n.fileTypeUnsupported")), note.Type))
 		return
 	}
-	f.Type = string(fType)
+	note.Type = string(fType)
 
 	// add
-	id, err := common.DbAdd(context, "INSERT INTO `note` (`pid`, `name`, `type`, `add_time`) VALUES (?, ?, ?, ?)", f.Pid, f.Name, f.Type, time.Now().Unix())
+	id, err := common.DbAdd(context, "INSERT INTO `note` (`pid`, `name`, `type`, `add_time`) VALUES (?, ?, ?, ?)", note.Pid, note.Name, note.Type, time.Now().Unix())
 	if err != nil {
 		redirect(pid, err)
 		return
 	}
-	f.Id = id
+	note.Id = id
 
 	// 如果不是目录，则创建物理文件
-	if fType != typ.FileTypeD {
-		// file path
-		fp, err := Path(context, f)
+	if fType != typ_api.FileTypeD {
+		// path
+		path, err := Path(context, note)
 		if err != nil {
 			redirect(pid, err)
 			return
 		}
 
 		// create
-		pFile, err := os.Create(fp)
+		file, err := os.Create(path)
 		if err != nil {
 			redirect(pid, err)
 			return
 		}
-		defer pFile.Close()
+		defer file.Close()
 	}
 
 	redirect(pid, err)
@@ -211,13 +211,16 @@ func Upload(context *gin.Context) {
 	}
 
 	// redirect
-	redirect := func(id int64, pid int64, msg any) {
+	redirect := func(id int64, pid int64, err any) {
+		resp := typ_resp.Resp[any]{
+			Msg: util_str.TypeToStr(err),
+		}
 		switch method {
 		case http.MethodPost:
-			common.Redirect(context, fmt.Sprintf("/note/list?id=%d", pid), nil, msg)
+			common.Redirect(context, fmt.Sprintf("/note/list?pid=%d", pid), resp)
 
 		case http.MethodPut:
-			common.Redirect(context, fmt.Sprintf("/note/%d/edit", id), nil, msg)
+			common.Redirect(context, fmt.Sprintf("/note/%d/edit", id), resp)
 		}
 	}
 
@@ -236,7 +239,7 @@ func Upload(context *gin.Context) {
 		return
 	}
 
-	// fh
+	// FileHeader
 	fh, err := context.FormFile("file")
 	if err != nil || fh == nil {
 		redirect(id, pid, err)
@@ -251,14 +254,14 @@ func Upload(context *gin.Context) {
 	fn := fh.Filename
 
 	// type
-	// 校验文件类型，只支持上传 pdf 和 zip
+	// 校验文件类型，只支持上传 html/pdf/zip
 	ftStr := ""
 	index := strings.LastIndex(fn, ".")
 	if index > 0 {
 		ftStr = fn[index+1:]
 	}
-	ft := typ.FileTypeOf(strings.TrimSpace(ftStr))
-	if ft == typ.FileTypeUnk || !(ft == typ.FileTypeHtml || ft == typ.FileTypePdf || ft == typ.FileTypeZip) {
+	ft := typ_api.FileTypeOf(strings.TrimSpace(ftStr))
+	if ft == typ_api.FileTypeUnk || !(ft == typ_api.FileTypeHtml || ft == typ_api.FileTypePdf || ft == typ_api.FileTypeZip) {
 		redirect(id, pid, fmt.Sprintf("%s, %s", errors.New(i18n.MustGetMessage("i18n.fileTypeUnsupported")), ftStr))
 		return
 	}
@@ -273,8 +276,8 @@ func Upload(context *gin.Context) {
 	case http.MethodPost:
 		// 校验 pid 是否存在
 		if pid != 0 {
-			f, count, err := common.DbQry[typ.File](context, "SELECT `id`, `pid`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = 0 AND `id` = ?", pid)
-			if err != nil || count == 0 || typ.FileTypeOf(f.Type) != typ.FileTypeD {
+			note, count, err := DbQry(context, pid)
+			if err != nil || count == 0 || typ_api.FileTypeOf(note.Type) != typ_api.FileTypeD { // 父节点必须是目录
 				redirect(id, pid, err)
 				return
 			}
@@ -282,13 +285,13 @@ func Upload(context *gin.Context) {
 
 	case http.MethodPut:
 		// 校验 id 是否存在
-		f, count, err := common.DbQry[typ.File](context, "SELECT id, pid, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = 0 AND `id` = ?", id)
+		note, count, err := DbQry(context, id)
 		if err != nil || count == 0 {
 			redirect(id, pid, err)
 			return
 		}
 
-		if ft != typ.FileTypeOf(f.Type) {
+		if ft != typ_api.FileTypeOf(note.Type) {
 			redirect(id, pid, "重传必须是相同文件类型")
 			return
 		}
@@ -310,7 +313,7 @@ func Upload(context *gin.Context) {
 	}
 
 	// path
-	f := typ.File{}
+	f := typ_api.Note{}
 	f.Id = id
 	f.Type = string(ft)
 	fp, err := Path(context, f)
@@ -320,7 +323,7 @@ func Upload(context *gin.Context) {
 	}
 
 	// 清空文件
-	if method == http.MethodPut && util.IsExistOfPath(fp) {
+	if method == http.MethodPut && util_os.IsExist(fp) {
 		pFile, err := os.OpenFile(fp,
 			os.O_WRONLY|os.O_TRUNC, // 只写（O_WRONLY） & 清空文件（O_TRUNC）
 			0666)
@@ -340,12 +343,15 @@ func Upload(context *gin.Context) {
 
 // UpdName 文件重命名
 func UpdName(context *gin.Context) {
-	redirect := func(pid int64, msg any) {
-		common.Redirect(context, fmt.Sprintf("/note/list?id=%d", pid), nil, msg)
+	redirect := func(pid int64, err any) {
+		resp := typ_resp.Resp[any]{
+			Msg: util_str.TypeToStr(err),
+		}
+		common.Redirect(context, fmt.Sprintf("/note/list?pid=%d", pid), resp)
 	}
 
 	// file
-	f := typ.File{}
+	f := typ_api.Note{}
 	err := common.ShouldBind(context, &f)
 	pid := f.Pid
 	if err != nil {
@@ -355,7 +361,7 @@ func UpdName(context *gin.Context) {
 
 	// name
 	f.Name = strings.TrimSpace(f.Name)
-	err = util.VerifyFileName(f.Name)
+	err = util_os.VerifyFileName(f.Name)
 	if err != nil {
 		redirect(pid, err)
 		return
@@ -382,8 +388,11 @@ func UpdName(context *gin.Context) {
 
 // Cut 剪切文件
 func Cut(context *gin.Context) {
-	redirect := func(id int64, msg any) {
-		common.Redirect(context, fmt.Sprintf("/note/list?id=%d", id), nil, msg)
+	redirect := func(id int64, err any) {
+		resp := typ_resp.Resp[any]{
+			Msg: util_str.TypeToStr(err),
+		}
+		common.Redirect(context, fmt.Sprintf("/note/list?pid=%d", id), resp)
 	}
 
 	// dst id
@@ -402,8 +411,8 @@ func Cut(context *gin.Context) {
 
 	// dst
 	if dstId != 0 {
-		f, _, err := common.DbQry[typ.File](context, "SELECT id, pid, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = 0 AND `id` = ?", dstId)
-		if err != nil || typ.FileTypeD != typ.FileTypeOf(f.Type) {
+		f, _, err := common.DbQry[typ_api.Note](context, "SELECT id, pid, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = 0 AND `id` = ?", dstId)
+		if err != nil || typ_api.FileTypeD != typ_api.FileTypeOf(f.Type) {
 			redirect(dstId, err)
 			return
 		}
@@ -423,8 +432,8 @@ func Cut(context *gin.Context) {
 // Del 删除文件
 func Del(context *gin.Context) {
 	redirect := func(id int64, err any) {
-		resp := typ.Resp[any]{Msg: util.TypeAsStr(err)}
-		common.RedirectNew(context, fmt.Sprintf("/note/list?id=%d", id), resp)
+		resp := typ_resp.Resp[any]{Msg: util_str.TypeToStr(err)}
+		common.Redirect(context, fmt.Sprintf("/note/list?pid=%d", id), resp)
 	}
 
 	// id
@@ -461,14 +470,14 @@ func Get(context *gin.Context) {
 	}
 
 	// f
-	f, count, err := common.DbQry[typ.File](context, "SELECT `id`, `pid`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = 0 AND `id` = ?", id)
+	f, count, err := common.DbQry[typ_api.Note](context, "SELECT `id`, `pid`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = 0 AND `id` = ?", id)
 	if err != nil || count == 0 {
 		log.Println(err)
 		return
 	}
 
 	// 排除目录
-	if typ.FileTypeD == typ.FileTypeOf(f.Type) {
+	if typ_api.FileTypeD == typ_api.FileTypeOf(f.Type) {
 		return
 	}
 
@@ -517,52 +526,63 @@ func View(context *gin.Context) {
 	// id
 	id, err := common.Param[int64](context, "id")
 	if err != nil {
-		DefaultView(context, typ.File{}, err)
+		DefaultView(context, typ_api.Note{}, err)
 		return
 	}
 
 	// query
-	f, count, err := common.DbQry[typ.File](context, "SELECT `id`, `pid`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = 0 AND `id` = ?", id)
+	note, count, err := common.DbQry[typ_api.Note](context, "SELECT `id`, `pid`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = 0 AND `id` = ?", id)
 	if err != nil || count == 0 {
-		DefaultView(context, f, err)
+		DefaultView(context, note, err)
 		return
 	}
 
 	// type
-	switch typ.FileTypeOf(f.Type) {
+	switch typ_api.FileTypeOf(note.Type) {
 	// markdown
-	case typ.FileTypeMd:
-		MdView(context, f)
+	case typ_api.FileTypeMd:
+		MdView(context, note)
 
 	// html
-	case typ.FileTypeHtml:
-		HtmlView(context, f)
+	case typ_api.FileTypeHtml:
+		HtmlView(context, note)
 
 	// pdf
-	case typ.FileTypePdf:
-		PdfView(context, f)
+	case typ_api.FileTypePdf:
+		PdfView(context, note)
 
 	// default
 	default:
-		DefaultView(context, f, err)
+		DefaultView(context, note, err)
 	}
 }
 
 // DefaultView 默认查看文件
-func DefaultView(context *gin.Context, f typ.File, err error) {
-	common.HtmlOk(context, "note/default/view.html", gin.H{"f": f}, err)
+func DefaultView(context *gin.Context, note typ_api.Note, err error) {
+	resp := typ_resp.Resp[typ_api.Note]{
+		Msg:  util_str.TypeToStr(err),
+		Data: note,
+	}
+	common.HtmlOk(context, "note/default/view.html", resp)
 }
 
 // MdView 查看md文件
 // https://github.com/russross/blackfriday
 // https://pkg.go.dev/github.com/russross/blackfriday/v2
-func MdView(context *gin.Context, f typ.File) {
-	html := func(html string, msg any) {
-		common.HtmlOk(context, "note/md/view.html", gin.H{"f": f, "html": html}, msg)
+func MdView(context *gin.Context, note typ_api.Note) {
+	html := func(html string, err any) {
+		resp := typ_resp.Resp[map[string]any]{
+			Msg: util_str.TypeToStr(err),
+			Data: map[string]any{
+				"note": note,
+				"html": html,
+			},
+		}
+		common.HtmlOk(context, "note/md/view.html", resp)
 	}
 
 	// read
-	buf, err := FileRead(context, f)
+	buf, err := FileRead(context, note)
 	if err != nil {
 		html("", err)
 		return
@@ -584,13 +604,20 @@ func MdView(context *gin.Context, f typ.File) {
 }
 
 // HtmlView 查看html文件
-func HtmlView(context *gin.Context, f typ.File) {
-	html := func(html string, msg any) {
-		common.HtmlOk(context, "note/html/view.html", gin.H{"f": f, "html": html}, msg)
+func HtmlView(context *gin.Context, note typ_api.Note) {
+	html := func(html string, err any) {
+		resp := typ_resp.Resp[map[string]any]{
+			Msg: util_str.TypeToStr(err),
+			Data: map[string]any{
+				"note": note,
+				"html": html,
+			},
+		}
+		common.HtmlOk(context, "note/html/view.html", resp)
 	}
 
 	// read
-	buf, err := FileRead(context, f)
+	buf, err := FileRead(context, note)
 	if err != nil {
 		html("", err)
 		return
@@ -600,7 +627,7 @@ func HtmlView(context *gin.Context, f typ.File) {
 }
 
 // PdfView 查看pdf文件
-func PdfView(context *gin.Context, f typ.File) {
+func PdfView(context *gin.Context, note typ_api.Note) {
 	v, _ := common.Query[string](context, "v")
 	v = strings.TrimSpace(v)
 	switch v {
@@ -611,7 +638,13 @@ func PdfView(context *gin.Context, f typ.File) {
 	default:
 		v = "2.0"
 	}
-	common.HtmlOk(context, fmt.Sprintf("note/pdf/view_v%s.html", v), gin.H{"f": f}, nil)
+
+	note.Url = fmt.Sprintf("/note/%v", note.Id)
+
+	resp := typ_resp.Resp[typ_api.Note]{
+		Data: note,
+	}
+	common.HtmlOk(context, fmt.Sprintf("note/pdf/view_v%s.html", v), resp)
 }
 
 // Edit 文件修改页
@@ -619,21 +652,21 @@ func Edit(context *gin.Context) {
 	// id
 	id, err := common.Param[int64](context, "id")
 	if err != nil {
-		FileDefaultEditPage(context, typ.File{}, err)
+		FileDefaultEditPage(context, typ_api.Note{}, err)
 		return
 	}
 
 	// query
-	f, count, err := common.DbQry[typ.File](context, "SELECT `id`, `pid`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `id` = ?", id)
+	f, count, err := common.DbQry[typ_api.Note](context, "SELECT `id`, `pid`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `id` = ?", id)
 	if err != nil || count == 0 {
 		FileDefaultEditPage(context, f, err)
 		return
 	}
 
 	// type
-	switch typ.FileTypeOf(f.Type) {
+	switch typ_api.FileTypeOf(f.Type) {
 	// markdown
-	case typ.FileTypeMd:
+	case typ_api.FileTypeMd:
 		FileMdEditPage(context, f)
 
 	// default
@@ -643,18 +676,30 @@ func Edit(context *gin.Context) {
 }
 
 // FileDefaultEditPage 默认文件修改页
-func FileDefaultEditPage(context *gin.Context, f typ.File, err error) {
-	common.HtmlOk(context, "note/default/edit.html", gin.H{"f": f}, err)
+func FileDefaultEditPage(context *gin.Context, note typ_api.Note, err error) {
+	resp := typ_resp.Resp[typ_api.Note]{
+		Msg:  util_str.TypeToStr(err),
+		Data: note,
+	}
+	common.HtmlOk(context, "note/default/edit.html", resp)
 }
 
 // FileMdEditPage md文件修改页
-func FileMdEditPage(context *gin.Context, f typ.File) {
-	html := func(content string, msg any) {
-		common.HtmlOk(context, "note/md/edit.html", gin.H{"f": f, "content": content}, msg)
+func FileMdEditPage(context *gin.Context, note typ_api.Note) {
+	html := func(content string, err any) {
+		resp := typ_resp.Resp[map[string]any]{
+			Msg: util_str.TypeToStr(err),
+			Data: map[string]any{
+				"note":    note,
+				"content": content,
+			},
+		}
+
+		common.HtmlOk(context, "note/md/edit.html", resp)
 	}
 
 	// read
-	buf, err := FileRead(context, f)
+	buf, err := FileRead(context, note)
 	content := ""
 	if err == nil {
 		content = string(buf)
@@ -667,11 +712,11 @@ func FileMdEditPage(context *gin.Context, f typ.File) {
 func UpdContent(context *gin.Context) {
 	json := func(err error) {
 		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+			common.JsonBadRequest(context, typ_resp.Resp[any]{Msg: util_str.TypeToStr(err)})
 			return
 		}
 
-		context.JSON(http.StatusOK, nil)
+		common.JsonOk(context, typ_resp.Resp[any]{})
 	}
 
 	// id
@@ -683,8 +728,8 @@ func UpdContent(context *gin.Context) {
 	//log.Println("id", id)
 
 	// f
-	f, count, err := common.DbQry[typ.File](context, "SELECT `id`, `pid`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = 0 AND `id` = ?", id)
-	if count == 0 || typ.FileTypeOf(f.Type) != typ.FileTypeMd {
+	f, count, err := common.DbQry[typ_api.Note](context, "SELECT `id`, `pid`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = 0 AND `id` = ?", id)
+	if count == 0 || typ_api.FileTypeOf(f.Type) != typ_api.FileTypeMd {
 		json(nil)
 		return
 	}
@@ -738,7 +783,7 @@ func UpdContent(context *gin.Context) {
 }
 
 // FileRead 读取文件
-func FileRead(context *gin.Context, f typ.File) ([]byte, error) {
+func FileRead(context *gin.Context, f typ_api.Note) ([]byte, error) {
 	// file path
 	fPath, err := Path(context, f)
 	if err != nil {
@@ -758,17 +803,21 @@ func FileRead(context *gin.Context, f typ.File) ([]byte, error) {
 }
 
 // Path 获取文件物理路径
-func Path(context *gin.Context, f typ.File) (string, error) {
+func Path(context *gin.Context, note typ_api.Note) (string, error) {
 	// dir
 	dataDir := common.DataDir(context)
-	fDir := fmt.Sprintf("%s%s%s%s%s", dataDir, util.FileSeparator, "note", util.FileSeparator, f.Type)
-	if !util.IsExistOfPath(fDir) {
-		err := util.Mkdir(fDir)
+	fDir := fmt.Sprintf("%s%s%s%s%s", dataDir, util_os.FileSeparator, "note", util_os.FileSeparator, note.Type)
+	if !util_os.IsExist(fDir) {
+		err := util_os.MkDir(fDir)
 		if err != nil {
 			return "", err
 		}
 	}
 
 	// path
-	return fmt.Sprintf("%s%s%d", fDir, util.FileSeparator, f.Id), nil
+	return fmt.Sprintf("%s%s%d", fDir, util_os.FileSeparator, note.Id), nil
+}
+
+func DbQry(context *gin.Context, id int64) (typ_api.Note, int64, error) {
+	return common.DbQry[typ_api.Note](context, "SELECT `id`, `pid`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = 0 AND `id` = ?", id)
 }

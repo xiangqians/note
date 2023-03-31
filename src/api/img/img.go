@@ -11,8 +11,11 @@ import (
 	"log"
 	"net/http"
 	"note/src/api/common"
-	"note/src/typ"
-	"note/src/util"
+	"note/src/typ/api"
+	typ_page "note/src/typ/page"
+	"note/src/typ/resp"
+	util_os "note/src/util/os"
+	util_str "note/src/util/str"
 	"os"
 	"strings"
 	"time"
@@ -21,7 +24,7 @@ import (
 // List 图片列表页面
 func List(context *gin.Context) {
 	req, _ := common.PageReq(context)
-	page, err := common.DbPage[typ.Img](context, req, "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = 0 ORDER BY (CASE WHEN i.`upd_time` > i.`add_time` THEN i.`upd_time` ELSE i.`add_time` END) DESC")
+	page, err := common.DbPage[api.Img](context, req, "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = 0 ORDER BY (CASE WHEN i.`upd_time` > i.`add_time` THEN i.`upd_time` ELSE i.`add_time` END) DESC")
 	//imgs := page.Data
 	//if imgs != nil && len(imgs) > 0 {
 	//	sort.Slice(imgs, func(i, j int) bool {
@@ -41,8 +44,8 @@ func List(context *gin.Context) {
 	//		return iTime > jTime
 	//	})
 	//}
-	common.HtmlOkNew(context, "img/list.html", typ.Resp[typ.Page[typ.Img]]{
-		Msg:  util.TypeAsStr(err),
+	common.HtmlOk(context, "img/list.html", resp.Resp[typ_page.Page[api.Img]]{
+		Msg:  util_str.TypeToStr(err),
 		Data: page,
 	})
 }
@@ -67,17 +70,24 @@ func Upload(context *gin.Context) {
 		method = http.MethodPut
 	}
 
+	dataType, _ := common.PostForm[string](context, "dataType")
+
 	// redirect
 	redirect := func(id int64, err any) {
-		resp := typ.Resp[any]{Msg: util.TypeAsStr(err)}
+		resp := resp.Resp[int64]{Msg: util_str.TypeToStr(err), Data: id}
+		if dataType == "json" {
+			common.JsonOk(context, resp)
+			return
+		}
+
 		switch method {
 		// 上传
 		case http.MethodPost:
-			common.RedirectNew(context, fmt.Sprintf("/img/list"), resp)
+			common.Redirect(context, fmt.Sprintf("/img/list"), resp)
 
 		// 重传
 		case http.MethodPut:
-			common.RedirectNew(context, fmt.Sprintf("/img/%v/view", id), resp)
+			common.Redirect(context, fmt.Sprintf("/img/%v/view", id), resp)
 		}
 	}
 
@@ -91,7 +101,7 @@ func Upload(context *gin.Context) {
 	// name
 	fn := fh.Filename
 	fn = strings.TrimSpace(fn)
-	err = util.VerifyFileName(fn)
+	err = util_os.VerifyFileName(fn)
 	if err != nil {
 		redirect(id, err)
 		return
@@ -103,8 +113,8 @@ func Upload(context *gin.Context) {
 	if index > 0 {
 		ftStr = fn[index+1:]
 	}
-	ft := typ.FileTypeImgOf(ftStr)
-	if ft == typ.FileTypeUnk {
+	ft := api.FileTypeImgOf(ftStr)
+	if ft == api.FileTypeUnk {
 		redirect(id, fmt.Sprintf("%s, %s", errors.New(i18n.MustGetMessage("i18n.fileTypeUnsupported")), ftStr))
 		return
 	}
@@ -115,7 +125,7 @@ func Upload(context *gin.Context) {
 	fs := fh.Size
 
 	// 原图片信息
-	oldImg := typ.Img{}
+	oldImg := api.Img{}
 	if method == http.MethodPut {
 		var count int64
 		oldImg, count, err = DbQry(context, id)
@@ -140,7 +150,7 @@ func Upload(context *gin.Context) {
 	}
 
 	// path
-	img := typ.Img{}
+	img := api.Img{}
 	img.Id = id
 	img.Type = string(ft)
 	fp, err := Path(context, img)
@@ -150,7 +160,7 @@ func Upload(context *gin.Context) {
 	}
 
 	// 清空文件
-	if method == http.MethodPut && util.IsExistOfPath(fp) {
+	if method == http.MethodPut && util_os.IsExist(fp) {
 		file, err := os.OpenFile(fp,
 			os.O_WRONLY|os.O_TRUNC, // 只写（O_WRONLY） & 清空文件（O_TRUNC）
 			0666)
@@ -169,7 +179,7 @@ func Upload(context *gin.Context) {
 		var oldImgPath string
 		oldImgPath, err = Path(context, oldImg)
 		if err == nil {
-			util.DelFile(oldImgPath)
+			util_os.DelFile(oldImgPath)
 		}
 	}
 
@@ -182,12 +192,12 @@ func Upload(context *gin.Context) {
 // UpdName 图片重命名
 func UpdName(context *gin.Context) {
 	redirect := func(msg any) {
-		resp := typ.Resp[any]{Msg: util.TypeAsStr(msg)}
-		common.RedirectNew(context, fmt.Sprintf("/img/list"), resp)
+		resp := resp.Resp[any]{Msg: util_str.TypeToStr(msg)}
+		common.Redirect(context, fmt.Sprintf("/img/list"), resp)
 	}
 
 	// img
-	img := typ.Img{}
+	img := api.Img{}
 	err := common.ShouldBind(context, &img)
 	if err != nil {
 		redirect(err)
@@ -196,7 +206,7 @@ func UpdName(context *gin.Context) {
 
 	// name
 	img.Name = strings.TrimSpace(img.Name)
-	err = util.VerifyFileName(img.Name)
+	err = util_os.VerifyFileName(img.Name)
 	if err != nil {
 		redirect(err)
 		return
@@ -223,8 +233,8 @@ func UpdName(context *gin.Context) {
 
 func Del(context *gin.Context) {
 	redirect := func(msg any) {
-		resp := typ.Resp[any]{Msg: util.TypeAsStr(msg)}
-		common.RedirectNew(context, fmt.Sprintf("/img/list"), resp)
+		resp := resp.Resp[any]{Msg: util_str.TypeToStr(msg)}
+		common.Redirect(context, fmt.Sprintf("/img/list"), resp)
 	}
 
 	// Delete not supported
@@ -282,18 +292,18 @@ func Get(context *gin.Context) {
 
 // View 查看图片页面
 func View(context *gin.Context) {
-	html := func(img typ.Img, msg any) {
-		resp := typ.Resp[typ.Img]{
-			Msg:  util.TypeAsStr(msg),
+	html := func(img api.Img, msg any) {
+		resp := resp.Resp[api.Img]{
+			Msg:  util_str.TypeToStr(msg),
 			Data: img,
 		}
-		common.HtmlOkNew(context, "img/view.html", resp)
+		common.HtmlOk(context, "img/view.html", resp)
 	}
 
 	// id
 	id, err := common.Param[int64](context, "id")
 	if err != nil {
-		html(typ.Img{}, err)
+		html(api.Img{}, err)
 		return
 	}
 
@@ -306,22 +316,22 @@ func View(context *gin.Context) {
 }
 
 // Path 获取图片物理路径
-func Path(context *gin.Context, img typ.Img) (string, error) {
+func Path(context *gin.Context, img api.Img) (string, error) {
 	// dir
 	dataDir := common.DataDir(context)
-	imgDir := fmt.Sprintf("%s%s%s%s%s", dataDir, util.FileSeparator, "img", util.FileSeparator, img.Type)
-	if !util.IsExistOfPath(imgDir) {
-		err := util.Mkdir(imgDir)
+	imgDir := fmt.Sprintf("%s%s%s%s%s", dataDir, util_os.FileSeparator, "img", util_os.FileSeparator, img.Type)
+	if !util_os.IsExist(imgDir) {
+		err := util_os.MkDir(imgDir)
 		if err != nil {
 			return "", err
 		}
 	}
 
 	// path
-	return fmt.Sprintf("%s%s%d", imgDir, util.FileSeparator, img.Id), nil
+	return fmt.Sprintf("%s%s%d", imgDir, util_os.FileSeparator, img.Id), nil
 }
 
-func DbQry(context *gin.Context, id int64) (typ.Img, int64, error) {
-	img, count, err := common.DbQry[typ.Img](context, "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = 0 AND i.`id` = ?", id)
+func DbQry(context *gin.Context, id int64) (api.Img, int64, error) {
+	img, count, err := common.DbQry[api.Img](context, "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = 0 AND i.`id` = ?", id)
 	return img, count, err
 }

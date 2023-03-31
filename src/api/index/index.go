@@ -6,29 +6,30 @@ package index
 import (
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
-	"note/src/typ"
-	"note/src/util"
+	typ_api "note/src/typ/api"
+	typ_resp "note/src/typ/resp"
+	util_str "note/src/util/str"
 )
 
 // Index index页面
 func Index(context *gin.Context) {
-	html := func(noteStats, imgStats []typ.Stat, err error) {
-		resp := typ.Resp[map[string][]typ.Stat]{
-			Msg: util.TypeAsStr(err),
-			Data: map[string][]typ.Stat{
-				"NoteStats": noteStats,
-				"ImgStats":  imgStats,
+	html := func(noteStats, imgStats []typ_api.Stat, err error) {
+		resp := typ_resp.Resp[map[string][]typ_api.Stat]{
+			Msg: util_str.TypeToStr(err),
+			Data: map[string][]typ_api.Stat{
+				"noteStats": noteStats,
+				"imgStats":  imgStats,
 			},
 		}
-		common.HtmlOkNew(context, "index.html", resp)
+		common.HtmlOk(context, "index.html", resp)
 	}
 
 	// stat
-	noteStats := []typ.Stat{}
-	imgStats := []typ.Stat{}
+	noteStats := []typ_api.Stat{}
+	imgStats := []typ_api.Stat{}
 
 	// note
-	stats, count, err := common.DbQry[[]typ.Stat](context, "SELECT `type`, COUNT(id) AS 'num', SUM(`size`) AS 'size' FROM `note` WHERE del = 0 GROUP BY `type` ORDER BY COUNT(id) DESC")
+	stats, count, err := common.DbQry[[]typ_api.Stat](context, "SELECT `type`, COUNT(id) AS 'num', SUM(`size`) AS 'size' FROM `note` WHERE del = 0 GROUP BY `type` ORDER BY COUNT(id) DESC")
 	if err != nil {
 		html(noteStats, imgStats, err)
 		return
@@ -38,7 +39,7 @@ func Index(context *gin.Context) {
 	}
 
 	// img
-	stats, count, err = common.DbQry[[]typ.Stat](context, "SELECT `type`, COUNT(id) AS 'num', SUM(`size`) AS 'size' FROM img WHERE del = 0 GROUP BY `type` ORDER BY COUNT(id) DESC")
+	stats, count, err = common.DbQry[[]typ_api.Stat](context, "SELECT `type`, COUNT(id) AS 'num', SUM(`size`) AS 'size' FROM img WHERE del = 0 GROUP BY `type` ORDER BY COUNT(id) DESC")
 	if count > 0 {
 		imgStats = stats
 	}

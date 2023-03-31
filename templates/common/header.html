@@ -9,7 +9,7 @@ $ 引用当前模板根级的上下文
 $. 引用模板中的根级上下文
 -->
 
-{{ define "com/header.html" }}
+{{ define "common/header.html" }}
 <header>
     <div style="text-align: right; padding-right: 50px">
         <div style="padding: 4px;">
@@ -28,7 +28,7 @@ $. 引用模板中的根级上下文
            href="/note/list">{{ Localize "i18n.note" }}</a>
         <a name="nav" style='padding: 8px;{{ if eq .url "/img/list" }}background-color: lightgray;{{ end }}'
            href="/img/list">{{ Localize "i18n.img" }}</a>
-        <a name="nav" style='padding: 8px;{{ if eq .url "/img/recycleBin" }}background-color: lightgray;{{ end }}'
+        <a name="nav" style='padding: 8px;{{ if eq .url "/recycleBin/list" }}background-color: lightgray;{{ end }}'
            href="/recycleBin/list">{{ Localize "i18n.recycleBin" }}</a>
     </div>
     <br>

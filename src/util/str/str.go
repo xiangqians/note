@@ -1,7 +1,7 @@
 // str
 // @author xiangqian
 // @date 12:31 2023/02/04
-package util
+package str
 
 import (
 	"errors"
@@ -48,7 +48,8 @@ func NameHumpToUnderline(name string) string {
 	return strings.ToLower(strings.Join(res, "_"))
 }
 
-func TypeAsStr(i any) string {
+// TypeToStr 类型转string
+func TypeToStr(i any) string {
 	if i == nil {
 		return ""
 	}
@@ -60,7 +61,8 @@ func TypeAsStr(i any) string {
 	return fmt.Sprintf("%v", i)
 }
 
-func StrAsType[T any](value string) (T, error) {
+// StrToType string转类型（基本数据类型）
+func StrToType[T any](value string) (T, error) {
 	var t T
 	rflVal := reflect.ValueOf(t)
 	//log.Println(rflVal)

@@ -5,50 +5,50 @@ package app
 
 import (
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"note/src/api"
-	"note/src/api/common"
+	api_common "note/src/api/common"
 	api_img "note/src/api/img"
 	api_index "note/src/api/index"
 	api_note "note/src/api/note"
+	api_user "note/src/api/user"
+	typ_resp "note/src/typ/resp"
 )
 
 func route(engine *gin.Engine) {
 	// 设置默认路由
-	handler := func(pContext *gin.Context) {
-		common.Html(pContext, http.StatusNotFound, "404.html", nil, nil)
-	}
-	engine.Any("/404", handler)
-	engine.NoRoute(handler)
+	engine.NoRoute(func(context *gin.Context) {
+		resp := typ_resp.Resp[any]{}
+		api_common.HtmlNotFound(context, "404.html", resp)
+	})
 
 	// index
 	engine.Any("/", api_index.Index)
 
 	// user
-	userRouterGroup := engine.Group("/user")
+	userGroup := engine.Group("/user")
 	{
-		userRouterGroup.Any("/regpage", api.UserRegPage)
-		userRouterGroup.Any("/loginpage", api.UserLoginPage)
-		userRouterGroup.POST("/login", api.UserLogin)
-		userRouterGroup.Any("/logout", api.UserLogout)
-		userRouterGroup.Any("/stgpage", api.UserStgPage)
+		userGroup.Any("/reg", api_user.Reg) // page
+		userGroup.POST("", api_user.Reg0)
+		userGroup.Any("/login", api_user.Login) // page
+		userGroup.POST("/login0", api_user.Login0)
+		userGroup.Any("/logout", api_user.Logout)
+		//userGroup.Any("/stgpage", api_user.UserStgPage)
 	}
-	engine.POST("/user", api.UserAdd)
-	engine.PUT("/user", api.UserUpd)
 
 	// note
 	noteGroup := engine.Group("/note")
-	noteGroup.Any("/list", api_note.List) // page
-	noteGroup.POST("", api_note.Add)
-	noteGroup.POST("/upload", api_note.Upload)
-	noteGroup.PUT("/upload", api_note.Upload)
-	noteGroup.GET("/:id", api_note.Get)
-	noteGroup.Any("/:id/view", api_note.View) // page
-	noteGroup.Any("/:id/edit", api_note.Edit) // page
-	noteGroup.PUT("/name", api_note.UpdName)
-	noteGroup.PUT("/content", api_note.UpdContent)
-	noteGroup.PUT("/cut/:srcId/to/:dstId", api_note.Cut)
-	noteGroup.DELETE("/:id", api_note.Del)
+	{
+		noteGroup.Any("/list", api_note.List) // page
+		noteGroup.POST("", api_note.Add)
+		noteGroup.POST("/upload", api_note.Upload)
+		noteGroup.PUT("/upload", api_note.Upload)
+		noteGroup.GET("/:id", api_note.Get)
+		noteGroup.Any("/:id/view", api_note.View) // page
+		noteGroup.Any("/:id/edit", api_note.Edit) // page
+		noteGroup.PUT("/name", api_note.UpdName)
+		noteGroup.PUT("/content", api_note.UpdContent)
+		noteGroup.PUT("/cut/:srcId/to/:dstId", api_note.Cut)
+		noteGroup.DELETE("/:id", api_note.Del)
+	}
 
 	// img
 	imgGroup := engine.Group("/img")

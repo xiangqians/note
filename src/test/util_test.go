@@ -5,7 +5,7 @@ package test
 
 import (
 	"fmt"
-	"note/src/util"
+	"note/src/util/os"
 	"testing"
 )
 
@@ -29,7 +29,7 @@ func TestVerifyDirName(t *testing.T) {
 	}
 
 	for _, name := range names {
-		err := util.VerifyFileName(name)
+		err := os.VerifyFileName(name)
 		fmt.Println(name, err)
 	}
 

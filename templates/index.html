@@ -12,7 +12,7 @@
 </head>
 <body>
 
-{{ template "com/header.html" . }}
+{{ template "common/header.html" . }}
 
 <content>
     <p style="color: red;">{{ .resp.Msg }}</p>
@@ -32,7 +32,7 @@
     </div>
 </content>
 
-{{ template "com/footer.html" . }}
+{{ template "common/footer.html" . }}
 
 </body>
 </html>
@@ -57,9 +57,9 @@
         // console.log('resp', resp)
 
         // note stat
-        drawPieChart('noteStat', resp.Data.NoteStats)
+        drawPieChart('noteStat', resp.Data.noteStats)
 
         // img stat
-        drawPieChart('imgStat', resp.Data.ImgStats)
+        drawPieChart('imgStat', resp.Data.imgStats)
     })()
 </script>
