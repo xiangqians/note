@@ -27,11 +27,12 @@ func route(engine *gin.Engine) {
 	userGroup := engine.Group("/user")
 	{
 		userGroup.Any("/reg", api_user.Reg) // page
-		userGroup.POST("", api_user.Reg0)
+		userGroup.POST("", api_user.Add)
 		userGroup.Any("/login", api_user.Login) // page
 		userGroup.POST("/login0", api_user.Login0)
 		userGroup.Any("/logout", api_user.Logout)
-		//userGroup.Any("/stgpage", api_user.UserStgPage)
+		userGroup.Any("/settings", api_user.Settings) // page
+		userGroup.PUT("", api_user.Upd)
 	}
 
 	// note

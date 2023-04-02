@@ -14,6 +14,7 @@ import (
 	"log"
 	"net/http"
 	"note/src/api/common"
+	"note/src/db"
 	typ_api "note/src/typ/api"
 	typ_resp "note/src/typ/resp"
 	util_os "note/src/util/os"
@@ -24,75 +25,87 @@ import (
 	"strings"
 )
 
-//// UserStgPage 用户设置页
-//func UserStgPage(context *gin.Context) {
-//	msg, _ := common.GetSessionV[string](context, "msg", true)
-//	user, err := common.GetSessionV[api.User](context, UserSessionKey, true)
-//	if err != nil {
-//		user, _ = common.GetSessionUser(context)
-//	}
-//	common.HtmlOk(context, "user/stg.html", gin.H{UserSessionKey: user}, msg)
-//}
-//
-//// UserUpd 更新用户信息
-//func UserUpd(context *gin.Context) {
-//	// 注册异常时，重定向到设置页
-//	redirect := func(user api.User, message any) {
-//		common.Redirect(context, "/user/stgpage", gin.H{UserSessionKey: user}, message)
-//	}
-//
-//	// bind
-//	user := api.User{}
-//	err := common.ShouldBind(context, &user)
-//	if err != nil {
-//		redirect(user, err)
-//		return
-//	}
-//
-//	// name
-//	err = VerifyUserName(user.Name)
-//	if err != nil {
-//		redirect(user, err)
-//		return
-//	}
-//
-//	// passwd
-//	err = VerifyPasswd(user.Passwd)
-//	if err != nil {
-//		redirect(user, err)
-//		return
-//	}
-//
-//	// name
-//	sessionUser, _ := common.GetSessionUser(context)
-//	if err == nil && user.Name != sessionUser.Name {
-//		// 校验数据库用户名
-//		err = VerifyDbUserName(user.Name)
-//		if err != nil {
-//			redirect(user, err)
-//			return
-//		}
-//	}
-//
-//	user.Nickname = strings.TrimSpace(user.Nickname)
-//	user.Rem = strings.TrimSpace(user.Rem)
-//
-//	// update
-//	_, err = common.DbUpd(nil, "UPDATE `user` SET `name` = ?, nickname = ?, `passwd` = ?, rem = ?, upd_time = ? WHERE id = ?",
-//		user.Name, user.Nickname, PasswdEncrypt(user.Passwd), user.Rem, time.Now().Unix(), sessionUser.Id)
-//	if err != nil {
-//		redirect(user, err)
-//		return
-//	}
-//
-//	// 更新session中User信息
-//	sessionUser.Name = user.Name
-//	sessionUser.Nickname = user.Nickname
-//	sessionUser.Rem = user.Rem
-//	common.SetSessionUser(context, sessionUser)
-//
-//	redirect(user, nil)
-//}
+// Upd 更新用户信息
+func Upd(context *gin.Context) {
+	// 更新异常时，重定向到设置页
+	redirect := func(user typ_api.User, err any) {
+		resp := typ_resp.Resp[typ_api.User]{
+			Msg:  util_str.TypeToStr(err),
+			Data: user,
+		}
+		common.Redirect(context, "/user/settings", resp)
+	}
+
+	// bind
+	user := typ_api.User{}
+	err := common.ShouldBind(context, &user)
+	if err != nil {
+		redirect(user, err)
+		return
+	}
+
+	// name
+	err = VerifyName(user.Name)
+	if err != nil {
+		redirect(user, err)
+		return
+	}
+
+	// passwd
+	err = VerifyPasswd(user.Passwd)
+	if err != nil {
+		redirect(user, err)
+		return
+	}
+
+	// name
+	sessionUser, err := common.GetSessionUser(context)
+	if err != nil {
+		redirect(user, err)
+		return
+	}
+	if user.Name != sessionUser.Name {
+		// 校验数据库用户名
+		err = VerifyDbName(user.Name)
+		if err != nil {
+			redirect(user, err)
+			return
+		}
+	}
+
+	user.Nickname = strings.TrimSpace(user.Nickname)
+	user.Rem = strings.TrimSpace(user.Rem)
+
+	// update
+	updTime := util_time.NowUnix()
+	_, err = common.DbUpd(nil, "UPDATE `user` SET `name` = ?, nickname = ?, `passwd` = ?, rem = ?, upd_time = ? WHERE id = ?",
+		user.Name, user.Nickname, PasswdEncrypt(user.Passwd), user.Rem, updTime, sessionUser.Id)
+	if err != nil {
+		redirect(user, err)
+		return
+	}
+
+	// 更新session中User信息
+	sessionUser.Name = user.Name
+	sessionUser.Nickname = user.Nickname
+	sessionUser.Rem = user.Rem
+	sessionUser.UpdTime = updTime
+	common.SetSessionUser(context, sessionUser)
+
+	redirect(user, nil)
+}
+
+// Settings 用户设置页
+func Settings(context *gin.Context) {
+	resp, err := common.GetSessionV[typ_resp.Resp[typ_api.User]](context, common.RespSessionKey, true)
+	if err != nil {
+		user, err := common.GetSessionUser(context)
+		resp.Msg = util_str.TypeToStr(err)
+		resp.Data = user
+	}
+
+	common.HtmlOk(context, "user/settings.html", resp)
+}
 
 // Logout 用户登出
 func Logout(context *gin.Context) {
@@ -160,12 +173,8 @@ func Login(context *gin.Context) {
 	common.HtmlOk(context, "user/login.html", resp)
 }
 
-// Reg0 用户注册
-func Reg0(context *gin.Context) {
-
-}
-
-func reg0(context *gin.Context) {
+// Add 添加用户（用户注册）
+func Add(context *gin.Context) {
 	// 注册异常时，重定向到注册页
 	redirect := func(user typ_api.User, err any) {
 		resp := typ_resp.Resp[typ_api.User]{
@@ -175,17 +184,15 @@ func reg0(context *gin.Context) {
 		common.Redirect(context, "/user/reg", resp)
 	}
 
-	// bind
-	user := typ_api.User{}
-	err := common.ShouldBind(context, &user)
-
 	// 是否允许用户注册
 	if common.AppArg.AllowReg != 1 {
 		redirect(typ_api.User{}, i18n.MustGetMessage("i18n.regNotOpen"))
 		return
 	}
 
-	// bind err ?
+	// bind
+	user := typ_api.User{}
+	err := common.ShouldBind(context, &user)
 	if err != nil {
 		redirect(user, err)
 		return
@@ -212,10 +219,28 @@ func reg0(context *gin.Context) {
 		return
 	}
 
+	// db
+	// get
+	_db := db.Get(common.Dsn(nil))
+	defer _db.Close()
+	// open
+	err = _db.Open()
+	if err != nil {
+		redirect(user, err)
+		return
+	}
+	// begin
+	err = _db.Begin()
+	if err != nil {
+		redirect(user, err)
+		return
+	}
+
 	// add
-	id, err := common.DbAdd(nil, "INSERT INTO `user` (`name`, `nickname`, `passwd`, `rem`, `add_time`) VALUES (?, ?, ?, ?, ?)",
+	id, err := _db.Add("INSERT INTO `user` (`name`, `nickname`, `passwd`, `rem`, `add_time`) VALUES (?, ?, ?, ?, ?)",
 		user.Name, strings.TrimSpace(user.Nickname), PasswdEncrypt(user.Passwd), strings.TrimSpace(user.Rem), util_time.NowUnix())
 	if err != nil {
+		_db.Rollback()
 		redirect(user, err)
 		return
 	}
@@ -231,6 +256,7 @@ func reg0(context *gin.Context) {
 	// src
 	src, err := os.Open(fmt.Sprintf("%s%s%s%s%s", common.AppArg.DataDir, util_os.FileSeparator, "{id}", util_os.FileSeparator, "database.db"))
 	if err != nil {
+		_db.Rollback()
 		redirect(user, err)
 		return
 	}
@@ -238,12 +264,21 @@ func reg0(context *gin.Context) {
 	// dst
 	dst, err := os.Create(fmt.Sprintf("%s%s%s", dataDir, util_os.FileSeparator, "database.db"))
 	if err != nil {
+		_db.Rollback()
 		redirect(user, err)
 		return
 	}
 	defer dst.Close()
 	// copy
-	util_os.IOCopy(src, dst, 0)
+	err = util_os.IOCopy(src, dst, 0)
+	if err != nil {
+		_db.Rollback()
+		redirect(user, err)
+		return
+	}
+
+	// db commit
+	_db.Commit()
 
 	// 用户注册成功后，重定向到登录页
 	resp := typ_resp.Resp[typ_api.User]{
