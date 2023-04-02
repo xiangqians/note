@@ -232,6 +232,7 @@ func Upload(context *gin.Context) {
 
 		// 图片历史记录
 		hist := oldImg.Hist
+		histSize := oldImg.HistSize
 		imgHists := make([]typ_api.Img, 0, 1) // len 0, cap ?
 		if hist != "" {
 			err = util_json.Deserialize(hist, &imgHists)
@@ -286,14 +287,21 @@ func Upload(context *gin.Context) {
 			imgHists = imgHists[l:]
 		}
 
+		// hist size
+		for _, imgHist := range imgHists {
+			histSize += imgHist.Size
+		}
+
+		// serialize
 		hist, err = util_json.Serialize(imgHists)
 		if err != nil {
 			redirect(id, err)
 			return
 		}
 
-		_, err = common.DbUpd(context, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `hist` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?",
-			fn, ft, fs, hist, util_time.NowUnix(), id)
+		// update
+		_, err = common.DbUpd(context, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `hist` = ?, `hist_size` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?",
+			fn, ft, fs, hist, histSize, util_time.NowUnix(), id)
 	}
 	if err != nil {
 		redirect(id, err)
