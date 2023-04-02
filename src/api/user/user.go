@@ -270,7 +270,7 @@ func Add(context *gin.Context) {
 	}
 	defer dst.Close()
 	// copy
-	err = util_os.IOCopy(src, dst, 0)
+	err = util_os.CopyIo(src, dst, 0)
 	if err != nil {
 		_db.Rollback()
 		redirect(user, err)

@@ -140,11 +140,31 @@ func DecodeBuf(buf []byte) string {
 	}
 }
 
-// IOCopy 流拷贝
+// CopyFile 拷贝文件
+func CopyFile(srcPath, dstPath string) error {
+	// src
+	src, err := os.Open(srcPath)
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	// dst
+	dst, err := os.Create(dstPath)
+	if err != nil {
+		return err
+	}
+	defer dst.Close()
+
+	// copy
+	return CopyIo(src, dst, 0)
+}
+
+// CopyIo 流拷贝
 // src: io.Reader
 // dst: io.Writer
 // bufSize: 缓存大小，byte
-func IOCopy(src io.Reader, dst io.Writer, bufSize int) error {
+func CopyIo(src io.Reader, dst io.Writer, bufSize int) error {
 	var reader *bufio.Reader
 	var writer *bufio.Writer
 

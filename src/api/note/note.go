@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"note/src/api/common"
 	typ_api "note/src/typ/api"
+	typ_ft "note/src/typ/ft"
 	typ_resp "note/src/typ/resp"
 	util_os "note/src/util/os"
 	util_str "note/src/util/str"
@@ -158,8 +159,8 @@ func Add(context *gin.Context) {
 
 	// 校验文件类型
 	// 只支持添加 目录 和 md文件
-	fType := typ_api.FileTypeOf(strings.TrimSpace(note.Type))
-	if !(fType == typ_api.FileTypeD || fType == typ_api.FileTypeMd) {
+	fType := typ_ft.ExtNameOf(strings.TrimSpace(note.Type))
+	if !(fType == typ_ft.FtD || fType == typ_ft.FtMd) {
 		redirect(pid, fmt.Sprintf("%s, %s", errors.New(i18n.MustGetMessage("i18n.fileTypeUnsupported")), note.Type))
 		return
 	}
@@ -174,7 +175,7 @@ func Add(context *gin.Context) {
 	note.Id = id
 
 	// 如果不是目录，则创建物理文件
-	if fType != typ_api.FileTypeD {
+	if fType != typ_ft.FtD {
 		// path
 		path, err := Path(context, note)
 		if err != nil {
@@ -260,8 +261,8 @@ func Upload(context *gin.Context) {
 	if index > 0 {
 		ftStr = fn[index+1:]
 	}
-	ft := typ_api.FileTypeOf(strings.TrimSpace(ftStr))
-	if ft == typ_api.FileTypeUnk || !(ft == typ_api.FileTypeHtml || ft == typ_api.FileTypePdf || ft == typ_api.FileTypeZip) {
+	ft := typ_ft.ExtNameOf(strings.TrimSpace(ftStr))
+	if ft == typ_ft.FtUnk || !(ft == typ_ft.FtHtml || ft == typ_ft.FtPdf || ft == typ_ft.FtZip) {
 		redirect(id, pid, fmt.Sprintf("%s, %s", errors.New(i18n.MustGetMessage("i18n.fileTypeUnsupported")), ftStr))
 		return
 	}
@@ -277,7 +278,7 @@ func Upload(context *gin.Context) {
 		// 校验 pid 是否存在
 		if pid != 0 {
 			note, count, err := DbQry(context, pid)
-			if err != nil || count == 0 || typ_api.FileTypeOf(note.Type) != typ_api.FileTypeD { // 父节点必须是目录
+			if err != nil || count == 0 || typ_ft.ExtNameOf(note.Type) != typ_ft.FtD { // 父节点必须是目录
 				redirect(id, pid, err)
 				return
 			}
@@ -291,7 +292,7 @@ func Upload(context *gin.Context) {
 			return
 		}
 
-		if ft != typ_api.FileTypeOf(note.Type) {
+		if ft != typ_ft.ExtNameOf(note.Type) {
 			redirect(id, pid, "重传必须是相同文件类型")
 			return
 		}
@@ -370,8 +371,8 @@ func UpdName(context *gin.Context) {
 	//fType, count, err := common.DbQry[string](context, "SELECT `type` FROM `note` WHERE `del` = 0 AND `id` = ?", f.Id)
 	//if count > 0 {
 	//	name := f.Name
-	//	ft := typ.FileTypeOf(fType)
-	//	if ft != typ.FileTypeD && ft != typ.FileTypeUnk && !strings.HasSuffix(name, string(ft)) {
+	//	ft := typ.FtOf(fType)
+	//	if ft != typ.FtD && ft != typ.FtUnk && !strings.HasSuffix(name, string(ft)) {
 	//		name = fmt.Sprintf("%s.%s", name, string(ft))
 	//	}
 	//
@@ -412,7 +413,7 @@ func Cut(context *gin.Context) {
 	// dst
 	if dstId != 0 {
 		f, _, err := common.DbQry[typ_api.Note](context, "SELECT id, pid, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = 0 AND `id` = ?", dstId)
-		if err != nil || typ_api.FileTypeD != typ_api.FileTypeOf(f.Type) {
+		if err != nil || typ_ft.FtD != typ_ft.ExtNameOf(f.Type) {
 			redirect(dstId, err)
 			return
 		}
@@ -477,7 +478,7 @@ func Get(context *gin.Context) {
 	}
 
 	// 排除目录
-	if typ_api.FileTypeD == typ_api.FileTypeOf(f.Type) {
+	if typ_ft.FtD == typ_ft.ExtNameOf(f.Type) {
 		return
 	}
 
@@ -538,17 +539,17 @@ func View(context *gin.Context) {
 	}
 
 	// type
-	switch typ_api.FileTypeOf(note.Type) {
+	switch typ_ft.ExtNameOf(note.Type) {
 	// markdown
-	case typ_api.FileTypeMd:
+	case typ_ft.FtMd:
 		MdView(context, note)
 
 	// html
-	case typ_api.FileTypeHtml:
+	case typ_ft.FtHtml:
 		HtmlView(context, note)
 
 	// pdf
-	case typ_api.FileTypePdf:
+	case typ_ft.FtPdf:
 		PdfView(context, note)
 
 	// default
@@ -664,9 +665,9 @@ func Edit(context *gin.Context) {
 	}
 
 	// type
-	switch typ_api.FileTypeOf(f.Type) {
+	switch typ_ft.ExtNameOf(f.Type) {
 	// markdown
-	case typ_api.FileTypeMd:
+	case typ_ft.FtMd:
 		FileMdEditPage(context, f)
 
 	// default
@@ -729,7 +730,7 @@ func UpdContent(context *gin.Context) {
 
 	// f
 	f, count, err := common.DbQry[typ_api.Note](context, "SELECT `id`, `pid`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = 0 AND `id` = ?", id)
-	if count == 0 || typ_api.FileTypeOf(f.Type) != typ_api.FileTypeMd {
+	if count == 0 || typ_ft.ExtNameOf(f.Type) != typ_ft.FtMd {
 		json(nil)
 		return
 	}
