@@ -25,7 +25,7 @@ func HtmlOk[T any](context *gin.Context, name string, resp typ_resp.Resp[T]) {
 // name: templateName
 func Html[T any](context *gin.Context, code int, name string, resp typ_resp.Resp[T]) {
 	// msg
-	resp0, err := GetSessionV[typ_resp.Resp[any]](context, RespSessionKey, true)
+	resp0, err := GetSessionV[any](context, RespSessionKey, true)
 	if err == nil {
 		msg := util_reflect.CallField[string](resp0, "Msg")
 		if msg != "" {

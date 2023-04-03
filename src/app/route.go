@@ -56,8 +56,8 @@ func route(engine *gin.Engine) {
 	imgGroup.Any("/list", api_img.List) // page
 	imgGroup.POST("/upload", api_img.Upload)
 	imgGroup.PUT("/upload", api_img.Upload)
-	imgGroup.PUT("/name", api_img.UpdName)
-	imgGroup.DELETE("/:id", api_img.Del)
 	imgGroup.GET("/:id", api_img.Get)
 	imgGroup.Any("/:id/view", api_img.View) // page
+	imgGroup.PUT("/name", api_img.UpdName)
+	imgGroup.DELETE("/:id", api_img.Del)
 }

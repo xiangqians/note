@@ -65,8 +65,8 @@ custom = function () {
         return Math.round(Math.random() * (n - m) + m)
     }
 
-    // url 添加时间戳
-    obj.urlAddTimestamp = function (url) {
+    // 添加url时间戳
+    obj.addTimestamp = function (url) {
         let timestamp = new Date().getTime()
         timestamp += obj.random(-1000, 1000)
         custom.random(1, 1000)
@@ -77,6 +77,21 @@ custom = function () {
         }
         return url
     }
+
+    obj.reload = function (text) {
+        // 使用 document.write() 覆盖当前文档
+        document.write(text)
+        document.close()
+
+        // 修改当前浏览器地址
+        let $html = $('html')
+        let url = $html.attr('uri')
+        if (url) {
+            history.replaceState(undefined, undefined, url)
+        }
+    }
+
+    // ------------------------------ ajax ------------------------------
 
     /**
      * ajax
@@ -89,7 +104,7 @@ custom = function () {
      * @param error     请求错误回调函数
      */
     obj.ajax = function (url, method, data, dataType, async, success, error) {
-        url = obj.urlAddTimestamp(url)
+        url = obj.addTimestamp(url)
 
         let param = {
             url: url,
@@ -127,68 +142,12 @@ custom = function () {
     }
 
     obj.ajaxDefault = function (url, method, data, dataType, async) {
-        obj.ajax(url, method, data, dataType, async, function (data) {
-            obj.reload(data)
+        custom.ajax(url, method, data, dataType, async, function (data) {
+            custom.reload(data)
         }, function (e) {
             alert(JSON.stringify(e))
+            console.error(e)
         })
-    }
-
-    obj.ajaxE = function ($e) {
-        let data = null
-
-        // pre
-        let pre = $e[0].pre
-        if (pre) {
-            let r = pre($e)
-            // console.log('r', r)
-            if (obj.isObj(r)) {
-                data = new FormData()
-                for (let name in r) {
-                    data.append(name, r[name])
-                }
-
-            } else {
-                return
-            }
-        }
-        // confirm
-        else {
-            let message = $e.attr("confirm")
-            if (message) {
-                if (!confirm(message)) {
-                    return
-                }
-            }
-        }
-
-        // ajaxFormData
-        let url = $e.attr("href")
-        // console.log(url)
-        if (!(url)) {
-            url = $e.attr("action")
-        }
-        if (!(url)) {
-            url = $e.attr("url")
-        }
-        // console.log(url)
-
-        let method = $e.attr("method").trim().toUpperCase()
-
-        obj.ajaxDefault(url, method, data, "form", true)
-    }
-
-    obj.reload = function (text) {
-        // 使用 document.write() 覆盖当前文档
-        document.write(text)
-        document.close()
-
-        // 修改当前浏览器地址
-        let $html = $('html')
-        let url = $html.attr('uri')
-        if (url) {
-            history.replaceState(undefined, undefined, url)
-        }
     }
 
     // ------------------------------ storage ------------------------------
@@ -351,23 +310,41 @@ custom = function () {
     // console.log('$ajaxEArr', $ajaxEArr)
     for (let i = 0, len = $ajaxEArr.length; i < len; i++) {
         let $ajaxE = $($ajaxEArr[i])
-        // console.log($ajaxE)
-        let tagName = $ajaxE.prop('tagName')
+        // console.log('$ajaxE', $ajaxE)
+        let tagName = $ajaxE.prop('tagName').toLowerCase()
+        // console.log('tagName', tagName)
         // <form></form>
-        if ((tagName.toLowerCase() === 'input' || tagName.toLowerCase() === 'button') && $ajaxE.attr('type') === 'submit') {
-            let $input = $ajaxE
-            for (let $parent = $input.parent(); !$parent.is('body'); $parent = $parent.parent()) {
+        if ((tagName === 'input' || tagName === 'button') && $ajaxE.attr('type') === 'submit') {
+            for (let $parent = $ajaxE.parent(); !$parent.is('body'); $parent = $parent.parent()) {
                 if ($parent.is('form')) {
                     let $form = $parent
-                    $input.click(function () {
+                    // console.log($form)
+                    $ajaxE.click(function () {
                         let action = $form.attr("action")
+                        // console.log('action', action)
                         let method = $form.attr("method").trim().toUpperCase()
+                        // console.log('method', method)
                         let data = new FormData()
-                        // console.log($form)
                         $form.serializeArray().forEach(e => {
-                            // console.log(e.name)
+                            // console.log(e.name, e.value)
                             data.append(e.name, e.value);
                         })
+
+                        // file
+                        let $input = $form.find("input[type='file']");
+                        if ($input.length > 0) {
+                            let files = $input[0].files;
+                            // console.log($input.attr('name'), files);
+                            if (files.length > 0) {
+                                data.append($input.attr('name'), files[0]);
+                            }
+                        }
+
+                        // console.log('data', data);
+                        // data.forEach((value, key) => {
+                        //     console.log(key, value);
+                        // })
+
                         custom.ajaxDefault(action, method, data, 'form', true)
                         return false
                     })
@@ -376,7 +353,47 @@ custom = function () {
             }
         } else {
             $ajaxE.click(function () {
-                custom.ajaxE($ajaxE)
+                let data = null
+
+                // pre
+                let pre = $ajaxE[0].pre
+                if (pre) {
+                    let r = pre($ajaxE)
+                    // console.log('r', r)
+                    if (custom.isObj(r)) {
+                        data = new FormData()
+                        for (let name in r) {
+                            data.append(name, r[name])
+                        }
+
+                    } else {
+                        return
+                    }
+                }
+                // confirm
+                else {
+                    let message = $ajaxE.attr("confirm")
+                    if (message) {
+                        if (!confirm(message)) {
+                            return
+                        }
+                    }
+                }
+
+                // ajaxFormData
+                let url = $ajaxE.attr("href")
+                // console.log(url)
+                if (!(url)) {
+                    url = $ajaxE.attr("action")
+                }
+                if (!(url)) {
+                    url = $ajaxE.attr("url")
+                }
+                // console.log(url)
+
+                let method = $ajaxE.attr("method").trim().toUpperCase()
+
+                custom.ajaxDefault(url, method, data, "form", true)
 
                 // 如果是 <a></a> 标签，则取消 <a></a> 默认行为
                 return false
@@ -391,7 +408,46 @@ custom = function () {
         let $a = $($aArr[i])
         // console.log($a)
         let href = $a.attr('href')
-        $a.attr('href', custom.urlAddTimestamp(href))
+        $a.attr('href', custom.addTimestamp(href))
+    }
+
+    // 为普通的 <img></img> src添加时间戳
+    let $imgArr = $('img')
+    for (let i = 0, len = $imgArr.length; i < len; i++) {
+        let $img = $($imgArr[i])
+        let src = $img.attr('src')
+        $img.attr('src', custom.addTimestamp(src))
+    }
+
+    // div收缩/展开
+    let $divs = $("div[class='float']")
+    for (let i = 0; i < $divs.length; i++) {
+        let $div = $($divs[i])
+        // console.log($floatDiv)
+        let $btn = $('<button value="-">-</button>')
+
+        let $wrapperDiv = $('<div></div>')
+        $wrapperDiv.html($div.html())
+        $div.html('')
+        $btn.click(function () {
+            let value = $btn.attr('value')
+            // 设置为 +
+            if (value === '-') {
+                $btn.attr('value', '+')
+                $btn.text('+')
+                // 隐藏div
+                $wrapperDiv.css('display', 'none')
+            }
+            // 设置为 -
+            else {
+                $btn.attr('value', '-')
+                $btn.text('-')
+                // 显示div
+                $wrapperDiv.css('display', 'block')
+            }
+        })
+        $div.prepend($btn)
+        $div.append($wrapperDiv)
     }
 
 })()

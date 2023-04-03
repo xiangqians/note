@@ -47,6 +47,8 @@ type Img struct {
 	Hist     string `form:"hist"`                                 // history（历史记录）
 	HistSize int64  `form:"histSize"`                             // history（历史记录）文件大小，单位：byte
 	Url      string // 图片url
+	Hists    []Img  // 图片历史记录
+	HistIdx  int    // 图片历史记录索引
 }
 
 // Stat 统计（file和img）

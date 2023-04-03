@@ -64,3 +64,12 @@ canvas {
     margin: 2px auto;
     border: 1px solid #000;
 }
+
+.float {
+    position: fixed;
+    top: 30px;
+    right: 50px;
+    width: auto;
+    height: auto;
+    /*background: lightgray;*/
+}

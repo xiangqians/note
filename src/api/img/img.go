@@ -89,6 +89,58 @@ func Del(context *gin.Context) {
 	return
 }
 
+// View 查看图片页面
+func View(context *gin.Context) {
+	html := func(img typ_api.Img, msg any) {
+		resp := typ_resp.Resp[typ_api.Img]{
+			Msg:  util_str.TypeToStr(msg),
+			Data: img,
+		}
+		common.HtmlOk(context, "img/view.html", resp)
+	}
+
+	// id
+	id, err := common.Param[int64](context, "id")
+	if err != nil {
+		html(typ_api.Img{
+			HistIdx: -1,
+		}, err)
+		return
+	}
+
+	// hist index
+	histIdx, err := common.Query[int](context, "histIdx")
+	if err != nil {
+		histIdx = -1
+	}
+
+	// img
+	img, _, err := DbQry(context, id)
+	img.Url = fmt.Sprintf("/img/%v", id)
+	img.HistIdx = -1
+
+	// 图片历史记录
+	hist := img.Hist
+	hists := make([]typ_api.Img, 0, 1) // len 0, cap ?
+	if hist != "" {
+		err = util_json.Deserialize(hist, &hists)
+		img.Hists = hists
+	}
+
+	// hist
+	if histIdx >= 0 && len(hists) > 0 {
+		histImg := hists[histIdx]
+		histImg.Hists = hists
+		histImg.Url = fmt.Sprintf("/img/%v?histIdx=%v", id, histIdx)
+		histImg.HistIdx = histIdx
+		img = histImg
+	}
+
+	// html
+	html(img, err)
+	return
+}
+
 // Get 获取图片
 func Get(context *gin.Context) {
 	// id
@@ -122,31 +174,6 @@ func Get(context *gin.Context) {
 	// write
 	n, err := context.Writer.Write(buf)
 	log.Println("view", path, n, err)
-	return
-}
-
-// View 查看图片页面
-func View(context *gin.Context) {
-	html := func(img typ_api.Img, msg any) {
-		resp := typ_resp.Resp[typ_api.Img]{
-			Msg:  util_str.TypeToStr(msg),
-			Data: img,
-		}
-		common.HtmlOk(context, "img/view.html", resp)
-	}
-
-	// id
-	id, err := common.Param[int64](context, "id")
-	if err != nil {
-		html(typ_api.Img{}, err)
-		return
-	}
-
-	// img
-	img, _, err := DbQry(context, id)
-	img.Url = fmt.Sprintf("/img/%v", id)
-
-	html(img, err)
 	return
 }
 

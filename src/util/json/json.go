@@ -8,6 +8,7 @@ import (
 )
 
 // Serialize 使用 Marshal 序列化
+// Ser
 func Serialize(i interface{}) (string, error) {
 	buf, err := _json.Marshal(i)
 	if err != nil {
@@ -18,6 +19,7 @@ func Serialize(i interface{}) (string, error) {
 }
 
 // Deserialize 使用 Unmarshal 反序列化
+// De
 func Deserialize(text string, v any) error {
 	return _json.Unmarshal([]byte(text), v)
 }

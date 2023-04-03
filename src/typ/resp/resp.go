@@ -17,5 +17,6 @@ type Resp[T any] struct {
 // 注册模型
 func init() {
 	gob.Register(Resp[any]{})
+	gob.Register(Resp[int64]{})
 	gob.Register(Resp[api.User]{})
 }

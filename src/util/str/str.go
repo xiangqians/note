@@ -67,6 +67,10 @@ func StrToType[T any](value string) (T, error) {
 	rflVal := reflect.ValueOf(t)
 	//log.Println(rflVal)
 	switch rflVal.Type().Kind() {
+	case reflect.Int:
+		id, err := strconv.ParseInt(value, 10, 64)
+		return any(int(any(id).(int64))).(T), err
+
 	case reflect.Int64:
 		id, err := strconv.ParseInt(value, 10, 64)
 		return any(id).(T), err
