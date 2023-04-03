@@ -64,10 +64,10 @@
     <form action="/img/upload" method="PUT" enctype="multipart/form-data">
         <input name="id" type="text" value="{{ $data.Id }}" hidden/>
         <input name="file" type="file" {{ if ne $data.HistIdx -1 }}disabled{{ end }}/>
-        <button ajaxE type="submit" {{ if ne $data.HistIdx -1 }}disabled{{ end }}>{{ Localize "i18n.upload" }}
-        </button>
+        <button ajaxE type="submit" {{ if ne $data.HistIdx -1 }}disabled{{ end }}>{{ Localize "i18n.upload" }}</button>
     </form>
 </div>
+
 
 <div>
     <img src="{{ $data.Url }}" alt="{{ $data.Name }}">
@@ -78,18 +78,14 @@
 </html>
 <script type="text/javascript" src="/static/jquery-v3.6.2/min.js"></script>
 <script type="text/javascript" src="/static/custom/custom.js"></script>
-
 <script>
     ;
     (function () {
-        let options = $("option")
-        for (let i = 0, len = options.length; i < len; i++) {
-            let $option = $(options[i])
-            $option.click(function () {
-                console.log($option)
-            })
-        }
 
+        // form
+        custom.ajaxE($($('form')[0]))
+
+        // select
         let $select = $($("select[name='hist']")[0])
         $select.change(function (e) {
             let value = $select.find("option:selected").attr("value");

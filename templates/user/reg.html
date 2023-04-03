@@ -13,7 +13,7 @@
 <body>
 
 <content>
-    <form action="/user" method="post">
+    <form action="/user?t={{ Timestamp }}" method="post">
         <p style="color: red;">{{ .resp.Msg }}</p>
 
         {{ $data := .resp.Data }}
@@ -44,7 +44,10 @@
 
         <br>
         <div>
-            {{ Localize "i18n.alreadyHaveAnAccount" }} <a href="/user/login">{{ Localize "i18n.login" }}</a>
+            {{ Localize "i18n.alreadyHaveAnAccount" }}
+            <a href="/user/login?t={{ Timestamp }}">
+                {{ Localize "i18n.login" }}
+            </a>
         </div>
     </form>
 </content>

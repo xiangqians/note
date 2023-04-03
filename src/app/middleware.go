@@ -14,6 +14,7 @@ import (
 	"net/http"
 	api_common "note/src/api/common"
 	typ_locale "note/src/typ/locale"
+	typ_resp "note/src/typ/resp"
 	"strings"
 )
 
@@ -41,7 +42,7 @@ func permMiddleware(engine *gin.Engine) {
 		if reqPath == "/user/reg" || reqPath == "/user/login" ||
 			(reqMethod == http.MethodPost && (reqPath == "/user" || reqPath == "/user/login0")) {
 			if isLogin {
-				context.Redirect(http.StatusMovedPermanently, "/")
+				api_common.Redirect(context, "/", typ_resp.Resp[any]{})
 				context.Abort()
 			} else {
 				context.Next()
@@ -54,7 +55,7 @@ func permMiddleware(engine *gin.Engine) {
 			//context.Request.URL.Path = "/user/login"
 			//engine.HandleContext(context)
 			//
-			context.Redirect(http.StatusMovedPermanently, "/user/login")
+			api_common.Redirect(context, "/user/login", typ_resp.Resp[any]{})
 
 			// 中止调用链
 			context.Abort()

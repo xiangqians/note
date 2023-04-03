@@ -13,23 +13,23 @@ $. 引用模板中的根级上下文
 <header>
     <div style="text-align: right; padding-right: 50px">
         <div style="padding: 4px;">
-            <a href="/user/settings">{{ .user.Name }}, {{ .user.Nickname }}</a>
+            <a href="/user/settings?t={{ Timestamp }}">{{ .user.Name }}, {{ .user.Nickname }}</a>
         </div>
         <div style="padding: 4px;">
-            <a ajaxE href="/user/logout" method="POST">{{ Localize "i18n.logout" }}</a>
+            <a ajaxE href="/user/logout?t={{ Timestamp }}" method="POST">{{ Localize "i18n.logout" }}</a>
         </div>
     </div>
     <br>
 
     <div style="text-align: left; padding-left: 50px;">
         <a name="nav" style='padding: 8px;{{ if eq .url "/" }}background-color: lightgray;{{ end }}'
-           href="/">{{ Localize "i18n.index" }}</a>
+           href="/?t={{ Timestamp }}">{{ Localize "i18n.index" }}</a>
         <a name="nav" style='padding: 8px;{{ if eq .url "/note/list" }}background-color: lightgray;{{ end }}'
-           href="/note/list">{{ Localize "i18n.note" }}</a>
+           href="/note/list?t={{ Timestamp }}">{{ Localize "i18n.note" }}</a>
         <a name="nav" style='padding: 8px;{{ if eq .url "/img/list" }}background-color: lightgray;{{ end }}'
-           href="/img/list">{{ Localize "i18n.img" }}</a>
+           href="/img/list?t={{ Timestamp }}">{{ Localize "i18n.img" }}</a>
         <a name="nav" style='padding: 8px;{{ if eq .url "/recycleBin/list" }}background-color: lightgray;{{ end }}'
-           href="/recycleBin/list">{{ Localize "i18n.recycleBin" }}</a>
+           href="/recycleBin/list?t={{ Timestamp }}">{{ Localize "i18n.recycleBin" }}</a>
     </div>
     <br>
     <br>

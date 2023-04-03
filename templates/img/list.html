@@ -40,7 +40,7 @@
         {{ range $index,$e := $data.Data }}
         <tr>
             <td>{{ No_ $data $index }}</td>
-            <td><a href="/img/{{ $e.Id }}/view" target="_blank">{{ $e.Name }}</a></td>
+            <td><a href="/img/{{ $e.Id }}/view?t={{ Timestamp }}" target="_blank">{{ $e.Name }}</a></td>
             <td>{{ $e.Type }}</td>
             <td>{{ HumanizFileSize $e.Size }}</td>
             <td>{{ HumanizUnix $e.AddTime }}</td>

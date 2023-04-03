@@ -20,6 +20,7 @@ import (
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
 	"os"
+	"sort"
 	"strings"
 	"time"
 )
@@ -91,9 +92,9 @@ func Del(context *gin.Context) {
 
 // View 查看图片页面
 func View(context *gin.Context) {
-	html := func(img typ_api.Img, msg any) {
+	html := func(img typ_api.Img, err any) {
 		resp := typ_resp.Resp[typ_api.Img]{
-			Msg:  util_str.TypeToStr(msg),
+			Msg:  util_str.TypeToStr(err),
 			Data: img,
 		}
 		common.HtmlOk(context, "img/view.html", resp)
@@ -108,12 +109,6 @@ func View(context *gin.Context) {
 		return
 	}
 
-	// hist index
-	histIdx, err := common.Query[int](context, "histIdx")
-	if err != nil {
-		histIdx = -1
-	}
-
 	// img
 	img, _, err := DbQry(context, id)
 	img.Url = fmt.Sprintf("/img/%v", id)
@@ -121,19 +116,36 @@ func View(context *gin.Context) {
 
 	// 图片历史记录
 	hist := img.Hist
-	hists := make([]typ_api.Img, 0, 1) // len 0, cap ?
 	if hist != "" {
+		// hists
+		hists := make([]typ_api.Img, 0, 1) // len 0, cap ?
 		err = util_json.Deserialize(hist, &hists)
-		img.Hists = hists
-	}
+		if err != nil {
+			html(img, err)
+			return
+		}
 
-	// hist
-	if histIdx >= 0 && len(hists) > 0 {
-		histImg := hists[histIdx]
-		histImg.Hists = hists
-		histImg.Url = fmt.Sprintf("/img/%v?histIdx=%v", id, histIdx)
-		histImg.HistIdx = histIdx
-		img = histImg
+		// sort
+		sort.Slice(hists, func(i, j int) bool {
+			return hists[i].UpdTime > hists[j].UpdTime
+		})
+
+		img.Hists = hists
+
+		// hist index
+		var histIdx int
+		histIdx, err = common.Query[int](context, "histIdx")
+		if err != nil {
+			histIdx = -1
+			err = nil
+		}
+		if histIdx >= 0 {
+			histImg := hists[histIdx]
+			histImg.Hists = hists
+			histImg.Url = fmt.Sprintf("/img/%v?histIdx=%v", id, histIdx)
+			histImg.HistIdx = histIdx
+			img = histImg
+		}
 	}
 
 	// html
@@ -158,7 +170,31 @@ func Get(context *gin.Context) {
 	}
 
 	// path
-	path, err := Path(context, img)
+	var path string
+
+	// 图片历史记录
+	histIdx, err := common.Query[int](context, "histIdx")
+	if err != nil {
+		histIdx = -1
+		err = nil
+	}
+	hist := img.Hist
+	if histIdx >= 0 && hist != "" {
+		// hists
+		hists := make([]typ_api.Img, 0, 1) // len 0, cap ?
+		err = util_json.Deserialize(hist, &hists)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		histImg := hists[histIdx]
+		path, err = HistPath(context, histImg)
+	} else
+	// 当前图片
+	{
+		path, err = Path(context, img)
+	}
 	if err != nil {
 		log.Println(err)
 		return
@@ -173,7 +209,7 @@ func Get(context *gin.Context) {
 
 	// write
 	n, err := context.Writer.Write(buf)
-	log.Println("view", path, n, err)
+	log.Println(path, n, err)
 	return
 }
 
@@ -260,9 +296,9 @@ func Upload(context *gin.Context) {
 		// 图片历史记录
 		hist := oldImg.Hist
 		histSize := oldImg.HistSize
-		imgHists := make([]typ_api.Img, 0, 1) // len 0, cap ?
+		histImgs := make([]typ_api.Img, 0, 1) // len 0, cap ?
 		if hist != "" {
-			err = util_json.Deserialize(hist, &imgHists)
+			err = util_json.Deserialize(hist, &histImgs)
 			if err != nil {
 				redirect(id, err)
 				return
@@ -270,7 +306,7 @@ func Upload(context *gin.Context) {
 		}
 
 		// 将原图片添加到历史记录
-		imgHists = append(imgHists, typ_api.Img{
+		histImg := typ_api.Img{
 			Abs: typ_api.Abs{
 				Id:      oldImg.Id,
 				AddTime: oldImg.AddTime,
@@ -279,17 +315,18 @@ func Upload(context *gin.Context) {
 			Name: oldImg.Name,
 			Type: oldImg.Type,
 			Size: oldImg.Size,
-		})
+		}
+		histImgs = append(histImgs, histImg)
 		// src
 		var srcPath string
-		srcPath, err = Path(context, oldImg)
+		srcPath, err = Path(context, histImg)
 		if err != nil {
 			redirect(id, err)
 			return
 		}
 		// dst
 		var dstPath string
-		dstPath, err = HistPath(context, oldImg)
+		dstPath, err = HistPath(context, histImg)
 		if err != nil {
 			redirect(id, err)
 			return
@@ -303,24 +340,24 @@ func Upload(context *gin.Context) {
 
 		// 图片历史记录至多保存三张，超过则删除最早地历史图片
 		maxHist := 3
-		if len(imgHists) > maxHist {
-			l := len(imgHists) - maxHist
+		if len(histImgs) > maxHist {
+			l := len(histImgs) - maxHist
 			for i := 0; i < l; i++ {
-				path, err := HistPath(context, imgHists[i])
+				path, err := HistPath(context, histImgs[i])
 				if err == nil {
 					util_os.DelFile(path)
 				}
 			}
-			imgHists = imgHists[l:]
+			histImgs = histImgs[l:]
 		}
 
 		// hist size
-		for _, imgHist := range imgHists {
+		for _, imgHist := range histImgs {
 			histSize += imgHist.Size
 		}
 
 		// serialize
-		hist, err = util_json.Serialize(imgHists)
+		hist, err = util_json.Serialize(histImgs)
 		if err != nil {
 			redirect(id, err)
 			return

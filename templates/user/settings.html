@@ -37,13 +37,13 @@
             <textarea name="rem" type="text">{{ $data.Rem }}</textarea>
         </div>
         <div>
-            <input ajaxE type="submit" value='{{ Localize "i18n.save" }}'>
+            <input type="submit" value='{{ Localize "i18n.save" }}'>
         </div>
     </form>
     <br>
     <br>
     <div>
-        <a href="/">{{ Localize "i18n.index" }} →</a>
+        <a href="/?t={{ Timestamp }}">{{ Localize "i18n.index" }} →</a>
     </div>
 </content>
 
@@ -53,3 +53,12 @@
 </html>
 <script type="text/javascript" src="/static/jquery-v3.6.2/min.js"></script>
 <script type="text/javascript" src="/static/custom/custom.js"></script>
+<script>
+    ;
+    (function () {
+
+        // form
+        custom.ajaxE($($('form')[0]))
+
+    })()
+</script>

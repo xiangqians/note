@@ -62,6 +62,11 @@ func htmlTemplate(engine *gin.Engine) {
 			h[key] = value
 			return ""
 		},
+
+		// Timestamp
+		"Timestamp": func() int64 {
+			return util_time.NowUnix()
+		},
 	})
 
 	// HTML模板

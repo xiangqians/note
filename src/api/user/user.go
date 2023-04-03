@@ -12,7 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"io"
 	"log"
-	"net/http"
 	"note/src/api/common"
 	"note/src/db"
 	typ_api "note/src/typ/api"
@@ -113,7 +112,7 @@ func Logout(context *gin.Context) {
 	common.ClearSession(context)
 
 	// 重定向
-	context.Redirect(http.StatusMovedPermanently, "/user/login")
+	common.Redirect(context, "/user/login", typ_resp.Resp[any]{})
 }
 
 // Login0 用户登录

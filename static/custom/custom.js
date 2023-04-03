@@ -150,6 +150,94 @@ custom = function () {
         })
     }
 
+    // form, a, button
+    obj.ajaxE = function ($e) {
+        // form
+        if ($e.is('form')) {
+            let $form = $e
+            // console.log($form)
+            $($form.find("[type=submit]")[0]).click(function () {
+                let action = $form.attr("action")
+                // console.log('action', action)
+                let method = $form.attr("method").trim().toUpperCase()
+                // console.log('method', method)
+                let data = new FormData()
+                $form.serializeArray().forEach(e => {
+                    // console.log(e.name, e.value)
+                    data.append(e.name, e.value);
+                })
+
+                // file
+                let $input = $form.find("input[type='file']");
+                if ($input.length > 0) {
+                    let files = $input[0].files;
+                    // console.log($input.attr('name'), files);
+                    if (files.length > 0) {
+                        data.append($input.attr('name'), files[0]);
+                    }
+                }
+
+                // console.log('data', data);
+                // data.forEach((value, key) => {
+                //     console.log(key, value);
+                // })
+
+                custom.ajaxDefault(action, method, data, 'form', true)
+                return false
+            })
+            return
+        }
+
+        // a
+        // // 处理 ajaxE
+        //     $ajaxE.click(function () {
+        //         let data = null
+        //
+        //         // pre
+        //         let pre = $ajaxE[0].pre
+        //         if (pre) {
+        //             let r = pre($ajaxE)
+        //             // console.log('r', r)
+        //             if (custom.isObj(r)) {
+        //                 data = new FormData()
+        //                 for (let name in r) {
+        //                     data.append(name, r[name])
+        //                 }
+        //
+        //             } else {
+        //                 return
+        //             }
+        //         }
+        //         // confirm
+        //         else {
+        //             let message = $ajaxE.attr("confirm")
+        //             if (message) {
+        //                 if (!confirm(message)) {
+        //                     return
+        //                 }
+        //             }
+        //         }
+        //
+        //         // ajaxFormData
+        //         let url = $ajaxE.attr("href")
+        //         // console.log(url)
+        //         if (!(url)) {
+        //             url = $ajaxE.attr("action")
+        //         }
+        //         if (!(url)) {
+        //             url = $ajaxE.attr("url")
+        //         }
+        //         // console.log(url)
+        //
+        //         let method = $ajaxE.attr("method").trim().toUpperCase()
+        //
+        //         custom.ajaxDefault(url, method, data, "form", true)
+        //
+        //         // 如果是 <a></a> 标签，则取消 <a></a> 默认行为
+        //         return false
+        //     })
+    }
+
     // ------------------------------ storage ------------------------------
 
     // 存储
@@ -304,120 +392,25 @@ custom = function () {
 ;
 
 (function () {
-
-    // 处理 ajaxE
-    let $ajaxEArr = $('[ajaxE]')
-    // console.log('$ajaxEArr', $ajaxEArr)
-    for (let i = 0, len = $ajaxEArr.length; i < len; i++) {
-        let $ajaxE = $($ajaxEArr[i])
-        // console.log('$ajaxE', $ajaxE)
-        let tagName = $ajaxE.prop('tagName').toLowerCase()
-        // console.log('tagName', tagName)
-        // <form></form>
-        if ((tagName === 'input' || tagName === 'button') && $ajaxE.attr('type') === 'submit') {
-            for (let $parent = $ajaxE.parent(); !$parent.is('body'); $parent = $parent.parent()) {
-                if ($parent.is('form')) {
-                    let $form = $parent
-                    // console.log($form)
-                    $ajaxE.click(function () {
-                        let action = $form.attr("action")
-                        // console.log('action', action)
-                        let method = $form.attr("method").trim().toUpperCase()
-                        // console.log('method', method)
-                        let data = new FormData()
-                        $form.serializeArray().forEach(e => {
-                            // console.log(e.name, e.value)
-                            data.append(e.name, e.value);
-                        })
-
-                        // file
-                        let $input = $form.find("input[type='file']");
-                        if ($input.length > 0) {
-                            let files = $input[0].files;
-                            // console.log($input.attr('name'), files);
-                            if (files.length > 0) {
-                                data.append($input.attr('name'), files[0]);
-                            }
-                        }
-
-                        // console.log('data', data);
-                        // data.forEach((value, key) => {
-                        //     console.log(key, value);
-                        // })
-
-                        custom.ajaxDefault(action, method, data, 'form', true)
-                        return false
-                    })
-                    break
-                }
-            }
-        } else {
-            $ajaxE.click(function () {
-                let data = null
-
-                // pre
-                let pre = $ajaxE[0].pre
-                if (pre) {
-                    let r = pre($ajaxE)
-                    // console.log('r', r)
-                    if (custom.isObj(r)) {
-                        data = new FormData()
-                        for (let name in r) {
-                            data.append(name, r[name])
-                        }
-
-                    } else {
-                        return
-                    }
-                }
-                // confirm
-                else {
-                    let message = $ajaxE.attr("confirm")
-                    if (message) {
-                        if (!confirm(message)) {
-                            return
-                        }
-                    }
-                }
-
-                // ajaxFormData
-                let url = $ajaxE.attr("href")
-                // console.log(url)
-                if (!(url)) {
-                    url = $ajaxE.attr("action")
-                }
-                if (!(url)) {
-                    url = $ajaxE.attr("url")
-                }
-                // console.log(url)
-
-                let method = $ajaxE.attr("method").trim().toUpperCase()
-
-                custom.ajaxDefault(url, method, data, "form", true)
-
-                // 如果是 <a></a> 标签，则取消 <a></a> 默认行为
-                return false
-            })
-        }
-    }
+    ;
 
     // 为普通的 <a></a> url添加时间戳
-    let $aArr = $('a:not([ajaxE])[href^="/"]')
-    // console.log('$aArr', $aArr)
-    for (let i = 0, len = $aArr.length; i < len; i++) {
-        let $a = $($aArr[i])
-        // console.log($a)
-        let href = $a.attr('href')
-        $a.attr('href', custom.addTimestamp(href))
-    }
-
-    // 为普通的 <img></img> src添加时间戳
-    let $imgArr = $('img')
-    for (let i = 0, len = $imgArr.length; i < len; i++) {
-        let $img = $($imgArr[i])
-        let src = $img.attr('src')
-        $img.attr('src', custom.addTimestamp(src))
-    }
+    // let $aArr = $('a:not([ajaxE])[href^="/"]')
+    // // console.log('$aArr', $aArr)
+    // for (let i = 0, len = $aArr.length; i < len; i++) {
+    //     let $a = $($aArr[i])
+    //     // console.log($a)
+    //     let href = $a.attr('href')
+    //     $a.attr('href', custom.addTimestamp(href))
+    // }
+    //
+    // // 为普通的 <img></img> src添加时间戳
+    // let $imgArr = $('img')
+    // for (let i = 0, len = $imgArr.length; i < len; i++) {
+    //     let $img = $($imgArr[i])
+    //     let src = $img.attr('src')
+    //     $img.attr('src', custom.addTimestamp(src))
+    // }
 
     // div收缩/展开
     let $divs = $("div[class='float']")

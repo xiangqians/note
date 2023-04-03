@@ -11,6 +11,8 @@ import (
 	typ_resp "note/src/typ/resp"
 	util_reflect "note/src/util/reflect"
 	util_str "note/src/util/str"
+	util_time "note/src/util/time"
+	"strings"
 )
 
 func HtmlNotFound[T any](context *gin.Context, name string, resp typ_resp.Resp[T]) {
@@ -62,6 +64,11 @@ func Json[T any](context *gin.Context, code int, resp typ_resp.Resp[T]) {
 
 func Redirect[T any](context *gin.Context, location string, resp typ_resp.Resp[T]) {
 	SetSessionKv(context, RespSessionKey, resp)
+	if strings.Contains(location, "?") {
+		location = fmt.Sprintf("%s&t=%d", location, util_time.NowUnix())
+	} else {
+		location = fmt.Sprintf("%s?t=%d", location, util_time.NowUnix())
+	}
 	context.Redirect(http.StatusMovedPermanently, location)
 }
 
