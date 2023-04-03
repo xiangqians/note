@@ -111,7 +111,7 @@ func View(context *gin.Context) {
 
 	// img
 	img, _, err := DbQry(context, id)
-	img.Url = fmt.Sprintf("/img/%v", id)
+	img.Url = fmt.Sprintf("/img/%v?t=%d", id, util_time.NowUnix())
 	img.HistIdx = -1
 
 	// 图片历史记录
@@ -142,7 +142,7 @@ func View(context *gin.Context) {
 		if histIdx >= 0 {
 			histImg := hists[histIdx]
 			histImg.Hists = hists
-			histImg.Url = fmt.Sprintf("/img/%v?histIdx=%v", id, histIdx)
+			histImg.Url = fmt.Sprintf("/img/%d?histIdx=%d&t=%d", id, histIdx, util_time.NowUnix())
 			histImg.HistIdx = histIdx
 			img = histImg
 		}

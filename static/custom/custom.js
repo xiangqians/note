@@ -417,9 +417,10 @@ custom = function () {
     for (let i = 0; i < $divs.length; i++) {
         let $div = $($divs[i])
         // console.log($floatDiv)
-        let $btn = $('<button value="-">-</button>')
-
+        let $btn = $('<button value="+">+</button>')
         let $wrapperDiv = $('<div></div>')
+        // 默认隐藏div
+        $wrapperDiv.css('display', 'none')
         $wrapperDiv.html($div.html())
         $div.html('')
         $btn.click(function () {
