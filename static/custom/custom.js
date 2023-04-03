@@ -394,33 +394,23 @@ custom = function () {
 (function () {
     ;
 
-    // 为普通的 <a></a> url添加时间戳
-    // let $aArr = $('a:not([ajaxE])[href^="/"]')
-    // // console.log('$aArr', $aArr)
-    // for (let i = 0, len = $aArr.length; i < len; i++) {
-    //     let $a = $($aArr[i])
-    //     // console.log($a)
-    //     let href = $a.attr('href')
-    //     $a.attr('href', custom.addTimestamp(href))
-    // }
-    //
-    // // 为普通的 <img></img> src添加时间戳
-    // let $imgArr = $('img')
-    // for (let i = 0, len = $imgArr.length; i < len; i++) {
-    //     let $img = $($imgArr[i])
-    //     let src = $img.attr('src')
-    //     $img.attr('src', custom.addTimestamp(src))
-    // }
-
     // div收缩/展开
     let $divs = $("div[class='float']")
     for (let i = 0; i < $divs.length; i++) {
         let $div = $($divs[i])
-        // console.log($floatDiv)
-        let $btn = $('<button value="+">+</button>')
+        // console.log($div)
+        let display = custom.storage.get('displayFloat')
+        if (!display) {
+            display = 'none'
+        }
+        let $btn = null
+        if (display === 'none') { // 隐藏
+            $btn = $('<button value="+">+</button>')
+        } else {
+            $btn = $('<button value="-">-</button>')
+        }
         let $wrapperDiv = $('<div></div>')
-        // 默认隐藏div
-        $wrapperDiv.css('display', 'none')
+        $wrapperDiv.css('display', display)
         $wrapperDiv.html($div.html())
         $div.html('')
         $btn.click(function () {
@@ -431,6 +421,7 @@ custom = function () {
                 $btn.text('+')
                 // 隐藏div
                 $wrapperDiv.css('display', 'none')
+                custom.storage.set('displayFloat', 'none')
             }
             // 设置为 -
             else {
@@ -438,6 +429,7 @@ custom = function () {
                 $btn.text('-')
                 // 显示div
                 $wrapperDiv.css('display', 'block')
+                custom.storage.set('displayFloat', 'block')
             }
         })
         $div.prepend($btn)
