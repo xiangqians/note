@@ -188,6 +188,11 @@ func Get(context *gin.Context) {
 			return
 		}
 
+		// sort
+		sort.Slice(hists, func(i, j int) bool {
+			return hists[i].UpdTime > hists[j].UpdTime
+		})
+
 		histImg := hists[histIdx]
 		path, err = HistPath(context, histImg)
 	} else
