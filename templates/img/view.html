@@ -48,11 +48,11 @@
 
     {{ Localize "i18n.hist" }}
     <select name="hist">
-        <option value="-1" {{ if eq $data.HistIdx -1 }}selected{{ end }}></option>
+        <option value="-1"></option>
         {{ $len := len $data.Hists }}
         {{ if gt $len 0 }}
         {{ range $index,$hist := $data.Hists }}
-        <option value="{{ $index }}" {{ if eq $data.HistIdx $index }}selected{{ end }}>
+        <option value="{{ $index }}">
             {{ $hist.Name }}&nbsp;&nbsp;&nbsp;{{ $hist.Type }}&nbsp;&nbsp;&nbsp;{{ HumanizUnix $hist.UpdTime }}
         </option>
         {{ end }}
@@ -63,8 +63,8 @@
 
     <form action="/img/upload" method="PUT" enctype="multipart/form-data">
         <input name="id" type="text" value="{{ $data.Id }}" hidden/>
-        <input name="file" type="file" {{ if ne $data.HistIdx -1 }}disabled{{ end }}/>
-        <button ajaxE type="submit" {{ if ne $data.HistIdx -1 }}disabled{{ end }}>{{ Localize "i18n.upload" }}</button>
+        <input name="file" type="file" disabled/>
+        <button ajaxE type="submit" disabled>{{ Localize "i18n.upload" }}</button>
     </form>
 </div>
 
@@ -82,17 +82,50 @@
     ;
     (function () {
 
+        // url
+        let url = '{{ .url }}'
+        // console.log(url)
+
+        // hist
+        let isHist = url.indexOf('hist') > 0
+        // console.log(isHist)
+        let idx = -1
+        if (isHist) {
+            let idxStr = url.substring(url.indexOf('hist/') + 'hist/'.length, url.indexOf('/view'))
+            idx = parseInt(idxStr)
+        }
+
+        // 如果不是历史记录，则移除form的 disabled 属性
+        if (!isHist) {
+            $($("input[name='file']")[0]).attr('disabled', false)
+            $($("button[type='submit']")[0]).attr('disabled', false)
+        }
+
         // form
         custom.ajaxE($($('form')[0]))
 
         // select
         let $select = $($("select[name='hist']")[0])
+        let options = $select.find("option")
+        if (idx != -1) {
+            for (let i = 0; i < options.length; i++) {
+                let $option = $(options[i])
+                let value = parseInt($option.attr('value'))
+                // console.log(value)
+                if (value === idx) {
+                    $option.attr('selected', true)
+                    break
+                }
+            }
+        }
         $select.change(function (e) {
             let value = $select.find("option:selected").attr("value");
             // console.log(value)
-            let url = '/img/{{ $data.Id }}/view'
-            if (value !== "-1") {
-                url += '?histIdx=' + value
+            let url = null
+            if (value === "-1") {
+                url = '/img/{{ $data.Id }}/view'
+            } else {
+                url = '/img/{{ $data.Id }}/hist/' + value + '/view'
             }
             custom.ajaxDefault(url, 'GET', null, 'form', true)
         });

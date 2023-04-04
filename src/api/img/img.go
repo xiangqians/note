@@ -90,6 +90,74 @@ func Del(context *gin.Context) {
 	return
 }
 
+// HistView 查看图片历史页面
+func HistView(context *gin.Context) {
+	html := func(img typ_api.Img, err any) {
+		resp := typ_resp.Resp[typ_api.Img]{
+			Msg:  util_str.TypeToStr(err),
+			Data: img,
+		}
+		common.HtmlOk(context, "img/view.html", resp)
+	}
+
+	// id
+	id, err := common.Param[int64](context, "id")
+	if err != nil || id <= 0 {
+		html(typ_api.Img{}, err)
+		return
+	}
+
+	// idx
+	idx, err := common.Param[int](context, "idx")
+	if err != nil || idx < 0 {
+		html(typ_api.Img{}, err)
+		return
+	}
+
+	// img
+	img, count, err := DbQry(context, id)
+	if err != nil || count == 0 {
+		html(img, err)
+		return
+	}
+
+	// 图片历史记录
+	hist := img.Hist
+	if hist == "" {
+		html(img, err)
+		return
+	}
+
+	// hists
+	hists := make([]typ_api.Img, 0, 1) // len 0, cap ?
+	err = util_json.Deserialize(hist, &hists)
+	if err != nil {
+		html(img, err)
+		return
+	}
+
+	// 校验idx是否合法
+	if idx >= len(hists) {
+		html(img, err)
+		return
+	}
+
+	// sort
+	sort.Slice(hists, func(i, j int) bool {
+		return hists[i].UpdTime > hists[j].UpdTime
+	})
+
+	// hist img
+	histImg := hists[idx]
+	histImg.Url = fmt.Sprintf("/img/%d/hist/%d?t=%d", id, idx, util_time.NowUnix())
+	histImg.Hists = hists
+	img = histImg
+
+	// html
+	html(img, err)
+	return
+}
+
 // View 查看图片页面
 func View(context *gin.Context) {
 	html := func(img typ_api.Img, err any) {
@@ -103,16 +171,19 @@ func View(context *gin.Context) {
 	// id
 	id, err := common.Param[int64](context, "id")
 	if err != nil {
-		html(typ_api.Img{
-			HistIdx: -1,
-		}, err)
+		html(typ_api.Img{}, err)
 		return
 	}
 
 	// img
-	img, _, err := DbQry(context, id)
-	img.Url = fmt.Sprintf("/img/%v?t=%d", id, util_time.NowUnix())
-	img.HistIdx = -1
+	img, count, err := DbQry(context, id)
+	if err != nil || count == 0 {
+		html(img, err)
+		return
+	}
+
+	// url
+	img.Url = fmt.Sprintf("/img/%d?t=%d", id, util_time.NowUnix())
 
 	// 图片历史记录
 	hist := img.Hist
@@ -131,25 +202,80 @@ func View(context *gin.Context) {
 		})
 
 		img.Hists = hists
-
-		// hist index
-		var histIdx int
-		histIdx, err = common.Query[int](context, "histIdx")
-		if err != nil {
-			histIdx = -1
-			err = nil
-		}
-		if histIdx >= 0 {
-			histImg := hists[histIdx]
-			histImg.Hists = hists
-			histImg.Url = fmt.Sprintf("/img/%d?histIdx=%d&t=%d", id, histIdx, util_time.NowUnix())
-			histImg.HistIdx = histIdx
-			img = histImg
-		}
 	}
 
 	// html
 	html(img, err)
+	return
+}
+
+// GetHist 获取历史图片
+func GetHist(context *gin.Context) {
+	// id
+	id, err := common.Param[int64](context, "id")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	// idx
+	idx, err := common.Param[int](context, "idx")
+	if err != nil || idx < 0 {
+		log.Println(err)
+		return
+	}
+
+	// img
+	img, count, err := DbQry(context, id)
+	if err != nil || count == 0 {
+		log.Println(err)
+		return
+	}
+
+	// hist
+	hist := img.Hist
+	if hist == "" {
+		log.Println(err)
+		return
+	}
+
+	// hists
+	hists := make([]typ_api.Img, 0, 1) // len 0, cap ?
+	err = util_json.Deserialize(hist, &hists)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	// 校验idx是否合法
+	if idx >= len(hists) {
+		log.Println(err)
+		return
+	}
+
+	// sort
+	sort.Slice(hists, func(i, j int) bool {
+		return hists[i].UpdTime > hists[j].UpdTime
+	})
+
+	// hist img
+	histImg := hists[idx]
+	path, err := HistPath(context, histImg)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	// read
+	buf, err := os.ReadFile(path)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	// write
+	n, err := context.Writer.Write(buf)
+	log.Println(path, n, err)
 	return
 }
 
@@ -170,36 +296,7 @@ func Get(context *gin.Context) {
 	}
 
 	// path
-	var path string
-
-	// 图片历史记录
-	histIdx, err := common.Query[int](context, "histIdx")
-	if err != nil {
-		histIdx = -1
-		err = nil
-	}
-	hist := img.Hist
-	if histIdx >= 0 && hist != "" {
-		// hists
-		hists := make([]typ_api.Img, 0, 1) // len 0, cap ?
-		err = util_json.Deserialize(hist, &hists)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		// sort
-		sort.Slice(hists, func(i, j int) bool {
-			return hists[i].UpdTime > hists[j].UpdTime
-		})
-
-		histImg := hists[histIdx]
-		path, err = HistPath(context, histImg)
-	} else
-	// 当前图片
-	{
-		path, err = Path(context, img)
-	}
+	path, err := Path(context, img)
 	if err != nil {
 		log.Println(err)
 		return
@@ -343,10 +440,10 @@ func Upload(context *gin.Context) {
 			return
 		}
 
-		// 图片历史记录至多保存三张，超过则删除最早地历史图片
-		maxHist := 3
-		if len(histImgs) > maxHist {
-			l := len(histImgs) - maxHist
+		// 图片历史记录至多保存15张，超过15张则删除最早地历史图片
+		max := 15
+		if len(histImgs) > max {
+			l := len(histImgs) - max
 			for i := 0; i < l; i++ {
 				path, err := HistPath(context, histImgs[i])
 				if err == nil {
