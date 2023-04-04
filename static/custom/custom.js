@@ -151,7 +151,7 @@ custom = function () {
     }
 
     // form, a, button
-    obj.ajaxE = function ($e) {
+    obj.ajaxE = function ($e, dataFunc) {
         // form
         if ($e.is('form')) {
             let $form = $e
@@ -189,53 +189,33 @@ custom = function () {
         }
 
         // a
-        // // 处理 ajaxE
-        //     $ajaxE.click(function () {
-        //         let data = null
-        //
-        //         // pre
-        //         let pre = $ajaxE[0].pre
-        //         if (pre) {
-        //             let r = pre($ajaxE)
-        //             // console.log('r', r)
-        //             if (custom.isObj(r)) {
-        //                 data = new FormData()
-        //                 for (let name in r) {
-        //                     data.append(name, r[name])
-        //                 }
-        //
-        //             } else {
-        //                 return
-        //             }
-        //         }
-        //         // confirm
-        //         else {
-        //             let message = $ajaxE.attr("confirm")
-        //             if (message) {
-        //                 if (!confirm(message)) {
-        //                     return
-        //                 }
-        //             }
-        //         }
-        //
-        //         // ajaxFormData
-        //         let url = $ajaxE.attr("href")
-        //         // console.log(url)
-        //         if (!(url)) {
-        //             url = $ajaxE.attr("action")
-        //         }
-        //         if (!(url)) {
-        //             url = $ajaxE.attr("url")
-        //         }
-        //         // console.log(url)
-        //
-        //         let method = $ajaxE.attr("method").trim().toUpperCase()
-        //
-        //         custom.ajaxDefault(url, method, data, "form", true)
-        //
-        //         // 如果是 <a></a> 标签，则取消 <a></a> 默认行为
-        //         return false
-        //     })
+        if ($e.is('a')) {
+            let $a = $e
+            $a.click(function () {
+                let href = $a.attr("href")
+                // console.log('href', href)
+                let method = $a.attr("method").trim().toUpperCase()
+                // console.log('method', method)
+                let data = null
+                if (dataFunc) {
+                    data = dataFunc($a)
+                }
+
+                if (typeof (data) !== 'undefined') {
+                    let formData = null
+                    if (data) {
+                        formData = new FormData()
+                        for (let name in data) {
+                            formData.append(name, data[name])
+                        }
+                    }
+                    custom.ajaxDefault(href, method, formData, 'form', false)
+                }
+
+                // 取消 <a></a> 默认行为
+                return false
+            })
+        }
     }
 
     // ------------------------------ storage ------------------------------

@@ -51,13 +51,12 @@
                 </button>
             </td>
             <td>
-                <a ajaxE href="/img/name" method="PUT" imgId="{{ $e.Id }}" imgName="{{ $e.Name }}">
+                <a href="/img/name" method="PUT" imgId="{{ $e.Id }}" imgName="{{ $e.Name }}">
                     <button>{{ Localize "i18n.rename" }}</button>
                 </a>
             </td>
             <td>
-                <a ajaxE href="/img/{{ $e.Id }}" method="DELETE"
-                   confirm='{{ Localize "i18n.del" }} {{ $e.Name }} ?'>
+                <a href="/img/{{ $e.Id }}" method="DELETE" confirm='{{ Localize "i18n.del" }} {{ $e.Name }} ?'>
                     <button>{{ Localize "i18n.del" }}</button>
                 </a>
             </td>
@@ -80,14 +79,14 @@
                     {{ if le $data.Current 1 }}
                     {{ Localize "i18n.prevPage" }}
                     {{ else }}
-                    <a href="/img/list?current={{ Add $data.Current -1 }}">{{ Localize "i18n.prevPage" }}</a>
+                    <a href="/img/list?current={{ Add $data.Current -1 }}&t={{ Timestamp }}">{{ Localize "i18n.prevPage" }}</a>
                     {{  end }}
                 </span>
                 <span>
                     {{ if ge $data.Current $data.Pages }}
                     {{ Localize "i18n.nextPage" }}
                     {{ else }}
-                    <a href="/img/list?current={{ Add $data.Current 1 }}">{{ Localize "i18n.nextPage" }}</a>
+                    <a href="/img/list?current={{ Add $data.Current 1 }}&t={{ Timestamp }}">{{ Localize "i18n.nextPage" }}</a>
                     {{  end }}
                 </span>
             </td>
@@ -118,17 +117,36 @@
 
     // rename
     ;(function () {
-        // let $renames = $('a[href^="/file"][href$="/rename"]')
-        let $renames = $('a[href="/img/name"]')
-        for (let i = 0, len = $renames.length; i < len; i++) {
-            $renames[i]['pre'] = function ($e) {
-                let name = prompt('{{ Localize "i18n.name" }}', $e.attr('imgName'))
+        let aArr = $('a[href="/img/name"][method="PUT"]')
+        // console.log(aArr)
+        for (let i = 0; i < aArr.length; i++) {
+            let $a = $(aArr[i])
+            // console.log($a)
+            custom.ajaxE($a, function () {
+                let name = prompt('{{ Localize "i18n.name" }}', $a.attr('imgName'))
                 if (name && (name = name.trim()) !== "") {
                     // console.log(name)
-                    return {"id": $e.attr('imgId'), "name": name}
+                    return {'id': $a.attr('imgId'), 'name': name}
                 }
-                return null
-            }
+
+                return undefined
+            })
+        }
+    })()
+
+    // del
+    ;(function () {
+        let aArr = $('a[method="DELETE"]')
+        for (let i = 0; i < aArr.length; i++) {
+            let $a = $(aArr[i])
+            // console.log($a)
+            custom.ajaxE($a, function () {
+                if (confirm($a.attr('confirm'))) {
+                    return null
+                }
+
+                return undefined
+            })
         }
     })()
 

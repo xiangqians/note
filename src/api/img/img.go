@@ -22,13 +22,35 @@ import (
 	"os"
 	"sort"
 	"strings"
-	"time"
 )
+
+func Del(context *gin.Context) {
+	redirect := func(msg any) {
+		resp := typ_resp.Resp[any]{Msg: util_str.TypeToStr(msg)}
+		common.Redirect(context, fmt.Sprintf("/img/list"), resp)
+	}
+
+	// Delete not supported
+	//redirect("Delete not supported")
+	//return
+
+	// id
+	id, err := common.Param[int64](context, "id")
+	if err != nil {
+		redirect(err)
+		return
+	}
+
+	// delete
+	_, err = common.DbDel(context, "UPDATE `img` SET `del` = 1, `upd_time` = ? WHERE `id` = ?", util_time.NowUnix(), id)
+	redirect(err)
+	return
+}
 
 // UpdName 图片重命名
 func UpdName(context *gin.Context) {
-	redirect := func(msg any) {
-		resp := typ_resp.Resp[any]{Msg: util_str.TypeToStr(msg)}
+	redirect := func(err any) {
+		resp := typ_resp.Resp[any]{Msg: util_str.TypeToStr(err)}
 		common.Redirect(context, fmt.Sprintf("/img/list"), resp)
 	}
 
@@ -48,44 +70,9 @@ func UpdName(context *gin.Context) {
 		return
 	}
 
-	//imgType, count, err := common.DbQry[string](context, "SELECT `type` FROM `img` WHERE `del` = 0 AND `id` = ?", img.Id)
-	//if count > 0 {
-	//	name := img.Name
-	//	ft := typ.FileTypeImgOf(imgType)
-	//	if ft != typ.FileTypeUnk && !strings.HasSuffix(name, string(ft)) {
-	//		name = fmt.Sprintf("%s.%s", name, string(ft))
-	//	}
-	//
-	//	// update
-	//	_, err = common.DbUpd(context, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", name, time.Now().Unix(), img.Id, name)
-	//}
-
 	// update
-	_, err = common.DbUpd(context, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", img.Name, time.Now().Unix(), img.Id, img.Name)
+	_, err = common.DbUpd(context, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", img.Name, util_time.NowUnix(), img.Id, img.Name)
 
-	redirect(err)
-	return
-}
-
-func Del(context *gin.Context) {
-	redirect := func(msg any) {
-		resp := typ_resp.Resp[any]{Msg: util_str.TypeToStr(msg)}
-		common.Redirect(context, fmt.Sprintf("/img/list"), resp)
-	}
-
-	// Delete not supported
-	redirect("Delete not supported")
-	return
-
-	// id
-	id, err := common.Param[int64](context, "id")
-	if err != nil {
-		redirect(err)
-		return
-	}
-
-	// delete
-	_, err = common.DbDel(context, "UPDATE `img` SET `del` = 1, `upd_time` = ? WHERE `id` = ?", time.Now().Unix(), id)
 	redirect(err)
 	return
 }
