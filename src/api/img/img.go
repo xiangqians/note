@@ -98,7 +98,7 @@ func HistView(context *gin.Context) {
 	}
 
 	// img
-	img, count, err := DbQry(context, id)
+	img, count, err := DbQry(context, id, 0)
 	if err != nil || count == 0 {
 		html(img, err)
 		return
@@ -159,7 +159,7 @@ func View(context *gin.Context) {
 	}
 
 	// img
-	img, count, err := DbQry(context, id)
+	img, count, err := DbQry(context, id, 0)
 	if err != nil || count == 0 {
 		html(img, err)
 		return
@@ -209,7 +209,7 @@ func GetHist(context *gin.Context) {
 	}
 
 	// img
-	img, count, err := DbQry(context, id)
+	img, count, err := DbQry(context, id, 0)
 	if err != nil || count == 0 {
 		log.Println(err)
 		return
@@ -272,7 +272,7 @@ func Get(context *gin.Context) {
 	}
 
 	// img
-	img, count, err := DbQry(context, id)
+	img, count, err := DbQry(context, id, 0)
 	if err != nil || count == 0 {
 		log.Println(err)
 		return
@@ -372,7 +372,7 @@ func Upload(context *gin.Context) {
 	case http.MethodPut:
 		// 原图片信息
 		var count int64
-		oldImg, count, err = DbQry(context, id)
+		oldImg, count, err = DbQry(context, id, 0)
 		if err != nil || count == 0 {
 			redirect(id, err)
 			return
@@ -499,8 +499,7 @@ func Upload(context *gin.Context) {
 
 // List 图片列表页面
 func List(context *gin.Context) {
-	req, _ := common.PageReq(context)
-	page, err := common.DbPage[typ_api.Img](context, req, "SELECT `id`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `img` WHERE `del` = 0 ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC")
+	page, err := DbPage(context, 0)
 	resp := typ_resp.Resp[typ_page.Page[typ_api.Img]]{
 		Msg:  util_str.TypeToStr(err),
 		Data: page,
@@ -555,7 +554,12 @@ func Path(context *gin.Context, img typ_api.Img) (string, error) {
 	return fmt.Sprintf("%s%s%s", imgDir, util_os.FileSeparator, name), nil
 }
 
-func DbQry(context *gin.Context, id int64) (typ_api.Img, int64, error) {
-	img, count, err := common.DbQry[typ_api.Img](context, "SELECT `id`, `name`, `type`, `size`, `hist`, `hist_size`, `add_time`, `upd_time` FROM `img` WHERE `del` = 0 AND `id` = ?", id)
+func DbPage(context *gin.Context, del int) (typ_page.Page[typ_api.Img], error) {
+	req, _ := common.PageReq(context)
+	return common.DbPage[typ_api.Img](context, req, "SELECT `id`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `img` WHERE `del` = ? ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC", del)
+}
+
+func DbQry(context *gin.Context, id int64, del int) (typ_api.Img, int64, error) {
+	img, count, err := common.DbQry[typ_api.Img](context, "SELECT `id`, `name`, `type`, `size`, `hist`, `hist_size`, `add_time`, `upd_time` FROM `img` WHERE `del` = ? AND `id` = ?", del, id)
 	return img, count, err
 }

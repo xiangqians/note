@@ -53,7 +53,9 @@
         {{ if gt $len 0 }}
         {{ range $index,$hist := $data.Hists }}
         <option value="{{ $index }}">
-            {{ $hist.Name }}&nbsp;&nbsp;&nbsp;{{ $hist.Type }}&nbsp;&nbsp;&nbsp;{{ HumanizUnix $hist.UpdTime }}
+            {{ $hist.Name }}&nbsp;&nbsp;&nbsp;
+            {{ $hist.Type }}&nbsp;&nbsp;&nbsp;
+            {{ if eq $hist.UpdTime 0 }}{{ HumanizUnix $hist.AddTime }}{{ else }}{{ HumanizUnix $hist.UpdTime }}{{ end }}
         </option>
         {{ end }}
         {{ end }}

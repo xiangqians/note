@@ -50,14 +50,14 @@
             <td>{{ HumanizUnix $e.AddTime }}</td>
             <td>{{ HumanizUnix $e.UpdTime }}</td>
             <td>
-                <a href='{{ if eq $.url "/recycle/img/list" }}/recycle/img{{ else }}/t{{ end }}/{{ $e.Id }}/restore'
+                <a href='{{ if eq $.url "/recycle/img/list" }}/recycle/img{{ else }}{{ if eq .url "/recycle/note/list" }}/recycle/note{{ else }}/t{{ end }}{{ end }}/{{ $e.Id }}/restore'
                    method="PUT"
                    confirm='{{ Localize "i18n.restore" }} {{ $e.Name }} ?'>
                     <button>{{ Localize "i18n.restore" }}</button>
                 </a>
             </td>
             <td>
-                <a href='{{ if eq $.url "/recycle/img/list" }}/recycle/img{{ else }}/t{{ end }}/{{ $e.Id }}/permlyDel'
+                <a href='{{ if eq $.url "/recycle/img/list" }}/recycle/img{{ else }}{{ if eq .url "/recycle/note/list" }}/recycle/note{{ else }}/t{{ end }}{{ end }}/{{ $e.Id }}/permlyDel'
                    method="DELETE"
                    confirm='{{ Localize "i18n.permlyDel" }} {{ $e.Name }} ?'>
                     <button>{{ Localize "i18n.permlyDel" }}</button>
