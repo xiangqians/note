@@ -367,7 +367,17 @@ func Upload(context *gin.Context) {
 	// 操作数据库
 	switch method {
 	case http.MethodPost:
-		id, err = common.DbAdd(context, "INSERT INTO `img` (`name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?)", fn, ft, fs, util_time.NowUnix())
+		// 查询是否有永久删除的图片记录id，以便复用此图片记录
+		var count int64
+		id, count, err = DbQryPermlyDelId(context)
+		// 新id
+		if err != nil || count == 0 {
+			id, err = common.DbAdd(context, "INSERT INTO `img` (`name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?)", fn, ft, fs, util_time.NowUnix())
+		} else
+		// 复用id
+		{
+			_, err = common.DbUpd(context, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `del` = 0, `add_time` = ? WHERE `id` = ?", fn, ft, fs, util_time.NowUnix(), id)
+		}
 
 	case http.MethodPut:
 		// 原图片信息
@@ -557,6 +567,12 @@ func Path(context *gin.Context, img typ_api.Img) (string, error) {
 func DbPage(context *gin.Context, del int) (typ_page.Page[typ_api.Img], error) {
 	req, _ := common.PageReq(context)
 	return common.DbPage[typ_api.Img](context, req, "SELECT `id`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `img` WHERE `del` = ? ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC", del)
+}
+
+// DbQryPermlyDelId 查询永久删除的图片记录id，以便复用此图片记录
+func DbQryPermlyDelId(context *gin.Context) (int64, int64, error) {
+	id, count, err := common.DbQry[int64](context, "SELECT `id` FROM `img` WHERE `del` = 2 LIMIT 1")
+	return id, count, err
 }
 
 func DbQry(context *gin.Context, id int64, del int) (typ_api.Img, int64, error) {
