@@ -25,8 +25,8 @@ import (
 )
 
 func Del(context *gin.Context) {
-	redirect := func(msg any) {
-		resp := typ_resp.Resp[any]{Msg: util_str.TypeToStr(msg)}
+	redirect := func(err any) {
+		resp := typ_resp.Resp[any]{Msg: util_str.TypeToStr(err)}
 		common.Redirect(context, fmt.Sprintf("/img/list"), resp)
 	}
 

@@ -1,0 +1,34 @@
+<!--
+ | @author xiangqian
+ | @date 12:53 2023/04/05
+ |-->
+<!DOCTYPE html>
+<html lang="en" uri="{{ .uri }}" url="{{ .url }}">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/custom/custom.css" type="text/css"/>
+    <title>{{ Localize "i18n.recycle" }}</title>
+</head>
+<body>
+
+{{ template "common/header.html" . }}
+
+<content>
+
+    <p style="color: red;">{{ .resp.Msg }}</p>
+
+    {{ $data := .resp.Data }}
+
+
+    <table border="1" cellspacing="0" cellpadding="10" align="center">
+    </table>
+
+</content>
+
+{{ template "common/footer.html" . }}
+
+</body>
+</html>
+<script type="text/javascript" src="/static/jquery-v3.6.2/min.js"></script>
+<script type="text/javascript" src="/static/custom/custom.js"></script>

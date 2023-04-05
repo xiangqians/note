@@ -9,6 +9,7 @@ import (
 	api_img "note/src/api/img"
 	api_index "note/src/api/index"
 	api_note "note/src/api/note"
+	api_recycle "note/src/api/recycle"
 	api_user "note/src/api/user"
 	typ_resp "note/src/typ/resp"
 )
@@ -62,4 +63,9 @@ func route(engine *gin.Engine) {
 	imgGroup.Any("/:id/hist/:idx/view", api_img.HistView) // page
 	imgGroup.PUT("/name", api_img.UpdName)
 	imgGroup.DELETE("/:id", api_img.Del)
+
+	// recycle
+	recycleGroup := engine.Group("/recycle")
+	recycleGroup.Any("/img/list", api_recycle.ImgList) // page
+
 }
