@@ -115,9 +115,10 @@
 <script type="text/javascript" src="/static/custom/custom.js"></script>
 <script type="text/javascript">
 
-    // rename
     ;(function () {
-        let aArr = $('a[href="/img/name"][method="PUT"]')
+
+        // rename
+        let aArr = $('a[method="PUT"]')
         // console.log(aArr)
         for (let i = 0; i < aArr.length; i++) {
             let $a = $(aArr[i])
@@ -126,20 +127,20 @@
                 let name = prompt('{{ Localize "i18n.name" }}', $a.attr('imgName'))
                 if (name && (name = name.trim()) !== "") {
                     // console.log(name)
-                    return {'id': $a.attr('imgId'), 'name': name}
+                    let data = new FormData();
+                    data.append('id', $a.attr('imgId'))
+                    data.append('name', name)
+                    return data
                 }
 
                 return undefined
             })
         }
-    })()
 
-    // del
-    ;(function () {
-        let aArr = $('a[method="DELETE"]')
+        // del
+        aArr = $('a[method="DELETE"]')
         for (let i = 0; i < aArr.length; i++) {
             let $a = $(aArr[i])
-            // console.log($a)
             custom.ajaxE($a, function () {
                 if (confirm($a.attr('confirm'))) {
                     return null

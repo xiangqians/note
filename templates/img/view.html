@@ -129,7 +129,7 @@
             } else {
                 url = '/img/{{ $data.Id }}/hist/' + value + '/view'
             }
-            custom.ajaxDefault(url, 'GET', null, 'form', true)
+            custom.ajaxDefault(url, 'GET', new FormData(), false)
         });
 
     })()

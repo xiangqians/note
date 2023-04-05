@@ -4,23 +4,59 @@
  */
 ;
 custom = function () {
-    let obj = {}
+    // object
+    let _obj = {}
 
-    // 判断是否是 object
-    obj.isObj = function (v) {
-        return Object.prototype.toString.call(v) === '[object Object]'
+    /**
+     * 判断是否属于某类型
+     * @param obj object
+     * @param type '[object {type}]'
+     * @returns {boolean}
+     */
+    _obj.isType = function (obj, type) {
+        return Object.prototype.toString.call(obj) === type
     }
 
-    // 判断是否是 string
-    obj.isStr = function (v) {
-        return Object.prototype.toString.call(v) === '[object String]'
+    /**
+     * 判断是否是 undefined
+     * @param obj
+     * @returns {boolean}
+     */
+    _obj.isUndefined = function (obj) {
+        return typeof (obj) === 'undefined'
+    }
+    /**
+     * 判断是否是 Object
+     * @param obj
+     * @returns {boolean}
+     */
+    _obj.isObj = function (obj) {
+        return _obj.isType(obj, '[object Object]')
+    }
+
+    /**
+     * 判断是否是 String
+     * @param obj
+     * @returns {boolean}
+     */
+    _obj.isStr = function (obj) {
+        return _obj.isType(obj, '[object String]')
+    }
+
+    /**
+     * 判断是否是 FormData
+     * @param obj
+     * @returns {boolean}
+     */
+    _obj.isFormData = function (obj) {
+        return _obj.isType(obj, '[object FormData]')
     }
 
     /**
      * 人性化文件大小
      * @param size 文件大小，单位：byte
      */
-    obj.humanizFileSize = function (size) {
+    _obj.humanizFileSize = function (size) {
 
         // B, Byte
         // 1B  = 8b
@@ -60,16 +96,24 @@ custom = function () {
         return size + ' B'
     }
 
-    // 获取指定范围的随机数 [m, n)
-    obj.random = function (m, n) {
+    /**
+     * 获取指定范围的随机数 [m, n)
+     * @param m
+     * @param n
+     * @returns {number}
+     */
+    _obj.random = function (m, n) {
         return Math.round(Math.random() * (n - m) + m)
     }
 
-    // 添加url时间戳
-    obj.addUrlTimestamp = function (url) {
+    /**
+     * 给url添加时间戳
+     * @param url
+     * @returns {string}
+     */
+    _obj.addTimestampToUrl = function (url) {
         let timestamp = new Date().getTime()
-        timestamp += obj.random(-1000, 1000)
-        custom.random(1, 1000)
+        timestamp += _obj.random(-1000, 1000)
         if (url.indexOf('?') > 0) {
             url += '&t=' + timestamp
         } else {
@@ -78,7 +122,11 @@ custom = function () {
         return url
     }
 
-    obj.reload = function (text) {
+    /**
+     * 重新加载document
+     * @param text
+     */
+    _obj.reload = function (text) {
         // 使用 document.write() 覆盖当前文档
         document.write(text)
         document.close()
@@ -95,78 +143,98 @@ custom = function () {
 
     /**
      * ajax
-     * @param url       请求url
-     * @param method    请求方法：GET, POST, PUT, DELETE
+     * AJAX = 异步 JavaScript 和 XML（Asynchronous JavaScript and XML）。
+     * 在不重载整个网页的情况下，AJAX 通过后台加载数据，并在网页上进行显示。
+     * @param url       服务器端地址
+     * @param method    请求方法：GET | POST | PUT | DELETE
      * @param data      请求数据
-     * @param dataType  请求数据类型，form, json
-     * @param async     是否异步请求
+     * @param contentType 发送到服务器的数据类型。
+     *      contentType:"form"，发送FormData数据。
+     *      不设置 contentType:"application/json"，数据是以键值对的形式传递到服务器（data: {name: "test"}）；
+     *      设置  contentType:"application/json"，数据是以json串的形式传递到后端（data: '{name: "test"}'），如果传递的是比较复杂的数据（例如多层嵌套数据），这时候就需要设置 contentType:"application/json" 了。
+     * @param async     是否异步请求，true，异步；false，同步。默认 true
+     * @param dataType   预期服务器返回的数据类型，当设置dataType："json"时，如果后端返回了String，则ajax无法执行，去掉后ajax会自动检测返回数据类型。可以设为 text、html、script、json、jsonp和xml，和form
      * @param success   请求成功回调函数
      * @param error     请求错误回调函数
      */
-    obj.ajax = function (url, method, data, dataType, async, success, error) {
-        url = obj.addUrlTimestamp(url)
-
+    _obj.ajax = function (url, method, data, contentType, async, dataType, success, error) {
+        url = _obj.addTimestampToUrl(url)
         let param = {
             url: url,
             type: method,
             data: data,
             async: async,
-            success: function (resp) {
-                if (success) {
-                    success(resp)
-                }
-            },
-            error: function (resp) {
-                if (error) {
-                    error(resp)
-                }
+            timeout: 30 * 1000, // 等待的最长毫秒数。如果过了这个时间，请求还没有返回，则自动将请求状态改为失败。
+            // cache: cache, // 浏览器是否缓存服务器返回的数据，默认为true，注：浏览器本身不会缓存POST请求返回的数据，所以即使设为false，也只对HEAD和GET请求有效。
+            // beforeSend: beforeSend, // 指定发出请求前，所要调用的函数，通常用来对发出的数据进行修改。
+            // complete: complete, // 指定当HTTP请求结束时（请求成功或请求失败的回调函数，此时已经运行完毕）的回调函数。不管请求成功或失败，该回调函数都会执行。它的参数为发出请求的原始对象以及返回的状态信息。
+            success: success,
+            error: error
+        }
+
+        // contentType
+        if (contentType) {
+            // application/x-www-form-urlencoded
+            if (contentType === 'form') {
+                // 不处理发送数据
+                param.processData = false
+                // 不设置Content-Type请求头
+                param.contentType = false
+            }
+            // other
+            else {
+                param.contentType = contentType
             }
         }
 
-        // form
-        // application/x-www-form-urlencoded
-        if (dataType === "form") {
-            param.processData = false
-            param.contentType = false
-        }
-        // json
-        else if (dataType === "json") {
-            param.dataType = "json"
-        }
-        // other
-        else {
-            return
+        // dataType
+        if (dataType) {
+            param.dataType = dataType
         }
 
+        // $.ajax(url[, options])
+        // $.ajax([options])
         $.ajax(param)
     }
 
-    obj.ajaxDefault = function (url, method, data, dataType, async) {
-        custom.ajax(url, method, data, dataType, async, function (data) {
-            custom.reload(data)
+    _obj.ajaxSimple = function (url, method, data, success, error) {
+        let contentType = null
+        if (_obj.isFormData(data)) {
+            contentType = 'form'
+        }
+        _obj.ajax(url, method, data, contentType, false, null, success, error)
+    }
+
+    _obj.ajaxReload = function (url, method, data) {
+        _obj.ajaxSimple(url, method, data, function (resp) {
+            _obj.reload(resp)
         }, function (e) {
-            alert(JSON.stringify(e))
             console.error(e)
+            alert(e)
         })
     }
 
     // form, a, button
-    obj.ajaxE = function ($e, dataFunc) {
+    _obj.ajaxE = function ($e, dataFunc) {
         // form
         if ($e.is('form')) {
             let $form = $e
             // console.log($form)
             $($form.find("[type=submit]")[0]).click(function () {
-                let action = $form.attr("action")
-                // console.log('action', action)
+                // url
+                let url = $form.attr("action")
+                // console.log('url', url)
+
+                // method
                 let method = $form.attr("method").trim().toUpperCase()
                 // console.log('method', method)
+
+                // data
                 let data = new FormData()
                 $form.serializeArray().forEach(e => {
                     // console.log(e.name, e.value)
                     data.append(e.name, e.value);
                 })
-
                 // file
                 let $input = $form.find("input[type='file']");
                 if ($input.length > 0) {
@@ -182,7 +250,8 @@ custom = function () {
                 //     console.log(key, value);
                 // })
 
-                custom.ajaxDefault(action, method, data, 'form', true)
+                // ajax
+                _obj.ajaxReload(url, method, data)
                 return false
             })
             return
@@ -192,28 +261,24 @@ custom = function () {
         if ($e.is('a')) {
             let $a = $e
             $a.click(function () {
-                let href = $a.attr("href")
-                // console.log('href', href)
+                // url
+                let url = $a.attr("href")
+                // console.log('url', url)
+
+                // method
                 let method = $a.attr("method").trim().toUpperCase()
                 // console.log('method', method)
+
+                // data
                 let data = null
                 if (dataFunc) {
                     data = dataFunc($a)
                 }
+                // console.log('data', data)
 
-                if (typeof (data) !== 'undefined') {
-                    let formData = null
-                    if (data) {
-                        if (Object.prototype.toString.call(data) === '[object FormData]') {
-                            formData = data
-                        } else {
-                            formData = new FormData()
-                            for (let name in data) {
-                                formData.append(name, data[name])
-                            }
-                        }
-                    }
-                    custom.ajaxDefault(href, method, formData, 'form', false)
+                // ajax
+                if (!_obj.isUndefined(data)) {
+                    _obj.ajaxReload(url, method, data)
                 }
 
                 // 取消 <a></a> 默认行为
@@ -224,40 +289,63 @@ custom = function () {
 
     // ------------------------------ storage ------------------------------
 
-    // 存储
+    /**
+     * 存储
+     * @constructor
+     */
     function Storage() {
     }
 
-    Storage.prototype.vToStr = function (v) {
-        if (!obj.isStr(v)) {
+    /**
+     * value to string
+     * @param v
+     * @returns {string}
+     * @private
+     */
+    Storage.prototype._vToStr = function (v) {
+        if (!_obj.isStr(v)) {
             v = JSON.stringify(v)
         }
         return v
     }
 
-    // 存储数据
+    /**
+     * 存储数据
+     * @param key
+     * @param value
+     * @returns {boolean}
+     */
     Storage.prototype.set = function (key, value) {
-        window.localStorage.setItem(this.vToStr(key), this.vToStr(value));
+        window.localStorage.setItem(this._vToStr(key), this._vToStr(value));
         return true
     }
 
-    // 获取数据
+    /**
+     * 获取数据
+     * @param key
+     * @returns {string}
+     */
     Storage.prototype.get = function (key) {
-        return window.localStorage.getItem(this.vToStr(key));
+        return window.localStorage.getItem(this._vToStr(key));
     }
 
-    // 删除数据
+    /**
+     * 删除数据
+     * @param key
+     * @returns {boolean}
+     */
     Storage.prototype.remove = function (key) {
-        window.localStorage.removeItem(this.vToStr(key))
+        window.localStorage.removeItem(this._vToStr(key))
         return true
     }
 
-    obj.storage = new Storage()
+    // new storage
+    _obj.storage = new Storage()
 
 
     // ------------------------------ pie-chart ------------------------------
 
-    obj.PieChart = function (canvas) {
+    _obj.PieChart = function (canvas) {
         this.canvas = canvas
         this.cxt = canvas.getContext('2d')
         this.w = this.cxt.canvas.width
@@ -272,11 +360,11 @@ custom = function () {
         this.rectT = 6
     }
 
-    obj.PieChart.prototype.beginPath = function () {
+    _obj.PieChart.prototype.beginPath = function () {
         this.cxt.beginPath()
     }
 
-    obj.PieChart.prototype.getColor = function () {
+    _obj.PieChart.prototype.getColor = function () {
         function color() {
             let min = 0, max = 255
             return parseInt(Math.random() * (max - min + 1) + min)
@@ -285,14 +373,14 @@ custom = function () {
         return `rgb(${color()},${color()},${color()})`
     }
 
-    obj.PieChart.prototype.drawArc = function (sAngle, eAngle, color) {
+    _obj.PieChart.prototype.drawArc = function (sAngle, eAngle, color) {
         this.cxt.moveTo(this.x, this.y)
         this.cxt.arc(this.x, this.y, this.r, sAngle, eAngle)
         this.cxt.fillStyle = color
         this.cxt.fill()
     }
 
-    obj.PieChart.prototype.drawLabelDetails = function (sAngle, angle, color, labelDetails) {
+    _obj.PieChart.prototype.drawLabelDetails = function (sAngle, angle, color, labelDetails) {
         this.beginPath()
         this.endX = Math.cos(sAngle + angle / 2) * (this.r + this.line) + this.x
         this.endY = Math.sin(sAngle + angle / 2) * (this.r + this.line) + this.y
@@ -315,7 +403,7 @@ custom = function () {
         this.cxt.fillText(labelDetails, this.x > this.endX ? this.lineEndX : this.endX, this.endY)
     }
 
-    obj.PieChart.prototype.drawRect = function (label, n, rectColor) {
+    _obj.PieChart.prototype.drawRect = function (label, n, rectColor) {
         this.beginPath()
         let rectEndT = this.rectT * (n + 1) + this.rectH * (n)
         this.cxt.fillRect(this.rectL, rectEndT, this.rectW, this.rectH)
@@ -334,7 +422,7 @@ custom = function () {
      * @param getLabelDetails 获取标签详情
      * @param getNum 获取数量
      */
-    obj.PieChart.prototype.draw = function (data, getLabel, getLabelDetails, getNum) {
+    _obj.PieChart.prototype.draw = function (data, getLabel, getLabelDetails, getNum) {
         if (!(data) || !(data.length)) {
             return
         }
@@ -371,7 +459,7 @@ custom = function () {
         }
     }
 
-    return obj
+    return _obj
 }()
 ;
 
