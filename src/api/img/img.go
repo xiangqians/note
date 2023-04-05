@@ -30,10 +30,6 @@ func Del(context *gin.Context) {
 		common.Redirect(context, fmt.Sprintf("/img/list"), resp)
 	}
 
-	// Delete not supported
-	//redirect("Delete not supported")
-	//return
-
 	// id
 	id, err := common.Param[int64](context, "id")
 	if err != nil {

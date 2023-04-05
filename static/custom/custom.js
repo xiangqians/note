@@ -66,7 +66,7 @@ custom = function () {
     }
 
     // 添加url时间戳
-    obj.addTimestamp = function (url) {
+    obj.addUrlTimestamp = function (url) {
         let timestamp = new Date().getTime()
         timestamp += obj.random(-1000, 1000)
         custom.random(1, 1000)
@@ -104,7 +104,7 @@ custom = function () {
      * @param error     请求错误回调函数
      */
     obj.ajax = function (url, method, data, dataType, async, success, error) {
-        url = obj.addTimestamp(url)
+        url = obj.addUrlTimestamp(url)
 
         let param = {
             url: url,
@@ -204,9 +204,13 @@ custom = function () {
                 if (typeof (data) !== 'undefined') {
                     let formData = null
                     if (data) {
-                        formData = new FormData()
-                        for (let name in data) {
-                            formData.append(name, data[name])
+                        if (Object.prototype.toString.call(data) === '[object FormData]') {
+                            formData = data
+                        } else {
+                            formData = new FormData()
+                            for (let name in data) {
+                                formData.append(name, data[name])
+                            }
                         }
                     }
                     custom.ajaxDefault(href, method, formData, 'form', false)

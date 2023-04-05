@@ -67,5 +67,6 @@ func route(engine *gin.Engine) {
 	// recycle
 	recycleGroup := engine.Group("/recycle")
 	recycleGroup.Any("/img/list", api_recycle.ImgList) // page
+	recycleGroup.PUT("/img/:id/restore", api_recycle.ImgRestore)
 
 }

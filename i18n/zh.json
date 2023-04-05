@@ -33,6 +33,8 @@
   "i18n.add": "新增",
   "i18n.upd": "更新",
   "i18n.del": "删除",
+  "i18n.permlyDel": "永久删除",
+  "i18n.restore": "恢复",
   "i18n.noData": "无数据",
   "i18n.page.current": "当前页",
   "i18n.page.size": "页数量",

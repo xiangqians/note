@@ -20,8 +20,81 @@
 
     {{ $data := .resp.Data }}
 
+    <div>
+        <input type="radio" name="type" {{ if eq .url "/recycle/note/list" }}checked{{ end }}><span>{{ Localize "i18n.note" }}</span>
+        <input type="radio" name="type" {{ if eq .url "/recycle/img/list" }}checked{{ end }}><span>{{ Localize "i18n.img" }}</span>
+    </div>
+    <br>
 
     <table border="1" cellspacing="0" cellpadding="10" align="center">
+        <thead>
+        <tr>
+            <td>{{ Localize "i18n.no." }}</td>
+            <td>{{ Localize "i18n.name" }}</td>
+            <td>{{ Localize "i18n.type" }}</td>
+            <td>{{ Localize "i18n.size" }}</td>
+            <td>{{ Localize "i18n.addTime" }}</td>
+            <td>{{ Localize "i18n.updTime" }}</td>
+            <td colspan="2">{{ Localize "i18n.op" }}</td>
+        </tr>
+        </thead>
+        <tbody>
+        {{ $len := len $data.Data }}
+        {{ if gt $len 0 }}
+        {{ range $index,$e := $data.Data }}
+        <tr>
+            <td>{{ No_ $data $index }}</td>
+            <td>{{ $e.Name }}</td>
+            <td>{{ $e.Type }}</td>
+            <td>{{ HumanizFileSize $e.Size }}</td>
+            <td>{{ HumanizUnix $e.AddTime }}</td>
+            <td>{{ HumanizUnix $e.UpdTime }}</td>
+            <td>
+                <a href='{{ if eq $.url "/recycle/img/list" }}/recycle/img{{ else }}/t{{ end }}/{{ $e.Id }}/restore'
+                   method="PUT"
+                   confirm='{{ Localize "i18n.restore" }} {{ $e.Name }} ?'>
+                    <button>{{ Localize "i18n.restore" }}</button>
+                </a>
+            </td>
+            <td>
+                <a href='{{ if eq $.url "/recycle/img/list" }}/recycle/img{{ else }}/t{{ end }}/{{ $e.Id }}/permlyDel'
+                   method="DELETE"
+                   confirm='{{ Localize "i18n.permlyDel" }} {{ $e.Name }} ?'>
+                    <button>{{ Localize "i18n.permlyDel" }}</button>
+                </a>
+            </td>
+        </tr>
+        {{ end }}
+        {{ else }}
+        <tr>
+            <td colspan="8">{{ Localize "i18n.noData" }}</td>
+        </tr>
+        {{ end }}
+        </tbody>
+        <tfoot>
+        <tr>
+            <td colspan="8">
+                <span style="margin-right: 10px">{{ Localize "i18n.page.current" }}: {{ $data.Current }}</span>
+                <span style="margin-right: 10px">{{ Localize "i18n.page.size" }}: {{ $data.Size }}</span>
+                <span style="margin-right: 10px">{{ Localize "i18n.pages" }}: {{ $data.Pages }}</span>
+                <span style="margin-right: 20px">{{ Localize "i18n.total" }}: {{ $data.Total }}</span>
+                <span style="margin-right: 10px">
+                    {{ if le $data.Current 1 }}
+                    {{ Localize "i18n.prevPage" }}
+                    {{ else }}
+                    <a href="{{ .url }}?current={{ Add $data.Current -1 }}&t={{ Timestamp }}">{{ Localize "i18n.prevPage" }}</a>
+                    {{  end }}
+                </span>
+                <span>
+                    {{ if ge $data.Current $data.Pages }}
+                    {{ Localize "i18n.nextPage" }}
+                    {{ else }}
+                    <a href="{{ .url }}?current={{ Add $data.Current 1 }}&t={{ Timestamp }}">{{ Localize "i18n.nextPage" }}</a>
+                    {{  end }}
+                </span>
+            </td>
+        </tr>
+        </tfoot>
     </table>
 
 </content>
@@ -32,3 +105,22 @@
 </html>
 <script type="text/javascript" src="/static/jquery-v3.6.2/min.js"></script>
 <script type="text/javascript" src="/static/custom/custom.js"></script>
+<script>
+
+    ;(function () {
+
+        let aArr = $('a[method]')
+        for (let i = 0; i < aArr.length; i++) {
+            let $a = $(aArr[i])
+            custom.ajaxE($a, function () {
+                if (confirm($a.attr('confirm'))) {
+                    return null
+                }
+
+                return undefined
+            })
+        }
+
+    })()
+
+</script>
