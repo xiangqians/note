@@ -78,7 +78,7 @@ func Upd(context *gin.Context) {
 	// update
 	updTime := util_time.NowUnix()
 	_, err = common.DbUpd(nil, "UPDATE `user` SET `name` = ?, nickname = ?, `passwd` = ?, rem = ?, upd_time = ? WHERE id = ?",
-		user.Name, user.Nickname, PasswdEncrypt(user.Passwd), user.Rem, updTime, sessionUser.Id)
+		user.Name, user.Nickname, EncryptPasswd(user.Passwd), user.Rem, updTime, sessionUser.Id)
 	if err != nil {
 		redirect(user, err)
 		return
@@ -147,7 +147,7 @@ func Login0(context *gin.Context) {
 	// query
 	user, count, err := common.DbQry[typ_api.User](nil,
 		"SELECT `id`, `name`, `nickname`, `rem`, `add_time`, `upd_time` FROM `user` WHERE `del` = 0 AND `name` = ? AND `passwd` = ? LIMIT 1",
-		name, PasswdEncrypt(passwd))
+		name, EncryptPasswd(passwd))
 	if err != nil {
 		redirect(err)
 		return
@@ -237,7 +237,7 @@ func Add(context *gin.Context) {
 
 	// add
 	id, err := _db.Add("INSERT INTO `user` (`name`, `nickname`, `passwd`, `rem`, `add_time`) VALUES (?, ?, ?, ?, ?)",
-		user.Name, strings.TrimSpace(user.Nickname), PasswdEncrypt(user.Passwd), strings.TrimSpace(user.Rem), util_time.NowUnix())
+		user.Name, strings.TrimSpace(user.Nickname), EncryptPasswd(user.Passwd), strings.TrimSpace(user.Rem), util_time.NowUnix())
 	if err != nil {
 		_db.Rollback()
 		redirect(user, err)
@@ -306,9 +306,10 @@ func VerifyDbName(name string) error {
 	return nil
 }
 
-func PasswdEncrypt(passwd string) string {
+// EncryptPasswd 加密密码
+func EncryptPasswd(passwd string) string {
 	d := md5.New()
-	salt := "test"
+	salt := "123456"
 	str := ""
 	for i := 0; i < len(passwd); i++ {
 		str += fmt.Sprintf("%c", passwd[i])

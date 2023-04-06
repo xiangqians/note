@@ -38,19 +38,17 @@ func route(engine *gin.Engine) {
 
 	// note
 	noteGroup := engine.Group("/note")
-	{
-		noteGroup.Any("/list", api_note.List) // page
-		noteGroup.POST("", api_note.Add)
-		noteGroup.POST("/upload", api_note.Upload)
-		noteGroup.PUT("/upload", api_note.Upload)
-		noteGroup.GET("/:id", api_note.Get)
-		noteGroup.Any("/:id/view", api_note.View) // page
-		noteGroup.Any("/:id/edit", api_note.Edit) // page
-		noteGroup.PUT("/name", api_note.UpdName)
-		noteGroup.PUT("/content", api_note.UpdContent)
-		noteGroup.PUT("/cut/:srcId/to/:dstId", api_note.Cut)
-		noteGroup.DELETE("/:id", api_note.Del)
-	}
+	noteGroup.Any("/list", api_note.List) // page
+	noteGroup.POST("", api_note.Add)
+	noteGroup.POST("/upload", api_note.Upload)
+	noteGroup.PUT("/upload", api_note.Upload)
+	noteGroup.GET("/:id", api_note.Get)
+	noteGroup.Any("/:id/view", api_note.View) // page
+	noteGroup.Any("/:id/edit", api_note.Edit) // page
+	noteGroup.PUT("/name", api_note.UpdName)
+	noteGroup.PUT("/content", api_note.UpdContent)
+	noteGroup.PUT("/cut/:srcId/to/:dstId", api_note.Cut)
+	noteGroup.DELETE("/:id", api_note.Del)
 
 	// img
 	imgGroup := engine.Group("/img")

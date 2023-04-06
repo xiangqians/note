@@ -20,16 +20,17 @@
     {{ $data := .resp.Data }}
 
     <p>
-        <!--
-        <span>{{ $data.pnote.Path }}</span>
-        -->
         <span>
         <script>
             document.write('{{ $data.pnote.Path }}')
         </script>
         </span>
         &nbsp;&nbsp;
-        <span><input name="searchName" type="text" size="15"><a name="search" ajaxE method="GET"><button>{{ Localize "i18n.search" }}</button></a></span>
+        <span>
+            <input name="searchName" type="text" size="15">
+            <a name="search" method="GET"><button>{{ Localize "i18n.search" }}</button></a>
+            <a href="/note/list?t={{ Timestamp }}"><button>{{ Localize "i18n.reset" }}</button></a>
+        </span>
     </p>
     <table cellspacing="0" cellpadding="10" align="center">
         <thead>
@@ -124,53 +125,68 @@
 <script type="text/javascript">
 
     ;(function () {
-        // add
-        let $add = $('a[href="/note"]')
-        // console.log($add)
-        if ($add.length > 0) {
-            $add[0]['pre'] = function ($e) {
-                // flag判断是否已点击 'Add →'
-                let flag = $e.attr('flag')
-                if (flag != 1) {
-                    let $input = $('<input name="name" placeholder="name">')
-                    $input.append('<option value=""></option>')
-                    $e.before($input)
-                    $e.html('<span style="margin-left: 10px">{{ Localize "i18n.add" }}</span>')
-                    $e.attr('flag', 1)
-                    return null
-                }
 
-                // 获取上一个 input 兄弟节点
-                let $input = $e.prev('input')
-                // console.log($input)
-                let value = $input.val().trim();
-                $input.val(value)
-                // console.log(value)
-                let legal = true
-                let name = null
-                let type = null
-                if (value.endsWith("/")) {
-                    name = value.substring(0, value.length - 1)
-                    type = 'd'
-                } else if (value.endsWith(".md")) {
-                    name = value.substring(0, value.length - 3)
-                    type = 'md'
-                } else {
-                    legal = false
-                }
-                if (value === "" || !legal) {
-                    // 添加 css border
-                    $input.css('border', '2px solid red')
-                    return null
-                }
-
-                // 删除 css border
-                $input.css('border', '')
-
-                // 请求数据
-                return {"pid": "{{ $data.pnote.Id }}", "name": name, "type": type}
+        // search
+        let $search = $($('a[name="search"]')[0])
+        $search.click(function () {
+            let $searchName = $($('input[name="searchName"]')[0])
+            let searchName = $searchName.val().trim()
+            $searchName.val(searchName)
+            if (searchName !== '') {
+                let url = '/note/list?pid=-1&name=' + searchName
+                custom.ajaxReload(url, "GET", null)
             }
-        }
+            return false
+        })
+
+        // add
+        let $add = $($('a[href="/note"]')[0])
+        custom.ajaxE($add, function ($add) {
+            // flag判断是否已点击 'Add →'
+            let flag = $add.attr('flag')
+            if (flag != 1) {
+                let $input = $('<input name="name" placeholder="name">')
+                $input.append('<option value=""></option>')
+                $add.before($input)
+                $add.html('<span style="margin-left: 10px">{{ Localize "i18n.add" }}</span>')
+                $add.attr('flag', 1)
+                return undefined
+            }
+
+            // 获取上一个 input 兄弟节点
+            let $input = $add.prev('input')
+            // console.log($input)
+            let value = $input.val().trim();
+            $input.val(value)
+            // console.log(value)
+            let legal = true
+            let name = null
+            let type = null
+            if (value.endsWith("/")) {
+                name = value.substring(0, value.length - 1)
+                type = 'd'
+            } else if (value.endsWith(".md")) {
+                name = value.substring(0, value.length - 3)
+                type = 'md'
+            } else {
+                legal = false
+            }
+            if (value === "" || !legal) {
+                // 添加 css border
+                $input.css('border', '2px solid red')
+                return undefined
+            }
+
+            // 删除 css border
+            $input.css('border', '')
+
+            // 请求数据
+            let data = new FormData()
+            data.append('pid', "{{ $data.pnote.Id }}")
+            data.append('name', name)
+            data.append('type', type)
+            return data
+        })
 
         // rename
         // let $renames = $('a[href^="/note"][href$="/rename"]')
@@ -184,20 +200,6 @@
                 }
                 return null
             }
-        }
-
-        // search
-        let $search = $('a[name="search"]')
-        $search[0]['pre'] = function ($e) {
-            let $searchName = $($('input[name="searchName"]')[0])
-            let searchName = $searchName.val().trim()
-            $searchName.val(searchName)
-            if (searchName === '') {
-                return
-            }
-
-            $e.attr('href', '/note/list?pid=-1&name=' + searchName)
-            return {}
         }
 
     })()
