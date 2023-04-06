@@ -70,7 +70,6 @@
     </form>
 </div>
 
-
 <div>
     <img src="{{ $data.Url }}" alt="{{ $data.Name }}">
 </div>
@@ -120,7 +119,8 @@
                 }
             }
         }
-        $select.change(function (e) {
+
+        $select.change(function () {
             let value = $select.find("option:selected").attr("value");
             // console.log(value)
             let url = null
@@ -129,7 +129,7 @@
             } else {
                 url = '/img/{{ $data.Id }}/hist/' + value + '/view'
             }
-            custom.ajaxDefault(url, 'GET', new FormData(), false)
+            custom.ajaxReload(url, 'GET', null)
         });
 
     })()

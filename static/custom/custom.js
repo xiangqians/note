@@ -473,15 +473,24 @@ custom = function () {
         // console.log($div)
         let display = custom.storage.get('displayFloat')
         if (!display) {
-            display = 'none'
+            display = 'none' // 隐藏
         }
-        let $btn = null
-        if (display === 'none') { // 隐藏
-            $btn = $('<button value="+">+</button>')
-        } else {
-            $btn = $('<button value="-">-</button>')
+        let $btn = $('<button></button>')
+
+        function setBtn(value) {
+            $btn.attr('value', value)
+            $btn.text(value)
+            if (value === '+') {
+                $btn.css('margin-top', '0px')
+            } else {
+                $btn.css('margin-top', '10px')
+            }
         }
-        let $wrapperDiv = $('<div></div>')
+
+        let value = display === 'none' ? '+' : '-'
+        setBtn(value)
+
+        let $wrapperDiv = $('<div style="padding: 20px"></div>')
         $wrapperDiv.css('display', display)
         $wrapperDiv.html($div.html())
         $div.html('')
@@ -489,16 +498,14 @@ custom = function () {
             let value = $btn.attr('value')
             // 设置为 +
             if (value === '-') {
-                $btn.attr('value', '+')
-                $btn.text('+')
+                setBtn('+')
                 // 隐藏div
                 $wrapperDiv.css('display', 'none')
                 custom.storage.set('displayFloat', 'none')
             }
             // 设置为 -
             else {
-                $btn.attr('value', '-')
-                $btn.text('-')
+                setBtn('-')
                 // 显示div
                 $wrapperDiv.css('display', 'block')
                 custom.storage.set('displayFloat', 'block')
