@@ -101,7 +101,7 @@
     </div>
     <hr width="30%">
     <div>
-        <form action="/note/upload" method="POST" enctype="multipart/form-data">
+        <form action="/note/upload?t={{ Timestamp }}" method="POST" enctype="multipart/form-data">
             <input name="pid" type="text" value="{{ $data.pnote.Id }}" hidden/>
             <input name="file" type="file"/>
             <button type="submit">{{ Localize "i18n.upload" }}</button>

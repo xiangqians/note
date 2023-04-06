@@ -479,7 +479,8 @@ func Upload(context *gin.Context) {
 
 	// 清空文件
 	if util_os.IsExist(path) {
-		file, err := os.OpenFile(path,
+		var file *os.File
+		file, err = os.OpenFile(path,
 			os.O_WRONLY|os.O_TRUNC, // 只写（O_WRONLY） & 清空文件（O_TRUNC）
 			0666)
 		if err != nil {
@@ -503,7 +504,6 @@ func Upload(context *gin.Context) {
 
 	// redirect
 	redirect(id, err)
-
 	return
 }
 

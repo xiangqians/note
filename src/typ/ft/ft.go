@@ -43,6 +43,7 @@ func ExtNameOf(extName string) Ft {
 // ContentTypeOf 根据contentType获取文件类型
 func ContentTypeOf(contentType string) Ft {
 	switch contentType {
+	// img
 	case "image/x-icon":
 		return FtIco
 	case "image/gif":
@@ -55,6 +56,13 @@ func ContentTypeOf(contentType string) Ft {
 		return FtPng
 	case "image/webp":
 		return FtWebp
+	// file
+	case "text/html":
+		return FtHtml
+	case "application/pdf":
+		return FtPdf
+	case "application/x-zip-compressed":
+		return FtZip
 	default:
 		return FtUnk
 	}
