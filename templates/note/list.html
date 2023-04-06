@@ -46,7 +46,7 @@
         <tbody>
         {{ if gt $data.pnote.Id 0 }}
         <tr>
-            <td><a href="/note/list?pid={{ $data.pnote.Pid }}">../</a></td>
+            <td><a href="/note/list?pid={{ $data.pnote.Pid }}&t={{ Timestamp }}">../</a></td>
             <td colspan="7"></td>
         </tr>
         {{ end }}
@@ -57,9 +57,9 @@
         <tr>
             <td>
                 {{ if eq $note.Type "d" }}
-                <a href="/note/list?pid={{ $note.Id }}">{{ $note.Name }}/</a>
+                <a href="/note/list?pid={{ $note.Id }}&t={{ Timestamp }}">{{ $note.Name }}/</a>
                 {{ else }}
-                <a href="/note/{{ $note.Id }}/view" target="_blank">{{ $note.Name }}</a>
+                <a href="/note/{{ $note.Id }}/view?t={{ Timestamp }}" target="_blank">{{ $note.Name }}</a>
                 {{ end }}
             </td>
             <td>{{ $note.Type }}</td>
@@ -67,9 +67,11 @@
             <td>{{ HumanizUnix $note.AddTime }}</td>
             <td>{{ HumanizUnix $note.UpdTime }}</td>
             <td>
-                <a ajaxE href="/note/name" method="PUT"
-                   fId="{{ $note.Id }}" fPid="{{ $data.pnote.Id }}"
-                   fName="{{ $note.Name }}">
+                <a href="/note/name"
+                   method="PUT"
+                   noteId="{{ $note.Id }}"
+                   notePid="{{ $data.pnote.Id }}"
+                   noteName="{{ $note.Name }}">
                     <button>{{ Localize "i18n.rename" }}</button>
                 </a>
             </td>
@@ -81,7 +83,7 @@
                 </button>
             </td>
             <td>
-                <a ajaxE href="/note/{{ $note.Id }}"
+                <a href="/note/{{ $note.Id }}"
                    method="DELETE"
                    confirm='{{ Localize "i18n.del" }} {{ $note.Name }}{{ if eq $note.Type "dir" }}/{{ end }} ?'>
                     <button>{{ Localize "i18n.del" }}</button>
@@ -97,7 +99,7 @@
     <br>
 
     <div>
-        <a ajaxE href="/note" method="POST">{{ Localize "i18n.add" }} →</a>
+        <a href="/note" method="POST">{{ Localize "i18n.add" }} →</a>
     </div>
     <hr width="30%">
     <div>
@@ -190,18 +192,35 @@
 
         // rename
         // let $renames = $('a[href^="/note"][href$="/rename"]')
-        let $renames = $('a[href="/note/name"]')
-        for (let i = 0, len = $renames.length; i < len; i++) {
-            $renames[i]['pre'] = function ($e) {
-                let name = prompt('{{ Localize "i18n.name" }}', $e.attr('fName'))
-                if (name && (name = name.trim()) !== "") {
-                    // console.log(name)
-                    return {"id": $e.attr('fId'), "pid": $e.attr('fPid'), "name": name}
+        let renames = $('a[href="/note/name"]')
+        for (let i = 0, len = renames.length; i < len; i++) {
+            let $rename = $(renames[i])
+            custom.ajaxE($rename, function ($rename) {
+                let name = prompt('{{ Localize "i18n.name" }}', $rename.attr('noteName'))
+                if (!name || (name = name.trim()) === '') {
+                    return undefined
                 }
-                return null
-            }
+
+                let data = new FormData();
+                data.append('id', $rename.attr('noteId'))
+                data.append('pid', $rename.attr('notePid'))
+                data.append('name', name)
+                return data
+            })
         }
 
+        // del
+        let dels = $('a[method="DELETE"]')
+        for (let i = 0; i < dels.length; i++) {
+            let $del = $(dels[i])
+            custom.ajaxE($del, function ($del) {
+                if (confirm($del.attr('confirm'))) {
+                    return null
+                }
+
+                return undefined
+            })
+        }
     })()
 
     // cut

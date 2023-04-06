@@ -26,47 +26,47 @@ import (
 	"time"
 )
 
-// UpdName 文件重命名
-func UpdName(context *gin.Context) {
+// Del 删除文件
+func Del(context *gin.Context) {
 	redirect := func(pid int64, err any) {
-		resp := typ_resp.Resp[any]{
-			Msg: util_str.TypeToStr(err),
-		}
+		resp := typ_resp.Resp[any]{Msg: util_str.TypeToStr(err)}
 		common.Redirect(context, fmt.Sprintf("/note/list?pid=%d", pid), resp)
 	}
 
-	// file
-	f := typ_api.Note{}
-	err := common.ShouldBind(context, &f)
-	pid := f.Pid
+	// id
+	id, err := common.Param[int64](context, "id")
+	if err != nil {
+		redirect(0, err)
+		return
+	}
+
+	// note
+	note, _, err := DbQry(context, id)
+	pid := note.Pid
 	if err != nil {
 		redirect(pid, err)
 		return
 	}
 
-	// name
-	f.Name = strings.TrimSpace(f.Name)
-	err = util_os.VerifyFileName(f.Name)
-	if err != nil {
-		redirect(pid, err)
-		return
-	}
+	// 如果是目录则校验目录下是否有子文件
+	if typ_ft.ExtNameOf(note.Type) == typ_ft.FtD {
+		var count int64
+		count, err = DbCount(context, id)
+		if err != nil {
+			redirect(pid, err)
+			return
+		}
 
-	//fType, count, err := common.DbQry[string](context, "SELECT `type` FROM `note` WHERE `del` = 0 AND `id` = ?", f.Id)
-	//if count > 0 {
-	//	name := f.Name
-	//	ft := typ.FtOf(fType)
-	//	if ft != typ.FtD && ft != typ.FtUnk && !strings.HasSuffix(name, string(ft)) {
-	//		name = fmt.Sprintf("%s.%s", name, string(ft))
-	//	}
-	//
-	//	// update
-	//	_, err = common.DbUpd(context, "UPDATE `note` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", name, time.Now().Unix(), f.Id, name)
-	//}
+		if count != 0 {
+			redirect(pid, errors.New(i18n.MustGetMessage("i18n.cannotDelNonEmptyDir")))
+			return
+		}
+	}
 
 	// update
-	_, err = common.DbUpd(context, "UPDATE `note` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", f.Name, time.Now().Unix(), f.Id, f.Name)
+	_, err = common.DbDel(context, "UPDATE `note` SET `del` = 1, `upd_time` = ? WHERE `id` = ?", util_time.NowUnix(), id)
 
+	// redirect
 	redirect(pid, err)
 	return
 }
@@ -111,38 +111,6 @@ func Cut(context *gin.Context) {
 		dstId)
 
 	redirect(dstId, err)
-	return
-}
-
-// Del 删除文件
-func Del(context *gin.Context) {
-	redirect := func(id int64, err any) {
-		resp := typ_resp.Resp[any]{Msg: util_str.TypeToStr(err)}
-		common.Redirect(context, fmt.Sprintf("/note/list?pid=%d", id), resp)
-	}
-
-	// id
-	id, err := common.Param[int64](context, "id")
-	if err != nil {
-		redirect(0, err)
-		return
-	}
-
-	// pid
-	pid, _, err := common.DbQry[int64](context, "SELECT `pid` FROM `note` WHERE `del` = 0 AND `id` = ?", id)
-	if err != nil {
-		redirect(pid, err)
-		return
-	}
-
-	// Delete not supported
-	redirect(pid, "Delete not supported")
-	return
-
-	// update
-	_, err = common.DbDel(context, "UPDATE `note` SET `del` = 1, `upd_time` = ? WHERE `id` = ?", time.Now().Unix(), id)
-
-	redirect(pid, err)
 	return
 }
 
@@ -464,6 +432,39 @@ func Get(context *gin.Context) {
 
 	context.File(path)
 
+	return
+}
+
+// UpdName 文件重命名
+func UpdName(context *gin.Context) {
+	redirect := func(pid int64, err any) {
+		resp := typ_resp.Resp[any]{
+			Msg: util_str.TypeToStr(err),
+		}
+		common.Redirect(context, fmt.Sprintf("/note/list?pid=%d", pid), resp)
+	}
+
+	// note
+	note := typ_api.Note{}
+	err := common.ShouldBind(context, &note)
+	pid := note.Pid
+	if err != nil {
+		redirect(pid, err)
+		return
+	}
+
+	// name
+	note.Name = strings.TrimSpace(note.Name)
+	//err = util_os.VerifyFileName(note.Name)
+	//if err != nil {
+	//	redirect(pid, err)
+	//	return
+	//}
+
+	// update
+	_, err = common.DbUpd(context, "UPDATE `note` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", note.Name, util_time.NowUnix(), note.Id, note.Name)
+
+	redirect(pid, err)
 	return
 }
 
@@ -864,6 +865,11 @@ func Path(context *gin.Context, note typ_api.Note) (string, error) {
 
 	// path
 	return fmt.Sprintf("%s%s%s", noteDir, util_os.FileSeparator, name), nil
+}
+
+func DbCount(context *gin.Context, pid int64) (int64, error) {
+	count, _, err := common.DbQry[int64](context, "SELECT COUNT(1) FROM `note` WHERE `pid` = ?", pid)
+	return count, err
 }
 
 func DbQry(context *gin.Context, id int64) (typ_api.Note, int64, error) {

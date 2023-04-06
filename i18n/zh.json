@@ -70,5 +70,6 @@
   "i18n.search": "搜索",
   "i18n.count": "计数",
   "i18n.hist": "历史",
-  "i18n.reset": "重置"
+  "i18n.reset": "重置",
+  "i18n.cannotDelNonEmptyDir": "不能删除非空目录"
 }

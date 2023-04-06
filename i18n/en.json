@@ -70,5 +70,6 @@
   "i18n.search": "Search",
   "i18n.count": "Count",
   "i18n.hist": "History",
-  "i18n.reset": "Reset"
+  "i18n.reset": "Reset",
+  "i18n.cannotDelNonEmptyDir": "Cannot delete non empty directory"
 }

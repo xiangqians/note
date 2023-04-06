@@ -60,11 +60,11 @@ func UpdName(context *gin.Context) {
 
 	// name
 	img.Name = strings.TrimSpace(img.Name)
-	err = util_os.VerifyFileName(img.Name)
-	if err != nil {
-		redirect(err)
-		return
-	}
+	//err = util_os.VerifyFileName(img.Name)
+	//if err != nil {
+	//	redirect(err)
+	//	return
+	//}
 
 	// update
 	_, err = common.DbUpd(context, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", img.Name, util_time.NowUnix(), img.Id, img.Name)
