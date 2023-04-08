@@ -28,11 +28,12 @@
         &nbsp;&nbsp;
         <span>
             {{ Localize "i18n.name" }}: <input
-                name="searchName"
+                search
+                name="name"
                 type="text"
                 size="15"
                 placeholder='{{ Localize "i18n.name" }}'>&nbsp;&nbsp;
-            {{ Localize "i18n.type" }}: <select name="type">
+            {{ Localize "i18n.type" }}: <select search name="type">
                 <option value=""></option>
                 {{ $len := len $data.types }}
                 {{ if gt $len 0 }}
@@ -41,9 +42,9 @@
                 {{ end }}
                 {{ end }}
             </select>&nbsp;&nbsp;
-            All: <input type="checkbox"/>&nbsp;
-            <a name="search" method="GET"><button>{{ Localize "i18n.search" }}</button></a>
-            <a href="/note/list?t={{ Timestamp }}"><button>{{ Localize "i18n.reset" }}</button></a>
+            All: <input search name="all" type="checkbox"/>&nbsp;
+            <a search name="search" method="GET"><button>{{ Localize "i18n.search" }}</button></a>
+            <a search name="reset" method="GET"><button>{{ Localize "i18n.reset" }}</button></a>
         </span>
     </p>
     <table cellspacing="0" cellpadding="10" align="center">
@@ -152,21 +153,21 @@
 <script type="text/javascript" src="/static/custom/custom.js"></script>
 <script type="text/javascript">
 
+    // search
     ;(function () {
-        // searchName
-        let $searchName = $($('input[name="searchName"]')[0])
-        // type
-        let $type = $($('select[name="type"]')[0])
 
         // params
-        let params = custom.getUrlQueryParams(decodeURIComponent('{{ .uri }}'))
-        // console.log(params)
+        let params = custom.urlQueryParams(decodeURIComponent('{{ .uri }}'))
+
         // name
-        let searchName = params.name
-        if (searchName) {
-            $searchName.val(searchName)
+        let $name = $($('input[search][name="name"]')[0])
+        let name = params.name
+        if (name) {
+            $name.val(name)
         }
+
         // type
+        let $type = $($('select[search][name="type"]')[0])
         let type = params.type
         if (type) {
             let options = $type.find('option')
@@ -179,17 +180,52 @@
             }
         }
 
-        // search
-        let $search = $($('a[name="search"]')[0])
-        custom.ajaxE($search, function () {
-            let pid = -1
-            let searchName = $searchName.val().trim()
-            $searchName.val(searchName)
-            let type = $type.find("option:selected").text();
-            return {
-                url: '/note/list?pid=-1&name=' + searchName + '&type=' + type
+        // all
+        let $all = $($('input[search][name="all"]')[0])
+        let pid = params.pid
+        if (pid === '-1') {
+            $all.attr('checked', true)
+        }
+
+        function callback($e) {
+            let reset = $e.attr('name') === 'reset'
+
+            // url
+            let url = '/note/list'
+
+            // pid
+            let pid = '{{ $data.pnote.Id }}'
+            if (!reset && $all.prop('checked')) {
+                pid = -1
             }
-        })
+            url += '?pid=' + pid
+
+            // name
+            let name = reset ? '' : $name.val().trim()
+            $name.val(name)
+            if (name !== '') {
+                url += '&name=' + name
+            }
+
+            // type
+            let type = reset ? '' : $type.find("option:selected").text();
+            if (type !== '') {
+                url += '&type=' + type
+            }
+
+            return {url: url}
+        }
+
+        // search
+        let $search = $($('a[search][name="search"]')[0])
+        custom.ajaxE($search, callback)
+
+        // reset
+        let $reset = $($('a[search][name="reset"]')[0])
+        custom.ajaxE($reset, callback)
+    })()
+
+    ;(function () {
 
         // add
         let $add = $($('a[name="add"]')[0])

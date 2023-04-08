@@ -143,7 +143,7 @@ custom = function () {
      * 获取url查询参数
      * @returns {Object}
      */
-    _obj.getUrlQueryParams = function (url) {
+    _obj.urlQueryParams = function (url) {
         let params = {}
 
         // 获取url中"?"符后的字串
@@ -157,7 +157,7 @@ custom = function () {
             return params
         }
 
-        let arr = url.substring(1).split("&")
+        let arr = url.substring(index + 1).split("&")
         for (let i = 0; i < arr.length; i++) {
             let e = arr[i]
             let eArr = e.split("=")
