@@ -36,6 +36,9 @@
         <thead>
         <tr>
             <td>{{ Localize "i18n.name" }}</td>
+            {{ if eq $data.pnote.Path "" }}
+            <td>{{ Localize "i18n.path" }}</td>
+            {{ end }}
             <td>{{ Localize "i18n.type" }}</td>
             <td>{{ Localize "i18n.size" }}</td>
             <td>{{ Localize "i18n.addTime" }}</td>
@@ -62,6 +65,13 @@
                 <a href="/note/{{ $note.Id }}/view?t={{ Timestamp }}" target="_blank">{{ $note.Name }}</a>
                 {{ end }}
             </td>
+            {{ if eq $data.pnote.Path "" }}
+            <td>
+                <script>
+                    document.write('{{ $note.PathLink }}')
+                </script>
+            </td>
+            {{ end }}
             <td>{{ $note.Type }}</td>
             <td>{{ HumanizFileSize $note.Size }}</td>
             <td>{{ HumanizUnix $note.AddTime }}</td>

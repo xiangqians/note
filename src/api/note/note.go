@@ -493,6 +493,11 @@ func Upload(context *gin.Context) {
 
 	// file name
 	fn := fh.Filename
+	err = util_os.VerifyFileName(fn)
+	if err != nil {
+		redirect(id, pid, err)
+		return
+	}
 
 	// file type
 	// 校验文件类型，只支持上传 html/pdf/zip
@@ -607,11 +612,11 @@ func Add(context *gin.Context) {
 
 	// name
 	note.Name = strings.TrimSpace(note.Name)
-	//err = util_os.VerifyFileName(note.Name)
-	//if err != nil {
-	//	redirect(err)
-	//	return
-	//}
+	err = util_os.VerifyFileName(note.Name)
+	if err != nil {
+		redirect(err)
+		return
+	}
 
 	// 校验文件类型
 	// 只支持添加 目录 和 md文件
@@ -736,28 +741,46 @@ func List(context *gin.Context) {
 		pnote.PathLink = strings.Join(pathLinkArr, "/")
 	}
 
+	handlePath := func(note *typ_api.Note) {
+		pathArr := strings.Split((*note).Path, "/")
+		l := len(pathArr)
+		pathLinkArr := make([]string, 0, l) // len 0, cap ?
+		for i := 0; i < l; i++ {
+			v := pathArr[i]
+			if v == "" {
+				pathLinkArr = append(pathLinkArr, "")
+				continue
+			}
+
+			vArr := strings.Split(v, ":")
+			pathArr[i] = vArr[1]
+
+			pathLink := fmt.Sprintf("<a href=\"/note/list?pid=%s\">%s</a>\n", vArr[0], vArr[1])
+			pathLinkArr = append(pathLinkArr, pathLink)
+		}
+		(*note).Path = strings.Join(pathArr, "/")
+		(*note).PathLink = strings.Join(pathLinkArr, "/")
+	}
+
 	// 查询
-	args := make([]any, 0, 2)
-	var notes []typ_api.Note = nil
-	var count int64
-	sql := "SELECT `id`, `pid`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = 0 "
-	// id
-	if pid >= 0 {
-		sql += "AND `pid` = ? "
-		args = append(args, pid)
-	}
-	// name
+	path := false
 	if name != "" {
-		sql += "AND `name` LIKE '%' || ? || '%' "
-		args = append(args, name)
+		path = true
 	}
-	sql += "ORDER BY `type`, `name`, (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC "
+	sql, args := DbQrySql(0, pid, name, typ_ft.FtUnk, 0, path)
 	sql += "LIMIT 10000"
-	notes, count, err = common.DbQry[[]typ_api.Note](context, sql, args...)
+	notes, count, err := common.DbQry[[]typ_api.Note](context, sql, args...)
 	if err != nil || count == 0 {
 		notes = nil
 	}
 
+	if notes != nil && len(notes) > 0 {
+		for i, l := 0, len(notes); i < l; i++ {
+			handlePath(&notes[i])
+		}
+	}
+
+	// html
 	html(pnote, notes, err)
 	return
 }
@@ -846,6 +869,71 @@ func Path(context *gin.Context, note typ_api.Note) (string, error) {
 func DbPage(context *gin.Context, del int) (typ_page.Page[typ_api.Note], error) {
 	req, _ := common.PageReq(context)
 	return common.DbPage[typ_api.Note](context, req, "SELECT `id`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = ? ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC", del)
+}
+
+func DbQrySql(id int64, pid int64, name string, ft typ_ft.Ft, del int, path bool) (string, []any) {
+	args := make([]any, 0, 1)
+	sql := "SELECT n.`id`, n.`pid`, n.`name`, n.`type`, n.`size`, n.`add_time`, n.`upd_time` "
+	if path {
+		sql += ", CASE WHEN n.`pid` = 0 THEN  '/' ELSE " +
+			"( (CASE WHEN pn10.`id` IS NULL THEN '' ELSE '/' || pn10.`id` || ':' ||pn10.`name` END) " +
+			"|| (CASE WHEN pn9.`id` IS NULL THEN '' ELSE '/' || pn9.`id` || ':' || pn9.`name` END) " +
+			"|| (CASE WHEN pn8.`id` IS NULL THEN '' ELSE '/' || pn8.`id` || ':' || pn8.`name` END) " +
+			"|| (CASE WHEN pn7.`id` IS NULL THEN '' ELSE '/' || pn7.`id` || ':' || pn7.`name` END) " +
+			"|| (CASE WHEN pn6.`id` IS NULL THEN '' ELSE '/' || pn6.`id` || ':' || pn6.`name` END) " +
+			"|| (CASE WHEN pn5.`id` IS NULL THEN '' ELSE '/' || pn5.`id` || ':' || pn5.`name` END) " +
+			"|| (CASE WHEN pn4.`id` IS NULL THEN '' ELSE '/' || pn4.`id` || ':' || pn4.`name` END) " +
+			"|| (CASE WHEN pn3.`id` IS NULL THEN '' ELSE '/' || pn3.`id` || ':' || pn3.`name` END) " +
+			"|| (CASE WHEN pn2.`id` IS NULL THEN '' ELSE '/' || pn2.`id` || ':' || pn2.`name` END) " +
+			"|| (CASE WHEN pn1.`id` IS NULL THEN '' ELSE '/' || pn1.`id` || ':' || pn1.`name` END)) " +
+			"END AS 'path' "
+	}
+	sql += "FROM `note` n "
+	if path {
+		sql += "LEFT JOIN `note` pn1 ON pn1.`type` = 'd' AND pn1.id = n.pid " +
+			"LEFT JOIN `note` pn2 ON pn2.`type` = 'd' AND pn2.id = pn1.pid " +
+			"LEFT JOIN `note` pn3 ON pn3.`type` = 'd' AND pn3.id = pn2.pid " +
+			"LEFT JOIN `note` pn4 ON pn4.`type` = 'd' AND pn4.id = pn3.pid " +
+			"LEFT JOIN `note` pn5 ON pn5.`type` = 'd' AND pn5.id = pn4.pid " +
+			"LEFT JOIN `note` pn6 ON pn6.`type` = 'd' AND pn6.id = pn5.pid " +
+			"LEFT JOIN `note` pn7 ON pn7.`type` = 'd' AND pn7.id = pn6.pid " +
+			"LEFT JOIN `note` pn8 ON pn8.`type` = 'd' AND pn8.id = pn7.pid " +
+			"LEFT JOIN `note` pn9 ON pn9.`type` = 'd' AND pn9.id = pn8.pid " +
+			"LEFT JOIN `note` pn10 ON pn10.`type` = 'd' AND pn10.id = pn9.pid "
+	}
+
+	// del
+	sql += "WHERE n.`del` = ? "
+	args = append(args, del)
+
+	// id
+	if id > 0 {
+		sql += "AND n.`id` = ? "
+		args = append(args, id)
+	}
+
+	// pid
+	if pid >= 0 {
+		sql += "AND n.`pid` = ? "
+		args = append(args, pid)
+	}
+
+	// name
+	if name != "" {
+		sql += "AND n.`name` LIKE '%' || ? || '%' "
+		args = append(args, name)
+	}
+
+	// ft
+	if ft != typ_ft.FtUnk {
+		sql += "AND n.`type` = ? "
+		args = append(args, string(ft))
+	}
+
+	sql += "GROUP BY n.id "
+	sql += "ORDER BY (CASE WHEN n.`upd_time` > n.`add_time` THEN n.`upd_time` ELSE n.`add_time` END) DESC "
+
+	return sql, args
 }
 
 func DbCount(context *gin.Context, pid int64) (int64, error) {

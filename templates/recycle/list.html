@@ -53,7 +53,7 @@
         {{ range $index,$e := $data.Data }}
         <tr>
             <td>{{ No_ $data $index }}</td>
-            <td>{{ $e.Name }}</td>
+            <td title="{{ $e.Path }}">{{ $e.Name }}</td>
             <td>{{ $e.Type }}</td>
             <td>{{ HumanizFileSize $e.Size }}</td>
             <td>{{ HumanizUnix $e.AddTime }}</td>
