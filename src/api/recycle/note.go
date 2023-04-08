@@ -15,7 +15,10 @@ import (
 
 // NoteList note列表
 func NoteList(context *gin.Context) {
-	page, err := api_note.DbPage(context, 1)
+	page, err := api_note.DbPage(context, typ_api.Note{
+		Abs: typ_api.Abs{Del: 1},
+		Pid: -1,
+	})
 	resp := typ_resp.Resp[typ_page.Page[typ_api.Note]]{
 		Msg:  util_str.TypeToStr(err),
 		Data: page,

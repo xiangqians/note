@@ -9,6 +9,13 @@ import (
 	"testing"
 )
 
+func TestDb2(t *testing.T) {
+	arr, count, err := _db.Qry[[]string]("C:\\Users\\xiangqian\\Desktop\\tmp\\note\\data\\1\\database.db", "SELECT DISTINCT(`type`) FROM `note` WHERE `del` = 0")
+	fmt.Println(count)
+	fmt.Println(err)
+	fmt.Println(arr)
+}
+
 func TestDb(t *testing.T) {
 
 	db := _db.Get("C:\\Users\\xiangqian\\Desktop\\tmp\\note\\data\\database.db")

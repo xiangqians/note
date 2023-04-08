@@ -42,7 +42,7 @@ func Del(context *gin.Context) {
 	}
 
 	// note
-	note, _, err := DbQry(context, id)
+	note, _, err := DbQry(context, id, false)
 	pid := note.Pid
 	if err != nil {
 		redirect(pid, err)
@@ -99,7 +99,7 @@ func Cut(context *gin.Context) {
 	if dstId != 0 {
 		var note typ_api.Note
 		var count int64
-		note, count, err = DbQry(context, dstId)
+		note, count, err = DbQry(context, dstId, false)
 		if err != nil || count == 0 || typ_ft.FtD != typ_ft.ExtNameOf(note.Type) { // 拷贝到目标类型必须是目录
 			redirect(dstId, err)
 			return
@@ -358,7 +358,7 @@ func Get(context *gin.Context) {
 	}
 
 	// note
-	note, count, err := DbQry(context, id)
+	note, count, err := DbQry(context, id, false)
 	if err != nil || count == 0 {
 		log.Println(err)
 		return
@@ -429,11 +429,11 @@ func UpdName(context *gin.Context) {
 
 	// name
 	note.Name = strings.TrimSpace(note.Name)
-	//err = util_os.VerifyFileName(note.Name)
-	//if err != nil {
-	//	redirect(pid, err)
-	//	return
-	//}
+	err = common.VerifyName(note.Name)
+	if err != nil {
+		redirect(pid, err)
+		return
+	}
 
 	// update
 	_, err = common.DbUpd(context, "UPDATE `note` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", note.Name, util_time.NowUnix(), note.Id, note.Name)
@@ -493,7 +493,7 @@ func Upload(context *gin.Context) {
 
 	// file name
 	fn := fh.Filename
-	err = util_os.VerifyFileName(fn)
+	err = common.VerifyName(fn)
 	if err != nil {
 		redirect(id, pid, err)
 		return
@@ -521,7 +521,7 @@ func Upload(context *gin.Context) {
 		if pid != 0 {
 			var note typ_api.Note
 			var count int64
-			note, count, err = DbQry(context, pid)
+			note, count, err = DbQry(context, pid, false)
 			if err != nil || count == 0 || typ_ft.ExtNameOf(note.Type) != typ_ft.FtD { // 父节点必须是目录
 				redirect(id, pid, err)
 				return
@@ -531,7 +531,7 @@ func Upload(context *gin.Context) {
 	case http.MethodPut:
 		// 校验 id 是否存在
 		var count int64
-		oldNote, count, err = DbQry(context, id)
+		oldNote, count, err = DbQry(context, id, false)
 		if err != nil || count == 0 {
 			redirect(id, pid, err)
 			return
@@ -612,7 +612,7 @@ func Add(context *gin.Context) {
 
 	// name
 	note.Name = strings.TrimSpace(note.Name)
-	err = util_os.VerifyFileName(note.Name)
+	err = common.VerifyName(note.Name)
 	if err != nil {
 		redirect(err)
 		return
@@ -661,12 +661,13 @@ func Add(context *gin.Context) {
 
 // List 文件列表页面
 func List(context *gin.Context) {
-	html := func(pnote typ_api.Note, notes []typ_api.Note, err error) {
+	html := func(pnote typ_api.Note, notes []typ_api.Note, types []string, err error) {
 		resp := typ_resp.Resp[map[string]any]{
 			Msg: util_str.TypeToStr(err),
 			Data: map[string]any{
 				"pnote": pnote,
 				"notes": notes,
+				"types": types,
 			},
 		}
 		common.HtmlOk(context, "note/list.html", resp)
@@ -681,6 +682,15 @@ func List(context *gin.Context) {
 	name = strings.TrimSpace(name)
 	//log.Printf("name = %s\n", name)
 
+	// type
+	t, err := common.Query[string](context, "type")
+	t = strings.TrimSpace(t)
+	//log.Printf("t = %s\n", t)
+	ft := typ_ft.ExtNameOf(t)
+	if ft == typ_ft.FtUnk {
+		t = ""
+	}
+
 	// pnote
 	var pnote typ_api.Note
 	if pid < 0 {
@@ -692,121 +702,47 @@ func List(context *gin.Context) {
 		pnote.PathLink = "/"
 
 	} else {
-		sql := "SELECT n1.id, n1.pid, n1.`name`, n1.`type`, n1.`size`, n1.add_time, n1.upd_time, " +
-			"( (CASE WHEN n10.`id` IS NULL THEN '' ELSE '/' ||n10.`id` || ':' ||n10.`name` END) " +
-			"|| (CASE WHEN n9.`id` IS NULL THEN '' ELSE '/' || n9.`id` || ':' || n9.`name` END) " +
-			"|| (CASE WHEN n8.`id` IS NULL THEN '' ELSE '/' || n8.`id` || ':' || n8.`name` END) " +
-			"|| (CASE WHEN n7.`id` IS NULL THEN '' ELSE '/' || n7.`id` || ':' || n7.`name` END) " +
-			"|| (CASE WHEN n6.`id` IS NULL THEN '' ELSE '/' || n6.`id` || ':' || n6.`name` END) " +
-			"|| (CASE WHEN n5.`id` IS NULL THEN '' ELSE '/' || n5.`id` || ':' || n5.`name` END) " +
-			"|| (CASE WHEN n4.`id` IS NULL THEN '' ELSE '/' || n4.`id` || ':' || n4.`name` END) " +
-			"|| (CASE WHEN n3.`id` IS NULL THEN '' ELSE '/' || n3.`id` || ':' || n3.`name` END) " +
-			"|| (CASE WHEN n2.`id` IS NULL THEN '' ELSE '/' || n2.`id` || ':' || n2.`name` END) " +
-			"|| (CASE WHEN n1.`id` IS NULL THEN '' ELSE '/' || n1.`id` || ':' || n1.`name` END))  AS 'path' " +
-			"FROM `note` n1 " +
-			"LEFT JOIN `note` n2 ON n2.del = 0 AND n2.`type` = 'd' AND n2.id = n1.pid " +
-			"LEFT JOIN `note` n3 ON n3.del = 0 AND n3.`type` = 'd' AND n3.id = n2.pid " +
-			"LEFT JOIN `note` n4 ON n4.del = 0 AND n4.`type` = 'd' AND n4.id = n3.pid " +
-			"LEFT JOIN `note` n5 ON n5.del = 0 AND n5.`type` = 'd' AND n5.id = n4.pid " +
-			"LEFT JOIN `note` n6 ON n6.del = 0 AND n6.`type` = 'd' AND n6.id = n5.pid " +
-			"LEFT JOIN `note` n7 ON n7.del = 0 AND n7.`type` = 'd' AND n7.id = n6.pid " +
-			"LEFT JOIN `note` n8 ON n8.del = 0 AND n8.`type` = 'd' AND n8.id = n7.pid " +
-			"LEFT JOIN `note` n9 ON n9.del = 0 AND n9.`type` = 'd' AND n9.id = n8.pid " +
-			"LEFT JOIN `note` n10 ON n10.del = 0 AND n10.`type` = 'd' AND n10.id = n9.pid " +
-			"WHERE n1.del = 0 AND n1.`type` = 'd' AND n1.id = ? " +
-			"GROUP BY n1.id"
-		pnote, _, err = common.DbQry[typ_api.Note](context, sql, pid)
-		if err != nil {
-			html(pnote, nil, err)
+		sql, args := DbQrySql(typ_api.Note{Abs: typ_api.Abs{Id: pid}, Pid: -1}, true)
+		sql += "LIMIT 1"
+		var count int64
+		pnote, count, err = common.DbQry[typ_api.Note](context, sql, args...)
+		if err != nil || count == 0 {
+			html(pnote, nil, nil, err)
 			return
 		}
 
-		pathArr := strings.Split(pnote.Path, "/")
-		l := len(pathArr)
-		pathLinkArr := make([]string, 0, l) // len 0, cap ?
-		for i := 0; i < l; i++ {
-			v := pathArr[i]
-			if v == "" {
-				pathLinkArr = append(pathLinkArr, "")
-				continue
-			}
-
-			vArr := strings.Split(v, ":")
-			pathArr[i] = vArr[1]
-
-			pathLink := fmt.Sprintf("<a href=\"/note/list?pid=%s\">%s</a>\n", vArr[0], vArr[1])
-			pathLinkArr = append(pathLinkArr, pathLink)
+		if pnote.Path != "/" {
+			pnote.Path += "/"
 		}
-		pnote.Path = strings.Join(pathArr, "/")
-		pnote.PathLink = strings.Join(pathLinkArr, "/")
-	}
-
-	handlePath := func(note *typ_api.Note) {
-		pathArr := strings.Split((*note).Path, "/")
-		l := len(pathArr)
-		pathLinkArr := make([]string, 0, l) // len 0, cap ?
-		for i := 0; i < l; i++ {
-			v := pathArr[i]
-			if v == "" {
-				pathLinkArr = append(pathLinkArr, "")
-				continue
-			}
-
-			vArr := strings.Split(v, ":")
-			pathArr[i] = vArr[1]
-
-			pathLink := fmt.Sprintf("<a href=\"/note/list?pid=%s\">%s</a>\n", vArr[0], vArr[1])
-			pathLinkArr = append(pathLinkArr, pathLink)
-		}
-		(*note).Path = strings.Join(pathArr, "/")
-		(*note).PathLink = strings.Join(pathLinkArr, "/")
+		pnote.Path += fmt.Sprintf("%d:%s", pnote.Id, pnote.Name)
+		InitPath(&pnote)
 	}
 
 	// 查询
-	path := false
-	if name != "" {
-		path = true
-	}
-	sql, args := DbQrySql(0, pid, name, typ_ft.FtUnk, 0, path)
-	sql += "LIMIT 10000"
-	notes, count, err := common.DbQry[[]typ_api.Note](context, sql, args...)
-	if err != nil || count == 0 {
-		notes = nil
-	}
+	notes, err := DbList(context, typ_api.Note{
+		Pid:  pid,
+		Name: name,
+		Type: t,
+	})
 
-	if notes != nil && len(notes) > 0 {
-		for i, l := 0, len(notes); i < l; i++ {
-			handlePath(&notes[i])
-		}
+	types, count, err := common.DbQry[[]string](context, "SELECT DISTINCT(`type`) FROM `note` WHERE `del` = 0")
+	if err != nil || count == 0 {
+		types = nil
 	}
 
 	// html
-	html(pnote, notes, err)
+	html(pnote, notes, types, err)
 	return
 }
 
 // FileRead 读取文件
-func FileRead(context *gin.Context, f typ_api.Note) ([]byte, error) {
+func FileRead(context *gin.Context, note typ_api.Note) ([]byte, error) {
 	// file path
-	fPath, err := Path(context, f)
+	path, err := Path(context, note)
 	if err != nil {
 		return nil, err
 	}
 
-	// open file
-	pFile, err := os.Open(fPath)
-	if err != nil {
-		return nil, err
-	}
-	defer pFile.Close()
-
-	// read file
-	buf, err := io.ReadAll(pFile)
-	return buf, err
-}
-
-// FileRead 读取文件
-func FileRead1(path string) ([]byte, error) {
 	// open file
 	file, err := os.Open(path)
 	if err != nil {
@@ -866,14 +802,88 @@ func Path(context *gin.Context, note typ_api.Note) (string, error) {
 	return fmt.Sprintf("%s%s%s", noteDir, util_os.FileSeparator, name), nil
 }
 
-func DbPage(context *gin.Context, del int) (typ_page.Page[typ_api.Note], error) {
-	req, _ := common.PageReq(context)
-	return common.DbPage[typ_api.Note](context, req, "SELECT `id`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = ? ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC", del)
+func DbCount(context *gin.Context, pid int64) (int64, error) {
+	count, _, err := common.DbQry[int64](context, "SELECT COUNT(1) FROM `note` WHERE `pid` = ?", pid)
+	return count, err
 }
 
-func DbQrySql(id int64, pid int64, name string, ft typ_ft.Ft, del int, path bool) (string, []any) {
+func DbPage(context *gin.Context, note typ_api.Note) (typ_page.Page[typ_api.Note], error) {
+	req, _ := common.PageReq(context)
+	path := true
+	sql, args := DbQrySql(note, path)
+	page, err := common.DbPage[typ_api.Note](context, req, sql, args...)
+	if path && err == nil {
+		data := page.Data
+		if data != nil && len(data) > 0 {
+			for i, l := 0, len(data); i < l; i++ {
+				InitPath(&data[i])
+			}
+		}
+	}
+	return page, err
+}
+
+func DbList(context *gin.Context, note typ_api.Note) ([]typ_api.Note, error) {
+	// 查询
+	path := false
+	if note.Name != "" || note.Type != "" {
+		path = true
+	}
+	sql, args := DbQrySql(note, path)
+	sql += "LIMIT 10000"
+	notes, count, err := common.DbQry[[]typ_api.Note](context, sql, args...)
+	if err != nil || count == 0 {
+		notes = nil
+	}
+
+	if path && err == nil && count > 0 {
+		for i, l := 0, len(notes); i < l; i++ {
+			InitPath(&notes[i])
+		}
+	}
+
+	return notes, err
+}
+
+func DbQry(context *gin.Context, id int64, path bool) (typ_api.Note, int64, error) {
+	sql, args := DbQrySql(typ_api.Note{Abs: typ_api.Abs{Id: id}, Pid: -1}, path)
+	sql += "LIMIT 1"
+	note, count, err := common.DbQry[typ_api.Note](context, sql, args...)
+	if path && err == nil && count > 0 {
+		InitPath(&note)
+	}
+	return note, count, err
+}
+
+// InitPath 初始化 path & pathLink
+func InitPath(note *typ_api.Note) {
+	path := (*note).Path
+	if path == "" {
+		return
+	}
+
+	pathArr := strings.Split(path, "/")
+	l := len(pathArr)
+	pathLinkArr := make([]string, 0, l) // len 0, cap ?
+	for i := 0; i < l; i++ {
+		e := pathArr[i]
+		if e == "" {
+			pathLinkArr = append(pathLinkArr, "")
+			continue
+		}
+
+		eArr := strings.Split(e, ":")
+		pathArr[i] = eArr[1]
+		pathLink := fmt.Sprintf("<a href=\"/note/list?pid=%s&t=%d\">%s</a>\n", eArr[0], util_time.NowUnix(), eArr[1])
+		pathLinkArr = append(pathLinkArr, pathLink)
+	}
+	(*note).Path = strings.Join(pathArr, "/")
+	(*note).PathLink = strings.Join(pathLinkArr, "/")
+}
+
+func DbQrySql(note typ_api.Note, path bool) (string, []any) {
 	args := make([]any, 0, 1)
-	sql := "SELECT n.`id`, n.`pid`, n.`name`, n.`type`, n.`size`, n.`add_time`, n.`upd_time` "
+	sql := "SELECT n.`id`, n.`pid`, n.`name`, n.`type`, n.`size`, n.`hist`, n.`hist_size`, n.`add_time`, n.`upd_time` "
 	if path {
 		sql += ", CASE WHEN n.`pid` = 0 THEN  '/' ELSE " +
 			"( (CASE WHEN pn10.`id` IS NULL THEN '' ELSE '/' || pn10.`id` || ':' ||pn10.`name` END) " +
@@ -904,43 +914,34 @@ func DbQrySql(id int64, pid int64, name string, ft typ_ft.Ft, del int, path bool
 
 	// del
 	sql += "WHERE n.`del` = ? "
-	args = append(args, del)
+	args = append(args, note.Del)
 
 	// id
-	if id > 0 {
+	if note.Id > 0 {
 		sql += "AND n.`id` = ? "
-		args = append(args, id)
+		args = append(args, note.Id)
 	}
 
 	// pid
-	if pid >= 0 {
+	if note.Pid >= 0 {
 		sql += "AND n.`pid` = ? "
-		args = append(args, pid)
+		args = append(args, note.Pid)
 	}
 
 	// name
-	if name != "" {
+	if note.Name != "" {
 		sql += "AND n.`name` LIKE '%' || ? || '%' "
-		args = append(args, name)
+		args = append(args, note.Name)
 	}
 
-	// ft
-	if ft != typ_ft.FtUnk {
+	// type
+	if note.Type != "" {
 		sql += "AND n.`type` = ? "
-		args = append(args, string(ft))
+		args = append(args, note.Type)
 	}
 
 	sql += "GROUP BY n.id "
 	sql += "ORDER BY (CASE WHEN n.`upd_time` > n.`add_time` THEN n.`upd_time` ELSE n.`add_time` END) DESC "
 
 	return sql, args
-}
-
-func DbCount(context *gin.Context, pid int64) (int64, error) {
-	count, _, err := common.DbQry[int64](context, "SELECT COUNT(1) FROM `note` WHERE `pid` = ?", pid)
-	return count, err
-}
-
-func DbQry(context *gin.Context, id int64) (typ_api.Note, int64, error) {
-	return common.DbQry[typ_api.Note](context, "SELECT `id`, `pid`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = 0 AND `id` = ?", id)
 }

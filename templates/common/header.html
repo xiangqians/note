@@ -28,8 +28,9 @@ $. 引用模板中的根级上下文
            href="/note/list?t={{ Timestamp }}">{{ Localize "i18n.note" }}</a>
         <a name="nav" style='padding: 8px;{{ if eq .url "/img/list" }}background-color: lightgray;{{ end }}'
            href="/img/list?t={{ Timestamp }}">{{ Localize "i18n.img" }}</a>
-        <a name="nav" style='padding: 8px;{{ if eq .url "/recycle/img/list" }}background-color: lightgray;{{ end }}'
-           href="/recycle/img/list?t={{ Timestamp }}">{{ Localize "i18n.recycle" }}</a>
+        <a name="nav"
+           style='padding: 8px;{{ if eq .url "/recycle/note/list" }}background-color: lightgray;{{ else }}{{ if eq .url "/recycle/img/list" }}background-color: lightgray;{{ end }}{{ end }}'
+           href="/recycle/note/list?t={{ Timestamp }}">{{ Localize "i18n.recycle" }}</a>
     </div>
     <br>
     <br>

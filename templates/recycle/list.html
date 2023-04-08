@@ -40,6 +40,9 @@
         <tr>
             <td>{{ Localize "i18n.no." }}</td>
             <td>{{ Localize "i18n.name" }}</td>
+            {{ if eq $.url "/recycle/note/list" }}
+            <td>{{ Localize "i18n.path" }}</td>
+            {{ end }}
             <td>{{ Localize "i18n.type" }}</td>
             <td>{{ Localize "i18n.size" }}</td>
             <td>{{ Localize "i18n.addTime" }}</td>
@@ -53,7 +56,14 @@
         {{ range $index,$e := $data.Data }}
         <tr>
             <td>{{ No_ $data $index }}</td>
-            <td title="{{ $e.Path }}">{{ $e.Name }}</td>
+            <td>{{ $e.Name }}</td>
+            {{ if eq $.url "/recycle/note/list" }}
+            <td>
+                <script>
+                    document.write('{{ $e.PathLink }}')
+                </script>
+            </td>
+            {{ end }}
             <td>{{ $e.Type }}</td>
             <td>{{ HumanizFileSize $e.Size }}</td>
             <td>{{ HumanizUnix $e.AddTime }}</td>
@@ -76,13 +86,13 @@
         {{ end }}
         {{ else }}
         <tr>
-            <td colspan="8">{{ Localize "i18n.noData" }}</td>
+            <td colspan='{{ if eq $.url "/recycle/note/list" }}9{{ else }}8{{ end }}'>{{ Localize "i18n.noData" }}</td>
         </tr>
         {{ end }}
         </tbody>
         <tfoot>
         <tr>
-            <td colspan="8">
+            <td colspan='{{ if eq $.url "/recycle/note/list" }}9{{ else }}8{{ end }}'>
                 <span style="margin-right: 10px">{{ Localize "i18n.page.current" }}: {{ $data.Current }}</span>
                 <span style="margin-right: 10px">{{ Localize "i18n.page.size" }}: {{ $data.Size }}</span>
                 <span style="margin-right: 10px">{{ Localize "i18n.pages" }}: {{ $data.Pages }}</span>

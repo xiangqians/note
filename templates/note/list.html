@@ -27,7 +27,21 @@
         </span>
         &nbsp;&nbsp;
         <span>
-            <input name="searchName" type="text" size="15">
+            {{ Localize "i18n.name" }}: <input
+                name="searchName"
+                type="text"
+                size="15"
+                placeholder='{{ Localize "i18n.name" }}'>&nbsp;&nbsp;
+            {{ Localize "i18n.type" }}: <select name="type">
+                <option value=""></option>
+                {{ $len := len $data.types }}
+                {{ if gt $len 0 }}
+                {{ range $index,$type := $data.types }}
+                <option value="{{ $type }}">{{ $type }}</option>
+                {{ end }}
+                {{ end }}
+            </select>&nbsp;&nbsp;
+            All: <input type="checkbox"/>&nbsp;
             <a name="search" method="GET"><button>{{ Localize "i18n.search" }}</button></a>
             <a href="/note/list?t={{ Timestamp }}"><button>{{ Localize "i18n.reset" }}</button></a>
         </span>
@@ -141,27 +155,40 @@
     ;(function () {
         // searchName
         let $searchName = $($('input[name="searchName"]')[0])
+        // type
+        let $type = $($('select[name="type"]')[0])
 
         // params
         let params = custom.getUrlQueryParams(decodeURIComponent('{{ .uri }}'))
         // console.log(params)
+        // name
         let searchName = params.name
         if (searchName) {
             $searchName.val(searchName)
+        }
+        // type
+        let type = params.type
+        if (type) {
+            let options = $type.find('option')
+            for (let i = 0; i < options.length; i++) {
+                let $option = $(options[i])
+                $option.removeAttr('selected')
+                if (type === $option.val()) {
+                    $option.attr('selected', true)
+                }
+            }
         }
 
         // search
         let $search = $($('a[name="search"]')[0])
         custom.ajaxE($search, function () {
+            let pid = -1
             let searchName = $searchName.val().trim()
             $searchName.val(searchName)
-            if (searchName !== '') {
-                return {
-                    url: '/note/list?pid=-1&name=' + searchName
-                }
+            let type = $type.find("option:selected").text();
+            return {
+                url: '/note/list?pid=-1&name=' + searchName + '&type=' + type
             }
-
-            return custom.ajaxEDoNothing
         })
 
         // add
