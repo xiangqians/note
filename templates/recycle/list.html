@@ -21,8 +21,17 @@
     {{ $data := .resp.Data }}
 
     <div>
-        <input type="radio" name="type" {{ if eq .url "/recycle/note/list" }}checked{{ end }}><span>{{ Localize "i18n.note" }}</span>
-        <input type="radio" name="type" {{ if eq .url "/recycle/img/list" }}checked{{ end }}><span>{{ Localize "i18n.img" }}</span>
+        <!--note -->
+        <input name="type"
+               href="/recycle/note/list?t={{ Timestamp }}"
+               type="radio" {{ if eq .url "/recycle/note/list" }}checked{{ end }}>
+        <span>{{ Localize "i18n.note" }}</span>
+
+        <!--img -->
+        <input name="type"
+               href="/recycle/img/list?t={{ Timestamp }}"
+               type="radio" {{ if eq .url "/recycle/img/list" }}checked{{ end }}>
+        <span>{{ Localize "i18n.img" }}</span>
     </div>
     <br>
 
@@ -50,14 +59,14 @@
             <td>{{ HumanizUnix $e.AddTime }}</td>
             <td>{{ HumanizUnix $e.UpdTime }}</td>
             <td>
-                <a href='{{ if eq $.url "/recycle/img/list" }}/recycle/img{{ else }}{{ if eq .url "/recycle/note/list" }}/recycle/note{{ else }}/t{{ end }}{{ end }}/{{ $e.Id }}/restore'
+                <a href='{{ if eq $.url "/recycle/img/list" }}/recycle/img{{ else }}{{ if eq $.url "/recycle/note/list" }}/recycle/note{{ else }}/t{{ end }}{{ end }}/{{ $e.Id }}/restore'
                    method="PUT"
                    confirm='{{ Localize "i18n.restore" }} {{ $e.Name }} ?'>
                     <button>{{ Localize "i18n.restore" }}</button>
                 </a>
             </td>
             <td>
-                <a href='{{ if eq $.url "/recycle/img/list" }}/recycle/img{{ else }}{{ if eq .url "/recycle/note/list" }}/recycle/note{{ else }}/t{{ end }}{{ end }}/{{ $e.Id }}/permlyDel'
+                <a href='{{ if eq $.url "/recycle/img/list" }}/recycle/img{{ else }}{{ if eq $.url "/recycle/note/list" }}/recycle/note{{ else }}/t{{ end }}{{ end }}/{{ $e.Id }}/permlyDel'
                    method="DELETE"
                    confirm='{{ Localize "i18n.permlyDel" }} {{ $e.Name }} ?'>
                     <button>{{ Localize "i18n.permlyDel" }}</button>
@@ -109,6 +118,7 @@
 
     ;(function () {
 
+        // a
         let aArr = $('a[method]')
         for (let i = 0; i < aArr.length; i++) {
             let $a = $(aArr[i])
@@ -118,6 +128,16 @@
                 }
 
                 return custom.ajaxEDoNothing
+            })
+        }
+
+        // radio
+        let inputs = $('input[name="type"]')
+        for (let i = 0; i < inputs.length; i++) {
+            let $input = $(inputs[i])
+            $input.click(function () {
+                console.log($input)
+                location.href = $input.attr('href')
             })
         }
 

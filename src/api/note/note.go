@@ -17,6 +17,7 @@ import (
 	"note/src/api/common"
 	typ_api "note/src/typ/api"
 	typ_ft "note/src/typ/ft"
+	typ_page "note/src/typ/page"
 	typ_resp "note/src/typ/resp"
 	util_os "note/src/util/os"
 	util_str "note/src/util/str"
@@ -153,15 +154,6 @@ func View(context *gin.Context) {
 	}
 }
 
-// DefaultView 默认查看文件
-func DefaultView(context *gin.Context, note typ_api.Note, err error) {
-	resp := typ_resp.Resp[typ_api.Note]{
-		Msg:  util_str.TypeToStr(err),
-		Data: note,
-	}
-	common.HtmlOk(context, "note/default/view.html", resp)
-}
-
 // MdView 查看md文件
 // https://github.com/russross/blackfriday
 // https://pkg.go.dev/github.com/russross/blackfriday/v2
@@ -220,27 +212,6 @@ func HtmlView(context *gin.Context, note typ_api.Note) {
 	}
 
 	html(string(buf), nil)
-}
-
-// PdfView 查看pdf文件
-func PdfView(context *gin.Context, note typ_api.Note) {
-	v, _ := common.Query[string](context, "v")
-	v = strings.TrimSpace(v)
-	switch v {
-	case "1.0":
-		// v1.0
-	case "2.0":
-		// v2.0
-	default:
-		v = "2.0"
-	}
-
-	note.Url = fmt.Sprintf("/note/%v", note.Id)
-
-	resp := typ_resp.Resp[typ_api.Note]{
-		Data: note,
-	}
-	common.HtmlOk(context, fmt.Sprintf("note/pdf/view_v%s.html", v), resp)
 }
 
 // Edit 文件修改页
@@ -870,6 +841,11 @@ func Path(context *gin.Context, note typ_api.Note) (string, error) {
 
 	// path
 	return fmt.Sprintf("%s%s%s", noteDir, util_os.FileSeparator, name), nil
+}
+
+func DbPage(context *gin.Context, del int) (typ_page.Page[typ_api.Note], error) {
+	req, _ := common.PageReq(context)
+	return common.DbPage[typ_api.Note](context, req, "SELECT `id`, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = ? ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC", del)
 }
 
 func DbCount(context *gin.Context, pid int64) (int64, error) {

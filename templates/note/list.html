@@ -133,7 +133,7 @@
         let $searchName = $($('input[name="searchName"]')[0])
 
         // params
-        let params = custom.getUrlQueryParams('{{ .uri }}')
+        let params = custom.getUrlQueryParams(decodeURIComponent('{{ .uri }}'))
         // console.log(params)
         let searchName = params.name
         if (searchName) {

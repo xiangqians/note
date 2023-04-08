@@ -37,6 +37,8 @@ See https://github.com/adobe-type-tools/cmap-resources
     <meta name="google" content="notranslate">
     <title>{{ $data.Name }}</title>
 
+    <link rel="stylesheet" href="/static/custom/custom.css" type="text/css"/>
+
     <link rel="stylesheet" href="/static/pdfjs-3.3.122/web/viewer.css">
 
     <!-- This snippet is used in production (included from viewer.html) -->
@@ -44,12 +46,8 @@ See https://github.com/adobe-type-tools/cmap-resources
 
     <style>
         .float {
-            position: fixed;
             top: 80px;
-            right: 50px;
-            width: auto;
-            height: auto;
-            /*background: lightgray;*/
+            right: 60px;
         }
     </style>
 </head>
@@ -371,31 +369,65 @@ See https://github.com/adobe-type-tools/cmap-resources
                             </button>
                         </div>
                         <span id="scaleSelectContainer" class="dropdownToolbarButton">
-                  <select id="scaleSelect" title="Zoom" tabindex="23" data-l10n-id="zoom">
-                    <option id="pageAutoOption" title="" value="auto" selected="selected"
-                            data-l10n-id="page_scale_auto">Automatic Zoom</option>
-                    <option id="pageActualOption" title="" value="page-actual" data-l10n-id="page_scale_actual">Actual Size</option>
-                    <option id="pageFitOption" title="" value="page-fit" data-l10n-id="page_scale_fit">Page Fit</option>
-                    <option id="pageWidthOption" title="" value="page-width"
-                            data-l10n-id="page_scale_width">Page Width</option>
-                    <option id="customScaleOption" title="" value="custom" disabled="disabled" hidden="true"></option>
-                    <option title="" value="0.5" data-l10n-id="page_scale_percent"
-                            data-l10n-args='{ "scale": 50 }'>50%</option>
-                    <option title="" value="0.75" data-l10n-id="page_scale_percent"
-                            data-l10n-args='{ "scale": 75 }'>75%</option>
-                    <option title="" value="1" data-l10n-id="page_scale_percent"
-                            data-l10n-args='{ "scale": 100 }'>100%</option>
-                    <option title="" value="1.25" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 125 }'>125%</option>
-                    <option title="" value="1.5" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 150 }'>150%</option>
-                    <option title="" value="2" data-l10n-id="page_scale_percent"
-                            data-l10n-args='{ "scale": 200 }'>200%</option>
-                    <option title="" value="3" data-l10n-id="page_scale_percent"
-                            data-l10n-args='{ "scale": 300 }'>300%</option>
-                    <option title="" value="4" data-l10n-id="page_scale_percent"
-                            data-l10n-args='{ "scale": 400 }'>400%</option>
-                  </select>
-                </span>
+                          <select id="scaleSelect" title="Zoom" tabindex="23" data-l10n-id="zoom">
+                            <option id="pageAutoOption" title="" value="auto" selected="selected"
+                                    data-l10n-id="page_scale_auto">Automatic Zoom</option>
+                            <option id="pageActualOption" title="" value="page-actual" data-l10n-id="page_scale_actual">Actual Size</option>
+                            <option id="pageFitOption" title="" value="page-fit"
+                                    data-l10n-id="page_scale_fit">Page Fit</option>
+                            <option id="pageWidthOption" title="" value="page-width"
+                                    data-l10n-id="page_scale_width">Page Width</option>
+                            <option id="customScaleOption" title="" value="custom" disabled="disabled"
+                                    hidden="true"></option>
+                            <option title="" value="0.5" data-l10n-id="page_scale_percent"
+                                    data-l10n-args='{ "scale": 50 }'>50%</option>
+                            <option title="" value="0.75" data-l10n-id="page_scale_percent"
+                                    data-l10n-args='{ "scale": 75 }'>75%</option>
+                            <option title="" value="1" data-l10n-id="page_scale_percent"
+                                    data-l10n-args='{ "scale": 100 }'>100%</option>
+                            <option title="" value="1.25" data-l10n-id="page_scale_percent"
+                                    data-l10n-args='{ "scale": 125 }'>125%</option>
+                            <option title="" value="1.5" data-l10n-id="page_scale_percent"
+                                    data-l10n-args='{ "scale": 150 }'>150%</option>
+                            <option title="" value="2" data-l10n-id="page_scale_percent"
+                                    data-l10n-args='{ "scale": 200 }'>200%</option>
+                            <option title="" value="3" data-l10n-id="page_scale_percent"
+                                    data-l10n-args='{ "scale": 300 }'>300%</option>
+                            <option title="" value="4" data-l10n-id="page_scale_percent"
+                                    data-l10n-args='{ "scale": 400 }'>400%</option>
+                          </select>
+                        </span>
                     </div>
+
+                    <div class="float">
+                        <p style="color: red;">{{ .resp.Msg }}</p>
+                        <table border="1" cellspacing="0" cellpadding="10" align="center">
+                            <tbody>
+                            <tr>
+                                <td>{{ Localize "i18n.name" }}</td>
+                                <td>{{ $data.Name }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ Localize "i18n.type" }}</td>
+                                <td>{{ $data.Type }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ Localize "i18n.size" }}</td>
+                                <td>{{ HumanizFileSize $data.Size }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ Localize "i18n.addTime" }}</td>
+                                <td>{{ HumanizUnix $data.AddTime }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ Localize "i18n.updTime" }}</td>
+                                <td>{{ HumanizUnix $data.UpdTime }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <br>
+                    </div>
+
                 </div>
                 <div id="loadingBar">
                     <div class="progress">
@@ -513,8 +545,6 @@ See https://github.com/adobe-type-tools/cmap-resources
 
 <input type="file" id="fileInput" class="hidden">
 
-<a class="float" href="/note/{{ $data.Id }}/edit" target="_blank">{{ Localize "i18n.edit" }} →</a>
-
 </body>
 </html>
 <script type="text/javascript" src="/static/jquery-v3.6.2/min.js"></script>
@@ -523,7 +553,7 @@ See https://github.com/adobe-type-tools/cmap-resources
 <script>
     ;
     let defPdfSrc = "{{ $data.Url }}"
-    // console.log('defPdfSrc', defPdfSrc)
+        // console.log('defPdfSrc', defPdfSrc)
     ;
 </script>
 <script src="/static/pdfjs-3.3.122/web/viewer.js"></script>

@@ -48,8 +48,8 @@ func htmlTemplate(engine *gin.Engine) {
 		// No.
 		"No_": func(page any, index int) int64 {
 			current := util_reflect.CallField[int64](page, "Current")
-			size := util_reflect.CallField[int64](page, "Size")
-			return (current-1)*size + int64(index) + 1
+			size := util_reflect.CallField[uint8](page, "Size")
+			return (current-1)*int64(size) + int64(index) + 1
 		},
 
 		// add 两数相加

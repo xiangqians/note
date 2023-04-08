@@ -1,4 +1,4 @@
-// recycle 回收站
+// img recycle
 // @author xiangqian
 // @date 13:02 2023/04/05
 package recycle
