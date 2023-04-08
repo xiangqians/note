@@ -35,6 +35,7 @@ type Note struct {
 	Hist     string `form:"hist"`                                 // history（历史记录）
 	HistSize int64  `form:"histSize"`                             // history（历史记录）文件大小，单位：byte
 	Path     string // 目录路径
+	PathLink string // 目录路径链接
 	Url      string // 笔记url
 }
 

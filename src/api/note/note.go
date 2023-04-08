@@ -63,7 +63,7 @@ func Del(context *gin.Context) {
 		}
 	}
 
-	// update
+	// delete
 	_, err = common.DbDel(context, "UPDATE `note` SET `del` = 1, `upd_time` = ? WHERE `id` = ?", util_time.NowUnix(), id)
 
 	// redirect
@@ -96,8 +96,10 @@ func Cut(context *gin.Context) {
 
 	// dst
 	if dstId != 0 {
-		f, _, err := common.DbQry[typ_api.Note](context, "SELECT id, pid, `name`, `type`, `size`, `add_time`, `upd_time` FROM `note` WHERE `del` = 0 AND `id` = ?", dstId)
-		if err != nil || typ_ft.FtD != typ_ft.ExtNameOf(f.Type) {
+		var note typ_api.Note
+		var count int64
+		note, count, err = DbQry(context, dstId)
+		if err != nil || count == 0 || typ_ft.FtD != typ_ft.ExtNameOf(note.Type) { // 拷贝到目标类型必须是目录
 			redirect(dstId, err)
 			return
 		}
@@ -106,10 +108,11 @@ func Cut(context *gin.Context) {
 	// update
 	_, err = common.DbUpd(context, "UPDATE `note` SET `pid` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `pid` <> ?",
 		dstId,
-		time.Now().Unix(),
+		util_time.NowUnix(),
 		srcId,
 		dstId)
 
+	// redirect
 	redirect(dstId, err)
 	return
 }
@@ -706,9 +709,11 @@ func List(context *gin.Context) {
 	var pnote typ_api.Note
 	if pid < 0 {
 		pnote.Path = ""
+		pnote.PathLink = ""
 
 	} else if pid == 0 {
 		pnote.Path = "/"
+		pnote.PathLink = "/"
 
 	} else {
 		sql := "SELECT n1.id, n1.pid, n1.`name`, n1.`type`, n1.`size`, n1.add_time, n1.upd_time, " +
@@ -756,8 +761,8 @@ func List(context *gin.Context) {
 			pathLink := fmt.Sprintf("<a href=\"/note/list?pid=%s\">%s</a>\n", vArr[0], vArr[1])
 			pathLinkArr = append(pathLinkArr, pathLink)
 		}
-		//pnote.Path = strings.Join(pathArr, "/")
-		pnote.Path = strings.Join(pathLinkArr, "/")
+		pnote.Path = strings.Join(pathArr, "/")
+		pnote.PathLink = strings.Join(pathLinkArr, "/")
 	}
 
 	// 查询

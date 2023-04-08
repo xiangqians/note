@@ -22,7 +22,7 @@
     <p>
         <span>
         <script>
-            document.write('{{ $data.pnote.Path }}')
+            document.write('{{ $data.pnote.PathLink }}')
         </script>
         </span>
         &nbsp;&nbsp;
@@ -67,7 +67,8 @@
             <td>{{ HumanizUnix $note.AddTime }}</td>
             <td>{{ HumanizUnix $note.UpdTime }}</td>
             <td>
-                <a href="/note/name"
+                <a name="rename"
+                   href="/note/name"
                    method="PUT"
                    noteId="{{ $note.Id }}"
                    notePid="{{ $data.pnote.Id }}"
@@ -77,13 +78,14 @@
             </td>
             <td>
                 <button name="cut"
-                        fId="{{ $note.Id }}"
-                        fName='{{ $data.pnote.Path }}{{ if ne $data.pnote.Path "/"}}/{{ end }}{{ $note.Name }}'>
+                        noteId="{{ $note.Id }}"
+                        noteName='{{ $data.pnote.Path }}{{ if ne $data.pnote.Path "/"}}/{{ end }}{{ $note.Name }}'>
                     {{ Localize "i18n.cut" }}
                 </button>
             </td>
             <td>
-                <a href="/note/{{ $note.Id }}"
+                <a name="del"
+                   href="/note/{{ $note.Id }}"
                    method="DELETE"
                    confirm='{{ Localize "i18n.del" }} {{ $note.Name }}{{ if eq $note.Type "dir" }}/{{ end }} ?'>
                     <button>{{ Localize "i18n.del" }}</button>
@@ -99,7 +101,7 @@
     <br>
 
     <div>
-        <a href="/note" method="POST">{{ Localize "i18n.add" }} →</a>
+        <a name="add" href="/note" method="POST">{{ Localize "i18n.add" }} →</a>
     </div>
     <hr width="30%">
     <div>
@@ -111,7 +113,7 @@
     </div>
     <hr width="30%">
     <div>
-        <a ajaxE href="#" method="PUT" name="paste" value="{{ $data.pnote.Id }}">
+        <a name="paste" method="PUT" value="{{ $data.pnote.Id }}">
             <button name="paste">{{ Localize "i18n.paste" }}</button>
         </a>
     </div>
@@ -127,22 +129,33 @@
 <script type="text/javascript">
 
     ;(function () {
+        // searchName
+        let $searchName = $($('input[name="searchName"]')[0])
+
+        // params
+        let params = custom.getUrlQueryParams('{{ .uri }}')
+        // console.log(params)
+        let searchName = params.name
+        if (searchName) {
+            $searchName.val(searchName)
+        }
 
         // search
         let $search = $($('a[name="search"]')[0])
-        $search.click(function () {
-            let $searchName = $($('input[name="searchName"]')[0])
+        custom.ajaxE($search, function () {
             let searchName = $searchName.val().trim()
             $searchName.val(searchName)
             if (searchName !== '') {
-                let url = '/note/list?pid=-1&name=' + searchName
-                custom.ajaxReload(url, "GET", null)
+                return {
+                    url: '/note/list?pid=-1&name=' + searchName
+                }
             }
-            return false
+
+            return custom.ajaxEDoNothing
         })
 
         // add
-        let $add = $($('a[href="/note"]')[0])
+        let $add = $($('a[name="add"]')[0])
         custom.ajaxE($add, function ($add) {
             // flag判断是否已点击 'Add →'
             let flag = $add.attr('flag')
@@ -152,7 +165,7 @@
                 $add.before($input)
                 $add.html('<span style="margin-left: 10px">{{ Localize "i18n.add" }}</span>')
                 $add.attr('flag', 1)
-                return undefined
+                return custom.ajaxEDoNothing
             }
 
             // 获取上一个 input 兄弟节点
@@ -176,7 +189,7 @@
             if (value === "" || !legal) {
                 // 添加 css border
                 $input.css('border', '2px solid red')
-                return undefined
+                return custom.ajaxEDoNothing
             }
 
             // 删除 css border
@@ -187,30 +200,30 @@
             data.append('pid', "{{ $data.pnote.Id }}")
             data.append('name', name)
             data.append('type', type)
-            return data
+            return {data: data}
         })
 
         // rename
         // let $renames = $('a[href^="/note"][href$="/rename"]')
-        let renames = $('a[href="/note/name"]')
+        let renames = $('a[name="rename"]')
         for (let i = 0, len = renames.length; i < len; i++) {
             let $rename = $(renames[i])
             custom.ajaxE($rename, function ($rename) {
                 let name = prompt('{{ Localize "i18n.name" }}', $rename.attr('noteName'))
                 if (!name || (name = name.trim()) === '') {
-                    return undefined
+                    return custom.ajaxEDoNothing
                 }
 
                 let data = new FormData();
                 data.append('id', $rename.attr('noteId'))
                 data.append('pid', $rename.attr('notePid'))
                 data.append('name', name)
-                return data
+                return {data: data}
             })
         }
 
         // del
-        let dels = $('a[method="DELETE"]')
+        let dels = $('a[name="del"]')
         for (let i = 0; i < dels.length; i++) {
             let $del = $(dels[i])
             custom.ajaxE($del, function ($del) {
@@ -218,65 +231,65 @@
                     return null
                 }
 
-                return undefined
+                return custom.ajaxEDoNothing
             })
         }
-    })()
 
-    // cut
-    ;(function () {
-        let $arr = $('button[name="cut"]')
-        let value = custom.storage.get('copy')
+        let $pasteBtn = $($('button[name="paste"]')[0])
+
+        // cut
+        const cutKey = 'cut'
+        let cuts = $('button[name="cut"]')
+        let cutValue = custom.storage.get(cutKey)
         let id = null
-        if (value) {
-            id = JSON.parse(value).id;
+        if (cutValue) {
+            id = JSON.parse(cutValue).id;
         }
-        // console.log('value', value)
+        // console.log('cutValue', cutValue)
         // console.log('id', id)
-        for (let i = 0, len = $arr.length; i < len; i++) {
-            let $e = $($arr[i])
-            if ($e.attr('fId') === id) {
-                $e.attr('disabled', 'disabled')
-                custom.storage.set('copy', {'id': $e.attr('fId'), 'name': $e.attr('fName')})
+        for (let i = 0, len = cuts.length; i < len; i++) {
+            let $cut = $(cuts[i])
+            if ($cut.attr('noteId') === id) {
+                $cut.attr('disabled', 'disabled')
             }
-            $e.click(function () {
-                for (let i = 0, len = $arr.length; i < len; i++) {
-                    let $e = $($arr[i])
-                    $e.removeAttr('disabled')
+            $cut.click(function () {
+                // 移除已cut的笔记
+                for (let i = 0, len = cuts.length; i < len; i++) {
+                    let $cut = $(cuts[i])
+                    $cut.removeAttr('disabled')
                 }
-                $(this).attr('disabled', 'disabled')
-                custom.storage.set('copy', {'id': $(this).attr('fId'), 'name': $(this).attr('fName')})
 
-                $($('button[name="paste"]')[0]).removeAttr('disabled')
+                // 设置当前cut
+                $(this).attr('disabled', 'disabled')
+                custom.storage.set(cutKey, {'id': $(this).attr('noteId'), 'name': $(this).attr('noteName')})
+
+                // 显示paste
+                $pasteBtn.removeAttr('disabled')
             })
         }
-    })()
 
-    // paste
-    ;(function () {
+        // paste
         let $paste = $($('a[name="paste"]')[0])
-        let value = custom.storage.get('copy')
-        if (!(value)) {
-            $($('button[name="paste"]')[0]).attr('disabled', 'disabled')
+        if (!(cutValue)) {
+            $pasteBtn.attr('disabled', 'disabled')
         }
-        $paste[0]['pre'] = function ($e) {
-            let value = custom.storage.get('copy')
-            let src = JSON.parse(value);
+        // $paste.click(function ())
+        custom.ajaxE($paste, function ($paste) {
+            let cutValue = custom.storage.get(cutKey)
+            let src = JSON.parse(cutValue);
             if (!confirm('{{ Localize "i18n.cut" }} "' + src.name + '" {{ Localize "i18n.to" }} "{{ $data.pnote.Path }}{{ if ne $data.pnote.Path "/"}}/{{ end }}" ?')) {
-                return
+                return custom.ajaxEDoNothing
             }
-
-            // put
-            let url = '/note/cut/' + src.id + '/to/{{ $data.pnote.Id }}'
-            // console.log(url)
-            $e.attr('href', url)
 
             // remove attr
-            custom.storage.remove('copy')
-            $($('button[name="paste"]')[0]).attr('disabled', 'disabled')
+            custom.storage.remove(cutKey)
+            $pasteBtn.attr('disabled', 'disabled')
 
-            return {};
-        }
+            return {
+                url: '/note/cut/' + src.id + '/to/{{ $data.pnote.Id }}'
+            };
+        })
+
     })()
 
 </script>

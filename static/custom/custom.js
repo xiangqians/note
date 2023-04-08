@@ -139,6 +139,38 @@ custom = function () {
         }
     }
 
+    /**
+     * 获取url查询参数
+     * @returns {Object}
+     */
+    _obj.getUrlQueryParams = function (url) {
+        let params = {}
+
+        // 获取url中"?"符后的字串
+        if (!url) {
+            url = location.search
+        }
+        // console.log(search)
+
+        let index = url.indexOf("?")
+        if (index === -1) {
+            return params
+        }
+
+        let arr = url.substring(1).split("&")
+        for (let i = 0; i < arr.length; i++) {
+            let e = arr[i]
+            let eArr = e.split("=")
+            let name = eArr[0]
+            let value = null
+            if (eArr.length == 2) {
+                value = eArr[1]
+            }
+            params[name] = value
+        }
+        return params
+    }
+
     // ------------------------------ ajax ------------------------------
 
     /**
@@ -159,7 +191,7 @@ custom = function () {
      */
     _obj.ajax = function (url, method, data, contentType, async, dataType, success, error) {
         url = _obj.addTimestampToUrl(url)
-        let param = {
+        let params = {
             url: url,
             type: method,
             data: data,
@@ -177,24 +209,24 @@ custom = function () {
             // application/x-www-form-urlencoded
             if (contentType === 'form') {
                 // 不处理发送数据
-                param.processData = false
+                params.processData = false
                 // 不设置Content-Type请求头
-                param.contentType = false
+                params.contentType = false
             }
             // other
             else {
-                param.contentType = contentType
+                params.contentType = contentType
             }
         }
 
         // dataType
         if (dataType) {
-            param.dataType = dataType
+            params.dataType = dataType
         }
 
         // $.ajax(url[, options])
         // $.ajax([options])
-        $.ajax(param)
+        $.ajax(params)
     }
 
     _obj.ajaxSimple = function (url, method, data, success, error) {
@@ -214,8 +246,14 @@ custom = function () {
         })
     }
 
-    // form, a, button
-    _obj.ajaxE = function ($e, dataFunc) {
+    // ajaxE 无所事事
+    _obj.ajaxEDoNothing = {
+        url: null,
+        method: null
+    }
+
+    // form, a, button, ...
+    _obj.ajaxE = function ($e, callback) {
         // form
         if ($e.is('form')) {
             let $form = $e
@@ -257,34 +295,51 @@ custom = function () {
             return
         }
 
-        // a
-        if ($e.is('a')) {
-            let $a = $e
-            $a.click(function () {
-                // url
-                let url = $a.attr("href")
-                // console.log('url', url)
+        // e
+        $e.click(function () {
+            let params = null
+            if (callback) {
+                params = callback($e)
+            }
 
-                // method
-                let method = $a.attr("method").trim().toUpperCase()
-                // console.log('method', method)
-
-                // data
-                let data = null
-                if (dataFunc) {
-                    data = dataFunc($a)
-                }
-                // console.log('data', data)
-
-                // ajax
-                if (!_obj.isUndefined(data)) {
-                    _obj.ajaxReload(url, method, data)
-                }
-
-                // 取消 <a></a> 默认行为
+            // url
+            let url = null
+            if (params && params.hasOwnProperty('url')) {
+                url = params.url
+            } else {
+                // <a><a/>
+                url = $e.attr("href")
+            }
+            // console.log('url', url)
+            if (!url) {
                 return false
-            })
-        }
+            }
+
+            // method
+            let method = null
+            if (params && params.hasOwnProperty('method')) {
+                method = params.method
+            } else {
+                method = $e.attr("method").trim().toUpperCase()
+            }
+            // console.log('method', method)
+            if (!method) {
+                return false
+            }
+
+            // data
+            let data = null
+            if (params && params.hasOwnProperty('data')) {
+                data = params.data
+            }
+            // console.log('data', data)
+
+            // ajax
+            _obj.ajaxReload(url, method, data)
+
+            // 取消 <a></a> 默认行为
+            return false
+        })
     }
 
     // ------------------------------ storage ------------------------------

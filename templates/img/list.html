@@ -130,10 +130,10 @@
                     let data = new FormData();
                     data.append('id', $a.attr('imgId'))
                     data.append('name', name)
-                    return data
+                    return {data: data}
                 }
 
-                return undefined
+                return custom.ajaxEDoNothing
             })
         }
 
@@ -146,7 +146,7 @@
                     return null
                 }
 
-                return undefined
+                return custom.ajaxEDoNothing
             })
         }
     })()
