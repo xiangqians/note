@@ -37,11 +37,7 @@ footer {
     padding-top: 100px;
 }
 
-button {
-    cursor: pointer
-}
-
-[type="submit"] {
+button, [type="submit"] {
     cursor: pointer
 }
 

@@ -20,6 +20,11 @@
  * JavaScript code in this page
  */
 
+/**
+ * https://github.com/mozilla/pdf.js
+ * pdf.js v3.3.122
+ */
+
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();

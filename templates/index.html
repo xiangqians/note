@@ -23,7 +23,7 @@
 {{ template "common/header.html" . }}
 
 <content>
-    <p class="msg">{{ .resp.Msg }}</p>
+    <p style="color: red;">{{ .resp.Msg }}</p>
 
     {{ $data := .resp.Data }}
 
@@ -34,7 +34,7 @@
             </canvas>
         </div>
 
-        <div class="canvas">
+        <div class="canvas" style="padding-left: 30px">
             <canvas class="canvas" id="imgStat" name='{{ Localize "i18n.img" }}'>
                 你的浏览器不支持 canvas，请升级你的浏览器。
             </canvas>
@@ -46,7 +46,7 @@
 
 </body>
 </html>
-<script type="text/javascript" src="/static/jquery-v3.6.2/min.js"></script>
+<script type="text/javascript" src="/static/jquery/min.js"></script>
 <script type="text/javascript" src="/static/chart.js/chart.js"></script>
 <script type="text/javascript" src="/static/custom/custom.js"></script>
 <script>

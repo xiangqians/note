@@ -3,7 +3,7 @@ pdf.js
 https://github.com/mozilla/pdf.js
 http://mozilla.github.io/pdf.js
 
-Copy from pdfjs-3.3.122/web/viewer.html
+Copy from pdf.js/web/viewer.html
 
 -->
 <!DOCTYPE html>
@@ -39,10 +39,10 @@ See https://github.com/adobe-type-tools/cmap-resources
 
     <link rel="stylesheet" href="/static/custom/custom.css" type="text/css"/>
 
-    <link rel="stylesheet" href="/static/pdfjs-3.3.122/web/viewer.css">
+    <link rel="stylesheet" href="/static/pdf.js/web/viewer.css">
 
     <!-- This snippet is used in production (included from viewer.html) -->
-    <link rel="resource" type="application/l10n" href="/static/pdfjs-3.3.122/web/locale/locale.properties">
+    <link rel="resource" type="application/l10n" href="/static/pdf.js/web/locale/locale.properties">
 
     <style>
         .float {
@@ -547,13 +547,13 @@ See https://github.com/adobe-type-tools/cmap-resources
 
 </body>
 </html>
-<script type="text/javascript" src="/static/jquery-v3.6.2/min.js"></script>
+<script type="text/javascript" src="/static/jquery/min.js"></script>
 <script type="text/javascript" src="/static/custom/custom.js"></script>
-<script src="/static/pdfjs-3.3.122/build/pdf.js"></script>
+<script src="/static/pdf.js/build/pdf.js"></script>
 <script>
     ;
     let defPdfSrc = "{{ $data.Url }}"
         // console.log('defPdfSrc', defPdfSrc)
     ;
 </script>
-<script src="/static/pdfjs-3.3.122/web/viewer.js"></script>
+<script src="/static/pdf.js/web/viewer.js"></script>

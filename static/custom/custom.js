@@ -3,9 +3,9 @@
  * @date 22:24 2022/12/25
  */
 ;
-let custom = {}
+custom = function () {
 
-;(function (_obj) {
+    let _obj = {}
 
     /**
      * 判断是否属于某类型
@@ -42,7 +42,6 @@ let custom = {}
     _obj.isStr = function (obj) {
         return _obj.isType(obj, '[object String]')
     }
-
 
     /**
      * 判断是否是 FormData
@@ -120,7 +119,7 @@ let custom = {}
      * @param url
      * @returns {string}
      */
-    _obj.addTimestampToUrl = function (url) {
+    _obj.addUrlTimestamp = function (url) {
         let timestamp = new Date().getTime()
         timestamp += _obj.random(-1000, 1000)
         if (url.indexOf('?') > 0) {
@@ -198,7 +197,7 @@ let custom = {}
      * @param error     请求错误回调函数
      */
     _obj.ajax = function (url, method, data, contentType, async, dataType, success, error) {
-        url = _obj.addTimestampToUrl(url)
+        url = _obj.addUrlTimestamp(url)
         let params = {
             url: url,
             type: method,
@@ -403,8 +402,8 @@ let custom = {}
     // new storage
     _obj.storage = new Storage()
 
-})(custom)
-
+    return _obj
+}()
 
 ;(function () {
     ;
