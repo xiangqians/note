@@ -64,12 +64,13 @@
                 let stat = stats[i]
                 let type = stat.type
                 let num = stat.num
-                let size = custom.humanizFileSize(stat.size)
-                let histSize = custom.humanizFileSize(stat.histSize)
-                let totalSize = custom.humanizFileSize(stat.size + stat.histSize)
+                let humanizSize = custom.humanizFileSize(stat.size)
+                let humanizHistSize = custom.humanizFileSize(stat.histSize)
+                let totalSize = stat.size + stat.histSize
+                let humanizTotalSize = custom.humanizFileSize(totalSize)
                 labels.push(type)
-                data.push(num)
-                stat.label = `\tNum: ${num}\t\t\tSize: ${size}\t\t\tHistSize: ${histSize}\t\t\tTotalSize: ${totalSize}`
+                data.push(totalSize)
+                stat.label = `\tNum: ${num}\t\t\tSize: ${humanizSize}\t\t\tHistSize: ${humanizHistSize}\t\t\tTotalSize: ${humanizTotalSize}`
             }
 
             let $canvas = $('#' + id);
