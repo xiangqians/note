@@ -72,5 +72,6 @@
   "i18n.hist": "历史",
   "i18n.reset": "重置",
   "i18n.cannotDelNonEmptyDir": "不能删除非空目录",
-  "i18n.path": "路径"
+  "i18n.path": "路径",
+  "i18n.version": "版本"
 }

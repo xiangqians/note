@@ -72,5 +72,6 @@
   "i18n.hist": "History",
   "i18n.reset": "Reset",
   "i18n.cannotDelNonEmptyDir": "Cannot delete non empty directory",
-  "i18n.path": "Path"
+  "i18n.path": "Path",
+  "i18n.version": "Version"
 }

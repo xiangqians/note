@@ -753,7 +753,7 @@ const defaultOptions = {
     kind: OptionKind.WORKER
   },
   workerSrc: {
-    value: "/static/pdfjs-3.3.122/build/pdf.worker.js",
+    value: "/static/pdf.js/build/pdf.worker.js",
     kind: OptionKind.WORKER
   }
 };
