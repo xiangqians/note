@@ -98,6 +98,7 @@ func DbList(context *gin.Context, note typ_api.Note) ([]typ_api.Note, error) {
 		path = true
 	}
 	sql, args := DbQrySql(note, path)
+	sql += "ORDER BY n.`type`, n.`name`, (CASE WHEN n.`upd_time` > n.`add_time` THEN n.`upd_time` ELSE n.`add_time` END) DESC "
 	sql += "LIMIT 10000"
 	notes, count, err := common.DbQry[[]typ_api.Note](context, sql, args...)
 	if err != nil || count == 0 {

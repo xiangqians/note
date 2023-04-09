@@ -352,6 +352,7 @@ func DbPage(context *gin.Context, note typ_api.Note) (typ_page.Page[typ_api.Note
 	req, _ := common.PageReq(context)
 	path := true
 	sql, args := DbQrySql(note, path)
+	sql += "ORDER BY (CASE WHEN n.`upd_time` > n.`add_time` THEN n.`upd_time` ELSE n.`add_time` END) DESC "
 	page, err := common.DbPage[typ_api.Note](context, req, sql, args...)
 	if path && err == nil {
 		data := page.Data
@@ -460,7 +461,6 @@ func DbQrySql(note typ_api.Note, path bool) (string, []any) {
 	}
 
 	sql += "GROUP BY n.id "
-	sql += "ORDER BY (CASE WHEN n.`upd_time` > n.`add_time` THEN n.`upd_time` ELSE n.`add_time` END) DESC "
 
 	return sql, args
 }

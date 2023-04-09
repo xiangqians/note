@@ -445,7 +445,6 @@ custom = function () {
         // path
         let $path = $($('td[name="path"]')[0])
         $path.html(note.pathLink)
-
     }
 
 })(custom)

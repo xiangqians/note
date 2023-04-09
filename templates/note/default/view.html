@@ -20,18 +20,16 @@
 download 属性规定被下载的超链接目标。
 该属性也可以设置一个值来规定下载文件的名称。所允许的值没有限制，浏览器将自动检测正确的文件扩展名并添加到文件 (.img, .pdf, .txt, .html, 等等)。
 -->
+<!--
 <a href="/note/{{ $data.Id }}" download="{{ $data.Name }}">{{ Localize "i18n.download" }}</a>
+-->
+
+<h2>
+    此文件类型暂不支持查看
+</h2>
 
 <div class="float">
     <p style="color: red;">{{ .resp.Msg }}</p>
-    <br>
-    {{ Localize "i18n.version" }}
-    <select name="version">
-        <option value="1.0">1.0</option>
-        <option value="2.0">2.0</option>
-    </select>
-    <br>
-    <br>
     <table border="1" cellspacing="0" cellpadding="10" align="center">
         <tbody>
         <tr>
@@ -61,11 +59,16 @@ download 属性规定被下载的超链接目标。
         </tbody>
     </table>
     <br>
-
-    <br>
 </div>
 
 </body>
 </html>
 <script type="text/javascript" src="/static/jquery/min.js"></script>
 <script type="text/javascript" src="/static/custom/custom.js"></script>
+<script>
+
+    ;(function () {
+        custom.note('{{ Serialize $data }}', '{{ .uri }}')
+    })()
+
+</script>
