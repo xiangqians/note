@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/render"
 	"html/template"
+	util_json "note/src/util/json"
 	util_num "note/src/util/num"
 	util_os "note/src/util/os"
 	util_reflect "note/src/util/reflect"
@@ -66,6 +67,12 @@ func htmlTemplate(engine *gin.Engine) {
 		// Timestamp
 		"Timestamp": func() int64 {
 			return util_time.NowUnix()
+		},
+
+		// JSON Serialize
+		"Serialize": func(i any) string {
+			json, _ := util_json.Serialize(i)
+			return json
 		},
 	})
 

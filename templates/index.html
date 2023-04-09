@@ -62,11 +62,11 @@
             let data = [];
             for (let i = 0; i < stats.length; i++) {
                 let stat = stats[i]
-                let type = stat.Type
-                let num = stat.Num
-                let size = custom.humanizFileSize(stat.Size)
-                let histSize = custom.humanizFileSize(stat.HistSize)
-                let totalSize = custom.humanizFileSize(stat.Size + stat.HistSize)
+                let type = stat.type
+                let num = stat.num
+                let size = custom.humanizFileSize(stat.size)
+                let histSize = custom.humanizFileSize(stat.histSize)
+                let totalSize = custom.humanizFileSize(stat.size + stat.histSize)
                 labels.push(type)
                 data.push(num)
                 stat.label = `\tNum: ${num}\t\t\tSize: ${size}\t\t\tHistSize: ${histSize}\t\t\tTotalSize: ${totalSize}`

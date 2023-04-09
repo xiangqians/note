@@ -405,6 +405,51 @@ custom = function () {
     return _obj
 }()
 
+;(function (_obj) {
+
+    _obj.note = function (note, uri) {
+        note = JSON.parse(note)
+        // console.log(note)
+
+        // pdf
+        if (note.type === 'pdf') {
+            // params
+            let params = custom.urlQueryParams(decodeURIComponent(uri))
+            // console.log(params)
+
+            // v
+            let version = '2.0'
+            if (params.v) {
+                version = params.v
+            }
+
+            // select
+            let $select = $($("select[name='version']")[0])
+            let options = $select.find("option")
+            for (let i = 0; i < options.length; i++) {
+                let $option = $(options[i])
+                if ($option.attr('value') === version) {
+                    $option.attr('selected', true)
+                    break
+                }
+            }
+
+            $select.change(function () {
+                let version = $select.find("option:selected").attr("value");
+                // console.log(version)
+                let url = `/note/${note.id}/view?v=${version}`
+                custom.ajaxReload(url, 'GET', null)
+            });
+        }
+
+        // path
+        let $path = $($('td[name="path"]')[0])
+        $path.html(note.pathLink)
+
+    }
+
+})(custom)
+
 ;(function () {
     ;
 

@@ -10,8 +10,8 @@ import (
 
 // Resp 响应数据
 type Resp[T any] struct {
-	Msg  string // 消息（没有消息就是最好的消息）
-	Data T      // 数据
+	Msg  string `json:"msg"`  // 消息（没有消息就是最好的消息）
+	Data T      `json:"data"` // 数据
 }
 
 // 注册模型

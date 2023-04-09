@@ -574,46 +574,14 @@ See https://github.com/adobe-type-tools/cmap-resources
 <script src="/static/pdf.js/web/viewer.js"></script>
 <script>
 
-    // version
     ;(function () {
-        // params
-        let params = custom.urlQueryParams(decodeURIComponent('{{ .uri }}'))
-        // console.log(params)
+        custom.note('{{ Serialize $data }}', '{{ .uri }}')
 
-        // v
-        let version = '2.0'
-        if (params.v) {
-            version = params.v
-        }
-
-        // select
-        let $select = $($("select[name='version']")[0])
-        let options = $select.find("option")
-        for (let i = 0; i < options.length; i++) {
-            let $option = $(options[i])
-            if ($option.attr('value') === version) {
-                $option.attr('selected', true)
-                break
-            }
-        }
-
-        $select.change(function () {
-            let version = $select.find("option:selected").attr("value");
-            // console.log(version)
-            let url = '/note/{{ $data.Id }}/view?v=' + version
-            custom.ajaxReload(url, 'GET', null)
-        });
-    })()
-
-    ;(function () {
-
-        let $path = $($('td[name="path"]')[0])
-        $path.html('{{ $data.PathLink }}')
-
+        // btn style
         let $float = $($('div[class="float"]')[0])
         let $btn = $($float.find('button')[0])
         $btn.css('padding', '3px')
         // console.log($btn)
-
     })()
+
 </script>

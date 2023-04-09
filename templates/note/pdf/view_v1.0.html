@@ -92,39 +92,9 @@
 <script type="text/javascript" src="/static/custom/custom.js"></script>
 <script>
 
-
-    // version
     ;(function () {
-        // params
-        let params = custom.urlQueryParams(decodeURIComponent('{{ .uri }}'))
-        // console.log(params)
+        custom.note('{{ Serialize $data }}', '{{ .uri }}')
 
-        // v
-        let version = '2.0'
-        if (params.v) {
-            version = params.v
-        }
-
-        // select
-        let $select = $($("select[name='version']")[0])
-        let options = $select.find("option")
-        for (let i = 0; i < options.length; i++) {
-            let $option = $(options[i])
-            if ($option.attr('value') === version) {
-                $option.attr('selected', true)
-                break
-            }
-        }
-
-        $select.change(function () {
-            let version = $select.find("option:selected").attr("value");
-            // console.log(version)
-            let url = '/note/{{ $data.Id }}/view?v=' + version
-            custom.ajaxReload(url, 'GET', null)
-        });
-    })()
-
-    ;(function () {
         let $embed = $($('embed')[0])
         // console.log($embed)
         // window._embed = $embed[0]

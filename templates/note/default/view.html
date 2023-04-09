@@ -3,35 +3,67 @@
  | @date 22:32 2023/02/08
  |-->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" uri="{{ .uri }}" url="{{ .url }}">
+{{ $data := .resp.Data }}
 <head>
     <meta charset="UTF-8">
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/custom/custom.css" type="text/css"/>
-    <title>{{ .f.Name }}</title>
-    <style>
-        .float {
-            position: fixed;
-            top: 30px;
-            right: 50px;
-            width: auto;
-            height: auto;
-            /*background: lightgray;*/
-        }
-    </style>
+    <title>{{ $data.Name }}</title>
 </head>
 <body>
 
-<p style="color: red;">{{ .msg }}</p>
+<p style="color: red;">{{ .resp.Msg }}</p>
 
 <!--
 只有 Firefox 和 Chrome 支持 download 属性。
 download 属性规定被下载的超链接目标。
 该属性也可以设置一个值来规定下载文件的名称。所允许的值没有限制，浏览器将自动检测正确的文件扩展名并添加到文件 (.img, .pdf, .txt, .html, 等等)。
 -->
-<a href="/note/{{ .f.Id }}/view" download="{{ .f.Name }}">{{ Localize "i18n.download" }}</a>
+<a href="/note/{{ $data.Id }}" download="{{ $data.Name }}">{{ Localize "i18n.download" }}</a>
 
-<a class="float" href="/note/{{ .f.Id }}/editpage" target="_blank">{{ Localize "i18n.edit" }} →</a>
+<div class="float">
+    <p style="color: red;">{{ .resp.Msg }}</p>
+    <br>
+    {{ Localize "i18n.version" }}
+    <select name="version">
+        <option value="1.0">1.0</option>
+        <option value="2.0">2.0</option>
+    </select>
+    <br>
+    <br>
+    <table border="1" cellspacing="0" cellpadding="10" align="center">
+        <tbody>
+        <tr>
+            <td>{{ Localize "i18n.name" }}</td>
+            <td>{{ $data.Name }}</td>
+        </tr>
+        <tr>
+            <td>{{ Localize "i18n.path" }}</td>
+            <td name="path"></td>
+        </tr>
+        <tr>
+            <td>{{ Localize "i18n.type" }}</td>
+            <td>{{ $data.Type }}</td>
+        </tr>
+        <tr>
+            <td>{{ Localize "i18n.size" }}</td>
+            <td>{{ HumanizFileSize $data.Size }}</td>
+        </tr>
+        <tr>
+            <td>{{ Localize "i18n.addTime" }}</td>
+            <td>{{ HumanizUnix $data.AddTime }}</td>
+        </tr>
+        <tr>
+            <td>{{ Localize "i18n.updTime" }}</td>
+            <td>{{ HumanizUnix $data.UpdTime }}</td>
+        </tr>
+        </tbody>
+    </table>
+    <br>
+
+    <br>
+</div>
 
 </body>
 </html>
