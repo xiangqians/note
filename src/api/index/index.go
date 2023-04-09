@@ -29,7 +29,7 @@ func Index(context *gin.Context) {
 	imgStats := []typ_api.Stat{}
 
 	// note
-	stats, count, err := common.DbQry[[]typ_api.Stat](context, "SELECT `type`, COUNT(id) AS 'num', SUM(`size`) AS 'size' FROM `note` WHERE del = 0 GROUP BY `type` ORDER BY COUNT(id) DESC")
+	stats, count, err := common.DbQry[[]typ_api.Stat](context, "SELECT `type`, COUNT(`id`) AS 'num', SUM(`size`) AS 'size', SUM(`hist_size`) AS 'hist_size' FROM `note` WHERE `del` = 0 GROUP BY `type` ORDER BY COUNT(`id`) DESC")
 	if err != nil {
 		html(noteStats, imgStats, err)
 		return
@@ -39,7 +39,7 @@ func Index(context *gin.Context) {
 	}
 
 	// img
-	stats, count, err = common.DbQry[[]typ_api.Stat](context, "SELECT `type`, COUNT(id) AS 'num', SUM(`size`) AS 'size' FROM img WHERE del = 0 GROUP BY `type` ORDER BY COUNT(id) DESC")
+	stats, count, err = common.DbQry[[]typ_api.Stat](context, "SELECT `type`, COUNT(`id`) AS 'num', SUM(`size`) AS 'size', SUM(`hist_size`) AS 'hist_size' FROM `img` WHERE `del` = 0 GROUP BY `type` ORDER BY COUNT(`id`) DESC")
 	if count > 0 {
 		imgStats = stats
 	}

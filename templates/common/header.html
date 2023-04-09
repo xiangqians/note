@@ -12,24 +12,29 @@ $. 引用模板中的根级上下文
 {{ define "common/header.html" }}
 <header>
     <div style="text-align: right; padding-right: 50px">
-        <div style="padding: 4px;">
-            <a href="/user/settings?t={{ Timestamp }}">{{ .user.Name }}, {{ .user.Nickname }}</a>
+        <div style="padding-top: 20px">
+            <a style="text-decoration: none;"
+               href="/user/settings?t={{ Timestamp }}">{{ .user.Name }}, {{ .user.Nickname }}</a>
         </div>
-        <div style="padding: 4px;">
-            <a ajaxE href="/user/logout?t={{ Timestamp }}" method="POST">{{ Localize "i18n.logout" }}</a>
+        <div style="padding-top: 10px">
+            <a style="text-decoration: none;"
+               href="/user/logout?t={{ Timestamp }}" method="POST">{{ Localize "i18n.logout" }}</a>
         </div>
     </div>
     <br>
 
     <div style="text-align: left; padding-left: 50px;">
-        <a name="nav" style='padding: 8px;{{ if eq .url "/" }}background-color: lightgray;{{ end }}'
+        <a name="nav"
+           style='text-decoration: none; padding: 8px;{{ if eq .url "/" }}background-color: lightgray;{{ end }}'
            href="/?t={{ Timestamp }}">{{ Localize "i18n.index" }}</a>
-        <a name="nav" style='padding: 8px;{{ if eq .url "/note/list" }}background-color: lightgray;{{ end }}'
+        <a name="nav"
+           style='text-decoration: none; padding: 8px;{{ if eq .url "/note/list" }}background-color: lightgray;{{ end }}'
            href="/note/list?t={{ Timestamp }}">{{ Localize "i18n.note" }}</a>
-        <a name="nav" style='padding: 8px;{{ if eq .url "/img/list" }}background-color: lightgray;{{ end }}'
+        <a name="nav"
+           style='text-decoration: none; padding: 8px;{{ if eq .url "/img/list" }}background-color: lightgray;{{ end }}'
            href="/img/list?t={{ Timestamp }}">{{ Localize "i18n.img" }}</a>
         <a name="nav"
-           style='padding: 8px;{{ if eq .url "/recycle/note/list" }}background-color: lightgray;{{ else }}{{ if eq .url "/recycle/img/list" }}background-color: lightgray;{{ end }}{{ end }}'
+           style='text-decoration: none; padding: 8px;{{ if eq .url "/recycle/note/list" }}background-color: lightgray;{{ else }}{{ if eq .url "/recycle/img/list" }}background-color: lightgray;{{ end }}{{ end }}'
            href="/recycle/note/list?t={{ Timestamp }}">{{ Localize "i18n.recycle" }}</a>
     </div>
     <br>

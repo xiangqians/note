@@ -15,7 +15,6 @@ body {
 }
 
 header {
-
 }
 
 content {
@@ -35,14 +34,6 @@ content table tbody tr:hover {
 }
 
 footer {
-    /*
-    position: absolute;
-    bottom: 0px;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    height: 60px;
-    */
-
     padding-top: 100px;
 }
 
@@ -57,12 +48,6 @@ button {
 textarea[name="rem"] {
     width: 300px;
     height: 100px;
-}
-
-canvas {
-    display: block;
-    margin: 2px auto;
-    border: 1px solid #000;
 }
 
 .float {

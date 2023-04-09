@@ -3,9 +3,9 @@
  * @date 22:24 2022/12/25
  */
 ;
-custom = function () {
-    // object
-    let _obj = {}
+let custom = {}
+
+;(function (_obj) {
 
     /**
      * 判断是否属于某类型
@@ -42,6 +42,7 @@ custom = function () {
     _obj.isStr = function (obj) {
         return _obj.isType(obj, '[object String]')
     }
+
 
     /**
      * 判断是否是 FormData
@@ -97,13 +98,21 @@ custom = function () {
     }
 
     /**
-     * 获取指定范围的随机数 [m, n)
-     * @param m
-     * @param n
+     * 获取指定范围的随机数 [min, max)
+     * @param min
+     * @param max
      * @returns {number}
      */
-    _obj.random = function (m, n) {
-        return Math.round(Math.random() * (n - m) + m)
+    _obj.random = function (min, max) {
+        return Math.round(Math.random() * (max - min) + min)
+    }
+
+    _obj.rgb = function () {
+        function color() {
+            return _obj.random(0, 255 + 1)
+        }
+
+        return `rgb(${color()},${color()},${color()})`
     }
 
     /**
@@ -139,6 +148,7 @@ custom = function () {
         }
     }
 
+
     /**
      * 获取url查询参数
      * @returns {Object}
@@ -170,8 +180,6 @@ custom = function () {
         }
         return params
     }
-
-    // ------------------------------ ajax ------------------------------
 
     /**
      * ajax
@@ -342,8 +350,6 @@ custom = function () {
         })
     }
 
-    // ------------------------------ storage ------------------------------
-
     /**
      * 存储
      * @constructor
@@ -397,128 +403,10 @@ custom = function () {
     // new storage
     _obj.storage = new Storage()
 
+})(custom)
 
-    // ------------------------------ pie-chart ------------------------------
 
-    _obj.PieChart = function (canvas) {
-        this.canvas = canvas
-        this.cxt = canvas.getContext('2d')
-        this.w = this.cxt.canvas.width
-        this.h = this.cxt.canvas.height
-        this.x = this.w / 2 + 30
-        this.y = this.h / 2
-        this.r = 150
-        this.line = 20
-        this.rectW = 30
-        this.rectH = 15
-        this.rectL = 10
-        this.rectT = 6
-    }
-
-    _obj.PieChart.prototype.beginPath = function () {
-        this.cxt.beginPath()
-    }
-
-    _obj.PieChart.prototype.getColor = function () {
-        function color() {
-            let min = 0, max = 255
-            return parseInt(Math.random() * (max - min + 1) + min)
-        }
-
-        return `rgb(${color()},${color()},${color()})`
-    }
-
-    _obj.PieChart.prototype.drawArc = function (sAngle, eAngle, color) {
-        this.cxt.moveTo(this.x, this.y)
-        this.cxt.arc(this.x, this.y, this.r, sAngle, eAngle)
-        this.cxt.fillStyle = color
-        this.cxt.fill()
-    }
-
-    _obj.PieChart.prototype.drawLabelDetails = function (sAngle, angle, color, labelDetails) {
-        this.beginPath()
-        this.endX = Math.cos(sAngle + angle / 2) * (this.r + this.line) + this.x
-        this.endY = Math.sin(sAngle + angle / 2) * (this.r + this.line) + this.y
-        this.cxt.moveTo(this.x, this.y)
-        this.cxt.lineTo(this.endX, this.endY)
-        this.cxt.strokeStyle = color
-        this.cxt.stroke()
-
-        this.beginPath()
-        this.textWidth = this.cxt.measureText(labelDetails).width
-        this.cxt.moveTo(this.endX, this.endY)
-        this.lineEndX = this.endX > this.x ? this.endX + this.textWidth : this.endX - this.textWidth
-        this.cxt.lineTo(this.lineEndX, this.endY)
-        this.cxt.strokeStyle = color
-        this.cxt.stroke()
-
-        // 绘制标题
-        this.beginPath()
-        this.cxt.textBaseline = 'bottom'
-        this.cxt.fillText(labelDetails, this.x > this.endX ? this.lineEndX : this.endX, this.endY)
-    }
-
-    _obj.PieChart.prototype.drawRect = function (label, n, rectColor) {
-        this.beginPath()
-        let rectEndT = this.rectT * (n + 1) + this.rectH * (n)
-        this.cxt.fillRect(this.rectL, rectEndT, this.rectW, this.rectH)
-        // 配套相应的文字
-        this.cxt.font = '12px Miscrosoft Yahei'
-        this.cxt.textBaseline = 'middle'
-        this.cxt.fillText(label, this.rectL + this.rectW + this.rectT, rectEndT + this.rectH / 2)
-        this.cxt.fillStyle = rectColor
-        this.cxt.fill()
-    }
-
-    /**
-     * draw
-     * @param data array数据
-     * @param getLabel 获取标签
-     * @param getLabelDetails 获取标签详情
-     * @param getNum 获取数量
-     */
-    _obj.PieChart.prototype.draw = function (data, getLabel, getLabelDetails, getNum) {
-        if (!(data) || !(data.length)) {
-            return
-        }
-
-        // total
-        let total = 0
-        data.forEach(e => total += getNum(e))
-
-        // percentage（百分比）
-        data.forEach(e => {
-            e._pct = getNum(e) / total * Math.PI * 2
-        })
-
-        let start = 0
-        let end = 0
-        for (let i = 0, len = data.length; i < len; i++) {
-            let color = this.getColor()
-            this.beginPath()
-            if (i == 0) {
-                start = 0
-                end = data[i]._pct
-            } else {
-                start += data[i - 1]._pct
-                end += data[i]._pct
-            }
-
-            // 绘制弧
-            this.drawArc(start, end, color)
-            // 绘制标签详情
-            this.drawLabelDetails(start, data[i]._pct, color, getLabelDetails(data[i]))
-
-            // 绘制左上角标签
-            this.drawRect(getLabel(data[i]), i, color)
-        }
-    }
-
-    return _obj
-}()
-;
-
-(function () {
+;(function () {
     ;
 
     // div收缩/展开

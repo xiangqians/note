@@ -9,26 +9,36 @@
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/custom/custom.css" type="text/css"/>
     <title>{{ Localize "i18n.index" }}</title>
+
+    <style>
+        .canvas {
+            display: inline-block; /* 行内块 */
+            width: 500px;
+            height: 400px;
+        }
+    </style>
 </head>
 <body>
 
 {{ template "common/header.html" . }}
 
 <content>
-    <p style="color: red;">{{ .resp.Msg }}</p>
+    <p class="msg">{{ .resp.Msg }}</p>
 
-    <div style="float: left; margin-left: 17%;">
-        {{ Localize "i18n.note" }}
-        <canvas id="noteStat" width="600" height="400">
-            你的浏览器不支持 canvas，请升级你的浏览器。
-        </canvas>
-    </div>
+    {{ $data := .resp.Data }}
 
-    <div style="float: left; margin-left: 5px;">
-        {{ Localize "i18n.img" }}
-        <canvas id="imgStat" width="600" height="400">
-            你的浏览器不支持 canvas，请升级你的浏览器。
-        </canvas>
+    <div>
+        <div class="canvas">
+            <canvas class="canvas" id="noteStat" name='{{ Localize "i18n.note" }}'>
+                你的浏览器不支持 canvas，请升级你的浏览器。
+            </canvas>
+        </div>
+
+        <div class="canvas">
+            <canvas class="canvas" id="imgStat" name='{{ Localize "i18n.img" }}'>
+                你的浏览器不支持 canvas，请升级你的浏览器。
+            </canvas>
+        </div>
     </div>
 </content>
 
@@ -37,29 +47,83 @@
 </body>
 </html>
 <script type="text/javascript" src="/static/jquery-v3.6.2/min.js"></script>
+<script type="text/javascript" src="/static/chart.js/chart.js"></script>
 <script type="text/javascript" src="/static/custom/custom.js"></script>
 <script>
     ;
     (function () {
 
-        function drawPieChart(id, stats) {
-            if (!(stats) && !(stats.length)) {
-                return
+        // https://www.chartjs.org/
+        // https://www.chartjs.org/docs/latest/samples/other-charts/pie.html
+        // https://www.chartjs.org/docs/latest/charts/doughnut.html#pie
+        // https://www.chartjs.org/docs/latest/configuration/tooltip.html
+        function pieChart(id, stats) {
+            let labels = []
+            let data = [];
+            for (let i = 0; i < stats.length; i++) {
+                let stat = stats[i]
+                let type = stat.Type
+                let num = stat.Num
+                let size = custom.humanizFileSize(stat.Size)
+                let histSize = custom.humanizFileSize(stat.HistSize)
+                let totalSize = custom.humanizFileSize(stat.Size + stat.HistSize)
+                labels.push(type)
+                data.push(num)
+                stat.label = `\tNum: ${num}\t\t\tSize: ${size}\t\t\tHistSize: ${histSize}\t\t\tTotalSize: ${totalSize}`
             }
 
-            // console.log('stats', stats)
-            let pieChart = new custom.PieChart(document.getElementById(id))
-            pieChart.draw(stats, e => e.Type, e => e.Type + ' (' + e.Num + ',  ' + custom.humanizFileSize(e.Size) + ')', e => e.Num)
+            let $canvas = $('#' + id);
+            let title = $canvas.attr('name')
+            let chart = new Chart($canvas[0], {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '',
+                        data: data,
+                        // backgroundColor: [ 'rgb(255, 99, 132)', 'rgb(54, 162, 235)' ],
+                        hoverOffset: 4
+                    }],
+                },
+                options: {
+                    responsive: true, // 设置图表为响应式，根据屏幕窗口变化而变化
+                    maintainAspectRatio: false,// 保持图表原有比例
+                    plugins: {
+                        legend: {
+                            position: 'left'
+                        },
+                        title: {
+                            display: true,
+                            text: title
+                        },
+
+                        tooltip: {
+                            // Namespace: options.plugins.tooltip.callbacks
+                            callbacks: {
+                                // 重新定义 label
+                                // https://www.chartjs.org/docs/latest/configuration/tooltip.html
+                                // https://www.chartjs.org/docs/latest/configuration/tooltip.html#label-callback
+                                label: function (context) {
+                                    let dataIndex = context.dataIndex
+                                    return stats[dataIndex].label;
+                                }
+                            }
+                        }
+                    },
+                }
+            });
+            // console.log(chart)
         }
 
-        // resp
-        let resp = JSON.parse(`{{ .resp }}`)
-        // console.log('resp', resp)
+        // data
+        let data = JSON.parse(`{{ $data }}`)
+        // console.log('data', data)
 
         // note stat
-        drawPieChart('noteStat', resp.Data.noteStats)
-
+        pieChart('noteStat', data.noteStats)
         // img stat
-        drawPieChart('imgStat', resp.Data.imgStats)
+        pieChart('imgStat', data.imgStats)
+
     })()
+
 </script>

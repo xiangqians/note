@@ -11,7 +11,7 @@ import (
 	util_os "note/src/util/os"
 )
 
-func DbPage[T any](context *gin.Context, req typ_page.PageReq, sql string, args ...any) (typ_page.Page[T], error) {
+func DbPage[T any](context *gin.Context, req typ_page.Req, sql string, args ...any) (typ_page.Page[T], error) {
 	return db.Page[T](Dsn(context), req, sql, args...)
 }
 

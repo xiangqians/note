@@ -53,9 +53,10 @@ type Img struct {
 
 // Stat 统计（file和img）
 type Stat struct {
-	Type string // 文件类型
-	Num  int64  // 文件数量
-	Size int64  // 文件大小
+	Type     string // 文件类型
+	Num      int64  // 文件数量
+	Size     int64  // 文件大小
+	HistSize int64  // 文件历史大小
 }
 
 // 注册模型

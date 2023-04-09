@@ -5,8 +5,8 @@ package page
 
 import "encoding/gob"
 
-// PageReq 分页请求
-type PageReq struct {
+// Req 分页请求
+type Req struct {
 	Current int64 `json:"current" form:"current"  binding:"gt=0"` // 当前页
 	Size    uint8 `json:"size" form:"size" binding:"gt=0"`        // 页数量
 }
@@ -22,5 +22,5 @@ type Page[T any] struct {
 
 // 注册模型
 func init() {
-	gob.Register(PageReq{})
+	gob.Register(Req{})
 }

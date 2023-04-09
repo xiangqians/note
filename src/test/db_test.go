@@ -46,7 +46,7 @@ func TestDb(t *testing.T) {
 	//user = i.(api.User)
 	//fmt.Println("users", users)
 	//
-	//page, err := _db.Page[api.User](db, typ_page.PageReq{Current: 2, Size: 10}, "SELECT `id`, `name`, `nickname`, `rem`, `add_time`, `upd_time` FROM `user`")
+	//page, err := _db.Page[api.User](db, typ_page.Req{Current: 2, Size: 10}, "SELECT `id`, `name`, `nickname`, `rem`, `add_time`, `upd_time` FROM `user`")
 	//fmt.Println("page", page)
 
 	db.Commit()

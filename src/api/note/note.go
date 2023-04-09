@@ -826,7 +826,7 @@ func DbPage(context *gin.Context, note typ_api.Note) (typ_page.Page[typ_api.Note
 func DbList(context *gin.Context, note typ_api.Note) ([]typ_api.Note, error) {
 	// 查询
 	path := false
-	if note.Name != "" || note.Type != "" {
+	if note.Pid == -1 {
 		path = true
 	}
 	sql, args := DbQrySql(note, path)

@@ -15,7 +15,7 @@ import (
 )
 
 // Page 分页查询
-func Page[T any](dsn string, pageReq typ_page.PageReq, sql string, args ...any) (typ_page.Page[T], error) {
+func Page[T any](dsn string, pageReq typ_page.Req, sql string, args ...any) (typ_page.Page[T], error) {
 	// page
 	current := pageReq.Current
 	size := pageReq.Size

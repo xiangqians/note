@@ -87,8 +87,8 @@ func Query[T any](context *gin.Context, key string) (T, error) {
 	return util_str.StrToType[T](value)
 }
 
-func PageReq(context *gin.Context) (typ_page.PageReq, error) {
-	req := typ_page.PageReq{Size: 10}
+func PageReq(context *gin.Context) (typ_page.Req, error) {
+	req := typ_page.Req{Size: 10}
 	err := ShouldBind(context, &req)
 	if req.Current <= 0 {
 		req.Current = 1
