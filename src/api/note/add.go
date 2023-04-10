@@ -4,7 +4,6 @@
 package note
 
 import (
-	"errors"
 	"fmt"
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
@@ -49,7 +48,7 @@ func Add(context *gin.Context) {
 	// 只支持添加 目录 和 md文件
 	ft := typ_ft.ExtNameOf(strings.TrimSpace(note.Type))
 	if !(ft == typ_ft.FtD || ft == typ_ft.FtMd) {
-		redirect(fmt.Sprintf("%s: %s", errors.New(i18n.MustGetMessage("i18n.fileTypeUnsupported")), note.Type))
+		redirect(fmt.Sprintf("%s: %s", i18n.MustGetMessage("i18n.fileTypeUnsupported"), note.Type))
 		return
 	}
 	note.Type = string(ft)

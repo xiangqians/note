@@ -37,7 +37,7 @@ type Note struct {
 	Path     string `json:"path"`                                             // 目录路径
 	PathLink string `json:"pathLink"`                                         // 目录路径链接
 	Url      string `json:"url"`                                              // 笔记url
-	Hists    []Img  `json:"hists"`                                            // 图片历史记录
+	Hists    []Note `json:"hists"`                                            // 图片历史记录
 }
 
 // Img 图片

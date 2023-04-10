@@ -5,7 +5,6 @@ package note
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
@@ -56,7 +55,7 @@ func Del(context *gin.Context) {
 		}
 
 		if count != 0 {
-			redirect(pid, errors.New(i18n.MustGetMessage("i18n.cannotDelNonEmptyDir")))
+			redirect(pid, i18n.MustGetMessage("i18n.cannotDelNonEmptyDir"))
 			return
 		}
 	}
@@ -501,10 +500,7 @@ func HistPath(context *gin.Context, note typ_api.Note) (string, error) {
 	}
 
 	// file name
-	time := note.AddTime
-	if note.AddTime < note.UpdTime {
-		time = note.UpdTime
-	}
+	time := note.UpdTime
 	name := fmt.Sprintf("%d_%d", note.Id, time)
 
 	// path

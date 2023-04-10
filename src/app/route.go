@@ -45,7 +45,6 @@ func route(engine *gin.Engine) {
 	noteGroup.PUT("/name", api_note.UpdName)
 	noteGroup.GET("/:id", api_note.Get)
 	noteGroup.Any("/:id/view", api_note.View) // page
-	noteGroup.Any("/:id/edit", api_note.Edit) // page
 	noteGroup.PUT("/content", api_note.UpdContent)
 	noteGroup.PUT("/cut/:srcId/to/:dstId", api_note.Cut)
 	noteGroup.DELETE("/:id", api_note.Del)

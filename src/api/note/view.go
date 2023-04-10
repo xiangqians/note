@@ -11,7 +11,9 @@ import (
 	typ_api "note/src/typ/api"
 	typ_ft "note/src/typ/ft"
 	typ_resp "note/src/typ/resp"
+	util_json "note/src/util/json"
 	util_str "note/src/util/str"
+	"sort"
 	"strings"
 )
 
@@ -19,6 +21,10 @@ import (
 func View(context *gin.Context) {
 	// id
 	id, err := common.Param[int64](context, "id")
+	View0(context, id, err)
+}
+
+func View0(context *gin.Context, id int64, err any) {
 	if err != nil {
 		DefaultView(context, typ_api.Note{}, err)
 		return
@@ -29,6 +35,25 @@ func View(context *gin.Context) {
 	if err != nil || count == 0 {
 		DefaultView(context, note, err)
 		return
+	}
+
+	// 笔记历史记录
+	hist := note.Hist
+	if hist != "" {
+		// hists
+		hists := make([]typ_api.Note, 0, 1) // len 0, cap ?
+		err = util_json.Deserialize(hist, &hists)
+		if err != nil {
+			DefaultView(context, note, err)
+			return
+		}
+
+		// sort
+		sort.Slice(hists, func(i, j int) bool {
+			return hists[i].UpdTime > hists[j].UpdTime
+		})
+
+		note.Hists = hists
 	}
 
 	// type
@@ -133,7 +158,7 @@ func MdView(context *gin.Context, note typ_api.Note) {
 }
 
 // DefaultView 默认查看文件
-func DefaultView(context *gin.Context, note typ_api.Note, err error) {
+func DefaultView(context *gin.Context, note typ_api.Note, err any) {
 	resp := typ_resp.Resp[typ_api.Note]{
 		Msg:  util_str.TypeToStr(err),
 		Data: note,

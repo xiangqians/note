@@ -203,7 +203,7 @@ custom = function () {
             type: method,
             data: data,
             async: async,
-            timeout: 30 * 1000, // 等待的最长毫秒数。如果过了这个时间，请求还没有返回，则自动将请求状态改为失败。
+            // timeout: 30 * 1000, // 等待的最长毫秒数。如果过了这个时间，请求还没有返回，则自动将请求状态改为失败。
             // cache: cache, // 浏览器是否缓存服务器返回的数据，默认为true，注：浏览器本身不会缓存POST请求返回的数据，所以即使设为false，也只对HEAD和GET请求有效。
             // beforeSend: beforeSend, // 指定发出请求前，所要调用的函数，通常用来对发出的数据进行修改。
             // complete: complete, // 指定当HTTP请求结束时（请求成功或请求失败的回调函数，此时已经运行完毕）的回调函数。不管请求成功或失败，该回调函数都会执行。它的参数为发出请求的原始对象以及返回的状态信息。
@@ -245,11 +245,19 @@ custom = function () {
     }
 
     _obj.ajaxReload = function (url, method, data) {
+        console.log(url, method)
         _obj.ajaxSimple(url, method, data, function (resp) {
+            console.log(resp)
             _obj.reload(resp)
         }, function (e) {
             console.error(e)
-            alert(e)
+            let msg = null
+            if (_obj.isStr(msg)) {
+                msg = e
+            } else {
+                JSON.stringify(e)
+            }
+            alert(msg)
         })
     }
 
@@ -516,8 +524,57 @@ custom = function () {
             uploadUrl = '/img/upload'
         }
 
+        // upload form
         let $form = $($float.find('form')[0])
         $form.attr('action', uploadUrl)
+
+        // hist
+        let isHist = uri.indexOf('hist') > 0
+        // console.log(isHist)
+        let idx = -1
+        if (isHist) {
+            let idxStr = uri.substring(uri.indexOf('hist/') + 'hist/'.length, uri.indexOf('/view'))
+            idx = parseInt(idxStr)
+        }
+
+        // 如果不是历史记录，则移除form的 disabled 属性
+        if (!isHist) {
+            $($float.find("input[name='file']")[0]).attr('disabled', false)
+            $($float.find("button[type='submit']")[0]).attr('disabled', false)
+        }
+
+        // form
+        custom.ajaxE($($float.find('form')[0]))
+
+        return
+
+        // select
+        let $select = $($("select[name='hist']")[0])
+        let options = $select.find("option")
+        if (idx != -1) {
+            for (let i = 0; i < options.length; i++) {
+                let $option = $(options[i])
+                let value = parseInt($option.attr('value'))
+                // console.log(value)
+                if (value === idx) {
+                    $option.attr('selected', true)
+                    break
+                }
+            }
+        }
+
+        $select.change(function () {
+            let value = $select.find("option:selected").attr("value");
+            // console.log(value)
+            let url = null
+            if (value === "-1") {
+                url = '/img/{{ $data.Id }}/view'
+            } else {
+                url = '/img/{{ $data.Id }}/hist/' + value + '/view'
+            }
+            custom.ajaxReload(url, 'GET', null)
+        });
+
 
     }
 

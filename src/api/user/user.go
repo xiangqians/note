@@ -154,8 +154,7 @@ func Login0(context *gin.Context) {
 	}
 
 	if count == 0 {
-		err = errors.New(i18n.MustGetMessage("i18n.userOrPasswdIncorrect"))
-		redirect(err)
+		redirect(i18n.MustGetMessage("i18n.userOrPasswdIncorrect"))
 		return
 	}
 
