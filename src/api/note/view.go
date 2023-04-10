@@ -51,6 +51,50 @@ func View(context *gin.Context) {
 	}
 }
 
+// PdfView 查看pdf文件
+func PdfView(context *gin.Context, note typ_api.Note) {
+	v, _ := common.Query[string](context, "v")
+	v = strings.TrimSpace(v)
+	switch v {
+	case "1.0":
+		// v1.0
+	case "2.0":
+		// v2.0
+	default:
+		v = "2.0"
+	}
+
+	note.Url = fmt.Sprintf("/note/%v", note.Id)
+
+	resp := typ_resp.Resp[typ_api.Note]{
+		Data: note,
+	}
+	common.HtmlOk(context, fmt.Sprintf("note/pdf/view_v%s.html", v), resp)
+}
+
+// HtmlView 查看html文件
+func HtmlView(context *gin.Context, note typ_api.Note) {
+	html := func(html string, err any) {
+		resp := typ_resp.Resp[map[string]any]{
+			Msg: util_str.TypeToStr(err),
+			Data: map[string]any{
+				"note": note,
+				"html": html,
+			},
+		}
+		common.HtmlOk(context, "note/html/view.html", resp)
+	}
+
+	// read
+	buf, err := Read(context, note)
+	if err != nil {
+		html("", err)
+		return
+	}
+
+	html(string(buf), nil)
+}
+
 // MdView 查看md文件
 // https://github.com/russross/blackfriday
 // https://pkg.go.dev/github.com/russross/blackfriday/v2
@@ -86,50 +130,6 @@ func MdView(context *gin.Context, note typ_api.Note) {
 	//buf = bluemonday.UGCPolicy().SanitizeBytes(buf)
 
 	html(string(buf), nil)
-}
-
-// HtmlView 查看html文件
-func HtmlView(context *gin.Context, note typ_api.Note) {
-	html := func(html string, err any) {
-		resp := typ_resp.Resp[map[string]any]{
-			Msg: util_str.TypeToStr(err),
-			Data: map[string]any{
-				"note": note,
-				"html": html,
-			},
-		}
-		common.HtmlOk(context, "note/html/view.html", resp)
-	}
-
-	// read
-	buf, err := Read(context, note)
-	if err != nil {
-		html("", err)
-		return
-	}
-
-	html(string(buf), nil)
-}
-
-// PdfView 查看pdf文件
-func PdfView(context *gin.Context, note typ_api.Note) {
-	v, _ := common.Query[string](context, "v")
-	v = strings.TrimSpace(v)
-	switch v {
-	case "1.0":
-		// v1.0
-	case "2.0":
-		// v2.0
-	default:
-		v = "2.0"
-	}
-
-	note.Url = fmt.Sprintf("/note/%v", note.Id)
-
-	resp := typ_resp.Resp[typ_api.Note]{
-		Data: note,
-	}
-	common.HtmlOk(context, fmt.Sprintf("note/pdf/view_v%s.html", v), resp)
 }
 
 // DefaultView 默认查看文件

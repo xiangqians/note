@@ -25,41 +25,10 @@ download 属性规定被下载的超链接目标。
 -->
 
 <h2>
-    此文件类型暂不支持查看
+    <td>{{ Localize "i18n.fileTypeUnsupported" }}</td>
 </h2>
 
-<div class="float">
-    <p style="color: red;">{{ .resp.Msg }}</p>
-    <table border="1" cellspacing="0" cellpadding="10" align="center">
-        <tbody>
-        <tr>
-            <td>{{ Localize "i18n.name" }}</td>
-            <td>{{ $data.Name }}</td>
-        </tr>
-        <tr>
-            <td>{{ Localize "i18n.path" }}</td>
-            <td name="path"></td>
-        </tr>
-        <tr>
-            <td>{{ Localize "i18n.type" }}</td>
-            <td>{{ $data.Type }}</td>
-        </tr>
-        <tr>
-            <td>{{ Localize "i18n.size" }}</td>
-            <td>{{ HumanizFileSize $data.Size }}</td>
-        </tr>
-        <tr>
-            <td>{{ Localize "i18n.addTime" }}</td>
-            <td>{{ HumanizUnix $data.AddTime }}</td>
-        </tr>
-        <tr>
-            <td>{{ Localize "i18n.updTime" }}</td>
-            <td>{{ HumanizUnix $data.UpdTime }}</td>
-        </tr>
-        </tbody>
-    </table>
-    <br>
-</div>
+{{ template "common/float.html" . }}
 
 </body>
 </html>
@@ -68,7 +37,7 @@ download 属性规定被下载的超链接目标。
 <script>
 
     ;(function () {
-        custom.note('{{ Serialize $data }}', '{{ .uri }}')
+        custom.float('{{ .uri }}', '{{ Serialize $data }}', 'note')
     })()
 
 </script>

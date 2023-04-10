@@ -405,55 +405,10 @@ custom = function () {
     return _obj
 }()
 
-;(function (_obj) {
-
-    _obj.note = function (note, uri) {
-        note = JSON.parse(note)
-        // console.log(note)
-
-        // pdf
-        if (note.type === 'pdf') {
-            // params
-            let params = custom.urlQueryParams(decodeURIComponent(uri))
-            // console.log(params)
-
-            // v
-            let version = '2.0'
-            if (params.v) {
-                version = params.v
-            }
-
-            // select
-            let $select = $($("select[name='version']")[0])
-            let options = $select.find("option")
-            for (let i = 0; i < options.length; i++) {
-                let $option = $(options[i])
-                if ($option.attr('value') === version) {
-                    $option.attr('selected', true)
-                    break
-                }
-            }
-
-            $select.change(function () {
-                let version = $select.find("option:selected").attr("value");
-                // console.log(version)
-                let url = `/note/${note.id}/view?v=${version}`
-                custom.ajaxReload(url, 'GET', null)
-            });
-        }
-
-        // path
-        let $path = $($('td[name="path"]')[0])
-        $path.html(note.pathLink)
-    }
-
-})(custom)
-
+// div收缩/展开
 ;(function () {
-    ;
 
-    // div收缩/展开
-    let $divs = $("div[class='float']")
+    let $divs = $('div[class="float"]')
     for (let i = 0; i < $divs.length; i++) {
         let $div = $($divs[i])
         // console.log($div)
@@ -502,4 +457,70 @@ custom = function () {
     }
 
 })()
+
+// float
+;(function (_obj) {
+
+    _obj.float = function (uri, entity, type) {
+        let $float = $($('div[class="float"]')[0])
+
+        entity = JSON.parse(entity)
+        // console.log(entity)
+
+        // pdf
+        if (entity.type === 'pdf') {
+            // params
+            let params = custom.urlQueryParams(decodeURIComponent(uri))
+            // console.log(params)
+
+            // v
+            let version = '2.0'
+            if (params.v) {
+                version = params.v
+            }
+
+            // select
+            let $select = $($float.find("select[name='version']")[0])
+            let options = $select.find("option")
+            for (let i = 0; i < options.length; i++) {
+                let $option = $(options[i])
+                if ($option.attr('value') === version) {
+                    $option.attr('selected', true)
+                    break
+                }
+            }
+
+            $select.change(function () {
+                let version = $select.find("option:selected").attr("value");
+                // console.log(version)
+                let url = `/${type}/${entity.id}/view?v=${version}`
+                custom.ajaxReload(url, 'GET', null)
+            });
+        }
+
+        let uploadUrl = null
+
+        // note
+        if (type === 'note') {
+            // path
+            let $path = $($float.find('td[name="path"]')[0])
+            $path.html(entity.pathLink)
+            $($float.find('tr[name="path"]')[0]).css('display', '')
+
+            // upload
+            uploadUrl = '/note/upload'
+        }
+        // img
+        else if (type === 'img') {
+            // upload
+            uploadUrl = '/img/upload'
+        }
+
+        let $form = $($float.find('form')[0])
+        $form.attr('action', uploadUrl)
+
+    }
+
+})(custom)
+
 ;
