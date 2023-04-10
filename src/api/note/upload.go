@@ -34,7 +34,7 @@ func Upload(context *gin.Context) {
 			common.Redirect(context, fmt.Sprintf("/note/list?pid=%d", pid), resp)
 
 		case http.MethodPut:
-			View0(context, id, err)
+			common.Redirect(context, fmt.Sprintf("/note/%d/view", id), resp)
 		}
 	}
 

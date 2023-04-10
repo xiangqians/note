@@ -115,19 +115,11 @@ custom = function () {
     }
 
     /**
-     * 给url添加时间戳
+     * 重定向
      * @param url
-     * @returns {string}
      */
-    _obj.addUrlTimestamp = function (url) {
-        let timestamp = new Date().getTime()
-        timestamp += _obj.random(-1000, 1000)
-        if (url.indexOf('?') > 0) {
-            url += '&t=' + timestamp
-        } else {
-            url += '?t=' + timestamp
-        }
-        return url
+    _obj.redirect = function (url) {
+        window.location.assign(url)
     }
 
     /**
@@ -141,12 +133,11 @@ custom = function () {
 
         // 修改当前浏览器地址
         let $html = $('html')
-        let url = $html.attr('uri')
+        let url = $html.attr('url')
         if (url) {
             history.replaceState(undefined, undefined, url)
         }
     }
-
 
     /**
      * 获取url查询参数
@@ -197,13 +188,21 @@ custom = function () {
      * @param error     请求错误回调函数
      */
     _obj.ajax = function (url, method, data, contentType, async, dataType, success, error) {
-        url = _obj.addUrlTimestamp(url)
+        // url
+        let timestamp = new Date().getTime()
+        timestamp += _obj.random(-1000, 1000)
+        if (url.indexOf('?') > 0) {
+            url += '&t=' + timestamp
+        } else {
+            url += '?t=' + timestamp
+        }
+
         let params = {
             url: url,
             type: method,
             data: data,
             async: async,
-            // timeout: 30 * 1000, // 等待的最长毫秒数。如果过了这个时间，请求还没有返回，则自动将请求状态改为失败。
+            timeout: 5 * 60 * 1000,// timeout: 30 * 1000, // 等待的最长毫秒数。如果过了这个时间，请求还没有返回，则自动将请求状态改为失败。
             // cache: cache, // 浏览器是否缓存服务器返回的数据，默认为true，注：浏览器本身不会缓存POST请求返回的数据，所以即使设为false，也只对HEAD和GET请求有效。
             // beforeSend: beforeSend, // 指定发出请求前，所要调用的函数，通常用来对发出的数据进行修改。
             // complete: complete, // 指定当HTTP请求结束时（请求成功或请求失败的回调函数，此时已经运行完毕）的回调函数。不管请求成功或失败，该回调函数都会执行。它的参数为发出请求的原始对象以及返回的状态信息。
@@ -245,12 +244,19 @@ custom = function () {
     }
 
     _obj.ajaxReload = function (url, method, data) {
-        console.log(url, method)
+        // console.log(url, method)
         _obj.ajaxSimple(url, method, data, function (resp) {
             console.log(resp)
-            _obj.reload(resp)
+            if (resp.redirect) {
+                console.log(resp.redirect)
+                // data.redirect contains the string URL to redirect to
+                // window.location.href = data.redirect;
+            }
+
+            // _obj.reload(resp)
         }, function (e) {
             console.error(e)
+            return
             let msg = null
             if (_obj.isStr(msg)) {
                 msg = e
@@ -469,7 +475,7 @@ custom = function () {
 // float
 ;(function (_obj) {
 
-    _obj.float = function (uri, entity, type) {
+    _obj.float = function (url, entity, type) {
         let $float = $($('div[class="float"]')[0])
 
         entity = JSON.parse(entity)
@@ -478,7 +484,7 @@ custom = function () {
         // pdf
         if (entity.type === 'pdf') {
             // params
-            let params = custom.urlQueryParams(decodeURIComponent(uri))
+            let params = custom.urlQueryParams(decodeURIComponent(url))
             // console.log(params)
 
             // v
@@ -529,11 +535,11 @@ custom = function () {
         $form.attr('action', uploadUrl)
 
         // hist
-        let isHist = uri.indexOf('hist') > 0
+        let isHist = url.indexOf('hist') > 0
         // console.log(isHist)
         let idx = -1
         if (isHist) {
-            let idxStr = uri.substring(uri.indexOf('hist/') + 'hist/'.length, uri.indexOf('/view'))
+            let idxStr = url.substring(url.indexOf('hist/') + 'hist/'.length, url.indexOf('/view'))
             idx = parseInt(idxStr)
         }
 

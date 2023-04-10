@@ -13,7 +13,6 @@ import (
 const userSessionKey = "__user__"
 const UserSessionKey = "user"
 const RespSessionKey = "resp"
-const UriSessionKey = "uri"
 const UrlSessionKey = "url"
 
 // GetSessionUser 获取session用户信息

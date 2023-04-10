@@ -26,7 +26,7 @@ func HtmlOk[T any](context *gin.Context, name string, resp typ_resp.Resp[T]) {
 // Html
 // name: templateName
 func Html[T any](context *gin.Context, code int, name string, resp typ_resp.Resp[T]) {
-	// msg
+	// resp msg
 	resp0, err := GetSessionV[any](context, RespSessionKey, true)
 	if err == nil {
 		msg := util_reflect.CallField[string](resp0, "Msg")
@@ -37,15 +37,14 @@ func Html[T any](context *gin.Context, code int, name string, resp typ_resp.Resp
 
 	// user
 	user, _ := GetSessionUser(context)
-	// uri
-	uri := context.Request.RequestURI
+
 	// url
-	url := context.Request.URL.Path
+	url := context.Request.RequestURI
+
 	// html
 	context.HTML(code, name, gin.H{
 		RespSessionKey: resp,
 		UserSessionKey: user,
-		UriSessionKey:  uri,
 		UrlSessionKey:  url,
 	})
 }
