@@ -197,12 +197,16 @@ custom = function () {
             url += '?t=' + timestamp
         }
 
+        if (method === 'PUT' || method === 'DELETE') {
+            data = 'POST'
+        }
+
         let params = {
             url: url,
             type: method,
             data: data,
             async: async,
-            timeout: 5 * 60 * 1000,// timeout: 30 * 1000, // 等待的最长毫秒数。如果过了这个时间，请求还没有返回，则自动将请求状态改为失败。
+            // timeout: 30 * 1000, // 等待的最长毫秒数。如果过了这个时间，请求还没有返回，则自动将请求状态改为失败。
             // cache: cache, // 浏览器是否缓存服务器返回的数据，默认为true，注：浏览器本身不会缓存POST请求返回的数据，所以即使设为false，也只对HEAD和GET请求有效。
             // beforeSend: beforeSend, // 指定发出请求前，所要调用的函数，通常用来对发出的数据进行修改。
             // complete: complete, // 指定当HTTP请求结束时（请求成功或请求失败的回调函数，此时已经运行完毕）的回调函数。不管请求成功或失败，该回调函数都会执行。它的参数为发出请求的原始对象以及返回的状态信息。
@@ -298,16 +302,16 @@ custom = function () {
                 let $input = $form.find("input[type='file']");
                 if ($input.length > 0) {
                     let files = $input[0].files;
-                    // console.log($input.attr('name'), files);
+                    console.log($input.attr('name'), files);
                     if (files.length > 0) {
                         data.append($input.attr('name'), files[0]);
                     }
                 }
 
-                // console.log('data', data);
-                // data.forEach((value, key) => {
-                //     console.log(key, value);
-                // })
+                console.log('data', data);
+                data.forEach((value, key) => {
+                    console.log(key, value);
+                })
 
                 // ajax
                 _obj.ajaxReload(url, method, data)

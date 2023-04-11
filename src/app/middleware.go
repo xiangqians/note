@@ -11,6 +11,7 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/text/language"
+	"log"
 	"net/http"
 	api_common "note/src/api/common"
 	typ_locale "note/src/typ/locale"
@@ -22,8 +23,8 @@ import (
 func permMiddleware(engine *gin.Engine) {
 	// 未授权拦截
 	engine.Use(func(context *gin.Context) {
+		// request path
 		reqPath := context.Request.URL.Path
-		reqMethod := context.Request.Method
 
 		// 静态资源放行
 		if strings.HasPrefix(reqPath, "/static") {
@@ -31,30 +32,59 @@ func permMiddleware(engine *gin.Engine) {
 			return
 		}
 
-		// isLogin
-		isLogin := false
-		_, err := api_common.GetSessionUser(context)
-		if err == nil {
-			isLogin = true
+		// request method
+		reqMethod := context.Request.Method
+
+		// 转换为 PUT(POST -> PUT)/DELETE(POST -> DELETE) 请求
+		if reqMethod == http.MethodPost {
+			key := "_method"
+			method, err := api_common.PostForm[string](context, key)
+			if err != nil {
+				method = ""
+			}
+			if method != "" {
+				switch method {
+				case http.MethodPut:
+					context.Request.Method = http.MethodPut
+
+				case http.MethodDelete:
+					context.Request.Method = http.MethodDelete
+				}
+
+				log.Printf("Request Method: %s -> %s\n", reqMethod, context.Request.Method)
+				reqMethod = context.Request.Method
+			}
+		}
+
+		// is login ?
+		login := false
+		user, err := api_common.GetSessionUser(context)
+		if err == nil && user.Id > 0 {
+			login = true
 		}
 
 		// 用户注册和登录放行
-		if reqPath == "/user/reg" || reqPath == "/user/login" ||
-			(reqMethod == http.MethodPost && (reqPath == "/user" || reqPath == "/user/login0")) {
-			if isLogin {
+		if reqPath == "/user/reg" || // 注册页
+			reqPath == "/user/login" || // 登录页
+			(reqMethod == http.MethodPost && (reqPath == "/user" || reqPath == "/user/login0")) { // 注册接口和登录接口
+			// 如果已登录则重定向到首页
+			if login {
 				api_common.Redirect(context, "/", typ_resp.Resp[any]{})
 				context.Abort()
-			} else {
+			} else
+			// 如果未登录，放行登录或注册
+			{
 				context.Next()
 			}
 			return
 		}
 
-		if !isLogin {
-			// 重定向
+		// 未登录
+		if !login {
+			// 重定向到登录页
 			//context.Request.URL.Path = "/user/login"
 			//engine.HandleContext(context)
-			//
+			// OR
 			api_common.Redirect(context, "/user/login", typ_resp.Resp[any]{})
 
 			// 中止调用链
