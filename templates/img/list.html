@@ -3,7 +3,7 @@
  | @date 11:49 2023/02/12
  |-->
 <!DOCTYPE html>
-<html lang="en" uri="{{ .uri }}" url="{{ .url }}">
+<html lang="en" url="{{ .url }}">
 <head>
     <meta charset="UTF-8">
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
@@ -118,12 +118,10 @@
     ;(function () {
 
         // rename
-        let aArr = $('a[method="PUT"]')
-        // console.log(aArr)
-        for (let i = 0; i < aArr.length; i++) {
-            let $a = $(aArr[i])
-            // console.log($a)
-            custom.ajaxE($a, function () {
+        let arr = $('a[method="PUT"]')
+        for (let i = 0; i < arr.length; i++) {
+            let $a = $(arr[i])
+            custom.clickE($a, function () {
                 let name = prompt('{{ Localize "i18n.name" }}', $a.attr('imgName'))
                 if (name && (name = name.trim()) !== "") {
                     // console.log(name)
@@ -133,22 +131,23 @@
                     return {data: data}
                 }
 
-                return custom.ajaxEDoNothing
+                return {abort: true}
             })
         }
 
         // del
-        aArr = $('a[method="DELETE"]')
-        for (let i = 0; i < aArr.length; i++) {
-            let $a = $(aArr[i])
-            custom.ajaxE($a, function () {
+        arr = $('a[method="DELETE"]')
+        for (let i = 0; i < arr.length; i++) {
+            let $a = $(arr[i])
+            custom.clickE($a, function () {
                 if (confirm($a.attr('confirm'))) {
                     return null
                 }
 
-                return custom.ajaxEDoNothing
+                return {abort: true}
             })
         }
+
     })()
 
     // copy

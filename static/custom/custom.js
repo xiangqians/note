@@ -165,12 +165,6 @@ custom = function () {
             url += '?t=' + timestamp
         }
 
-        // 处理 PUT/DELETE 请求
-        if (method === 'PUT' || method === 'DELETE') {
-            data.append('_method', method)
-            method = 'POST'
-        }
-
         if (obj.isUndefined(async)) {
             async = false
         }
@@ -310,7 +304,7 @@ custom = function () {
             }
 
             // 是否中断
-            if (params.abort) {
+            if (params && params.abort) {
                 return false
             }
 

@@ -11,7 +11,6 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/text/language"
-	"log"
 	"net/http"
 	api_common "note/src/api/common"
 	typ_locale "note/src/typ/locale"
@@ -34,27 +33,6 @@ func permMiddleware(engine *gin.Engine) {
 
 		// request method
 		reqMethod := context.Request.Method
-
-		// 转换为 PUT(POST -> PUT)/DELETE(POST -> DELETE) 请求
-		if reqMethod == http.MethodPost {
-			key := "_method"
-			method, err := api_common.PostForm[string](context, key)
-			if err != nil {
-				method = ""
-			}
-			if method != "" {
-				switch method {
-				case http.MethodPut:
-					context.Request.Method = http.MethodPut
-
-				case http.MethodDelete:
-					context.Request.Method = http.MethodDelete
-				}
-
-				log.Printf("Request Method: %s -> %s\n", reqMethod, context.Request.Method)
-				reqMethod = context.Request.Method
-			}
-		}
 
 		// is login ?
 		login := false
