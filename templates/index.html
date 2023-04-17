@@ -70,7 +70,13 @@
                 let humanizTotalSize = custom.humanizFileSize(totalSize)
                 labels.push(type)
                 data.push(totalSize)
-                stat.label = `\tNum: ${num}\t\t\tSize: ${humanizSize}\t\t\tHistSize: ${humanizHistSize}\t\t\tTotalSize: ${humanizTotalSize}`
+
+                let numLabel = '{{ Localize "i18n.num" }}'
+                let sizeLabel = '{{ Localize "i18n.size" }}'
+                let histSizeLabel = '{{ Localize "i18n.histSize" }}'
+                let totalSizeLabel = '{{ Localize "i18n.totalSize" }}'
+                
+                stat.label = `\t${numLabel}: ${num}\t\t\t${sizeLabel}: ${humanizSize}\t\t\t${histSizeLabel}: ${humanizHistSize}\t\t\t${totalSizeLabel}: ${humanizTotalSize}`
             }
 
             let $canvas = $('#' + id);

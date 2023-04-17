@@ -27,6 +27,8 @@
   "i18n.name": "Name",
   "i18n.type": "Type",
   "i18n.size": "Size",
+  "i18n.histSize": "Hist Size",
+  "i18n.totalSize": "Total Size",
   "i18n.addTime": "Creation Time",
   "i18n.updTime": "Update Time",
   "i18n.op": "Operate",
@@ -73,5 +75,6 @@
   "i18n.reset": "Reset",
   "i18n.cannotDelNonEmptyDir": "Cannot delete non empty directory",
   "i18n.path": "Path",
-  "i18n.version": "Version"
+  "i18n.version": "Version",
+  "i18n.num": "Num"
 }

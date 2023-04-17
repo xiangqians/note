@@ -5,7 +5,8 @@
 ;
 custom = function () {
 
-    let _obj = {}
+    // object
+    let obj = {}
 
     /**
      * 判断是否属于某类型
@@ -13,7 +14,7 @@ custom = function () {
      * @param type '[object {type}]'
      * @returns {boolean}
      */
-    _obj.isType = function (obj, type) {
+    obj.isType = function (obj, type) {
         return Object.prototype.toString.call(obj) === type
     }
 
@@ -22,7 +23,7 @@ custom = function () {
      * @param obj
      * @returns {boolean}
      */
-    _obj.isUndefined = function (obj) {
+    obj.isUndefined = function (obj) {
         return typeof (obj) === 'undefined'
     }
     /**
@@ -30,8 +31,8 @@ custom = function () {
      * @param obj
      * @returns {boolean}
      */
-    _obj.isObj = function (obj) {
-        return _obj.isType(obj, '[object Object]')
+    obj.isObj = function (obj) {
+        return obj.isType(obj, '[object Object]')
     }
 
     /**
@@ -39,8 +40,8 @@ custom = function () {
      * @param obj
      * @returns {boolean}
      */
-    _obj.isStr = function (obj) {
-        return _obj.isType(obj, '[object String]')
+    obj.isStr = function (obj) {
+        return obj.isType(obj, '[object String]')
     }
 
     /**
@@ -48,15 +49,15 @@ custom = function () {
      * @param obj
      * @returns {boolean}
      */
-    _obj.isFormData = function (obj) {
-        return _obj.isType(obj, '[object FormData]')
+    obj.isFormData = function (obj) {
+        return obj.isType(obj, '[object FormData]')
     }
 
     /**
      * 人性化文件大小
      * @param size 文件大小，单位：byte
      */
-    _obj.humanizFileSize = function (size) {
+    obj.humanizFileSize = function (size) {
 
         // B, Byte
         // 1B  = 8b
@@ -102,56 +103,28 @@ custom = function () {
      * @param max
      * @returns {number}
      */
-    _obj.random = function (min, max) {
+    obj.random = function (min, max) {
         return Math.round(Math.random() * (max - min) + min)
     }
 
-    _obj.rgb = function () {
+    /**
+     * rgb
+     * @returns {`rgb(${string},${string},${string})`}
+     */
+    obj.rgb = function () {
         function color() {
-            return _obj.random(0, 255 + 1)
+            return obj.random(0, 255 + 1)
         }
 
         return `rgb(${color()},${color()},${color()})`
     }
 
     /**
-     * 重定向
-     * @param url
-     */
-    _obj.redirect = function (url) {
-        window.location.assign(url)
-    }
-
-    /**
-     * 重新加载document
-     * @param text
-     */
-    _obj.reload = function (text) {
-        // 使用 document.write() 覆盖当前文档
-        document.write(text)
-        document.close()
-
-        // 修改当前浏览器地址
-        let $html = $('html')
-        let url = $html.attr('url')
-        if (url) {
-            history.replaceState(undefined, undefined, url)
-        }
-    }
-
-    /**
-     * 获取url查询参数
+     * 解析url查询参数
      * @returns {Object}
      */
-    _obj.urlQueryParams = function (url) {
+    obj.parseUrlQueryParams = function (url) {
         let params = {}
-
-        // 获取url中"?"符后的字串
-        if (!url) {
-            url = location.search
-        }
-        // console.log(search)
-
         let index = url.indexOf("?")
         if (index === -1) {
             return params
@@ -177,108 +150,117 @@ custom = function () {
      * 在不重载整个网页的情况下，AJAX 通过后台加载数据，并在网页上进行显示。
      * @param url       服务器端地址
      * @param method    请求方法：GET | POST | PUT | DELETE
-     * @param data      请求数据
-     * @param contentType 发送到服务器的数据类型。
-     *      contentType:"form"，发送FormData数据。
-     *      不设置 contentType:"application/json"，数据是以键值对的形式传递到服务器（data: {name: "test"}）；
-     *      设置  contentType:"application/json"，数据是以json串的形式传递到后端（data: '{name: "test"}'），如果传递的是比较复杂的数据（例如多层嵌套数据），这时候就需要设置 contentType:"application/json" 了。
+     * @param data      {FormData} 请求数据
      * @param async     是否异步请求，true，异步；false，同步。默认 true
-     * @param dataType   预期服务器返回的数据类型，当设置dataType："json"时，如果后端返回了String，则ajax无法执行，去掉后ajax会自动检测返回数据类型。可以设为 text、html、script、json、jsonp和xml，和form
      * @param success   请求成功回调函数
      * @param error     请求错误回调函数
      */
-    _obj.ajax = function (url, method, data, contentType, async, dataType, success, error) {
+    obj.ajax = function (url, method, data, async, complete, success, error) {
         // url
         let timestamp = new Date().getTime()
-        timestamp += _obj.random(-1000, 1000)
+        timestamp += obj.random(-1000, 1000)
         if (url.indexOf('?') > 0) {
             url += '&t=' + timestamp
         } else {
             url += '?t=' + timestamp
         }
 
+        // 处理 PUT/DELETE 请求
         if (method === 'PUT' || method === 'DELETE') {
-            data = 'POST'
+            data.append('_method', method)
+            method = 'POST'
+        }
+
+        if (obj.isUndefined(async)) {
+            async = false
+        }
+
+        if (obj.isUndefined(complete)) {
+            // 指定当HTTP请求结束时（请求成功或请求失败的回调函数，此时已经运行完毕）的回调函数。不管请求成功或失败，该回调函数都会执行。它的参数为发出请求的原始对象以及返回的状态信息。
+            complete = function (xhr, status) {
+            }
+        }
+
+        if (obj.isUndefined(success)) {
+            // 请求成功回调函数
+            success = function (data, status, xhr) {
+                // 重新加载document
+                // 使用 document.write() 覆盖当前文档
+                document.write(data)
+                document.close()
+
+                // 修改当前浏览器地址
+                let $html = $('html')
+                let url = $html.attr('url')
+                if (url) {
+                    history.replaceState(undefined, undefined, url)
+                }
+            }
+        }
+
+        if (obj.isUndefined(error)) {
+            // 请求错误回调函数
+            error = function (xhr, status, error) {
+                console.error(status, error)
+                error = JSON.stringify(error)
+                alert(`${status}\n${error}`)
+            }
         }
 
         let params = {
             url: url,
             type: method,
             data: data,
+
+            // contentType 发送到服务器的数据类型。
+            // contentType:"form"，发送FormData数据。
+            // 不设置 contentType:"application/json"，数据是以键值对的形式传递到服务器（data: {name: "test"}）；
+            // 设置  contentType:"application/json"，数据是以json串的形式传递到后端（data: '{name: "test"}'），如果传递的是比较复杂的数据（例如多层嵌套数据），这时候就需要设置 contentType:"application/json" 了。
+            // contentType: contentType,
+
             async: async,
-            // timeout: 30 * 1000, // 等待的最长毫秒数。如果过了这个时间，请求还没有返回，则自动将请求状态改为失败。
-            // cache: cache, // 浏览器是否缓存服务器返回的数据，默认为true，注：浏览器本身不会缓存POST请求返回的数据，所以即使设为false，也只对HEAD和GET请求有效。
-            // beforeSend: beforeSend, // 指定发出请求前，所要调用的函数，通常用来对发出的数据进行修改。
-            // complete: complete, // 指定当HTTP请求结束时（请求成功或请求失败的回调函数，此时已经运行完毕）的回调函数。不管请求成功或失败，该回调函数都会执行。它的参数为发出请求的原始对象以及返回的状态信息。
+
+            // 预期服务器返回的数据类型，当设置dataType："json"时，如果后端返回了String，则ajax无法执行，去掉后ajax会自动检测返回数据类型。可以设为 text、html、script、json、jsonp和xml，和form
+            // dataType: dataType,
+
+            // 等待的最长毫秒数。如果过了这个时间，请求还没有返回，则自动将请求状态改为失败。
+            // timeout: 30 * 1000,
+
+            // 浏览器是否缓存服务器返回的数据，默认为true，注：浏览器本身不会缓存POST请求返回的数据，所以即使设为false，也只对HEAD和GET请求有效。
+            // cache: cache,
+
+            // 指定发出请求前，所要调用的函数，通常用来对发出的数据进行修改。
+            // beforeSend: beforeSend,
+
+            // 指定当HTTP请求结束时（请求成功或请求失败的回调函数，此时已经运行完毕）的回调函数。不管请求成功或失败，该回调函数都会执行。它的参数为发出请求的原始对象以及返回的状态信息。
+            complete: complete,
+
+            // 请求成功回调函数
             success: success,
+
+            // 请求错误回调函数
             error: error
         }
 
         // contentType
-        if (contentType) {
-            // application/x-www-form-urlencoded
-            if (contentType === 'form') {
-                // 不处理发送数据
-                params.processData = false
-                // 不设置Content-Type请求头
-                params.contentType = false
-            }
-            // other
-            else {
-                params.contentType = contentType
-            }
-        }
-
-        // dataType
-        if (dataType) {
-            params.dataType = dataType
-        }
+        // application/x-www-form-urlencoded
+        // 不处理发送数据
+        params.processData = false
+        // 不设置Content-Type请求头
+        params.contentType = false
 
         // $.ajax(url[, options])
         // $.ajax([options])
         $.ajax(params)
     }
 
-    _obj.ajaxSimple = function (url, method, data, success, error) {
-        let contentType = null
-        if (_obj.isFormData(data)) {
-            contentType = 'form'
-        }
-        _obj.ajax(url, method, data, contentType, false, null, success, error)
-    }
-
-    _obj.ajaxReload = function (url, method, data) {
-        // console.log(url, method)
-        _obj.ajaxSimple(url, method, data, function (resp) {
-            console.log(resp)
-            if (resp.redirect) {
-                console.log(resp.redirect)
-                // data.redirect contains the string URL to redirect to
-                // window.location.href = data.redirect;
-            }
-
-            // _obj.reload(resp)
-        }, function (e) {
-            console.error(e)
-            return
-            let msg = null
-            if (_obj.isStr(msg)) {
-                msg = e
-            } else {
-                JSON.stringify(e)
-            }
-            alert(msg)
-        })
-    }
-
-    // ajaxE 无所事事
-    _obj.ajaxEDoNothing = {
-        url: null,
-        method: null
-    }
-
-    // form, a, button, ...
-    _obj.ajaxE = function ($e, callback) {
+    /**
+     * element点击事件
+     * form, a, button, ...
+     * @param $e
+     * @param callback
+     */
+    obj.clickE = function ($e, callback) {
         // form
         if ($e.is('form')) {
             let $form = $e
@@ -302,19 +284,19 @@ custom = function () {
                 let $input = $form.find("input[type='file']");
                 if ($input.length > 0) {
                     let files = $input[0].files;
-                    console.log($input.attr('name'), files);
+                    // console.log($input.attr('name'), files);
                     if (files.length > 0) {
                         data.append($input.attr('name'), files[0]);
                     }
                 }
 
-                console.log('data', data);
-                data.forEach((value, key) => {
-                    console.log(key, value);
-                })
+                // console.log('data', data);
+                // data.forEach((value, key) => {
+                //     console.log(key, value);
+                // })
 
                 // ajax
-                _obj.ajaxReload(url, method, data)
+                obj.ajax(url, method, data)
                 return false
             })
             return
@@ -327,18 +309,21 @@ custom = function () {
                 params = callback($e)
             }
 
+            // 是否中断
+            if (params.abort) {
+                return false
+            }
+
             // url
             let url = null
             if (params && params.hasOwnProperty('url')) {
                 url = params.url
-            } else {
-                // <a><a/>
+            }
+            // <a><a/>
+            else {
                 url = $e.attr("href")
             }
             // console.log('url', url)
-            if (!url) {
-                return false
-            }
 
             // method
             let method = null
@@ -348,9 +333,6 @@ custom = function () {
                 method = $e.attr("method").trim().toUpperCase()
             }
             // console.log('method', method)
-            if (!method) {
-                return false
-            }
 
             // data
             let data = null
@@ -360,7 +342,7 @@ custom = function () {
             // console.log('data', data)
 
             // ajax
-            _obj.ajaxReload(url, method, data)
+            obj.ajax(url, method, data)
 
             // 取消 <a></a> 默认行为
             return false
@@ -381,7 +363,7 @@ custom = function () {
      * @private
      */
     Storage.prototype._vToStr = function (v) {
-        if (!_obj.isStr(v)) {
+        if (!obj.isStr(v)) {
             v = JSON.stringify(v)
         }
         return v
@@ -418,19 +400,21 @@ custom = function () {
     }
 
     // new storage
-    _obj.storage = new Storage()
+    obj.storage = new Storage()
 
-    return _obj
+    return obj
 }()
 
-// div收缩/展开
-;(function () {
+// float
+;(function (obj) {
 
+    // float 收缩/展开
+    const key = 'displayFloat'
     let $divs = $('div[class="float"]')
     for (let i = 0; i < $divs.length; i++) {
         let $div = $($divs[i])
         // console.log($div)
-        let display = custom.storage.get('displayFloat')
+        let display = custom.storage.get(key)
         if (!display) {
             display = 'none' // 隐藏
         }
@@ -460,26 +444,22 @@ custom = function () {
                 setBtn('+')
                 // 隐藏div
                 $wrapperDiv.css('display', 'none')
-                custom.storage.set('displayFloat', 'none')
+                custom.storage.set(key, 'none')
             }
             // 设置为 -
             else {
                 setBtn('-')
                 // 显示div
                 $wrapperDiv.css('display', 'block')
-                custom.storage.set('displayFloat', 'block')
+                custom.storage.set(key, 'block')
             }
         })
         $div.prepend($btn)
         $div.append($wrapperDiv)
     }
 
-})()
-
-// float
-;(function (_obj) {
-
-    _obj.float = function (url, entity, type) {
+    // float
+    obj.float = function (url, entity, type) {
         let $float = $($('div[class="float"]')[0])
 
         entity = JSON.parse(entity)
@@ -584,7 +564,6 @@ custom = function () {
             }
             custom.ajaxReload(url, 'GET', null)
         });
-
 
     }
 
