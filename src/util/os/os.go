@@ -15,40 +15,48 @@ import (
 	"runtime"
 )
 
-// FileSeparator 文件分隔符
-var FileSeparator string
+var fileSeparator string
+var osTyp typ_os.OS
 
 func init() {
-	switch OS() {
-	case typ_os.Windows:
-		FileSeparator = "\\"
-
-	case typ_os.Linux:
-		FileSeparator = "/"
-
-	default:
-		FileSeparator = "/"
-	}
-}
-
-// OS 获取操作系统标识
-func OS() typ_os.OS {
-	os := runtime.GOOS
-	switch os {
+	// init os type
+	switch runtime.GOOS {
 	// windows
 	case "windows":
-		return typ_os.Windows
+		osTyp = typ_os.Windows
 
 	// linux
 	case "linux":
 		fallthrough // 执行穿透
 	case "android":
-		return typ_os.Linux
+		osTyp = typ_os.Linux
 
 	// unknown
 	default:
-		return typ_os.Unk
+		osTyp = typ_os.Unk
 	}
+
+	// init file separator
+	switch osTyp {
+	case typ_os.Windows:
+		fileSeparator = "\\"
+
+	case typ_os.Linux:
+		fileSeparator = "/"
+
+	default:
+		fileSeparator = "/"
+	}
+}
+
+// FileSeparator 文件分隔符
+func FileSeparator() string {
+	return fileSeparator
+}
+
+// OS 获取操作系统标识
+func OS() typ_os.OS {
+	return osTyp
 }
 
 // NotSupportedError 不支持当前系统错误

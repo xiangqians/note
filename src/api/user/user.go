@@ -244,7 +244,7 @@ func Add(context *gin.Context) {
 	}
 
 	// 创建用户数据目录
-	dataDir := fmt.Sprintf("%s%s%d", common.AppArg.DataDir, util_os.FileSeparator, id)
+	dataDir := fmt.Sprintf("%s%s%d", common.AppArg.DataDir, util_os.FileSeparator(), id)
 	if !util_os.IsExist(dataDir) {
 		util_os.MkDir(dataDir)
 	}
@@ -252,7 +252,7 @@ func Add(context *gin.Context) {
 
 	// 复制文件
 	// src
-	src, err := os.Open(fmt.Sprintf("%s%s%s%s%s", common.AppArg.DataDir, util_os.FileSeparator, "{id}", util_os.FileSeparator, "database.db"))
+	src, err := os.Open(fmt.Sprintf("%s%s%s%s%s", common.AppArg.DataDir, util_os.FileSeparator(), "{id}", util_os.FileSeparator(), "database.db"))
 	if err != nil {
 		_db.Rollback()
 		redirect(user, err)
@@ -260,7 +260,7 @@ func Add(context *gin.Context) {
 	}
 	defer src.Close()
 	// dst
-	dst, err := os.Create(fmt.Sprintf("%s%s%s", dataDir, util_os.FileSeparator, "database.db"))
+	dst, err := os.Create(fmt.Sprintf("%s%s%s", dataDir, util_os.FileSeparator(), "database.db"))
 	if err != nil {
 		_db.Rollback()
 		redirect(user, err)

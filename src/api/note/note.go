@@ -489,9 +489,9 @@ func HistPath(context *gin.Context, note typ_api.Note) (string, error) {
 	// dir
 	dataDir := common.DataDir(context)
 	noteDir := fmt.Sprintf("%s%s%s%s%s%s%s", dataDir,
-		util_os.FileSeparator, "hist",
-		util_os.FileSeparator, "note",
-		util_os.FileSeparator, note.Type)
+		util_os.FileSeparator(), "hist",
+		util_os.FileSeparator(), "note",
+		util_os.FileSeparator(), note.Type)
 	if !util_os.IsExist(noteDir) {
 		err := util_os.MkDir(noteDir)
 		if err != nil {
@@ -504,7 +504,7 @@ func HistPath(context *gin.Context, note typ_api.Note) (string, error) {
 	name := fmt.Sprintf("%d_%d", note.Id, time)
 
 	// path
-	return fmt.Sprintf("%s%s%s", noteDir, util_os.FileSeparator, name), nil
+	return fmt.Sprintf("%s%s%s", noteDir, util_os.FileSeparator(), name), nil
 }
 
 // Path 获取文件物理路径
@@ -512,8 +512,8 @@ func Path(context *gin.Context, note typ_api.Note) (string, error) {
 	// dir
 	dataDir := common.DataDir(context)
 	noteDir := fmt.Sprintf("%s%s%s%s%s", dataDir,
-		util_os.FileSeparator, "note",
-		util_os.FileSeparator, note.Type)
+		util_os.FileSeparator(), "note",
+		util_os.FileSeparator(), note.Type)
 	if !util_os.IsExist(noteDir) {
 		err := util_os.MkDir(noteDir)
 		if err != nil {
@@ -525,5 +525,5 @@ func Path(context *gin.Context, note typ_api.Note) (string, error) {
 	name := fmt.Sprintf("%d", note.Id)
 
 	// path
-	return fmt.Sprintf("%s%s%s", noteDir, util_os.FileSeparator, name), nil
+	return fmt.Sprintf("%s%s%s", noteDir, util_os.FileSeparator(), name), nil
 }

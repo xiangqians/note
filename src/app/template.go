@@ -74,6 +74,23 @@ func htmlTemplate(engine *gin.Engine) {
 			json, _ := util_json.Serialize(i)
 			return json
 		},
+
+		// Equal Uri
+		"EqualUri": func(url1, url2 string) bool {
+			uri1, uri2 := url1, url2
+
+			index := strings.Index(url1, "?")
+			if index > 0 {
+				uri1 = url1[0:index]
+			}
+
+			index = strings.Index(url2, "?")
+			if index > 0 {
+				uri2 = url2[0:index]
+			}
+
+			return uri1 == uri2
+		},
 	})
 
 	// HTML模板
@@ -129,17 +146,17 @@ func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap template.FuncMap
 
 				// 目录
 				if sfInfo.IsDir() {
-					addFromFilesFuncs(renderer, funcMap, commons, fmt.Sprintf("%s%s%s", name, util_os.FileSeparator, sfName))
+					addFromFilesFuncs(renderer, funcMap, commons, fmt.Sprintf("%s%s%s", name, util_os.FileSeparator(), sfName))
 				} else
 				// 文件
 				{
 					var files []string
 					if fName == "common" {
-						files = []string{fmt.Sprintf("%s%s%s", name, util_os.FileSeparator, sfName)}
+						files = []string{fmt.Sprintf("%s%s%s", name, util_os.FileSeparator(), sfName)}
 					} else {
 						// len 0, cap ?
 						files = make([]string, 0, len(commons)+1)
-						files = append(files, fmt.Sprintf("%s%s%s", name, util_os.FileSeparator, sfName))
+						files = append(files, fmt.Sprintf("%s%s%s", name, util_os.FileSeparator(), sfName))
 						files = append(files, commons...)
 					}
 

@@ -304,7 +304,7 @@ custom = function () {
             }
 
             // 是否中断
-            if (params && params.abort) {
+            if (params && params._abort) {
                 return false
             }
 

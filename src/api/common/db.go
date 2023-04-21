@@ -34,5 +34,5 @@ func DbAdd(context *gin.Context, sql string, args ...any) (int64, error) {
 // Dsn Data Source Name
 func Dsn(context *gin.Context) string {
 	dataDir := DataDir(context)
-	return fmt.Sprintf("%s%s%s", dataDir, util_os.FileSeparator, "database.db")
+	return fmt.Sprintf("%s%s%s", dataDir, util_os.FileSeparator(), "database.db")
 }

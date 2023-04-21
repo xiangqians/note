@@ -80,9 +80,9 @@ func HistPath(context *gin.Context, img typ_api.Img) (string, error) {
 	// dir
 	dataDir := common.DataDir(context)
 	imgDir := fmt.Sprintf("%s%s%s%s%s%s%s", dataDir,
-		util_os.FileSeparator, "hist",
-		util_os.FileSeparator, "img",
-		util_os.FileSeparator, img.Type)
+		util_os.FileSeparator(), "hist",
+		util_os.FileSeparator(), "img",
+		util_os.FileSeparator(), img.Type)
 	if !util_os.IsExist(imgDir) {
 		err := util_os.MkDir(imgDir)
 		if err != nil {
@@ -95,7 +95,7 @@ func HistPath(context *gin.Context, img typ_api.Img) (string, error) {
 	name := fmt.Sprintf("%d_%d", img.Id, time)
 
 	// path
-	return fmt.Sprintf("%s%s%s", imgDir, util_os.FileSeparator, name), nil
+	return fmt.Sprintf("%s%s%s", imgDir, util_os.FileSeparator(), name), nil
 }
 
 // Path 获取图片物理路径
@@ -103,8 +103,8 @@ func Path(context *gin.Context, img typ_api.Img) (string, error) {
 	// dir
 	dataDir := common.DataDir(context)
 	imgDir := fmt.Sprintf("%s%s%s%s%s", dataDir,
-		util_os.FileSeparator, "img",
-		util_os.FileSeparator, img.Type)
+		util_os.FileSeparator(), "img",
+		util_os.FileSeparator(), img.Type)
 	if !util_os.IsExist(imgDir) {
 		err := util_os.MkDir(imgDir)
 		if err != nil {
@@ -116,7 +116,7 @@ func Path(context *gin.Context, img typ_api.Img) (string, error) {
 	name := fmt.Sprintf("%d", img.Id)
 
 	// path
-	return fmt.Sprintf("%s%s%s", imgDir, util_os.FileSeparator, name), nil
+	return fmt.Sprintf("%s%s%s", imgDir, util_os.FileSeparator(), name), nil
 }
 
 func DbPage(context *gin.Context, del int) (typ_page.Page[typ_api.Img], error) {
