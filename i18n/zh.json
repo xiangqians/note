@@ -76,5 +76,6 @@
   "i18n.cannotDelNonEmptyDir": "不能删除非空目录",
   "i18n.path": "路径",
   "i18n.version": "版本",
-  "i18n.num": "数量"
+  "i18n.num": "数量",
+  "i18n.sub": "子"
 }

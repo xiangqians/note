@@ -27,12 +27,8 @@
         </span>
         &nbsp;&nbsp;
         <span>
-            {{ Localize "i18n.name" }}: <input
-                search
-                name="name"
-                type="text"
-                size="15">&nbsp;&nbsp;
-            {{ Localize "i18n.type" }}: <select search name="type">
+            {{ Localize "i18n.name" }}: <input search="name" type="text" size="15">&nbsp;&nbsp;
+            {{ Localize "i18n.type" }}: <select search="type">
                 <option value=""></option>
                 {{ $len := len $data.types }}
                 {{ if gt $len 0 }}
@@ -41,12 +37,14 @@
                 {{ end }}
                 {{ end }}
             </select>&nbsp;&nbsp;
-            All: <input search name="all" type="checkbox"/>&nbsp;
-            <a search name="search" method="GET"><button>{{ Localize "i18n.search" }}</button></a>
-            <a search name="reset" method="GET"><button>{{ Localize "i18n.reset" }}</button></a>
+            {{ Localize "i18n.sub" }}: <input search="sub" type="checkbox"/>&nbsp;
+            <a search="search"><button>{{ Localize "i18n.search" }}</button></a>
+            <a search="reset"><button>{{ Localize "i18n.reset" }}</button></a>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="/note/list?t={{ Timestamp }}"><button>/</button></a>
         </span>
     </p>
-    <table cellspacing="0" cellpadding="10" align="center">
+    <table cellspacing="1" cellpadding="10" align="center">
         <thead>
         <tr>
             <td>{{ Localize "i18n.name" }}</td>
@@ -57,7 +55,7 @@
             <td>{{ Localize "i18n.size" }}</td>
             <td>{{ Localize "i18n.addTime" }}</td>
             <td>{{ Localize "i18n.updTime" }}</td>
-            <td colspan="3">{{ Localize "i18n.op" }}</td>
+            <!--            <td colspan="3">{{ Localize "i18n.op" }}</td>-->
         </tr>
         </thead>
         <tbody>
@@ -71,7 +69,7 @@
         {{ $len := len $data.notes }}
         {{ if gt $len 0 }}
         {{ range $index,$note := $data.notes }}
-        <tr>
+        <tr class="contextmenu-view">
             <td>
                 {{ if eq $note.Type "d" }}
                 <a href="/note/list?pid={{ $note.Id }}&t={{ Timestamp }}">{{ $note.Name }}/</a>
@@ -90,6 +88,7 @@
             <td>{{ HumanizFileSize $note.Size }}</td>
             <td>{{ HumanizUnix $note.AddTime }}</td>
             <td>{{ HumanizUnix $note.UpdTime }}</td>
+            <!--
             <td>
                 <a name="rename"
                    href="/note/name"
@@ -115,6 +114,7 @@
                     <button>{{ Localize "i18n.del" }}</button>
                 </a>
             </td>
+            -->
         </tr>
         {{ end }}
         {{ end }}
@@ -127,6 +127,7 @@
     <div>
         <a name="add" href="/note" method="POST">{{ Localize "i18n.add" }} →</a>
     </div>
+    <br>
     <hr width="30%">
     <div>
         <form action="/note/upload?t={{ Timestamp }}" method="POST" enctype="multipart/form-data">
@@ -136,10 +137,21 @@
         </form>
     </div>
     <hr width="30%">
+    <!--
     <div>
         <a name="paste" method="PUT" value="{{ $data.pnote.Id }}">
             <button name="paste">{{ Localize "i18n.paste" }}</button>
         </a>
+    </div>
+    -->
+
+    <div class="contextmenu-mask" style="display: none;"></div>
+    <div class="contextmenu-content">
+        <div class="contextmenu-list">
+            <div class="contextmenu-item">{{ Localize "i18n.rename" }}</div>
+            <div class="contextmenu-item" contextmenu-item="cut">{{ Localize "i18n.cut" }}</div>
+            <div class="contextmenu-item">{{ Localize "i18n.del" }}</div>
+        </div>
     </div>
 
 </content>
@@ -151,6 +163,10 @@
 <script type="text/javascript" src="/static/jquery/jquery.js"></script>
 <script type="text/javascript" src="/static/custom/custom.js"></script>
 <script type="text/javascript">
+    // contextmenu
+    ;(function () {
+        custom.contextmenu()
+    })()
 
     // search
     ;(function () {

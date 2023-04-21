@@ -399,6 +399,89 @@ custom = function () {
     return obj
 }()
 
+// contextmenu
+;(function (obj) {
+
+    obj.contextmenu = function () {
+        const viewEls = document.querySelectorAll('.contextmenu-view')
+        const mask = document.querySelector('.contextmenu-mask')
+        const contentEl = document.querySelector('.contextmenu-content')
+
+        const showContextMenu = (x, y) => {
+            contentEl.style.left = x + 'px'
+            contentEl.style.top = y + 'px'
+            mask.style.display = ''
+        }
+
+        const hideContextMenu = () => {
+            mask.style.display = 'none'
+            contentEl.style.top = '99999px'
+            contentEl.style.left = '99999px'
+            console.log('test')
+        }
+
+        // 调整 x 和 y 的位置。因为 contextmenu 有可能在窗口外部。
+        /**
+         *
+         * @param {number} x 将要设置的菜单的左上角坐标 x
+         * @param {number} y 左上角 y
+         * @param {number} w 菜单的宽度
+         * @param {number} h 菜单的高度
+         * @returns {x, y} 调整后的坐标
+         */
+        const adjustPos = (x, y, w, h) => {
+            const PADDING_RIGHT = 6  // 右边留点空位，防止直接贴边了，不好看
+            const PADDING_BOTTOM = 6  // 底部也留点空位
+            const vw = document.documentElement.clientWidth
+            const vh = document.documentElement.clientHeight
+            if (x + w > vw - PADDING_RIGHT) x -= w
+            if (y + h > vh - PADDING_BOTTOM) y -= h
+            return {x, y}
+        }
+
+        const onContextMenu = e => {
+            e.preventDefault()
+            const rect = contentEl.getBoundingClientRect()
+            // console.log(rect)
+            const {x, y} = adjustPos(e.clientX, e.clientY, rect.width, rect.height)
+            showContextMenu(x, y)
+        }
+
+        // 阻止指定元素下的菜单事件
+        for (let i = 0; i < viewEls.length; i++) {
+            const viewEl = viewEls[i]
+            viewEl.addEventListener('contextmenu', onContextMenu, false)
+
+            // onmousemove移动事件：鼠标指针在该元素的上面移动就触发
+
+            // onmouseover移入事件：鼠标移动都某个指点的HTML标签上时触发的事件
+            // mouseenter移入事件：于onmouseover相同但mouseenter事件只执行一次
+            viewEl.addEventListener('mouseenter', function (e) {
+                viewEl.style.backgroundColor = "#D3D3D3"
+            })
+
+            // onmouseout移出事件：鼠标从HTML标签上移开时触发的事件
+            // mouseleave移出事件：于onmouseout相同但mouseenter事件只执行一次
+        }
+
+        // 点击蒙版，隐藏
+        mask.addEventListener('mousedown', () => {
+            hideContextMenu()
+        }, false)
+
+        // 点击菜单，隐藏
+        contentEl.addEventListener('click', (e) => {
+            console.log('点击：', e.target.textContent)
+            // 执行菜单项对应命令
+            hideContextMenu()
+        }, false)
+
+        // 阻止菜单的默认 contextmenu 事件
+        // contentEl.addEventListener('contextmenu', onContextMenu, false)
+    }
+
+})(custom)
+
 // float
 ;(function (obj) {
 
