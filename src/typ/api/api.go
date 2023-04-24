@@ -38,6 +38,8 @@ type Note struct {
 	PathLink string `json:"pathLink"`                                         // 目录路径链接
 	Url      string `json:"url"`                                              // 笔记url
 	Hists    []Note `json:"hists"`                                            // 图片历史记录
+	All      int8   `json:"all" form:"all"`                                   // 是否包含所有子集，0-否，1-是
+	Children []Note `json:"children"`                                         // 子集
 }
 
 // Img 图片

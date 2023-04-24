@@ -14,9 +14,11 @@ body {
     text-align: center;
 }
 
+/* header */
 header {
 }
 
+/* content */
 content {
     flex: 1;
 }
@@ -33,20 +35,16 @@ content table tbody tr:hover {
     background-color: #D3D3D3;
 }
 
-footer {
-    padding-top: 100px;
-}
-
-button, [type="submit"] {
+content button, [type="submit"] {
     cursor: pointer
 }
 
-textarea[name="rem"] {
+content textarea[name="rem"] {
     width: 300px;
     height: 100px;
 }
 
-.float {
+content .float {
     position: fixed;
     top: 30px;
     right: 50px;
@@ -55,53 +53,11 @@ textarea[name="rem"] {
     background: white;
 }
 
-
-/* 右键菜单 */
-.contextmenu-view {
-    margin: 0 auto;
-    width: auto; /*width: 90%;*/
-    height: auto; /*height: calc(100vh - 30px);*/
-    /*background-color: azure;*/
+content .gray {
+    color: lightgray
 }
 
-.contextmenu-mask {
-    position: fixed;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    /* background-color: #000; */
-    /* opacity: .2; */
-    z-index: 45;
-}
-
-.contextmenu-content {
-    position: fixed;
-    left: 999999px;
-    top: 999999px;
-    z-index: 50;
-    user-select: none;
-}
-
-/* 内容 */
-.contextmenu-list {
-    border: 1px solid #555;
-    border-radius: 4px;
-    min-width: 180px;
-    overflow: hidden; /* 处理圆角 */
-}
-
-.contextmenu-item {
-    box-sizing: border-box;
-    padding: 0 5px;
-    height: 30px;
-    line-height: 30px;
-    word-break: keep-all; /* 很重要，否则会换行 */
-    background-color: #fff;
-    cursor: default;
-}
-
-.contextmenu-item:hover {
-    background-color: dodgerblue;
-    color: #fff;
+/* footer */
+footer {
+    padding-top: 100px;
 }

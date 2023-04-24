@@ -4,11 +4,9 @@
 package note
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
 	typ_api "note/src/typ/api"
-	typ_ft "note/src/typ/ft"
 	typ_resp "note/src/typ/resp"
 	util_str "note/src/util/str"
 	"strings"
@@ -16,69 +14,49 @@ import (
 
 // List 文件列表页面
 func List(context *gin.Context) {
-	html := func(pnote typ_api.Note, notes []typ_api.Note, types []string, err error) {
+	html := func(note typ_api.Note, types []string, err error) {
 		resp := typ_resp.Resp[map[string]any]{
 			Msg: util_str.TypeToStr(err),
 			Data: map[string]any{
-				"pnote": pnote,
-				"notes": notes,
+				"note":  note,
 				"types": types,
 			},
 		}
 		common.HtmlOk(context, "note/list.html", resp)
 	}
 
-	// id
-	pid, err := common.Query[int64](context, "pid")
-	//log.Printf("id = %d\n", id)
+	// note
+	note := typ_api.Note{}
+	err := common.ShouldBindQuery(context, &note)
+	note.Children = nil
+	//if err != nil {
+	//	html(note, nil, err)
+	//	return
+	//}
 
 	// name
-	name, err := common.Query[string](context, "name")
-	name = strings.TrimSpace(name)
+	note.Name = strings.TrimSpace(note.Name)
 	//log.Printf("name = %s\n", name)
 
 	// type
-	t, err := common.Query[string](context, "type")
-	t = strings.TrimSpace(t)
-	//log.Printf("t = %s\n", t)
-	ft := typ_ft.ExtNameOf(t)
-	if ft == typ_ft.FtUnk {
-		t = ""
+	note.Type = strings.TrimSpace(note.Type)
+
+	// p
+	pid := note.Pid
+	if pid < 0 {
+		html(note, nil, err)
+		return
 	}
 
-	// pnote
-	var pnote typ_api.Note
-	if pid < 0 {
-		pnote.Path = ""
-		pnote.PathLink = ""
-
-	} else if pid == 0 {
-		pnote.Path = "/"
-		pnote.PathLink = "/"
-
-	} else {
-		sql, args := DbQrySql(typ_api.Note{Abs: typ_api.Abs{Id: pid}, Pid: -1}, true)
-		sql += "LIMIT 1"
+	var pNote typ_api.Note
+	if pid != 0 {
 		var count int64
-		pnote, count, err = common.DbQry[typ_api.Note](context, sql, args...)
+		pNote, count, err = DbQry(context, pid, 2)
 		if err != nil || count == 0 {
-			html(pnote, nil, nil, err)
+			html(note, nil, err)
 			return
 		}
-
-		if pnote.Path != "/" {
-			pnote.Path += "/"
-		}
-		pnote.Path += fmt.Sprintf("%d:%s", pnote.Id, pnote.Name)
-		InitPath(&pnote)
 	}
-
-	// list
-	notes, err := DbList(context, typ_api.Note{
-		Pid:  pid,
-		Name: name,
-		Type: t,
-	})
 
 	// types
 	types, count, err := common.DbQry[[]string](context, "SELECT DISTINCT(`type`) FROM `note` WHERE `del` = 0")
@@ -86,30 +64,29 @@ func List(context *gin.Context) {
 		types = nil
 	}
 
+	// list
+	var path int8
+	if note.All != 0 {
+		path = 1
+	}
+	children, count, err := DbList(context, note, path)
+	if err == nil && count > 0 {
+		note.Children = children
+	}
+
+	if pid == 0 {
+		note.Id = 0
+		note.Pid = 0
+		note.Path = "/"
+		note.PathLink = "/"
+	} else {
+		note.Id = pNote.Id
+		note.Pid = pNote.Pid
+		note.Path = pNote.Path
+		note.PathLink = pNote.PathLink
+	}
+
 	// html
-	html(pnote, notes, types, err)
+	html(note, types, err)
 	return
-}
-
-func DbList(context *gin.Context, note typ_api.Note) ([]typ_api.Note, error) {
-	// 查询
-	path := false
-	if note.Pid == -1 {
-		path = true
-	}
-	sql, args := DbQrySql(note, path)
-	sql += "ORDER BY n.`type`, n.`name`, (CASE WHEN n.`upd_time` > n.`add_time` THEN n.`upd_time` ELSE n.`add_time` END) DESC "
-	sql += "LIMIT 10000"
-	notes, count, err := common.DbQry[[]typ_api.Note](context, sql, args...)
-	if err != nil || count == 0 {
-		notes = nil
-	}
-
-	if path && err == nil && count > 0 {
-		for i, l := 0, len(notes); i < l; i++ {
-			InitPath(&notes[i])
-		}
-	}
-
-	return notes, err
 }

@@ -31,7 +31,7 @@ func View0(context *gin.Context, id int64, err any) {
 	}
 
 	// query
-	note, count, err := DbQry(context, id, true)
+	note, count, err := DbQry(context, id, 1)
 	if err != nil || count == 0 {
 		DefaultView(context, note, err)
 		return

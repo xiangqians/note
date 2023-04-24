@@ -3,8 +3,6 @@
 // @date 14:16 2023/04/02
 package ft
 
-import "strings"
-
 // Ft file type，文件类型
 type Ft string
 
@@ -32,7 +30,7 @@ var fts = [...]Ft{
 // ExtNameOf 根据文件扩展名（Filename Extension）获取文件类型
 func ExtNameOf(extName string) Ft {
 	for _, ft := range fts {
-		if string(ft) == strings.ToLower(extName) {
+		if string(ft) == extName {
 			return ft
 		}
 	}

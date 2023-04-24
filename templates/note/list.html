@@ -18,108 +18,112 @@
     <p style="color: red;">{{ .resp.Msg }}</p>
 
     {{ $data := .resp.Data }}
+    {{ $note := $data.note }}
+    {{ $types := $data.types }}
 
     <p>
         <span>
-        <script>
-            document.write('{{ $data.pnote.PathLink }}')
-        </script>
+            <script>
+                document.write("{{ $note.PathLink }}")
+            </script>
         </span>
         &nbsp;&nbsp;
         <span>
-            {{ Localize "i18n.name" }}: <input search="name" type="text" size="15">&nbsp;&nbsp;
+            {{ Localize "i18n.name" }}: <input search="name" type="text" size="15" value="{{ $note.Name }}">&nbsp;&nbsp;
             {{ Localize "i18n.type" }}: <select search="type">
                 <option value=""></option>
                 {{ $len := len $data.types }}
                 {{ if gt $len 0 }}
-                {{ range $index,$type := $data.types }}
-                <option value="{{ $type }}">{{ $type }}</option>
+                {{ range $index,$type := $types }}
+                <option value="{{ $type }}" {{ if eq $note.Type $type }}selected{{ end }}>{{ $type }}</option>
                 {{ end }}
                 {{ end }}
             </select>&nbsp;&nbsp;
-            {{ Localize "i18n.sub" }}: <input search="sub" type="checkbox"/>&nbsp;
-            <a search="search"><button>{{ Localize "i18n.search" }}</button></a>
-            <a search="reset"><button>{{ Localize "i18n.reset" }}</button></a>
+            {{ Localize "i18n.all" }}: <input search="all" type="checkbox" {{ if ne $note.All 0 }}checked{{ end }}/>&nbsp;
+            <a search><button>{{ Localize "i18n.search" }}</button></a>
+            <a reset><button>{{ Localize "i18n.reset" }}</button></a>
             &nbsp;&nbsp;&nbsp;&nbsp;
             <a href="/note/list?t={{ Timestamp }}"><button>/</button></a>
         </span>
     </p>
+
     <table cellspacing="1" cellpadding="10" align="center">
         <thead>
         <tr>
             <td>{{ Localize "i18n.name" }}</td>
-            {{ if eq $data.pnote.Path "" }}
+            {{ if ne $note.All 0 }}
             <td>{{ Localize "i18n.path" }}</td>
             {{ end }}
             <td>{{ Localize "i18n.type" }}</td>
             <td>{{ Localize "i18n.size" }}</td>
             <td>{{ Localize "i18n.addTime" }}</td>
             <td>{{ Localize "i18n.updTime" }}</td>
-            <!--            <td colspan="3">{{ Localize "i18n.op" }}</td>-->
+            <td colspan="3">{{ Localize "i18n.op" }}</td>
         </tr>
         </thead>
         <tbody>
-        {{ if gt $data.pnote.Id 0 }}
+        {{ if gt $note.Id 0 }}
         <tr>
-            <td><a href="/note/list?pid={{ $data.pnote.Pid }}&t={{ Timestamp }}">../</a></td>
+            <td><a href="/note/list?pid={{ $note.Pid }}&t={{ Timestamp }}">../</a></td>
             <td colspan="7"></td>
         </tr>
         {{ end }}
 
-        {{ $len := len $data.notes }}
+        {{ $len := len $note.Children }}
         {{ if gt $len 0 }}
-        {{ range $index,$note := $data.notes }}
-        <tr class="contextmenu-view">
+        {{ range $index,$childNote := $note.Children }}
+        <tr>
             <td>
-                {{ if eq $note.Type "d" }}
-                <a href="/note/list?pid={{ $note.Id }}&t={{ Timestamp }}">{{ $note.Name }}/</a>
+                {{ if eq $childNote.Type "d" }}
+                <a href="/note/list?pid={{ $childNote.Id }}&t={{ Timestamp }}">{{ $childNote.Name }}/</a>
                 {{ else }}
-                <a href="/note/{{ $note.Id }}/view?t={{ Timestamp }}" target="_blank">{{ $note.Name }}</a>
+                <a href="/note/{{ $childNote.Id }}/view?t={{ Timestamp }}" target="_blank">{{ $childNote.Name }}</a>
                 {{ end }}
             </td>
-            {{ if eq $data.pnote.Path "" }}
+            {{ if ne $note.All 0 }}
             <td>
                 <script>
-                    document.write('{{ $note.PathLink }}')
+                    document.write("{{ $childNote.PathLink }}")
                 </script>
             </td>
             {{ end }}
-            <td>{{ $note.Type }}</td>
-            <td>{{ HumanizFileSize $note.Size }}</td>
-            <td>{{ HumanizUnix $note.AddTime }}</td>
-            <td>{{ HumanizUnix $note.UpdTime }}</td>
-            <!--
+            <td>{{ $childNote.Type }}</td>
+            <td>{{ HumanizFileSize $childNote.Size }}</td>
+            <td>{{ HumanizUnix $childNote.AddTime }}</td>
+            <td>{{ HumanizUnix $childNote.UpdTime }}</td>
             <td>
-                <a name="rename"
-                   href="/note/name"
-                   method="PUT"
-                   noteId="{{ $note.Id }}"
-                   notePid="{{ $data.pnote.Id }}"
-                   noteName="{{ $note.Name }}">
+                <a rename
+                   noteId="{{ $childNote.Id }}"
+                   noteName="{{ $childNote.Name }}">
                     <button>{{ Localize "i18n.rename" }}</button>
                 </a>
             </td>
             <td>
-                <button name="cut"
-                        noteId="{{ $note.Id }}"
-                        noteName='{{ $data.pnote.Path }}{{ if ne $data.pnote.Path "/"}}/{{ end }}{{ $note.Name }}'>
+                <button cut
+                        noteId="{{ $childNote.Id }}"
+                        noteName='{{ $data.pnote.Path }}{{ if ne $data.pnote.Path "/"}}/{{ end }}{{ $childNote.Name }}'>
                     {{ Localize "i18n.cut" }}
                 </button>
             </td>
             <td>
                 <a name="del"
-                   href="/note/{{ $note.Id }}"
+                   href="/note/{{ $childNote.Id }}"
                    method="DELETE"
-                   confirm='{{ Localize "i18n.del" }} {{ $note.Name }}{{ if eq $note.Type "dir" }}/{{ end }} ?'>
+                   confirm='{{ Localize "i18n.del" }} {{ $childNote.Name }}{{ if eq $childNote.Type "dir" }}/{{ end }} ?'>
                     <button>{{ Localize "i18n.del" }}</button>
                 </a>
             </td>
-            -->
         </tr>
         {{ end }}
         {{ end }}
         </tbody>
     </table>
+    <br>
+    <div>
+        <a name="paste" method="PUT" value="{{ $data.pnote.Id }}">
+            <button name="paste">{{ Localize "i18n.paste" }}</button>
+        </a>
+    </div>
     <br>
     <br>
     <br>
@@ -129,7 +133,7 @@
     </div>
     <br>
     <hr width="30%">
-    <div>
+    <div style="padding: 5px">
         <form action="/note/upload?t={{ Timestamp }}" method="POST" enctype="multipart/form-data">
             <input name="pid" type="text" value="{{ $data.pnote.Id }}" hidden/>
             <input name="file" type="file"/>
@@ -137,22 +141,6 @@
         </form>
     </div>
     <hr width="30%">
-    <!--
-    <div>
-        <a name="paste" method="PUT" value="{{ $data.pnote.Id }}">
-            <button name="paste">{{ Localize "i18n.paste" }}</button>
-        </a>
-    </div>
-    -->
-
-    <div class="contextmenu-mask" style="display: none;"></div>
-    <div class="contextmenu-content">
-        <div class="contextmenu-list">
-            <div class="contextmenu-item">{{ Localize "i18n.rename" }}</div>
-            <div class="contextmenu-item" contextmenu-item="cut">{{ Localize "i18n.cut" }}</div>
-            <div class="contextmenu-item">{{ Localize "i18n.del" }}</div>
-        </div>
-    </div>
 
 </content>
 
@@ -163,9 +151,8 @@
 <script type="text/javascript" src="/static/jquery/jquery.js"></script>
 <script type="text/javascript" src="/static/custom/custom.js"></script>
 <script type="text/javascript">
-    // contextmenu
+
     ;(function () {
-        custom.contextmenu()
     })()
 
     // search
@@ -291,24 +278,6 @@
             return {data: data}
         })
 
-        // rename
-        // let $renames = $('a[href^="/note"][href$="/rename"]')
-        let renames = $('a[name="rename"]')
-        for (let i = 0, len = renames.length; i < len; i++) {
-            let $rename = $(renames[i])
-            custom.ajaxE($rename, function ($rename) {
-                let name = prompt('{{ Localize "i18n.name" }}', $rename.attr('noteName'))
-                if (!name || (name = name.trim()) === '') {
-                    return custom.ajaxEDoNothing
-                }
-
-                let data = new FormData();
-                data.append('id', $rename.attr('noteId'))
-                data.append('pid', $rename.attr('notePid'))
-                data.append('name', name)
-                return {data: data}
-            })
-        }
 
         // del
         let dels = $('a[name="del"]')

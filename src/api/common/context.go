@@ -98,6 +98,14 @@ func PageReq(context *gin.Context) (typ_page.Req, error) {
 	return req, err
 }
 
+func ShouldBindQuery(context *gin.Context, i any) error {
+	err := context.ShouldBindQuery(i)
+	if err != nil {
+		err = TransErr(context, err)
+	}
+	return err
+}
+
 // ShouldBind 应该绑定参数
 func ShouldBind(context *gin.Context, i any) error {
 	err := context.ShouldBind(i)
