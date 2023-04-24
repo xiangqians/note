@@ -303,37 +303,20 @@ custom = function () {
                 params = callback($e)
             }
 
-            // 是否中断
-            if (params && params._abort) {
+            //  url & method 属性必须存在
+            if (!params || !params.hasOwnProperty('url') || !params.hasOwnProperty('method')) {
                 return false
             }
 
-            // url
-            let url = null
-            if (params && params.hasOwnProperty('url')) {
-                url = params.url
-            }
-            // <a><a/>
-            else {
-                url = $e.attr("href")
-            }
-            // console.log('url', url)
-
-            // method
-            let method = null
-            if (params && params.hasOwnProperty('method')) {
-                method = params.method
-            } else {
-                method = $e.attr("method").trim().toUpperCase()
-            }
-            // console.log('method', method)
+            let url = params.url
+            let method = params.method
 
             // data
             let data = null
-            if (params && params.hasOwnProperty('data')) {
+            if (params.hasOwnProperty('data')) {
                 data = params.data
             }
-            // console.log('data', data)
+            console.log(method, url, data)
 
             // ajax
             obj.ajax(url, method, data)

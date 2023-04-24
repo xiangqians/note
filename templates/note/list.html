@@ -40,8 +40,8 @@
                 {{ end }}
             </select>&nbsp;&nbsp;
             {{ Localize "i18n.all" }}: <input search="all" type="checkbox" {{ if ne $note.All 0 }}checked{{ end }}/>&nbsp;
-            <a search><button>{{ Localize "i18n.search" }}</button></a>
-            <a reset><button>{{ Localize "i18n.reset" }}</button></a>
+            <a search="search"><button>{{ Localize "i18n.search" }}</button></a>
+            <a href="/note/list?pid={{ $note.Id }}&t={{ Timestamp }}"><button>{{ Localize "i18n.reset" }}</button></a>
             &nbsp;&nbsp;&nbsp;&nbsp;
             <a href="/note/list?t={{ Timestamp }}"><button>/</button></a>
         </span>
@@ -62,6 +62,7 @@
         </tr>
         </thead>
         <tbody>
+
         {{ if gt $note.Id 0 }}
         <tr>
             <td><a href="/note/list?pid={{ $note.Pid }}&t={{ Timestamp }}">../</a></td>
@@ -101,7 +102,7 @@
             <td>
                 <button cut
                         noteId="{{ $childNote.Id }}"
-                        noteName='{{ $data.pnote.Path }}{{ if ne $data.pnote.Path "/"}}/{{ end }}{{ $childNote.Name }}'>
+                        noteName='{{ $childNote.Path }}{{ if ne $childNote.Path "/"}}/{{ end }}{{ $childNote.Name }}'>
                     {{ Localize "i18n.cut" }}
                 </button>
             </td>
@@ -152,82 +153,31 @@
 <script type="text/javascript" src="/static/custom/custom.js"></script>
 <script type="text/javascript">
 
-    ;(function () {
-    })()
-
     // search
     ;(function () {
 
-        // params
-        let params = custom.urlQueryParams(decodeURIComponent('{{ .uri }}'))
+        let $search = $($('a[search="search"]')[0])
+        custom.clickE($search, function ($e) {
+            let $name = $($('input[search="name"]')[0])
+            let $type = $($('select[search="type"]')[0])
+            let $all = $($('input[search="all"]')[0])
 
-        // name
-        let $name = $($('input[search][name="name"]')[0])
-        let name = params.name
-        if (name) {
-            $name.val(name)
-        }
+            let pid = '{{ $note.Id }}'
+            let name = $name.val().trim()
+            let type = $type.find("option:selected").text()
+            let all = $all.is(":checked") ? 1 : 0
 
-        // type
-        let $type = $($('select[search][name="type"]')[0])
-        let type = params.type
-        if (type) {
-            let options = $type.find('option')
-            for (let i = 0; i < options.length; i++) {
-                let $option = $(options[i])
-                $option.removeAttr('selected')
-                if (type === $option.val()) {
-                    $option.attr('selected', true)
-                }
+            return {
+                url: `/note/list?pid=${pid}&name=${name}&type=${type}&all=${all}`,
+                method: 'GET',
             }
-        }
+        })
 
-        // all
-        let $all = $($('input[search][name="all"]')[0])
-        let pid = params.pid
-        if (pid === '-1') {
-            $all.attr('checked', true)
-        }
-
-        function callback($e) {
-            let reset = $e.attr('name') === 'reset'
-
-            // url
-            let url = '/note/list'
-
-            // pid
-            let pid = '{{ $data.pnote.Id }}'
-            if (!reset && $all.prop('checked')) {
-                pid = -1
-            }
-            url += '?pid=' + pid
-
-            // name
-            let name = reset ? '' : $name.val().trim()
-            $name.val(name)
-            if (name !== '') {
-                url += '&name=' + name
-            }
-
-            // type
-            let type = reset ? '' : $type.find("option:selected").text();
-            if (type !== '') {
-                url += '&type=' + type
-            }
-
-            return {url: url}
-        }
-
-        // search
-        let $search = $($('a[search][name="search"]')[0])
-        custom.ajaxE($search, callback)
-
-        // reset
-        let $reset = $($('a[search][name="reset"]')[0])
-        custom.ajaxE($reset, callback)
     })()
 
     ;(function () {
+
+        return
 
         // add
         let $add = $($('a[name="add"]')[0])
