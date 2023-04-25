@@ -37,11 +37,11 @@ custom = function () {
 
     /**
      * 判断是否是 String
-     * @param obj
+     * @param _obj
      * @returns {boolean}
      */
-    obj.isStr = function (obj) {
-        return obj.isType(obj, '[object String]')
+    obj.isStr = function (_obj) {
+        return obj.isType(_obj, '[object String]')
     }
 
     /**
@@ -334,45 +334,36 @@ custom = function () {
     }
 
     /**
-     * value to string
-     * @param v
-     * @returns {string}
-     * @private
-     */
-    Storage.prototype._vToStr = function (v) {
-        if (!obj.isStr(v)) {
-            v = JSON.stringify(v)
-        }
-        return v
-    }
-
-    /**
      * 存储数据
-     * @param key
-     * @param value
+     * @param key {string}
+     * @param value {object}
      * @returns {boolean}
      */
     Storage.prototype.set = function (key, value) {
-        window.localStorage.setItem(this._vToStr(key), this._vToStr(value));
+        window.localStorage.setItem(key, value ? JSON.stringify(value) : null);
         return true
     }
 
     /**
      * 获取数据
-     * @param key
-     * @returns {string}
+     * @param key {string}
+     * @returns {object}
      */
     Storage.prototype.get = function (key) {
-        return window.localStorage.getItem(this._vToStr(key));
+        let value = window.localStorage.getItem(key)
+        if (value) {
+            return JSON.parse(value)
+        }
+        return null;
     }
 
     /**
      * 删除数据
-     * @param key
+     * @param key {string}
      * @returns {boolean}
      */
-    Storage.prototype.remove = function (key) {
-        window.localStorage.removeItem(this._vToStr(key))
+    Storage.prototype.del = function (key) {
+        window.localStorage.removeItem(key)
         return true
     }
 
