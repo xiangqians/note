@@ -121,13 +121,13 @@
     <br>
 
     <div>
-        <a name="add" href="/note" method="POST">{{ Localize "i18n.add" }} →</a>
+        <a add href="#">{{ Localize "i18n.add" }} →</a>
     </div>
     <br>
     <hr width="30%">
     <div style="padding: 5px">
         <form action="/note/upload?t={{ Timestamp }}" method="POST" enctype="multipart/form-data">
-            <input name="pid" type="text" value="{{ $data.pnote.Id }}" hidden/>
+            <input name="pid" type="text" value="{{ $note.Id }}" hidden/>
             <input name="file" type="file"/>
             <button type="submit">{{ Localize "i18n.upload" }}</button>
         </form>
@@ -166,6 +166,7 @@
 
     })()
 
+    // rename, cut, del
     ;(function () {
 
         function getNote($e) {
@@ -303,126 +304,61 @@
 
     })()
 
+    // add
     ;(function () {
 
-        return
-
-        // add
-        let $add = $($('a[name="add"]')[0])
-        custom.ajaxE($add, function ($add) {
+        let $add = $($('[add]')[0])
+        custom.clickE($add, function ($e) {
             // flag判断是否已点击 'Add →'
-            let flag = $add.attr('flag')
-            if (flag != 1) {
+            let flag = $e.attr('flag')
+            if (flag !== "1") {
                 let $input = $('<input name="name" placeholder="name">')
-                $input.append('<option value=""></option>')
-                $add.before($input)
-                $add.html('<span style="margin-left: 10px">{{ Localize "i18n.add" }}</span>')
-                $add.attr('flag', 1)
-                return custom.ajaxEDoNothing
+                $e.before($input)
+                $e.html('<span style="margin-left: 10px">{{ Localize "i18n.add" }}</span>')
+                $e.attr('flag', '1')
+                return
             }
 
             // 获取上一个 input 兄弟节点
-            let $input = $add.prev('input')
+            let $input = $e.prev('input')
             // console.log($input)
-            let value = $input.val().trim();
-            $input.val(value)
-            // console.log(value)
+
+            let name = $input.val().trim();
+            $input.val(name)
+            // console.log(name)
+
             let legal = true
-            let name = null
             let type = null
-            if (value.endsWith("/")) {
-                name = value.substring(0, value.length - 1)
+            if (name.endsWith("/")) {
+                name = name.substring(0, name.length - 1)
                 type = 'd'
-            } else if (value.endsWith(".md")) {
-                name = value.substring(0, value.length - 3)
+            } else if (name.endsWith(".md")) {
+                name = name.substring(0, name.length - 3)
                 type = 'md'
             } else {
                 legal = false
             }
-            if (value === "" || !legal) {
+
+            if (name === "" || !legal) {
                 // 添加 css border
                 $input.css('border', '2px solid red')
-                return custom.ajaxEDoNothing
+                return
             }
 
             // 删除 css border
             $input.css('border', '')
 
-            // 请求数据
+            // data
             let data = new FormData()
-            data.append('pid', "{{ $data.pnote.Id }}")
+            data.append('pid', "{{ $note.Id }}")
             data.append('name', name)
             data.append('type', type)
-            return {data: data}
-        })
-
-
-        // del
-        let dels = $('a[name="del"]')
-        for (let i = 0; i < dels.length; i++) {
-            let $del = $(dels[i])
-            custom.ajaxE($del, function ($del) {
-                if (confirm($del.attr('confirm'))) {
-                    return null
-                }
-
-                return custom.ajaxEDoNothing
-            })
-        }
-
-        let $pasteBtn = $($('button[name="paste"]')[0])
-
-        // cut
-        const cutKey = 'cut'
-        let cuts = $('button[name="cut"]')
-        let cutValue = custom.storage.get(cutKey)
-        let id = null
-        if (cutValue) {
-            id = JSON.parse(cutValue).id;
-        }
-        // console.log('cutValue', cutValue)
-        // console.log('id', id)
-        for (let i = 0, len = cuts.length; i < len; i++) {
-            let $cut = $(cuts[i])
-            if ($cut.attr('noteId') === id) {
-                $cut.attr('disabled', 'disabled')
-            }
-            $cut.click(function () {
-                // 移除已cut的笔记
-                for (let i = 0, len = cuts.length; i < len; i++) {
-                    let $cut = $(cuts[i])
-                    $cut.removeAttr('disabled')
-                }
-
-                // 设置当前cut
-                $(this).attr('disabled', 'disabled')
-                custom.storage.set(cutKey, {'id': $(this).attr('noteId'), 'name': $(this).attr('noteName')})
-
-                // 显示paste
-                $pasteBtn.removeAttr('disabled')
-            })
-        }
-
-        // paste
-        let $paste = $($('a[name="paste"]')[0])
-        if (!(cutValue)) {
-            $pasteBtn.attr('disabled', 'disabled')
-        }
-        // $paste.click(function ())
-        custom.ajaxE($paste, function ($paste) {
-            let cutValue = custom.storage.get(cutKey)
-            let src = JSON.parse(cutValue);
-            if (!confirm('{{ Localize "i18n.cut" }} "' + src.name + '" {{ Localize "i18n.to" }} "{{ $data.pnote.Path }}{{ if ne $data.pnote.Path "/"}}/{{ end }}" ?')) {
-                return custom.ajaxEDoNothing
-            }
-
-            // remove attr
-            custom.storage.remove(cutKey)
-            $pasteBtn.attr('disabled', 'disabled')
 
             return {
-                url: '/note/cut/' + src.id + '/to/{{ $data.pnote.Id }}'
-            };
+                url: '/note',
+                method: 'POST',
+                data: data
+            }
         })
 
     })()

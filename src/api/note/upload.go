@@ -24,6 +24,8 @@ func Upload(context *gin.Context) {
 	// method
 	method := context.Request.Method
 
+	// _method == put ?
+
 	// redirect
 	redirect := func(id int64, pid int64, err any) {
 		resp := typ_resp.Resp[any]{
