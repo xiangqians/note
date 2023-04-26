@@ -28,6 +28,8 @@ func List(context *gin.Context) {
 	// note
 	note := typ_api.Note{}
 	err := common.ShouldBindQuery(context, &note)
+	note.Del = 0
+	note.QryPath = 0
 	note.Children = nil
 	//if err != nil {
 	//	html(note, nil, err)
@@ -51,7 +53,7 @@ func List(context *gin.Context) {
 	var pNote typ_api.Note
 	if pid != 0 {
 		var count int64
-		pNote, count, err = DbQry(context, pid, 2)
+		pNote, count, err = DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: pid}, Pid: -1, QryPath: 2})
 		if err != nil || count == 0 {
 			html(note, nil, err)
 			return
@@ -65,11 +67,10 @@ func List(context *gin.Context) {
 	}
 
 	// list
-	var path int8
-	if note.All != 0 {
-		path = 1
+	if note.Sub != 0 {
+		note.QryPath = 1
 	}
-	children, count, err := DbList(context, note, path)
+	children, count, err := DbList(context, note)
 	if err == nil && count > 0 {
 		note.Children = children
 	}
@@ -85,6 +86,12 @@ func List(context *gin.Context) {
 		note.Path = pNote.Path
 		note.PathLink = pNote.PathLink
 	}
+
+	// 记录查询参数
+	common.SetSessionKv(context, "note", typ_api.Note{
+		Pid:     note.Pid,
+		Deleted: note.Deleted,
+	})
 
 	// html
 	html(note, types, err)

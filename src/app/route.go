@@ -47,6 +47,7 @@ func route(engine *gin.Engine) {
 	noteGroup.PUT("/content", api_note.UpdContent)
 	noteGroup.PUT("/cut/:srcId/to/:dstId", api_note.Cut)
 	noteGroup.DELETE("/:id", api_note.Del)
+	noteGroup.PUT("/:id/restore", api_note.Restore)
 
 	// img
 	imgGroup := engine.Group("/img")

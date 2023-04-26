@@ -4,21 +4,18 @@
 package note
 
 import (
-	"fmt"
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
+	typ_api "note/src/typ/api"
 	typ_ft "note/src/typ/ft"
-	typ_resp "note/src/typ/resp"
-	util_str "note/src/util/str"
 	util_time "note/src/util/time"
 )
 
-// Del 删除文件
-func Del(context *gin.Context) {
+// Restore 恢复（还原）
+func Restore(context *gin.Context) {
 	redirect := func(pid int64, err any) {
-		resp := typ_resp.Resp[any]{Msg: util_str.TypeToStr(err)}
-		common.Redirect(context, fmt.Sprintf("/note/list?pid=%d", pid), resp)
+		RedirectToList(context, pid, err)
 	}
 
 	// id
@@ -29,9 +26,36 @@ func Del(context *gin.Context) {
 	}
 
 	// note
-	note, _, err := DbQry(context, id, 0)
+	note, count, err := DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: id, Del: 1}, Pid: -1})
 	pid := note.Pid
+	if err != nil || count == 0 {
+		redirect(pid, err)
+		return
+	}
+
+	// update
+	_, err = common.DbUpd(context, "UPDATE `note` SET `del` = 0, `upd_time` = ? WHERE `id` = ?", util_time.NowUnix(), id)
+	redirect(pid, err)
+	return
+}
+
+// Del 删除文件
+func Del(context *gin.Context) {
+	redirect := func(pid int64, err any) {
+		RedirectToList(context, pid, err)
+	}
+
+	// id
+	id, err := common.Param[int64](context, "id")
 	if err != nil {
+		redirect(0, err)
+		return
+	}
+
+	// note
+	note, count, err := DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: id}, Pid: -1})
+	pid := note.Pid
+	if err != nil || count == 0 {
 		redirect(pid, err)
 		return
 	}

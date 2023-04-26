@@ -35,7 +35,7 @@ func View0(context *gin.Context, id int64, err any) {
 	}
 
 	// query
-	note, count, err := DbQry(context, id, 1)
+	note, count, err := DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: id}, Pid: -1, QryPath: 1})
 	if err != nil || count == 0 {
 		DefaultView(context, note, err)
 		return
@@ -180,7 +180,7 @@ func Edit(context *gin.Context) {
 	}
 
 	// query
-	f, count, err := DbQry(context, id, 0)
+	f, count, err := DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: id}, Pid: -1})
 	if err != nil || count == 0 {
 		FileDefaultEditPage(context, f, err)
 		return
@@ -251,7 +251,7 @@ func UpdContent(context *gin.Context) {
 	//log.Println("id", id)
 
 	// f
-	f, count, err := DbQry(context, id, 0)
+	f, count, err := DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: id}, Pid: -1})
 	if count == 0 || typ_ft.ExtNameOf(f.Type) != typ_ft.FtMd {
 		json(nil)
 		return
@@ -314,7 +314,7 @@ func Get(context *gin.Context) {
 	}
 
 	// note
-	note, count, err := DbQry(context, id, 0)
+	note, count, err := DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: id}, Pid: -1})
 	if err != nil || count == 0 {
 		log.Println(err)
 		return

@@ -101,7 +101,7 @@ func Upload(context *gin.Context) {
 		if pid != 0 {
 			var note typ_api.Note
 			var count int64
-			note, count, err = DbQry(context, pid, 0)
+			note, count, err = DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: pid}, Pid: -1})
 			if err != nil || count == 0 || typ_ft.ExtNameOf(note.Type) != typ_ft.FtD { // 父节点必须是目录
 				redirect(id, pid, err)
 				return
@@ -116,7 +116,7 @@ func Upload(context *gin.Context) {
 	case http.MethodPut:
 		// 校验 id 是否存在
 		var count int64
-		oldNote, count, err = DbQry(context, id, 0)
+		oldNote, count, err = DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: id}, Pid: -1})
 		if err != nil || count == 0 || typ_ft.ExtNameOf(oldNote.Type) == typ_ft.FtD { // 上传文件不能是目录类型
 			redirect(id, pid, err)
 			return

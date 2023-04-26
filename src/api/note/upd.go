@@ -4,12 +4,9 @@
 package note
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
 	typ_api "note/src/typ/api"
-	typ_resp "note/src/typ/resp"
-	util_str "note/src/util/str"
 	util_time "note/src/util/time"
 	"strings"
 )
@@ -17,10 +14,7 @@ import (
 // UpdName 文件重命名
 func UpdName(context *gin.Context) {
 	redirect := func(pid int64, err any) {
-		resp := typ_resp.Resp[any]{
-			Msg: util_str.TypeToStr(err),
-		}
-		common.Redirect(context, fmt.Sprintf("/note/list?pid=%d", pid), resp)
+		RedirectToList(context, pid, err)
 	}
 
 	// note

@@ -10,8 +10,8 @@ import (
 // Abs 抽象实体定义
 type Abs struct {
 	Id      int64  `json:"id" form:"id" binding:"gte=0"`     // 主键id
-	Rem     string `json:"rem" form:"rem" binding:"max=200"` // 备注
-	Del     byte   `json:"del" form:"del"`                   // 删除标识，0-正常，1-删除
+	Rem     string `json:"rem" form:"rem" binding:"max=250"` // 备注
+	Del     byte   `json:"del" form:"del"`                   // 删除标识，0-正常，1-删除，2-永久删除
 	AddTime int64  `json:"addTime" form:"addTime"`           // 创建时间（时间戳，s）
 	UpdTime int64  `json:"updTime" form:"updTime"`           // 修改时间（时间戳，s）
 }
@@ -19,10 +19,10 @@ type Abs struct {
 // User 用户
 type User struct {
 	Abs
-	Name     string `json:"name" form:"name" binding:"required,excludes= ,min=1,max=60"`                   // 用户名
-	Nickname string `json:"nickname" form:"nickname"binding:"max=60"`                                      // 昵称
-	Passwd   string `json:"passwd" form:"passwd" binding:"required,excludes= ,max=100"`                    // 密码
-	RePasswd string `json:"rePasswd" form:"rePasswd" binding:"required,excludes= ,max=100,eqfield=Passwd"` // retype Passwd
+	Name     string `json:"name" form:"name" binding:"required,excludes= ,min=1,max=60"`                  // 用户名
+	Nickname string `json:"nickname" form:"nickname"binding:"max=60"`                                     // 昵称
+	Passwd   string `json:"passwd" form:"passwd" binding:"required,excludes= ,max=60"`                    // 密码
+	RePasswd string `json:"rePasswd" form:"rePasswd" binding:"required,excludes= ,max=60,eqfield=Passwd"` // retype Passwd
 }
 
 // Note 笔记
@@ -34,11 +34,13 @@ type Note struct {
 	Size     int64  `json:"size" form:"size"`                                 // 文件大小，单位：byte
 	Hist     string `json:"hist" form:"hist"`                                 // history（历史记录）
 	HistSize int64  `json:"histSize" form:"histSize"`                         // history（历史记录）文件大小，单位：byte
-	Path     string `json:"path"`                                             // 目录路径
-	PathLink string `json:"pathLink"`                                         // 目录路径链接
+	QryPath  int8   `json:"qryPath"`                                          // 查询路径，0-不查询，1-查询，2-查询并包含自身的
+	Path     string `json:"path"`                                             // 笔记路径
+	PathLink string `json:"pathLink"`                                         // 笔记路径链接
 	Url      string `json:"url"`                                              // 笔记url
 	Hists    []Note `json:"hists"`                                            // 图片历史记录
-	All      int8   `json:"all" form:"all"`                                   // 是否包含所有子集，0-否，1-是
+	Sub      int8   `json:"sub" form:"sub"`                                   // 是否包含所有子集，0-否，1-是
+	Deleted  int8   `json:"deleted" form:"deleted"`                           // 是否包含已删除文件，0-否，1-是
 	Children []Note `json:"children"`                                         // 子集
 }
 
