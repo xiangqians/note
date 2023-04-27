@@ -28,7 +28,7 @@
 
     <p>
         <span>
-            ID: <input search="id" type="text" size="5"
+            ID: <input search="id" type="text" size="5" value="{{ if gt $img.Id 0 }}{{ $img.Id }}{{ end }}"
                        oninput="this.value = this.value.replace(/^(0+)|[^0-9]+/g, '');">&nbsp;&nbsp;
             {{ Localize "i18n.name" }}: <input search="name" type="text" size="15" value="{{ $img.Name }}">&nbsp;&nbsp;
             {{ Localize "i18n.type" }}: <select search="type">
@@ -268,6 +268,46 @@
                 })
             }
         })()
+
+        // restore
+        ;(function () {
+            let restores = $('[restore]')
+            for (let i = 0; i < restores.length; i++) {
+                let $restore = $(restores[i])
+                custom.clickE($restore, function ($e) {
+                    let img = getImg($e)
+                    if (!confirm('{{ Localize "i18n.restore" }} "' + img.name + '" ?')) {
+                        return
+                    }
+
+                    return {
+                        url: `/img/${img.id}/restore`,
+                        method: 'PUT',
+                    }
+                })
+            }
+        })()
+
+        return
+            ;
+        (function () {
+        })()
+        // permly-del
+        let permlyDels = $('[permly-del]')
+        for (let i = 0; i < permlyDels.length; i++) {
+            let $permlyDel = $(permlyDels[i])
+            custom.clickE($permlyDel, function ($e) {
+                let note = getNote($e)
+                if (!confirm('{{ Localize "i18n.permlyDel" }} ' + note.getFormatName() + ' ?')) {
+                    return
+                }
+
+                return {
+                    // url: `/note/${note.id}/restore`,
+                    // method: 'DELETE',
+                }
+            })
+        }
 
     })()
 

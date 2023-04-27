@@ -59,12 +59,12 @@ func route(engine *gin.Engine) {
 	imgGroup.Any("/:id/hist/:idx/view", api_img.HistView) // page
 	imgGroup.PUT("/name", api_img.UpdName)
 	imgGroup.DELETE("/:id", api_img.Del)
+	imgGroup.PUT("/:id/restore", api_img.Restore)
 
 	// recycle
 	recycleGroup := engine.Group("/recycle")
 	imgRecycleGroup := recycleGroup.Group("/img")
 	imgRecycleGroup.Any("/list", api_recycle.ImgList) // page
-	imgRecycleGroup.PUT("/:id/restore", api_recycle.ImgRestore)
 	imgRecycleGroup.DELETE("/:id/permlyDel", api_recycle.ImgPermlyDel)
 	noteRecycleGroup := recycleGroup.Group("/note")
 	noteRecycleGroup.Any("/list", api_recycle.NoteList) // page

@@ -51,6 +51,9 @@ func List(context *gin.Context) {
 		},
 	}
 
+	// 记录查询参数
+	common.SetSessionKv(context, "img", img)
+
 	// html
 	common.HtmlOk(context, "img/list.html", resp)
 }

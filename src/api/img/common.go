@@ -9,8 +9,25 @@ import (
 	"note/src/api/common"
 	typ_api "note/src/typ/api"
 	typ_page "note/src/typ/page"
+	typ_resp "note/src/typ/resp"
 	util_os "note/src/util/os"
+	util_str "note/src/util/str"
 )
+
+func RedirectToList(context *gin.Context, err any) {
+	resp := typ_resp.Resp[any]{
+		Msg: util_str.TypeToStr(err),
+	}
+
+	// 记录查询参数
+	img, err := common.GetSessionV[typ_api.Img](context, "img", false)
+	if err != nil {
+		common.Redirect(context, "/img/list", resp)
+		return
+	}
+
+	common.Redirect(context, fmt.Sprintf("/img/list?id=%d&name=%s&type=%s&del=%d", img.Id, img.Name, img.Type, img.Del), resp)
+}
 
 // HistPath 获取图片历史记录物理路径
 func HistPath(context *gin.Context, img typ_api.Img) (string, error) {

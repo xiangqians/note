@@ -14,7 +14,6 @@ import (
 	util_json "note/src/util/json"
 	util_os "note/src/util/os"
 	util_str "note/src/util/str"
-	util_time "note/src/util/time"
 )
 
 // ImgPermlyDel img永久删除
@@ -64,26 +63,6 @@ func ImgPermlyDel(context *gin.Context) {
 
 	// delete
 	_, err = common.DbDel(context, "UPDATE `img` SET `name` = '', `type` = '', `size` = 0, `hist` = '', `hist_size` = 0, `del` = 2, `add_time` = 0, `upd_time` = 0 WHERE `id` = ?", id)
-	redirect(err)
-	return
-}
-
-// ImgRestore img恢复（还原）
-func ImgRestore(context *gin.Context) {
-	redirect := func(err any) {
-		resp := typ_resp.Resp[any]{Msg: util_str.TypeToStr(err)}
-		common.Redirect(context, fmt.Sprintf("/recycle/img/list"), resp)
-	}
-
-	// id
-	id, err := common.Param[int64](context, "id")
-	if err != nil {
-		redirect(err)
-		return
-	}
-
-	// update
-	_, err = common.DbUpd(context, "UPDATE `img` SET `del` = 0, `upd_time` = ? WHERE `id` = ?", util_time.NowUnix(), id)
 	redirect(err)
 	return
 }

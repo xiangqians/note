@@ -345,7 +345,7 @@
             let $restore = $(restores[i])
             custom.clickE($restore, function ($e) {
                 let note = getNote($e)
-                if (!confirm('{{ Localize "i18n.restore" }} ' + note.getFormatName() + ' ?')) {
+                if (!confirm('{{ Localize "i18n.restore" }} "' + note.getFormatName() + '" ?')) {
                     return
                 }
 
@@ -362,7 +362,7 @@
             let $permlyDel = $(permlyDels[i])
             custom.clickE($permlyDel, function ($e) {
                 let note = getNote($e)
-                if (!confirm('{{ Localize "i18n.permlyDel" }} ' + note.getFormatName() + ' ?')) {
+                if (!confirm('{{ Localize "i18n.permlyDel" }} "' + note.getFormatName() + '" ?')) {
                     return
                 }
 
