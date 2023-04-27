@@ -20,14 +20,29 @@
 
     <!-- response data -->
     <!-- 变量赋值 -->
-    {{ $page := .resp.Data }}
+    {{ $data := .resp.Data }}
+    {{ $img := $data.img }} <!-- img query -->
+    {{ $types := $data.types }}
+    {{ $page := $data.page }}
     {{ $imgs := $page.Data }}
 
     <p>
         <span>
-            ID: <input type="text" size="5" oninput="this.value = this.value.replace(/^(0+)|[^0-9]+/g, '');">&nbsp;&nbsp;
-            {{ Localize "i18n.name" }}: <input search="name" type="text" size="15" value="">&nbsp;&nbsp;
-            {{ Localize "i18n.deleted" }}: <input search="deleted" type="checkbox"/>&nbsp;&nbsp;
+            ID: <input search="id" type="text" size="5"
+                       oninput="this.value = this.value.replace(/^(0+)|[^0-9]+/g, '');">&nbsp;&nbsp;
+            {{ Localize "i18n.name" }}: <input search="name" type="text" size="15" value="{{ $img.Name }}">&nbsp;&nbsp;
+            {{ Localize "i18n.type" }}: <select search="type">
+                <option value=""></option>
+                {{ $len := len $types }}
+                {{ if gt $len 0 }}
+                {{ range $index,$type := $types }}
+                <option value="{{ $type }}" {{ if eq $img.Type $type }}selected{{ end }}>{{ $type }}</option>
+                {{ end }}
+                {{ end }}
+            </select>&nbsp;&nbsp;
+             {{ Localize "i18n.deleted" }}: <input search="deleted"
+                                                   type="checkbox"
+                                                   {{ if ne $img.Del 0 }}checked{{ end }}/>&nbsp;&nbsp;
             <button search="search">{{ Localize "i18n.search" }}</button>&nbsp;
             <a href="/img/list?t={{ Timestamp }}"><button>{{ Localize "i18n.reset" }}</button></a>
         </span>
@@ -51,13 +66,28 @@
         {{ range $index,$img := $imgs }}
         <tr img-id="{{ $img.Id }}"
             img-name="{{ $img.Name }}"
-            img-type="{{ $img.Type }}">
+            img-type="{{ $img.Type }}"
+            {{ if ne $img.Del 0 }}class="gray" {{ end }}>
             <td>{{ No_ $page $index }}</td>
-            <td><a href="/img/{{ $img.Id }}/view?t={{ Timestamp }}" target="_blank">{{ $img.Name }}</a></td>
+            <td>
+                {{ if ne $img.Del 0 }}
+                <span>{{ $img.Name }}</span>
+                {{ else }}
+                <a href="/img/{{ $img.Id }}/view?t={{ Timestamp }}" target="_blank">{{ $img.Name }}</a>
+                {{ end }}
+            </td>
             <td>{{ $img.Type }}</td>
             <td>{{ HumanizFileSize $img.Size }}</td>
             <td>{{ HumanizUnix $img.AddTime }}</td>
             <td>{{ HumanizUnix $img.UpdTime }}</td>
+            {{ if ne $img.Del 0 }}
+            <td>
+                <button restore>{{ Localize "i18n.restore" }}</button>
+            </td>
+            <td colspan="2">
+                <button permly-del>{{ Localize "i18n.permlyDel" }}</button>
+            </td>
+            {{ else }}
             <td>
                 <button copy>{{ Localize "i18n.copy" }} URL</button>
             </td>
@@ -67,6 +97,7 @@
             <td>
                 <button del>{{ Localize "i18n.del" }}</button>
             </td>
+            {{ end }}
         </tr>
         {{ end }}
         {{ else }}
@@ -86,14 +117,14 @@
                     {{ if le $page.Current 1 }}
                     {{ Localize "i18n.prevPage" }}
                     {{ else }}
-                    <a href="/img/list?current={{ Add $page.Current -1 }}&t={{ Timestamp }}">{{ Localize "i18n.prevPage" }}</a>
+                    <a href="/img/list?id={{ $img.Id }}&name={{ $img.Name }}&type={{ $img.Type }}&del={{ $img.Del }}&current={{ Add $page.Current -1 }}&t={{ Timestamp }}">{{ Localize "i18n.prevPage" }}</a>
                     {{  end }}
                 </span>
                 <span>
                     {{ if ge $page.Current $page.Pages }}
                     {{ Localize "i18n.nextPage" }}
                     {{ else }}
-                    <a href="/img/list?current={{ Add $page.Current 1 }}&t={{ Timestamp }}">{{ Localize "i18n.nextPage" }}</a>
+                    <a href="/img/list?id={{ $img.Id }}&name={{ $img.Name }}&type={{ $img.Type }}&del={{ $img.Del }}&current={{ Add $page.Current 1 }}&t={{ Timestamp }}">{{ Localize "i18n.nextPage" }}</a>
                     {{  end }}
                 </span>
             </td>
@@ -123,6 +154,27 @@
 <script type="text/javascript">
 
     ;(function () {
+
+        // search
+        ;(function () {
+            let $search = $($('[search="search"]')[0])
+            custom.clickE($search, function ($e) {
+                let $id = $($('input[search="id"]')[0])
+                let $name = $($('input[search="name"]')[0])
+                let $type = $($('select[search="type"]')[0])
+                let $deleted = $($('input[search="deleted"]')[0])
+
+                let id = $id.val()
+                let name = $name.val().trim()
+                let type = $type.find("option:selected").text()
+                let deleted = $deleted.is(":checked") ? 1 : 0
+
+                return {
+                    url: `/img/list?id=${id}&name=${name}&type=${type}&del=${deleted}`,
+                    method: 'GET',
+                }
+            })
+        })()
 
         function getImg($e) {
             let $tr = $($e.parents("tr:first")[0])

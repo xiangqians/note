@@ -90,7 +90,7 @@ func ImgRestore(context *gin.Context) {
 
 // ImgList img列表
 func ImgList(context *gin.Context) {
-	page, err := api_img.DbPage(context, 1)
+	page, err := api_img.DbPage(context, typ_api.Img{Abs: typ_api.Abs{Id: 1}})
 	resp := typ_resp.Resp[typ_page.Page[typ_api.Img]]{
 		Msg:  util_str.TypeToStr(err),
 		Data: page,

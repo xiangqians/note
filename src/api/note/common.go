@@ -168,7 +168,8 @@ func DbQrySql(note typ_api.Note, last ...string) (string, []any) {
 
 	// del
 	if note.Deleted != 0 {
-		sql += "WHERE n.`del` IN (0, 1) "
+		//sql += "WHERE n.`del` IN (0, 1) "
+		sql += "WHERE n.`del` = 1 "
 	} else {
 		sql += "WHERE n.`del` = ? "
 		args = append(args, note.Del)
