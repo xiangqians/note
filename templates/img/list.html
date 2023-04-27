@@ -288,26 +288,24 @@
             }
         })()
 
-        return
-            ;
-        (function () {
-        })()
         // permly-del
-        let permlyDels = $('[permly-del]')
-        for (let i = 0; i < permlyDels.length; i++) {
-            let $permlyDel = $(permlyDels[i])
-            custom.clickE($permlyDel, function ($e) {
-                let note = getNote($e)
-                if (!confirm('{{ Localize "i18n.permlyDel" }} ' + note.getFormatName() + ' ?')) {
-                    return
-                }
+        ;(function () {
+            let permlyDels = $('[permly-del]')
+            for (let i = 0; i < permlyDels.length; i++) {
+                let $permlyDel = $(permlyDels[i])
+                custom.clickE($permlyDel, function ($e) {
+                    let img = getImg($e)
+                    if (!confirm('{{ Localize "i18n.permlyDel" }} "' + img.name + '" ?')) {
+                        return
+                    }
 
-                return {
-                    // url: `/note/${note.id}/restore`,
-                    // method: 'DELETE',
-                }
-            })
-        }
+                    return {
+                        // url: `/note/${note.id}/restore`,
+                        // method: 'DELETE',
+                    }
+                })
+            }
+        })()
 
     })()
 

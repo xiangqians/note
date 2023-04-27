@@ -2,8 +2,7 @@
  * @author xiangqian
  * @date 22:24 2022/12/25
  */
-;
-custom = function () {
+;custom = function () {
 
     // object
     let obj = {}
@@ -145,6 +144,14 @@ custom = function () {
     }
 
     /**
+     * 时间戳
+     * @returns {number}
+     */
+    obj.timestamp = function () {
+        return new Date().getTime() + obj.random(-1000, 1000)
+    }
+
+    /**
      * ajax
      * AJAX = 异步 JavaScript 和 XML（Asynchronous JavaScript and XML）。
      * 在不重载整个网页的情况下，AJAX 通过后台加载数据，并在网页上进行显示。
@@ -157,8 +164,7 @@ custom = function () {
      */
     obj.ajax = function (url, method, data, async, complete, success, error) {
         // url
-        let timestamp = new Date().getTime()
-        timestamp += obj.random(-1000, 1000)
+        let timestamp = obj.timestamp()
         if (url.indexOf('?') > 0) {
             url += '&t=' + timestamp
         } else {
@@ -202,9 +208,7 @@ custom = function () {
         }
 
         let params = {
-            url: url,
-            type: method,
-            data: data,
+            url: url, type: method, data: data,
 
             // contentType 发送到服务器的数据类型。
             // contentType:"form"，发送FormData数据。
@@ -326,6 +330,20 @@ custom = function () {
         })
     }
 
+
+    return obj
+}()
+
+;(function (obj) {
+})(custom)
+
+
+;(function (obj) {
+})(custom)
+
+// storage
+;(function (obj) {
+
     /**
      * 存储
      * @constructor
@@ -370,121 +388,108 @@ custom = function () {
     // new storage
     obj.storage = new Storage()
 
-    return obj
-}()
+})(custom)
 
-// float
+
+// float 收缩/展开
 ;(function (obj) {
 
-    // float 收缩/展开
-    const key = 'displayFloat'
-    let $divs = $('div[class="float"]')
-    for (let i = 0; i < $divs.length; i++) {
-        let $div = $($divs[i])
-        // console.log($div)
-        let display = custom.storage.get(key)
-        if (!display) {
-            display = 'none' // 隐藏
+    obj.float = function (type, data) {
+        if (!(type === 'note' || type === 'img')) {
+            return;
         }
+
+        console.log(type, data)
+
+        const key = 'float'
+
+        // 设置float显示
+        function setFloatDisplay() {
+            custom.storage.set(key, {value: 'block'})
+        }
+
+        // 设置float隐藏
+        function setFloatHide() {
+            custom.storage.set(key, {value: 'none'})
+        }
+
+        function getFloat() {
+            let value = custom.storage.get(key)
+            return value ? value.value : 'none'
+        }
+
+        // float是否显示
+        function isFloatDisplay() {
+            return getFloat() === 'block'
+        }
+
+        // btn
         let $btn = $('<button></button>')
 
-        function setBtn(value) {
-            $btn.attr('value', value)
-            $btn.text(value)
-            if (value === '+') {
-                $btn.css('margin-top', '0px')
-            } else {
-                $btn.css('margin-top', '10px')
-            }
+        // 显示btn
+        function displayBtn() {
+            $btn.attr('value', '-')
+            $btn.text('-')
+            $btn.css('margin-top', '10px')
         }
 
-        let value = display === 'none' ? '+' : '-'
-        setBtn(value)
+        // 隐藏btn
+        function hideBtn() {
+            $btn.attr('value', '+')
+            $btn.text('+')
+            $btn.css('margin-top', '0px')
+        }
 
+        // wrapper div
         let $wrapperDiv = $('<div style="padding: 20px"></div>')
-        $wrapperDiv.css('display', display)
-        $wrapperDiv.html($div.html())
-        $div.html('')
+
+        // 显示div
+        function displayWrapperDiv() {
+            $wrapperDiv.css('display', 'block')
+            setFloatDisplay()
+            displayBtn()
+        }
+
+        // 隐藏div
+        function hideWrapperDiv() {
+            $wrapperDiv.css('display', 'none')
+            setFloatHide()
+            hideBtn()
+        }
+
         $btn.click(function () {
             let value = $btn.attr('value')
-            // 设置为 +
             if (value === '-') {
-                setBtn('+')
-                // 隐藏div
-                $wrapperDiv.css('display', 'none')
-                custom.storage.set(key, 'none')
-            }
-            // 设置为 -
-            else {
-                setBtn('-')
-                // 显示div
-                $wrapperDiv.css('display', 'block')
-                custom.storage.set(key, 'block')
+                hideWrapperDiv()
+            } else {
+                displayWrapperDiv()
             }
         })
-        $div.prepend($btn)
-        $div.append($wrapperDiv)
-    }
 
-    // float
-    obj.float = function (url, entity, type) {
         let $float = $($('div[class="float"]')[0])
+        $wrapperDiv.html($float.html())
+        $float.html('')
+        $float.prepend($btn)
+        $float.append($wrapperDiv)
 
-        entity = JSON.parse(entity)
-        // console.log(entity)
-
-        // pdf
-        if (entity.type === 'pdf') {
-            // params
-            let params = custom.urlQueryParams(decodeURIComponent(url))
-            // console.log(params)
-
-            // v
-            let version = '2.0'
-            if (params.v) {
-                version = params.v
-            }
-
-            // select
-            let $select = $($float.find("select[name='version']")[0])
-            let options = $select.find("option")
-            for (let i = 0; i < options.length; i++) {
-                let $option = $(options[i])
-                if ($option.attr('value') === version) {
-                    $option.attr('selected', true)
-                    break
-                }
-            }
-
-            $select.change(function () {
-                let version = $select.find("option:selected").attr("value");
-                // console.log(version)
-                let url = `/${type}/${entity.id}/view?v=${version}`
-                custom.ajaxReload(url, 'GET', null)
-            });
+        if (isFloatDisplay()) {
+            displayWrapperDiv()
+        } else {
+            hideWrapperDiv()
         }
 
-        let uploadUrl = null
-
-        // note
+        // form
+        let uploadUrl = ''
         if (type === 'note') {
-            // path
-            let $path = $($float.find('td[name="path"]')[0])
-            $path.html(entity.pathLink)
-            $($float.find('tr[name="path"]')[0]).css('display', '')
-
-            // upload
             uploadUrl = '/note/upload'
-        }
-        // img
-        else if (type === 'img') {
-            // upload
+        } else if (type === 'img') {
             uploadUrl = '/img/upload'
         }
-
-        // upload form
+        uploadUrl += `?t=${obj.timestamp()}`
         let $form = $($float.find('form')[0])
         $form.attr('action', uploadUrl)
+
+        return;
 
         // hist
         let isHist = url.indexOf('hist') > 0
