@@ -441,16 +441,16 @@
         }
 
         // wrapper div
-        let $wrapperDiv = $('<div style="padding: 20px"></div>')
+        let $wrapperDiv = $('<div style="padding: 20px; display: none;"></div>')
 
-        // 显示div
+        // 显示 wrapper div
         function displayWrapperDiv() {
             $wrapperDiv.css('display', 'block')
             setFloatDisplay()
             displayBtn()
         }
 
-        // 隐藏div
+        // 隐藏 wrapper div
         function hideWrapperDiv() {
             $wrapperDiv.css('display', 'none')
             setFloatHide()
@@ -477,6 +477,8 @@
         } else {
             hideWrapperDiv()
         }
+
+        $float.css('display', '')
 
         // form
         let uploadUrl = ''
