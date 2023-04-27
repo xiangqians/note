@@ -33,9 +33,6 @@ $. 引用模板中的根级上下文
         <a name="nav"
            style='text-decoration: none; padding: 8px;{{ if EqualUri .url "/img/list" }}background-color: lightgray;{{ end }}'
            href="/img/list?t={{ Timestamp }}">{{ Localize "i18n.img" }}</a>
-        <a name="nav"
-           style='text-decoration: none; padding: 8px;{{ if EqualUri .url "/recycle/note/list" }}background-color: lightgray;{{ else }}{{ if EqualUri .url "/recycle/img/list" }}background-color: lightgray;{{ end }}{{ end }}'
-           href="/recycle/note/list?t={{ Timestamp }}">{{ Localize "i18n.recycle" }}</a>
     </div>
     <br>
     <br>

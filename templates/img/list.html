@@ -20,7 +20,18 @@
 
     <!-- response data -->
     <!-- 变量赋值 -->
-    {{ $data := .resp.Data }}
+    {{ $page := .resp.Data }}
+    {{ $imgs := $page.Data }}
+
+    <p>
+        <span>
+            ID: <input type="text" size="5" oninput="this.value = this.value.replace(/^(0+)|[^0-9]+/g, '');">&nbsp;&nbsp;
+            {{ Localize "i18n.name" }}: <input search="name" type="text" size="15" value="">&nbsp;&nbsp;
+            {{ Localize "i18n.deleted" }}: <input search="deleted" type="checkbox"/>&nbsp;&nbsp;
+            <button search="search">{{ Localize "i18n.search" }}</button>&nbsp;
+            <a href="/img/list?t={{ Timestamp }}"><button>{{ Localize "i18n.reset" }}</button></a>
+        </span>
+    </p>
 
     <table border="1" cellspacing="0" cellpadding="10" align="center">
         <thead>
@@ -35,30 +46,26 @@
         </tr>
         </thead>
         <tbody>
-        {{ $len := len $data.Data }}
+        {{ $len := len $imgs }}
         {{ if gt $len 0 }}
-        {{ range $index,$e := $data.Data }}
-        <tr>
-            <td>{{ No_ $data $index }}</td>
-            <td><a href="/img/{{ $e.Id }}/view?t={{ Timestamp }}" target="_blank">{{ $e.Name }}</a></td>
-            <td>{{ $e.Type }}</td>
-            <td>{{ HumanizFileSize $e.Size }}</td>
-            <td>{{ HumanizUnix $e.AddTime }}</td>
-            <td>{{ HumanizUnix $e.UpdTime }}</td>
+        {{ range $index,$img := $imgs }}
+        <tr img-id="{{ $img.Id }}"
+            img-name="{{ $img.Name }}"
+            img-type="{{ $img.Type }}">
+            <td>{{ No_ $page $index }}</td>
+            <td><a href="/img/{{ $img.Id }}/view?t={{ Timestamp }}" target="_blank">{{ $img.Name }}</a></td>
+            <td>{{ $img.Type }}</td>
+            <td>{{ HumanizFileSize $img.Size }}</td>
+            <td>{{ HumanizUnix $img.AddTime }}</td>
+            <td>{{ HumanizUnix $img.UpdTime }}</td>
             <td>
-                <button name="copy" value="![{{ $e.Name }}](/img/{{ $e.Id }})">
-                    {{ Localize "i18n.copy" }} URL
-                </button>
+                <button copy>{{ Localize "i18n.copy" }} URL</button>
             </td>
             <td>
-                <a href="/img/name" method="PUT" imgId="{{ $e.Id }}" imgName="{{ $e.Name }}">
-                    <button>{{ Localize "i18n.rename" }}</button>
-                </a>
+                <button rename>{{ Localize "i18n.rename" }}</button>
             </td>
             <td>
-                <a href="/img/{{ $e.Id }}" method="DELETE" confirm='{{ Localize "i18n.del" }} {{ $e.Name }} ?'>
-                    <button>{{ Localize "i18n.del" }}</button>
-                </a>
+                <button del>{{ Localize "i18n.del" }}</button>
             </td>
         </tr>
         {{ end }}
@@ -71,22 +78,22 @@
         <tfoot>
         <tr>
             <td colspan="9">
-                <span style="margin-right: 10px">{{ Localize "i18n.page.current" }}: {{ $data.Current }}</span>
-                <span style="margin-right: 10px">{{ Localize "i18n.page.size" }}: {{ $data.Size }}</span>
-                <span style="margin-right: 10px">{{ Localize "i18n.pages" }}: {{ $data.Pages }}</span>
-                <span style="margin-right: 20px">{{ Localize "i18n.total" }}: {{ $data.Total }}</span>
+                <span style="margin-right: 10px">{{ Localize "i18n.page.current" }}: {{ $page.Current }}</span>
+                <span style="margin-right: 10px">{{ Localize "i18n.page.size" }}: {{ $page.Size }}</span>
+                <span style="margin-right: 10px">{{ Localize "i18n.pages" }}: {{ $page.Pages }}</span>
+                <span style="margin-right: 20px">{{ Localize "i18n.total" }}: {{ $page.Total }}</span>
                 <span style="margin-right: 10px">
-                    {{ if le $data.Current 1 }}
+                    {{ if le $page.Current 1 }}
                     {{ Localize "i18n.prevPage" }}
                     {{ else }}
-                    <a href="/img/list?current={{ Add $data.Current -1 }}&t={{ Timestamp }}">{{ Localize "i18n.prevPage" }}</a>
+                    <a href="/img/list?current={{ Add $page.Current -1 }}&t={{ Timestamp }}">{{ Localize "i18n.prevPage" }}</a>
                     {{  end }}
                 </span>
                 <span>
-                    {{ if ge $data.Current $data.Pages }}
+                    {{ if ge $page.Current $page.Pages }}
                     {{ Localize "i18n.nextPage" }}
                     {{ else }}
-                    <a href="/img/list?current={{ Add $data.Current 1 }}&t={{ Timestamp }}">{{ Localize "i18n.nextPage" }}</a>
+                    <a href="/img/list?current={{ Add $page.Current 1 }}&t={{ Timestamp }}">{{ Localize "i18n.nextPage" }}</a>
                     {{  end }}
                 </span>
             </td>
@@ -117,72 +124,99 @@
 
     ;(function () {
 
-        // rename
-        let arr = $('a[method="PUT"]')
-        for (let i = 0; i < arr.length; i++) {
-            let $a = $(arr[i])
-            custom.clickE($a, function () {
-                let name = prompt('{{ Localize "i18n.name" }}', $a.attr('imgName'))
-                if (name && (name = name.trim()) !== "") {
-                    // console.log(name)
-                    let data = new FormData();
-                    data.append('id', $a.attr('imgId'))
-                    data.append('name', name)
-                    return {data: data}
-                }
+        function getImg($e) {
+            let $tr = $($e.parents("tr:first")[0])
+            let id = $tr.attr("img-id")
+            let name = $tr.attr("img-name")
+            let type = $tr.attr("img-type")
 
-                return {_abort: true}
-            })
+            return {
+                id: id,
+                name: name,
+                type: type,
+            }
         }
+
+        // copy
+        ;(function () {
+            // 销毁 clipboard, 如果存在的话
+            if (window.clipboard) {
+                window.clipboard.destroy()
+                window.clipboard = null
+            }
+
+            // clipboard
+            let clipboard = new ClipboardJS('[copy]', {
+                text: function (e) {
+                    let $e = $(e)
+                    let img = getImg($e)
+                    // console.log(img)
+                    return `![${img.name}](/img/${img.id})`
+                },
+            });
+
+            // on success
+            clipboard.on('success', function (e) {
+                // console.info('Action:', e.action)
+                // console.info('Text:', e.text)
+                // console.info('Trigger:', e.trigger)
+                alert('{{ Localize "i18n.copied" }}')
+            });
+
+            // on error
+            clipboard.on('error', function (e) {
+                // console.info('Action:', e.action)
+                // console.info('Text:', e.text)
+                // console.info('Trigger:', e.trigger)
+                alert(e)
+            });
+
+            window.clipboard = clipboard
+        })()
+
+        // rename
+        ;(function () {
+            let renames = $('[rename]')
+            for (let i = 0; i < renames.length; i++) {
+                let $rename = $(renames[i])
+                custom.clickE($rename, function ($e) {
+                    let img = getImg($e)
+                    let name = prompt('{{ Localize "i18n.name" }}', img.name)
+                    if (!name || (name = name.trim()) === '') {
+                        return
+                    }
+
+                    let data = new FormData();
+                    data.append('id', img.id)
+                    data.append('name', name)
+                    return {
+                        url: '/img/name',
+                        method: 'PUT',
+                        data: data
+                    }
+                })
+            }
+        })()
 
         // del
-        arr = $('a[method="DELETE"]')
-        for (let i = 0; i < arr.length; i++) {
-            let $a = $(arr[i])
-            custom.clickE($a, function () {
-                if (confirm($a.attr('confirm'))) {
-                    return null
-                }
+        ;(function () {
+            let dels = $('[del]')
+            for (let i = 0; i < dels.length; i++) {
+                let $del = $(dels[i])
+                custom.clickE($del, function ($e) {
+                    let img = getImg($e)
+                    if (!confirm('{{ Localize "i18n.del" }} "' + img.name + '" ?')) {
+                        return
+                    }
 
-                return {_abort: true}
-            })
-        }
+                    return {
+                        url: `/img/${img.id}`,
+                        method: 'DELETE',
+                    }
+                })
+            }
+        })()
 
-    })()
-
-    // copy
-    ;(function () {
-        // 销毁 clipboard, 如果存在的话
-        if (window.clipboard) {
-            window.clipboard.destroy()
-            window.clipboard = null
-        }
-
-        // clipboard
-        let clipboard = new ClipboardJS('button[name="copy"]', {
-            text: function (elem) {
-                let $elem = $(elem)
-                return $elem.val();
-            },
-        });
-
-        // on success
-        clipboard.on('success', function (e) {
-            // console.info('Action:', e.action)
-            // console.info('Text:', e.text)
-            // console.info('Trigger:', e.trigger)
-            alert('{{ Localize "i18n.copied" }}')
-        });
-
-        // on error
-        clipboard.on('error', function (e) {
-            // console.info('Action:', e.action)
-            // console.info('Text:', e.text)
-            // console.info('Trigger:', e.trigger)
-            alert(e)
-        });
-
-        window.clipboard = clipboard
     })()
 
 </script>

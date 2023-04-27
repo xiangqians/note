@@ -41,11 +41,11 @@
             </select>&nbsp;&nbsp;
             {{ Localize "i18n.sub" }}: <input search="sub"
                                               type="checkbox"
-                                              {{ if ne $note.Sub 0 }}checked{{ end }}/>&nbsp;
+                                              {{ if ne $note.Sub 0 }}checked{{ end }}/>&nbsp;&nbsp;
             {{ Localize "i18n.deleted" }}: <input search="deleted"
                                                   type="checkbox"
-                                                  {{ if ne $note.Deleted 0 }}checked{{ end }}/>&nbsp;
-            <button search="search">{{ Localize "i18n.search" }}</button>
+                                                  {{ if ne $note.Deleted 0 }}checked{{ end }}/>&nbsp;&nbsp;
+            <button search="search">{{ Localize "i18n.search" }}</button>&nbsp;
             <a href="/note/list?pid={{ $note.Id }}&t={{ Timestamp }}"><button>{{ Localize "i18n.reset" }}</button></a>
             &nbsp;&nbsp;&nbsp;&nbsp;
             <a href="/note/list?t={{ Timestamp }}"><button>/</button></a>
@@ -323,7 +323,7 @@
             let $del = $(dels[i])
             custom.clickE($del, function ($e) {
                 let note = getNote($e)
-                if (!confirm('{{ Localize "i18n.del" }} ' + note.getFormatName() + ' ?')) {
+                if (!confirm('{{ Localize "i18n.del" }} "' + note.getFormatName() + '" ?')) {
                     return
                 }
 
