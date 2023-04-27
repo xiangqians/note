@@ -131,16 +131,17 @@
         </tr>
         </tfoot>
     </table>
+    {{ if eq $img.Del 0 }}
     <br>
     <br>
     <br>
-
     <div>
         <form action="/img/upload?t={{ Timestamp }}" method="POST" enctype="multipart/form-data">
             <input name="file" type="file"/>
             <button type="submit">{{ Localize "i18n.upload" }}</button>
         </form>
     </div>
+    {{ end }}
 
 </content>
 
