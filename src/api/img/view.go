@@ -10,11 +10,8 @@ import (
 	"note/src/api/common"
 	typ_api "note/src/typ/api"
 	typ_resp "note/src/typ/resp"
-	util_json "note/src/util/json"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
-	"os"
-	"sort"
 )
 
 // HistView 查看图片历史页面
@@ -37,8 +34,7 @@ func HistView(context *gin.Context) {
 	// idx
 	idx, err := common.Param[int](context, "idx")
 	if err != nil || idx < 0 {
-		html(typ_api.Img{}, err)
-		return
+		idx = 0
 	}
 
 	// img
@@ -48,41 +44,27 @@ func HistView(context *gin.Context) {
 		return
 	}
 
-	// 图片历史记录
-	hist := img.Hist
-	if hist == "" {
-		html(img, err)
-		return
-	}
-
 	// hists
-	hists := make([]typ_api.Img, 0, 1) // len 0, cap ?
-	err = util_json.Deserialize(hist, &hists)
-	if err != nil {
+	hists := DeserializeHist(img.Hist)
+	if hists == nil {
 		html(img, err)
 		return
 	}
 
 	// 校验idx是否合法
-	if idx >= len(hists) {
-		html(img, err)
-		return
+	l := len(hists)
+	if idx >= l {
+		idx = l - 1
 	}
-
-	// sort
-	sort.Slice(hists, func(i, j int) bool {
-		return hists[i].UpdTime > hists[j].UpdTime
-	})
 
 	// hist img
 	histImg := hists[idx]
 	histImg.Url = fmt.Sprintf("/img/%d/hist/%d?t=%d", id, idx, util_time.NowUnix())
 	histImg.Hists = hists
-	img = histImg
+	histImg.HistIdx = int8(idx)
 
 	// html
-	html(img, err)
-	return
+	html(histImg, err)
 }
 
 // View 查看图片页面
@@ -104,6 +86,9 @@ func View(context *gin.Context) {
 
 	// img
 	img, count, err := DbQry(context, id, 0)
+	// current img
+	img.HistIdx = -1
+	// err ? / count == 0 ?
 	if err != nil || count == 0 {
 		html(img, err)
 		return
@@ -112,30 +97,11 @@ func View(context *gin.Context) {
 	// url
 	img.Url = fmt.Sprintf("/img/%d?t=%d", id, util_time.NowUnix())
 
-	img.HistIdx = -1
-
-	// 图片历史记录
-	hist := img.Hist
-	if hist != "" {
-		// hists
-		hists := make([]typ_api.Img, 0, 1) // len 0, cap ?
-		err = util_json.Deserialize(hist, &hists)
-		if err != nil {
-			html(img, err)
-			return
-		}
-
-		// sort
-		sort.Slice(hists, func(i, j int) bool {
-			return hists[i].UpdTime > hists[j].UpdTime
-		})
-
-		img.Hists = hists
-	}
+	// hists
+	img.Hists = DeserializeHist(img.Hist)
 
 	// html
 	html(img, err)
-	return
 }
 
 // GetHist 获取历史图片
@@ -161,18 +127,10 @@ func GetHist(context *gin.Context) {
 		return
 	}
 
-	// hist
-	hist := img.Hist
-	if hist == "" {
-		log.Println(err)
-		return
-	}
-
 	// hists
-	hists := make([]typ_api.Img, 0, 1) // len 0, cap ?
-	err = util_json.Deserialize(hist, &hists)
-	if err != nil {
-		log.Println(err)
+	hists := DeserializeHist(img.Hist)
+	if hists == nil {
+		log.Println("hist is empty")
 		return
 	}
 
@@ -182,30 +140,18 @@ func GetHist(context *gin.Context) {
 		return
 	}
 
-	// sort
-	sort.Slice(hists, func(i, j int) bool {
-		return hists[i].UpdTime > hists[j].UpdTime
-	})
-
 	// hist img
 	histImg := hists[idx]
+
+	// path
 	path, err := HistPath(context, histImg)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	// read
-	buf, err := os.ReadFile(path)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
 	// write
-	n, err := context.Writer.Write(buf)
-	log.Println(path, n, err)
-	return
+	common.Write(context, path)
 }
 
 // Get 获取图片
@@ -231,15 +177,6 @@ func Get(context *gin.Context) {
 		return
 	}
 
-	// read
-	buf, err := os.ReadFile(path)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
 	// write
-	n, err := context.Writer.Write(buf)
-	log.Println(path, n, err)
-	return
+	common.Write(context, path)
 }

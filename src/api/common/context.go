@@ -6,12 +6,14 @@ package common
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	typ_page "note/src/typ/page"
 	typ_resp "note/src/typ/resp"
 	util_reflect "note/src/util/reflect"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
+	"os"
 	"strings"
 )
 
@@ -113,4 +115,18 @@ func ShouldBind(context *gin.Context, i any) error {
 		err = TransErr(context, err)
 	}
 	return err
+}
+
+func Write(context *gin.Context, path string) {
+	// read
+	buf, err := os.ReadFile(path)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	// write
+	n, err := context.Writer.Write(buf)
+	log.Println(path, n, err)
+	return
 }

@@ -14,10 +14,14 @@
 <body>
 
 <content>
+    {{ if ne $data.Id 0 }}
     {{ template "common/float.html" . }}
     <div>
         <img src="{{ $data.Url }}" alt="{{ $data.Name }}">
     </div>
+    {{ else }}
+    <h3>{{ Localize "i18n.dataNotExist" }}</h3>
+    {{ end }}
 </content>
 
 </body>
@@ -28,61 +32,9 @@
 
     ;(function () {
         let data = JSON.parse('{{ Serialize $data }}')
-        custom.float('img', data)
+        if (data.id !== 0) {
+            custom.float('img', data)
+        }
     })()
 
-    ;
-    (function () {
-        return
-
-        // url
-        let url = '{{ .url }}'
-        // console.log(url)
-
-        // hist
-        let isHist = url.indexOf('hist') > 0
-        // console.log(isHist)
-        let idx = -1
-        if (isHist) {
-            let idxStr = url.substring(url.indexOf('hist/') + 'hist/'.length, url.indexOf('/view'))
-            idx = parseInt(idxStr)
-        }
-
-        // 如果不是历史记录，则移除form的 disabled 属性
-        if (!isHist) {
-            $($("input[name='file']")[0]).attr('disabled', false)
-            $($("button[type='submit']")[0]).attr('disabled', false)
-        }
-
-        // form
-        custom.ajaxE($($('form')[0]))
-
-        // select
-        let $select = $($("select[name='hist']")[0])
-        let options = $select.find("option")
-        if (idx != -1) {
-            for (let i = 0; i < options.length; i++) {
-                let $option = $(options[i])
-                let value = parseInt($option.attr('value'))
-                // console.log(value)
-                if (value === idx) {
-                    $option.attr('selected', true)
-                    break
-                }
-            }
-        }
-
-        $select.change(function () {
-            let value = $select.find("option:selected").attr("value");
-            // console.log(value)
-            let url = null
-            if (value === "-1") {
-                url = '/img/{{ $data.Id }}/view'
-            } else {
-                url = '/img/{{ $data.Id }}/hist/' + value + '/view'
-            }
-            custom.ajaxReload(url, 'GET', null)
-        });
-
-    })()
 </script>

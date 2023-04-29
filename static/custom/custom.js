@@ -500,30 +500,6 @@
             let uploadUrl = `/${type}/upload?t=${obj.timestamp()}`
             $form.attr('action', uploadUrl)
         }
-
-        return;
-
-        // hist
-        let isHist = url.indexOf('hist') > 0
-        // console.log(isHist)
-        let idx = -1
-        if (isHist) {
-            let idxStr = url.substring(url.indexOf('hist/') + 'hist/'.length, url.indexOf('/view'))
-            idx = parseInt(idxStr)
-        }
-
-        // 如果不是历史记录，则移除form的 disabled 属性
-        if (!isHist) {
-            $($float.find("input[name='file']")[0]).attr('disabled', false)
-            $($float.find("button[type='submit']")[0]).attr('disabled', false)
-        }
-
-        // form
-        custom.ajaxE($($float.find('form')[0]))
-
-        return
-
-
     }
 
 })(custom)

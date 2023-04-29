@@ -6,13 +6,43 @@ package img
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"log"
 	"note/src/api/common"
 	typ_api "note/src/typ/api"
 	typ_page "note/src/typ/page"
 	typ_resp "note/src/typ/resp"
+	util_json "note/src/util/json"
 	util_os "note/src/util/os"
 	util_str "note/src/util/str"
+	"sort"
 )
+
+// Sort 对img进行排序
+func Sort(imgs *[]typ_api.Img) {
+	sort.Slice(*imgs, func(i, j int) bool {
+		return (*imgs)[i].UpdTime > (*imgs)[j].UpdTime
+	})
+}
+
+// DeserializeHist 反序列化历史记录
+func DeserializeHist(hist string) []typ_api.Img {
+	if hist == "" {
+		return nil
+	}
+
+	// hists
+	hists := make([]typ_api.Img, 0, 1) // len 0, cap ?
+	err := util_json.Deserialize(hist, &hists)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	// sort
+	Sort(&hists)
+
+	return hists
+}
 
 func RedirectToList(context *gin.Context, err any) {
 	resp := typ_resp.Resp[any]{
@@ -122,6 +152,6 @@ func DbTypes(context *gin.Context) []string {
 }
 
 func DbQry(context *gin.Context, id int64, del int) (typ_api.Img, int64, error) {
-	img, count, err := common.DbQry[typ_api.Img](context, "SELECT `id`, `name`, `type`, `size`, `hist`, `hist_size`, `add_time`, `upd_time` FROM `img` WHERE `del` = ? AND `id` = ?", del, id)
+	img, count, err := common.DbQry[typ_api.Img](context, "SELECT `id`, `name`, `type`, `size`, `hist`, `hist_size`, `del`, `add_time`, `upd_time` FROM `img` WHERE `del` = ? AND `id` = ?", del, id)
 	return img, count, err
 }
