@@ -163,6 +163,8 @@
      * @param error     请求错误回调函数
      */
     obj.ajax = function (url, method, data, async, complete, success, error) {
+        console.log(method, url, data)
+
         // url
         let timestamp = obj.timestamp()
         if (url.indexOf('?') > 0) {
@@ -320,7 +322,6 @@
             if (params.hasOwnProperty('data')) {
                 data = params.data
             }
-            console.log(method, url, data)
 
             // ajax
             obj.ajax(url, method, data)
@@ -466,30 +467,39 @@
             }
         })
 
+        // float
         let $float = $($('div[class="float"]')[0])
         $wrapperDiv.html($float.html())
         $float.html('')
         $float.prepend($btn)
         $float.append($wrapperDiv)
-
         if (isFloatDisplay()) {
             displayWrapperDiv()
         } else {
             hideWrapperDiv()
         }
-
         $float.css('display', '')
 
+        // select
+        let $select = $($("select[hist]")[0])
+        $select.change(function () {
+            let value = $select.find("option:selected").attr("value");
+            // console.log(value)
+            let url = null
+            if (value === "-1") {
+                url = `/${type}/${data.id}/view`
+            } else {
+                url = `/${type}/${data.id}/hist/${value}/view`
+            }
+            custom.ajax(url, "GET")
+        });
+
         // form
-        let uploadUrl = ''
-        if (type === 'note') {
-            uploadUrl = '/note/upload'
-        } else if (type === 'img') {
-            uploadUrl = '/img/upload'
-        }
-        uploadUrl += `?t=${obj.timestamp()}`
         let $form = $($float.find('form')[0])
-        $form.attr('action', uploadUrl)
+        if ($form.length > 0) {
+            let uploadUrl = `/${type}/upload?t=${obj.timestamp()}`
+            $form.attr('action', uploadUrl)
+        }
 
         return;
 
@@ -513,32 +523,6 @@
 
         return
 
-        // select
-        let $select = $($("select[name='hist']")[0])
-        let options = $select.find("option")
-        if (idx != -1) {
-            for (let i = 0; i < options.length; i++) {
-                let $option = $(options[i])
-                let value = parseInt($option.attr('value'))
-                // console.log(value)
-                if (value === idx) {
-                    $option.attr('selected', true)
-                    break
-                }
-            }
-        }
-
-        $select.change(function () {
-            let value = $select.find("option:selected").attr("value");
-            // console.log(value)
-            let url = null
-            if (value === "-1") {
-                url = '/img/{{ $data.Id }}/view'
-            } else {
-                url = '/img/{{ $data.Id }}/hist/' + value + '/view'
-            }
-            custom.ajaxReload(url, 'GET', null)
-        });
 
     }
 

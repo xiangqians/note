@@ -12,10 +12,12 @@
             <td>{{ Localize "i18n.name" }}</td>
             <td>{{ $data.Name }}</td>
         </tr>
-        <tr name="path" style="display: none;">
+        <!--
+        <tr>
             <td>{{ Localize "i18n.path" }}</td>
-            <td name="path"></td>
+            <td>$data.Path</td>
         </tr>
+        -->
         <tr>
             <td>{{ Localize "i18n.type" }}</td>
             <td>{{ $data.Type }}</td>
@@ -36,13 +38,13 @@
     </table>
     <br>
 
-    {{ Localize "i18n.hist" }}
-    <select name="hist">
+    {{ Localize "i18n.hist" }}:&nbsp;
+    {{ $len := len $data.Hists }}
+    <select hist {{ if eq $len 0 }}disabled{{end}}>
         <option value="-1"></option>
-        {{ $len := len $data.Hists }}
         {{ if gt $len 0 }}
         {{ range $index,$hist := $data.Hists }}
-        <option value="{{ $index }}">
+        <option value="{{ $index }}" {{ if eq $data.HistIdx $index }}selected{{ end }}>
             {{ $hist.Name }}&nbsp;&nbsp;&nbsp;
             {{ $hist.Type }}&nbsp;&nbsp;&nbsp;
             {{ if eq $hist.UpdTime 0 }}{{ HumanizUnix $hist.AddTime }}{{ else }}{{ HumanizUnix $hist.UpdTime }}{{ end }}
@@ -52,13 +54,14 @@
     </select>
     <br>
     <br>
-
+    {{ if eq $data.HistIdx -1 }}
     <form action=""
           method="POST"
           enctype="multipart/form-data">
         <input name="id" type="text" value="{{ $data.Id }}" hidden/>
-        <input name="file" type="file" disabled/>
-        <button type="submit" disabled>{{ Localize "i18n.upload" }}</button>
+        <input name="file" type="file"/>
+        <button type="submit">{{ Localize "i18n.upload" }}</button>
     </form>
+    {{end}}
 </div>
 {{ end }}

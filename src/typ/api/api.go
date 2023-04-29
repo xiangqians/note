@@ -39,6 +39,7 @@ type Note struct {
 	PathLink string `json:"pathLink"`                                         // 笔记路径链接
 	Url      string `json:"url"`                                              // 笔记url
 	Hists    []Note `json:"hists"`                                            // 图片历史记录
+	HistIdx  int8   `json:"histIdx"`                                          // Hists Index
 	Sub      int8   `json:"sub" form:"sub"`                                   // 是否包含所有子集，0-否，1-是
 	Deleted  int8   `json:"deleted" form:"deleted"`                           // 是否包含已删除文件，0-否，1-是
 	Children []Note `json:"children"`                                         // 子集
@@ -54,6 +55,7 @@ type Img struct {
 	HistSize int64  `json:"histSize" form:"histSize"`                         // history（历史记录）文件大小，单位：byte
 	Url      string `json:"url"`                                              // 图片url
 	Hists    []Img  `json:"hists"`                                            // 图片历史记录
+	HistIdx  int8   `json:"histIdx"`                                          // Hists Index
 }
 
 // Stat 统计（file和img）

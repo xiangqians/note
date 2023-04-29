@@ -10,25 +10,15 @@
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/custom/custom.css" type="text/css"/>
     <title>{{ $data.Name }}</title>
-    <style>
-        body {
-            text-align: center
-        }
-    </style>
 </head>
 <body>
 
 <content>
-    <p style="color: red;">{{ .resp.Msg }}</p>
-
     {{ template "common/float.html" . }}
-
+    <div>
+        <img src="{{ $data.Url }}" alt="{{ $data.Name }}">
+    </div>
 </content>
-
-<div>
-    <img src="{{ $data.Url }}" alt="{{ $data.Name }}">
-</div>
-<br>
 
 </body>
 </html>
@@ -44,6 +34,7 @@
     ;
     (function () {
         return
+
         // url
         let url = '{{ .url }}'
         // console.log(url)

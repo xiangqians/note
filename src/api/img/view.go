@@ -112,6 +112,8 @@ func View(context *gin.Context) {
 	// url
 	img.Url = fmt.Sprintf("/img/%d?t=%d", id, util_time.NowUnix())
 
+	img.HistIdx = -1
+
 	// 图片历史记录
 	hist := img.Hist
 	if hist != "" {
