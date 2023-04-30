@@ -8,6 +8,7 @@ import (
 	"note/src/api/common"
 	typ_api "note/src/typ/api"
 	typ_ft "note/src/typ/ft"
+	typ_page "note/src/typ/page"
 	typ_resp "note/src/typ/resp"
 	util_str "note/src/util/str"
 	"strings"
@@ -56,4 +57,46 @@ func List(context *gin.Context) {
 
 	// html
 	common.HtmlOk(context, "img/list.html", resp)
+}
+
+// DbPage 分页查询图片
+func DbPage(context *gin.Context, img typ_api.Img) (typ_page.Page[typ_api.Img], error) {
+	req, _ := common.PageReq(context)
+
+	args := make([]any, 0, 1)
+	sql := "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`del`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = ? "
+	args = append(args, img.Del)
+
+	// id
+	if img.Id > 0 {
+		sql += "AND i.`id` = ? "
+		args = append(args, img.Id)
+	}
+
+	// name
+	if img.Name != "" {
+		sql += "AND i.`name` LIKE '%' || ? || '%' "
+		args = append(args, img.Name)
+	}
+
+	// type
+	if img.Type != "" {
+		sql += "AND i.`type` = ? "
+		args = append(args, img.Type)
+	}
+
+	sql += "ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC"
+
+	return common.DbPage[typ_api.Img](context, req, sql, args...)
+}
+
+// DbTypes 获取图片类型集合
+func DbTypes(context *gin.Context) []string {
+	// types
+	types, count, err := common.DbQry[[]string](context, "SELECT DISTINCT(`type`) FROM `img` WHERE `del` = 0")
+	if err != nil || count == 0 {
+		types = nil
+	}
+
+	return types
 }

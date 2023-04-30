@@ -25,18 +25,24 @@ func UpdName(context *gin.Context) {
 		return
 	}
 
+	// id
+	id := img.Id
+	if id <= 0 {
+		redirect(err)
+		return
+	}
+
 	// name
-	img.Name = strings.TrimSpace(img.Name)
-	err = common.VerifyName(img.Name)
+	name := strings.TrimSpace(img.Name)
+	err = common.VerifyName(name)
 	if err != nil {
 		redirect(err)
 		return
 	}
 
 	// update
-	_, err = common.DbUpd(context, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", img.Name, util_time.NowUnix(), img.Id, img.Name)
+	_, err = common.DbUpd(context, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", name, util_time.NowUnix(), id, name)
 
 	// redirect
 	redirect(err)
-	return
 }

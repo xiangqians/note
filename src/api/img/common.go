@@ -6,10 +6,8 @@ package img
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"log"
 	"note/src/api/common"
 	typ_api "note/src/typ/api"
-	typ_page "note/src/typ/page"
 	typ_resp "note/src/typ/resp"
 	util_json "note/src/util/json"
 	util_os "note/src/util/os"
@@ -25,23 +23,27 @@ func Sort(imgs *[]typ_api.Img) {
 }
 
 // DeserializeHist 反序列化历史记录
-func DeserializeHist(hist string) []typ_api.Img {
+func DeserializeHist(hist string) ([]typ_api.Img, error) {
 	if hist == "" {
-		return nil
+		return nil, nil
 	}
 
 	// hists
 	hists := make([]typ_api.Img, 0, 1) // len 0, cap ?
 	err := util_json.Deserialize(hist, &hists)
 	if err != nil {
-		log.Println(err)
-		return nil
+		return nil, err
 	}
 
 	// sort
 	Sort(&hists)
 
-	return hists
+	return hists, nil
+}
+
+// SerializeHist 序列化历史记录
+func SerializeHist(hists []typ_api.Img) (string, error) {
+	return util_json.Serialize(hists)
 }
 
 func RedirectToList(context *gin.Context, err any) {
@@ -103,54 +105,7 @@ func Path(context *gin.Context, img typ_api.Img) (string, error) {
 	return fmt.Sprintf("%s%s%s", imgDir, util_os.FileSeparator(), name), nil
 }
 
-// DbQryPermlyDelId 查询永久删除的图片记录id，以便复用此图片记录
-func DbQryPermlyDelId(context *gin.Context) (int64, int64, error) {
-	id, count, err := common.DbQry[int64](context, "SELECT `id` FROM `img` WHERE `del` = 2 LIMIT 1")
-	return id, count, err
-}
-
-// DbPage 分页查询图片
-func DbPage(context *gin.Context, img typ_api.Img) (typ_page.Page[typ_api.Img], error) {
-	req, _ := common.PageReq(context)
-
-	args := make([]any, 0, 1)
-	sql := "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`del`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = ? "
-	args = append(args, img.Del)
-
-	// id
-	if img.Id > 0 {
-		sql += "AND i.`id` = ? "
-		args = append(args, img.Id)
-	}
-
-	// name
-	if img.Name != "" {
-		sql += "AND i.`name` LIKE '%' || ? || '%' "
-		args = append(args, img.Name)
-	}
-
-	// type
-	if img.Type != "" {
-		sql += "AND i.`type` = ? "
-		args = append(args, img.Type)
-	}
-
-	sql += "ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC"
-
-	return common.DbPage[typ_api.Img](context, req, sql, args...)
-}
-
-// DbTypes 获取图片类型集合
-func DbTypes(context *gin.Context) []string {
-	// types
-	types, count, err := common.DbQry[[]string](context, "SELECT DISTINCT(`type`) FROM `img` WHERE `del` = 0")
-	if err != nil || count == 0 {
-		types = nil
-	}
-
-	return types
-}
-
+// DbQry 查询图片信息
 func DbQry(context *gin.Context, id int64, del int) (typ_api.Img, int64, error) {
 	img, count, err := common.DbQry[typ_api.Img](context, "SELECT `id`, `name`, `type`, `size`, `hist`, `hist_size`, `del`, `add_time`, `upd_time` FROM `img` WHERE `del` = ? AND `id` = ?", del, id)
 	return img, count, err

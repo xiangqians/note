@@ -45,8 +45,8 @@ func HistView(context *gin.Context) {
 	}
 
 	// hists
-	hists := DeserializeHist(img.Hist)
-	if hists == nil {
+	hists, err := DeserializeHist(img.Hist)
+	if err != nil || hists == nil {
 		html(img, err)
 		return
 	}
@@ -98,7 +98,7 @@ func View(context *gin.Context) {
 	img.Url = fmt.Sprintf("/img/%d?t=%d", id, util_time.NowUnix())
 
 	// hists
-	img.Hists = DeserializeHist(img.Hist)
+	img.Hists, err = DeserializeHist(img.Hist)
 
 	// html
 	html(img, err)
@@ -128,8 +128,8 @@ func GetHist(context *gin.Context) {
 	}
 
 	// hists
-	hists := DeserializeHist(img.Hist)
-	if hists == nil {
+	hists, err := DeserializeHist(img.Hist)
+	if err != nil || hists == nil {
 		log.Println("hist is empty")
 		return
 	}

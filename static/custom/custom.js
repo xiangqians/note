@@ -497,8 +497,8 @@
         // form
         let $form = $($float.find('form')[0])
         if ($form.length > 0) {
-            let uploadUrl = `/${type}/upload?t=${obj.timestamp()}`
-            $form.attr('action', uploadUrl)
+            let url = `/${type}/reUpload?t=${obj.timestamp()}`
+            $form.attr('action', url)
         }
     }
 

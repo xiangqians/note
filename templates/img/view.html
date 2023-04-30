@@ -26,15 +26,15 @@
 
 </body>
 </html>
+{{ if ne $data.Id 0 }}
 <script type="text/javascript" src="/static/jquery/jquery.js"></script>
 <script type="text/javascript" src="/static/custom/custom.js"></script>
 <script>
 
     ;(function () {
         let data = JSON.parse('{{ Serialize $data }}')
-        if (data.id !== 0) {
-            custom.float('img', data)
-        }
+        custom.float('img', data)
     })()
 
 </script>
+{{ end }}

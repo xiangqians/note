@@ -66,6 +66,18 @@ func ContentTypeOf(contentType string) Ft {
 	}
 }
 
+var noteFts = [...]Ft{FtD, FtMd, FtHtml, FtPdf, FtZip}
+
+// IsNote 是否是笔记文件类型
+func IsNote(ft Ft) bool {
+	for _, noteFt := range noteFts {
+		if noteFt == ft {
+			return true
+		}
+	}
+	return false
+}
+
 var imgFts = [...]Ft{FtIco, FtGif, FtJpg, FtJpeg, FtPng, FtWebp}
 
 // IsImg 是否是图片文件类型

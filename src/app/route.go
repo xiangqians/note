@@ -53,6 +53,7 @@ func route(engine *gin.Engine) {
 	imgGroup := engine.Group("/img")
 	imgGroup.Any("/list", api_img.List) // page
 	imgGroup.POST("/upload", api_img.Upload)
+	imgGroup.POST("/reUpload", api_img.ReUpload)
 	imgGroup.GET("/:id", api_img.Get)
 	imgGroup.GET("/:id/hist/:idx", api_img.GetHist)
 	imgGroup.Any("/:id/view", api_img.View)               // page
