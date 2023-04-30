@@ -15,13 +15,6 @@ import (
 	"sort"
 )
 
-// Sort 对img进行排序
-func Sort(imgs *[]typ_api.Img) {
-	sort.Slice(*imgs, func(i, j int) bool {
-		return (*imgs)[i].UpdTime > (*imgs)[j].UpdTime
-	})
-}
-
 // DeserializeHist 反序列化历史记录
 func DeserializeHist(hist string) ([]typ_api.Img, error) {
 	if hist == "" {
@@ -44,6 +37,13 @@ func DeserializeHist(hist string) ([]typ_api.Img, error) {
 // SerializeHist 序列化历史记录
 func SerializeHist(hists []typ_api.Img) (string, error) {
 	return util_json.Serialize(hists)
+}
+
+// Sort 对img进行排序
+func Sort(imgs *[]typ_api.Img) {
+	sort.Slice(*imgs, func(i, j int) bool {
+		return (*imgs)[i].UpdTime > (*imgs)[j].UpdTime
+	})
 }
 
 func RedirectToList(context *gin.Context, err any) {
