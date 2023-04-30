@@ -89,6 +89,7 @@ func ReUpload(context *gin.Context) {
 		Size: img.Size,
 	}
 	histImgs = append(histImgs, histImg)
+	Sort(&histImgs)
 
 	// 备份历史记录
 	// src
@@ -114,15 +115,15 @@ func ReUpload(context *gin.Context) {
 
 	// 图片历史记录至多保存15张，超过15张则删除最早地历史图片
 	max := 15
-	if len(histImgs) > max {
-		l := len(histImgs) - max
-		for i := 0; i < l; i++ {
+	l := len(histImgs)
+	if l > max {
+		for i := max; i < l; i++ {
 			path, err := HistPath(context, histImgs[i])
 			if err == nil {
 				util_os.DelFile(path)
 			}
 		}
-		histImgs = histImgs[l:]
+		histImgs = histImgs[:max]
 	}
 
 	// hist size

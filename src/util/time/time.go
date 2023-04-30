@@ -30,18 +30,22 @@ func HumanizUnix(unix int64) string {
 		if hour >= 24 {
 			return FormatUnix(unix)
 		}
-		return format("i18n.xHourAgo", hour)
+		return format("i18n.xHoursAgo", hour)
 	}
 
 	// minute
 	minute := int64(now.Sub(t).Minutes())
 	if minute >= 1 {
-		return format("i18n.xMinuteAgo", minute)
+		return format("i18n.xMinutesAgo", minute)
 	}
 
 	// second
 	second := int64(now.Sub(t).Seconds())
-	return format("i18n.xSecondAgo", second)
+	if second == 0 {
+		return i18n.MustGetMessage("i18n.now")
+	}
+
+	return format("i18n.xSecondsAgo", second)
 }
 
 // FormatUnix 格式化日期时间戳（s）
