@@ -13,8 +13,6 @@
 </head>
 <body>
 
-<p style="color: red;">{{ .resp.Msg }}</p>
-
 <!--
 只有 Firefox 和 Chrome 支持 download 属性。
 download 属性规定被下载的超链接目标。
@@ -24,11 +22,16 @@ download 属性规定被下载的超链接目标。
 <a href="/note/{{ $data.Id }}" download="{{ $data.Name }}">{{ Localize "i18n.download" }}</a>
 -->
 
-<h2>
-    <td>{{ Localize "i18n.fileTypeUnsupported" }}</td>
-</h2>
+<!-- 浮动窗口 -->
+<content>
+    <p style="color: red;">{{ .resp.Msg }}</p>
 
-{{ template "common/float.html" . }}
+    <h2>
+        <td>{{ Localize "i18n.fileTypeUnsupported" }}</td>
+    </h2>
+
+    {{ template "common/float.html" . }}
+</content>
 
 </body>
 </html>
@@ -37,7 +40,8 @@ download 属性规定被下载的超链接目标。
 <script>
 
     ;(function () {
-        custom.float('{{ .uri }}', '{{ Serialize $data }}', 'note')
+        let data = JSON.parse('{{ Serialize $data }}')
+        custom.float('note', data)
     })()
 
 </script>
