@@ -4,12 +4,91 @@
 package note
 
 import (
+	"bufio"
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
 	typ_api "note/src/typ/api"
+	typ_ft "note/src/typ/ft"
+	typ_resp "note/src/typ/resp"
+	util_str "note/src/util/str"
 	util_time "note/src/util/time"
+	"os"
 	"strings"
 )
+
+// UpdContent 修改文件内容
+func UpdContent(context *gin.Context) {
+	json := func(err error) {
+		if err != nil {
+			common.JsonBadRequest(context, typ_resp.Resp[any]{Msg: util_str.TypeToStr(err)})
+			return
+		}
+
+		common.JsonOk(context, typ_resp.Resp[any]{})
+	}
+
+	// id
+	id, err := common.PostForm[int64](context, "id")
+	if err != nil {
+		json(err)
+		return
+	}
+	//log.Println("id", id)
+
+	// f
+	f, count, err := DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: id}, Pid: -1})
+	if count == 0 || typ_ft.ExtNameOf(f.Type) != typ_ft.FtMd {
+		json(nil)
+		return
+	}
+
+	// content
+	content, err := common.PostForm[string](context, "content")
+	if err != nil {
+		json(err)
+		return
+	}
+	//log.Println("content", content)
+
+	// os file
+	fPath, err := Path(context, f)
+	if err != nil {
+		json(err)
+		return
+	}
+	pFile, err := os.OpenFile(fPath,
+		os.O_WRONLY|os.O_TRUNC, // 只写（O_WRONLY） & 清空文件（O_TRUNC）
+		0666)
+	if err != nil {
+		json(err)
+		return
+	}
+	defer pFile.Close()
+
+	// write
+	pWriter := bufio.NewWriter(pFile)
+	pWriter.WriteString(content)
+	pWriter.Flush()
+
+	// file info
+	fInfo, err := pFile.Stat()
+	if err != nil {
+		json(err)
+		return
+	}
+
+	size := fInfo.Size()
+
+	// update
+	_, err = common.DbUpd(context, "UPDATE `note` SET `size` = ?, `upd_time` = ? WHERE id = ?", size, util_time.NowUnix(), id)
+	if err != nil {
+		json(err)
+		return
+	}
+
+	json(nil)
+	return
+}
 
 // UpdName 文件重命名
 func UpdName(context *gin.Context) {

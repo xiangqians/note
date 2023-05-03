@@ -10,12 +10,45 @@ import (
 	"note/src/api/common"
 	typ_api "note/src/typ/api"
 	typ_resp "note/src/typ/resp"
+	util_json "note/src/util/json"
 	util_os "note/src/util/os"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
 	"os"
+	"sort"
 	"strings"
 )
+
+// DeserializeHist 反序列化历史记录
+func DeserializeHist(hist string) ([]typ_api.Note, error) {
+	if hist == "" {
+		return nil, nil
+	}
+
+	// hists
+	hists := make([]typ_api.Note, 0, 1) // len 0, cap ?
+	err := util_json.Deserialize(hist, &hists)
+	if err != nil {
+		return nil, err
+	}
+
+	// sort
+	Sort(&hists)
+
+	return hists, nil
+}
+
+// SerializeHist 序列化历史记录
+func SerializeHist(hists []typ_api.Note) (string, error) {
+	return util_json.Serialize(hists)
+}
+
+// Sort 对notes进行排序
+func Sort(notes *[]typ_api.Note) {
+	sort.Slice(*notes, func(i, j int) bool {
+		return (*notes)[i].UpdTime > (*notes)[j].UpdTime
+	})
+}
 
 func RedirectToList(context *gin.Context, pid int64, err any) {
 	resp := typ_resp.Resp[any]{
@@ -64,6 +97,23 @@ func DbQry(context *gin.Context, note typ_api.Note) (typ_api.Note, int64, error)
 	// sql
 	sql, args := DbQrySql(note, "LIMIT 1")
 	qryPath := note.QryPath
+
+	// qry
+	note, count, err := common.DbQry[typ_api.Note](context, sql, args...)
+	if qryPath > 0 && err == nil && count > 0 {
+		InitPath(&note)
+	}
+
+	return note, count, err
+}
+
+// DbQry 查询
+// id: 主键id
+// qryPath: 查询路径，0-不查询，1-查询，2-查询并包含自身的
+// del: 删除标识
+func DbQryNew(context *gin.Context, id int64, qryPath int8, del typ_api.Del) (typ_api.Note, int64, error) {
+	// sql
+	sql, args := DbQrySql(typ_api.Note{Abs: typ_api.Abs{Id: id, Del: byte(del)}, QryPath: qryPath}, "LIMIT 1")
 
 	// qry
 	note, count, err := common.DbQry[typ_api.Note](context, sql, args...)

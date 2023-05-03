@@ -35,8 +35,11 @@ See https://github.com/adobe-type-tools/cmap-resources
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="google" content="notranslate">
+
+    <!-- 标题 -->
     <title>{{ $data.Name }}</title>
 
+    <!-- 自定义css -->
     <link rel="stylesheet" href="/static/custom/custom.css" type="text/css"/>
 
     <link rel="stylesheet" href="/static/pdf.js/web/viewer.css">
@@ -44,8 +47,9 @@ See https://github.com/adobe-type-tools/cmap-resources
     <!-- This snippet is used in production (included from viewer.html) -->
     <link rel="resource" type="application/l10n" href="/static/pdf.js/web/locale/locale.properties">
 
+    <!-- 覆盖浮动窗口样式 -->
     <style>
-        .float {
+        content .float {
             top: 80px;
             right: 60px;
         }
@@ -399,48 +403,10 @@ See https://github.com/adobe-type-tools/cmap-resources
                         </span>
                     </div>
 
-                    <div class="float">
-                        <p style="color: red;">{{ .resp.Msg }}</p>
-                        <br>
-                        {{ Localize "i18n.version" }}
-                        <select name="version">
-                            <option value="1.0">1.0</option>
-                            <option value="2.0">2.0</option>
-                        </select>
-                        <br>
-                        <br>
-                        <table border="1" cellspacing="0" cellpadding="10" align="center">
-                            <tbody>
-                            <tr>
-                                <td>{{ Localize "i18n.name" }}</td>
-                                <td>{{ $data.Name }}</td>
-                            </tr>
-                            <tr>
-                                <td>{{ Localize "i18n.path" }}</td>
-                                <td name="path"></td>
-                            </tr>
-                            <tr>
-                                <td>{{ Localize "i18n.type" }}</td>
-                                <td>{{ $data.Type }}</td>
-                            </tr>
-                            <tr>
-                                <td>{{ Localize "i18n.size" }}</td>
-                                <td>{{ HumanizFileSize $data.Size }}</td>
-                            </tr>
-                            <tr>
-                                <td>{{ Localize "i18n.addTime" }}</td>
-                                <td>{{ HumanizUnix $data.AddTime }}</td>
-                            </tr>
-                            <tr>
-                                <td>{{ Localize "i18n.updTime" }}</td>
-                                <td>{{ HumanizUnix $data.UpdTime }}</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                        <br>
-
-                        <br>
-                    </div>
+                    <!-- 浮动窗口 -->
+                    <content>
+                        {{ template "common/float.html" . }}
+                    </content>
 
                 </div>
                 <div id="loadingBar">
@@ -562,11 +528,13 @@ See https://github.com/adobe-type-tools/cmap-resources
 </body>
 </html>
 <script type="text/javascript" src="/static/jquery/jquery.js"></script>
+
+<!-- 自定义js -->
 <script type="text/javascript" src="/static/custom/custom.js"></script>
+
 <script src="/static/pdf.js/build/pdf.js"></script>
 <script>
     ;
-
     defPdfSrc = "{{ $data.Url }}"
     // console.log('defPdfSrc', defPdfSrc)
     ;
@@ -575,13 +543,15 @@ See https://github.com/adobe-type-tools/cmap-resources
 <script>
 
     ;(function () {
-        custom.note('{{ Serialize $data }}', '{{ .uri }}')
+        let data = JSON.parse('{{ Serialize $data }}')
+        custom.float('note', data)
 
         // btn style
         let $float = $($('div[class="float"]')[0])
         let $btn = $($float.find('button')[0])
-        $btn.css('padding', '3px')
-        // console.log($btn)
+        $btn.css('width', '23px')
+        $btn.css('height', '23px')
+
     })()
 
 </script>

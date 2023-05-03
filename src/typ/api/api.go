@@ -7,6 +7,15 @@ import (
 	"encoding/gob"
 )
 
+type Del byte
+
+// Del 删除状态
+const (
+	NotDeleted    Del = iota // 未删除
+	Deleted                  // 已删除
+	PermlyDeleted            // 永久删除
+)
+
 // Abs 抽象实体定义
 type Abs struct {
 	Id      int64  `json:"id" form:"id" binding:"gte=0"`     // 主键id
