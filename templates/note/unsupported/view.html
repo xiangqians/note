@@ -26,9 +26,7 @@ download 属性规定被下载的超链接目标。
 <content>
     <p style="color: red;">{{ .resp.Msg }}</p>
 
-    <h2>
-        <td>{{ Localize "i18n.fileTypeUnsupported" }}</td>
-    </h2>
+    <p style="font-size: 26px">{{ Localize "i18n.fileTypeUnsupported" }}</p>
 
     {{ template "common/float.html" . }}
 </content>

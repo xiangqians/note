@@ -44,7 +44,7 @@ func View(context *gin.Context) {
 	switch typ_ft.ExtNameOf(note.Type) {
 	// markdown
 	case typ_ft.FtMd:
-		MdView(context, note)
+		ViewMd(context, note)
 
 	// html
 	case typ_ft.FtHtml:

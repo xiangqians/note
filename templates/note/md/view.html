@@ -9,8 +9,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/custom/content.css" type="text/css"/>
     <link rel="stylesheet" href="/static/github-markdown-css/github-markdown.css">
-    <title>{{ $data.note.Name }}</title>
+    <title>{{ $data.Name }}</title>
     <style>
         .markdown-body {
             box-sizing: border-box;
@@ -28,7 +29,7 @@
     </style>
     <style>
         /* 目录 */
-        .md-dir {
+        .dir {
             width: 20%;
             float: left;
             padding-right: 2px;
@@ -38,50 +39,56 @@
         }
 
         /* 正文 */
-        .md-content {
+        .content {
             width: 80%;
             float: right;
-        }
-    </style>
-    <style>
-        .float {
-            position: fixed;
-            top: 30px;
-            right: 50px;
-            width: auto;
-            height: auto;
-            /*background: lightgray;*/
         }
     </style>
 </head>
 <body>
 
-<a class="float" href="/note/{{ $data.note.Id }}/edit" target="_blank">{{ Localize "i18n.edit" }} →</a>
+<!--<a class="float" href="/note/{{ $data.Id }}/edit" target="_blank">{{ Localize "i18n.edit" }} →</a>-->
+<content>
+    <p style="color: red;">{{ .resp.Msg }}</p>
+    {{ template "common/float.html" . }}
+</content>
 
-<p style="color: red;">{{ .resp.Msg }}</p>
+<!-- dir -->
+<div class="dir"></div>
 
-<div class="md-dir">
-</div>
-
-<article class="md-content markdown-body">
-    <script>
-        document.write('{{ $data.html }}')
-    </script>
-</article>
+<!-- content -->
+<article class="content markdown-body"></article>
 
 </body>
 </html>
 <script type="text/javascript" src="/static/jquery/jquery.js"></script>
-
-<!-- md5.js -->
 <script src="/static/md5/md5.js"></script>
-
 <script type="text/javascript" src="/static/custom/custom.js"></script>
-
 <script>
+    ;
+    // float
+    (function () {
+        let data = JSON.parse('{{ Serialize $data }}')
+        custom.float('note', data)
+    })()
 
     ;
+    // content
     (function () {
+        let $content = $('.content')
+        // console.log($content)
+        $content.html('{{ $data.Content }}')
+    })()
+
+    ;
+    // directory
+    (function () {
+        // 查找h标签
+        let $headers = $(':header')
+        // console.log($headers)
+        if ($headers.length == 0) {
+            return
+        }
 
         /**
          * 目录
@@ -104,10 +111,38 @@
             this.children.push(dir)
         }
 
+        // id映射 <id, count(重复个数)>
+        Dir._idMap = new Map()
+
+        // 生成id
+        // 处理标题包含空格无法跳转 和 标题重名跳转问题
+        Dir.genId = function (text) {
+            let idMap = Dir._idMap
+
+            // id
+            let id = md5(text)
+
+            // count
+            let count = idMap.get(id)
+            if (count) {
+                id += count
+            } else {
+                count = 0
+            }
+            count++
+
+            // set
+            idMap.set(id, count)
+
+            return id
+        }
+
+        // root directory
         let rDir = new Dir(0, null, null)
 
-        function findDir(n, dir) {
-            if (!(dir)) {
+        // 查找父目录
+        function findParentDir(n, dir) {
+            if (!dir) {
                 dir = rDir
             }
 
@@ -117,65 +152,41 @@
 
             let children = dir.children
             if (children) {
-                return findDir(n, children[children.length - 1])
+                return findParentDir(n, children[children.length - 1])
             }
 
-            return null
+            throw new Error('Null Exception')
         }
 
-        let idMap = new Map()
-
-        // 生成id，处理标题包含空格无法跳转 和 标题重名跳转问题
-        function genId(text) {
-            let id = md5(text)
-
-            let count = idMap.get(id)
-            if (!(count)) {
-                count = 0
-            }
-
-            if (count > 0) {
-                id += count
-            }
-
-            count++
-            idMap.set(id, count)
-            return id
-        }
-
-        // 查找h标签
-        $(':header').each(function () {
+        // 遍历h标签
+        $headers.each(function () {
             let tagName = $(this).prop('tagName')
+            // console.log('tagName', tagName) // H1, H2, H3, ...
             let n = parseInt(tagName.substring(1), 10)
-            let id = $(this).attr('id')
             let text = $(this).text()
-
-            // 生成id
-            id = genId(text)
+            let id = Dir.genId(text)
             $(this).attr('id', id)
-
-            // console.log(n, tagName, text)
+            // console.log(n, id, text)
 
             // 处理不规则标题（H）
             let dir = null
-            let i = 1
-            while (i < 5) {
-                dir = findDir(n - i)
+            let i = n
+            while (--i >= 0) {
+                dir = findParentDir(i)
                 if (dir) {
                     break
                 }
-                i++
             }
 
             dir.add(new Dir(n, id, text))
         });
-        // console.log(rDir)
+        // console.log('rDir', rDir)
 
         // 渲染
         function render(dir) {
             let $li = $('<li></li>')
             let $a = $('<a></a>')
-            $a.attr('href', '#' + dir.id)
+            $a.attr('href', `#${dir.id}`)
             $a.text(dir.text)
             $li.append($a)
             let children = dir.children
@@ -190,11 +201,11 @@
         }
 
         let $ul = $('<ul></ul>')
-        rDir.children.forEach((dir) => {
+        rDir.children.forEach(dir => {
             $ul.append(render(dir))
         })
 
-        let $dir = $('.md-dir')
+        let $dir = $('.dir')
         $dir.append($ul)
     })()
     ;
