@@ -487,7 +487,13 @@
         if (type === 'note') {
             // path
             let $path = $($wrapperDiv.find('td[name="path"]')[0])
-            $path.text(data.path)
+            // $path.text(data.path)
+            $path.html(data.pathLink)
+            let $as = $path.find('a')
+            for (let i = 0; i < $as.length; i++) {
+                let $a = $($as[i])
+                $a.attr('target', '_blank')
+            }
 
             // pdf ?
             // version
