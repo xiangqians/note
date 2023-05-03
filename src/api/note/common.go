@@ -268,6 +268,25 @@ func DbQrySql(note typ_api.Note, last ...string) (string, []any) {
 	return sql, args
 }
 
+func ReadHist(context *gin.Context, note typ_api.Note) ([]byte, error) {
+	// file path
+	path, err := HistPath(context, note)
+	if err != nil {
+		return nil, err
+	}
+
+	// open file
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	// read file
+	buf, err := io.ReadAll(file)
+	return buf, err
+}
+
 // Read 读取笔记信息
 func Read(context *gin.Context, note typ_api.Note) ([]byte, error) {
 	// file path

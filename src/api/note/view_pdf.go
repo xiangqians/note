@@ -14,6 +14,7 @@ import (
 
 // ViewPdf 查看pdf文件
 func ViewPdf(context *gin.Context, note typ_api.Note) {
+	// version
 	v, _ := common.Query[string](context, "v")
 	v = strings.TrimSpace(v)
 	switch v {
@@ -28,8 +29,11 @@ func ViewPdf(context *gin.Context, note typ_api.Note) {
 		v = "2.0"
 	}
 
+	// resp
 	resp := typ_resp.Resp[typ_api.Note]{
 		Data: note,
 	}
+
+	// html
 	common.HtmlOk(context, fmt.Sprintf("note/pdf/view_v%s.html", v), resp)
 }

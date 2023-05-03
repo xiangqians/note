@@ -3,27 +3,123 @@
  | @date 22:55 2023/03/14
  |-->
 {{ $data := .resp.Data }}
+
+<!-- static/custom/custom.css -->
+<style>
+    /* content */
+    content {
+        flex: 1;
+        text-align: center;
+    }
+
+    content table thead tr {
+        background-color: #EEEEEE;
+    }
+
+    /*
+    onmouseover: "this.style.backgroundColor='#D3D3D3'";
+    onmouseout: "this.style.backgroundColor='#FFFFFF'";
+     */
+    content table tbody tr:hover {
+        background-color: #D3D3D3;
+    }
+
+    content button, [type="submit"] {
+        cursor: pointer
+    }
+
+    content textarea[name="rem"] {
+        width: 300px;
+        height: 100px;
+    }
+
+    content .float {
+        position: fixed;
+        top: 30px;
+        right: 50px;
+        width: auto;
+        height: auto;
+        background: white;
+    }
+
+    content .gray {
+        color: gray
+    }
+</style>
+
+<!-- 浮动窗口 -->
+<content>
+    {{ template "common/float.html" . }}
+</content>
+
 <script>
-    document.write('{{ $data.html }}')
+    document.write('{{ $data.Content }}')
     window.onload = function () {
         // title
         let titleElem = document.getElementsByTagName("title")[0]
-        titleElem.text = '{{ $data.note.Name }}'
+        titleElem.text = '{{ $data.Name }}'
 
+        // head
+        let head = document.getElementsByTagName("head")[0]
+
+        ;
+        // favicon.ico
         // <link rel="shortcut icon" href="/static/favicon.ico">
-        let links = document.getElementsByTagName("link")
-        let link = null
-        for (let i = 0, len = links.length; i < len; i++) {
-            if ('shortcut icon'.toLowerCase() === links[i].getAttribute('rel').toLowerCase()) {
-                link = links[i]
+        (function () {
+            let links = document.getElementsByTagName("link")
+            let link = null
+            for (let i = 0, len = links.length; i < len; i++) {
+                if ('shortcut icon'.toLowerCase() === links[i].getAttribute('rel').toLowerCase()) {
+                    link = links[i]
+                }
             }
-        }
-        if (link == null) {
-            link = document.createElement('link')
-            link.setAttribute('rel', 'shortcut icon')
-            let headElem = document.getElementsByTagName("head")[0]
-            headElem.appendChild(link)
-        }
-        link.setAttribute('href', '/static/favicon.ico')
+            if (link == null) {
+                link = document.createElement('link')
+                link.setAttribute('rel', 'shortcut icon')
+                head.appendChild(link)
+            }
+            link.setAttribute('href', '/static/favicon.ico')
+        })()
+
+        ;
+        // custom.css
+        // <link rel="stylesheet" href="/static/custom/custom.css" type="text/css"/>
+        (function () {
+            return
+            let link = document.createElement('link')
+            link.setAttribute('rel', 'stylesheet')
+            link.setAttribute('href', '/static/custom/custom.css')
+            link.setAttribute('type', 'text/css')
+            head.appendChild(link)
+        })()
+
+        ;
+        // float
+        (function () {
+            let data = JSON.parse('{{ Serialize $data }}')
+            custom.float('note', data)
+        })()
+
     }
 </script>
+
+<!-- jquery.js -->
+<!--<script type="text/javascript" src="/static/jquery/jquery.js"></script>-->
+<script>
+    ;
+    // jquery.js
+    // <script type="text/javascript" src="/static/jquery/jquery.js"/>
+    (function () {
+        if (window.$) {
+            return
+        }
+
+        let script = document.createElement('script')
+        script.setAttribute('type', 'text/javascript')
+        script.setAttribute('src', '/static/jquery/jquery.js')
+        document.body.appendChild(script);
+
+        console.log(window.$)
+    })()
+</script>
+<script type="text/javascript" src="/static/custom/custom.js"></script>

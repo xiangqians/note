@@ -19,14 +19,14 @@ func View(context *gin.Context) {
 	// id
 	id, err := common.Param[int64](context, "id")
 	if err != nil {
-		ViewDefault(context, typ_api.Note{}, err)
+		ViewUnsupported(context, typ_api.Note{}, err)
 		return
 	}
 
 	// query
 	note, count, err := DbQryNew(context, id, 1, typ_api.NotDeleted)
 	if err != nil || count == 0 {
-		ViewDefault(context, note, err)
+		ViewUnsupported(context, note, err)
 		return
 	}
 
@@ -36,7 +36,7 @@ func View(context *gin.Context) {
 	// 笔记历史记录
 	note.Hists, err = DeserializeHist(note.Hist)
 	if err != nil {
-		ViewDefault(context, note, err)
+		ViewUnsupported(context, note, err)
 		return
 	}
 
@@ -48,7 +48,7 @@ func View(context *gin.Context) {
 
 	// html
 	case typ_ft.FtHtml:
-		HtmlView(context, note)
+		ViewHtml(context, note)
 
 	// pdf
 	case typ_ft.FtPdf:
@@ -56,17 +56,17 @@ func View(context *gin.Context) {
 
 	// default
 	default:
-		ViewDefault(context, note, err)
+		ViewUnsupported(context, note, err)
 	}
 }
 
-// ViewDefault 默认查看页
-func ViewDefault(context *gin.Context, note typ_api.Note, err any) {
+// ViewUnsupported 不支持查看
+func ViewUnsupported(context *gin.Context, note typ_api.Note, err any) {
 	resp := typ_resp.Resp[typ_api.Note]{
 		Msg:  util_str.TypeToStr(err),
 		Data: note,
 	}
-	common.HtmlOk(context, "note/default/view.html", resp)
+	common.HtmlOk(context, "note/unsupported/view.html", resp)
 }
 
 func Get(context *gin.Context) {

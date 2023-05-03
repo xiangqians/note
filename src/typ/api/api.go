@@ -47,6 +47,7 @@ type Note struct {
 	Path     string `json:"path"`                                             // 笔记路径
 	PathLink string `json:"pathLink"`                                         // 笔记路径链接
 	Url      string `json:"url"`                                              // 笔记url
+	Content  string `json:"content"`                                          // 笔记内容
 	Hists    []Note `json:"hists"`                                            // 图片历史记录
 	HistIdx  int8   `json:"histIdx"`                                          // Hists Index
 	Sub      int8   `json:"sub" form:"sub"`                                   // 是否包含所有子集，0-否，1-是
