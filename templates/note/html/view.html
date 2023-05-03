@@ -4,49 +4,6 @@
  |-->
 {{ $data := .resp.Data }}
 
-<!-- static/custom/custom.css -->
-<style>
-    /* content */
-    content {
-        flex: 1;
-        text-align: center;
-    }
-
-    content table thead tr {
-        background-color: #EEEEEE;
-    }
-
-    /*
-    onmouseover: "this.style.backgroundColor='#D3D3D3'";
-    onmouseout: "this.style.backgroundColor='#FFFFFF'";
-     */
-    content table tbody tr:hover {
-        background-color: #D3D3D3;
-    }
-
-    content button, [type="submit"] {
-        cursor: pointer
-    }
-
-    content textarea[name="rem"] {
-        width: 300px;
-        height: 100px;
-    }
-
-    content .float {
-        position: fixed;
-        top: 30px;
-        right: 50px;
-        width: auto;
-        height: auto;
-        background: white;
-    }
-
-    content .gray {
-        color: gray
-    }
-</style>
-
 <!-- 浮动窗口 -->
 <content>
     {{ template "common/float.html" . }}
@@ -82,13 +39,12 @@
         })()
 
         ;
-        // custom.css
-        // <link rel="stylesheet" href="/static/custom/custom.css" type="text/css"/>
+        // content.css
+        // <link rel="stylesheet" href="/static/custom/content.css" type="text/css"/>
         (function () {
-            return
             let link = document.createElement('link')
             link.setAttribute('rel', 'stylesheet')
-            link.setAttribute('href', '/static/custom/custom.css')
+            link.setAttribute('href', '/static/custom/content.css')
             link.setAttribute('type', 'text/css')
             head.appendChild(link)
         })()

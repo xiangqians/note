@@ -39,54 +39,18 @@ See https://github.com/adobe-type-tools/cmap-resources
     <!-- 标题 -->
     <title>{{ $data.Name }}</title>
 
+    <link rel="stylesheet" href="/static/custom/content.css" type="text/css"/>
+
     <link rel="stylesheet" href="/static/pdf.js/web/viewer.css">
 
     <!-- This snippet is used in production (included from viewer.html) -->
     <link rel="resource" type="application/l10n" href="/static/pdf.js/web/locale/locale.properties">
 
-    <!-- static/custom/custom.css -->
     <!-- 覆盖浮动窗口样式 -->
     <style>
-        /* content */
-        content {
-            flex: 1;
-            text-align: center;
-        }
-
-        content table thead tr {
-            background-color: #EEEEEE;
-        }
-
-        /*
-        onmouseover: "this.style.backgroundColor='#D3D3D3'";
-        onmouseout: "this.style.backgroundColor='#FFFFFF'";
-         */
-        content table tbody tr:hover {
-            background-color: #D3D3D3;
-        }
-
-        content button, [type="submit"] {
-            cursor: pointer
-        }
-
-        content textarea[name="rem"] {
-            width: 300px;
-            height: 100px;
-        }
-
         content .float {
-            position: fixed;
-            /*top: 30px;*/
             top: 80px;
-            /*right: 50px;*/
             right: 60px;
-            width: auto;
-            height: auto;
-            background: white;
-        }
-
-        content .gray {
-            color: gray
         }
 
         /* 新增 */
