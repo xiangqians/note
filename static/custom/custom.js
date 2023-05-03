@@ -267,7 +267,7 @@
         if ($e.is('form')) {
             let $form = $e
             // console.log($form)
-            $($form.find("[type=submit]")[0]).click(function () {
+            $form.find("[type=submit]").click(function () {
                 // url
                 let url = $form.attr("action")
                 // console.log('url', url)
@@ -480,49 +480,77 @@
             }
         })
 
-        // float
-        let $float = $($('div[class="float"]')[0])
-        $wrapperDiv.html($float.html())
-        // note ?
-        if (type === 'note') {
-            // path
-            let $path = $($wrapperDiv.find('td[name="path"]')[0])
-            // $path.text(data.path)
-            $path.html(data.pathLink)
-            let $as = $path.find('a')
-            for (let i = 0; i < $as.length; i++) {
-                let $a = $($as[i])
-                $a.attr('target', '_blank')
-            }
-
-            // pdf ?
+        function pre() {
             // version
-            if (data.type === 'pdf') {
-                let $version = $($wrapperDiv.find('div[name="version"]')[0])
-                obj.displayE($version)
+            let $version = $wrapperDiv.find('[name="version"]')
 
-                // v
-                let params = obj.parseUrlQueryParams()
-                let v = params.v
-                if (!v) {
-                    v = '2.0'
+            // path
+            let $path = $wrapperDiv.find('tr[name="path"]')
+
+            // edit
+            let $edit = $wrapperDiv.find('[name="edit"]')
+
+            // note ?
+            if (type === 'note') {
+                // path
+                $path.find('td[name="path"]').html(data.pathLink)
+                let $as = $path.find('a')
+                for (let i = 0; i < $as.length; i++) {
+                    let $a = $($as[i])
+                    $a.attr('target', '_blank')
                 }
-                let $option = $($version.find('option[value="' + v + '"]')[0])
-                $option.attr("selected", true);
 
-                // select
-                let $select = $($version.find('select')[0])
-                $select.change(function () {
-                    let v = $select.find("option:selected").attr("value");
-                    // console.log(value)
-                    let url = `/note/${data.id}/view?v=${v}`
-                    custom.ajax(url, "GET")
-                });
+                // !md edit
+                if (data.type !== 'md') {
+                    $edit.remove()
+                }
+
+                // !pdf version
+                if (data.type !== 'pdf') {
+                    $version.remove()
+                }
+
+                // pdf ?
+                // version
+                if (data.type === 'pdf') {
+                    // v
+                    let params = obj.parseUrlQueryParams()
+                    let v = params.v
+                    if (!v) {
+                        v = '2.0'
+                    }
+                    let $option = $version.find('option[value="' + v + '"]')
+                    $option.attr("selected", true)
+
+                    // select
+                    let $select = $version.find('select')
+                    $select.change(function () {
+                        let v = $select.find("option:selected").attr("value");
+                        // console.log(value)
+                        let url = `/note/${data.id}/view?v=${v}`
+                        custom.ajax(url, "GET")
+                    })
+                }
             }
-        } else {
-            let $path = $($wrapperDiv.find('tr[name="path"]')[0])
-            $path.remove()
+            // img
+            else {
+                $version.remove()
+                $path.remove()
+                $edit.remove()
+            }
+
+            // upload
+            console.log('histIdx', data.histIdx)
+            if (data.histIdx !== -1) {
+                let $upload = $wrapperDiv.find('form[name="upload"]')
+                $upload.remove()
+            }
         }
+
+        // float
+        let $float = $('div[class="float"]')
+        $wrapperDiv.html($float.html())
+        pre()
         $float.html('')
         $float.prepend($btn)
         $float.append($wrapperDiv)
@@ -533,10 +561,10 @@
         }
         $float.css('display', '')
 
-        // select
-        let $select = $($("select[hist]")[0])
-        $select.change(function () {
-            let value = $select.find("option:selected").attr("value");
+        // hist
+        let $hist = $float.find('[name="hist"]').find('select')
+        $hist.change(function () {
+            let value = $hist.find("option:selected").attr("value");
             // console.log(value)
             let url = null
             if (value === "-1") {
@@ -547,11 +575,11 @@
             custom.ajax(url, "GET")
         });
 
-        // form
-        let $form = $($float.find('form')[0])
-        if ($form.length > 0) {
+        // upload
+        let $upload = $float.find('form[name="upload"]')
+        if ($upload.length > 0) {
             let url = `/${type}/reUpload?t=${obj.timestamp()}`
-            $form.attr('action', url)
+            $upload.attr('action', url)
         }
     }
 
