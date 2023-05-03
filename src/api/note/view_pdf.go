@@ -28,8 +28,6 @@ func ViewPdf(context *gin.Context, note typ_api.Note) {
 		v = "2.0"
 	}
 
-	note.Url = fmt.Sprintf("/note/%v", note.Id)
-
 	resp := typ_resp.Resp[typ_api.Note]{
 		Data: note,
 	}

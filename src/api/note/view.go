@@ -3,6 +3,7 @@
 package note
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"note/src/api/common"
@@ -10,6 +11,7 @@ import (
 	typ_ft "note/src/typ/ft"
 	typ_resp "note/src/typ/resp"
 	util_str "note/src/util/str"
+	util_time "note/src/util/time"
 )
 
 // View 查看文件页面
@@ -27,6 +29,9 @@ func View(context *gin.Context) {
 		ViewDefault(context, note, err)
 		return
 	}
+
+	// url
+	note.Url = fmt.Sprintf("/note/%d?t=%d", id, util_time.NowUnix())
 
 	// 笔记历史记录
 	note.Hists, err = DeserializeHist(note.Hist)

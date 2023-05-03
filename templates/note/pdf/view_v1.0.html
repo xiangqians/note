@@ -27,7 +27,7 @@
     </style>
 
     <style>
-        .float {
+        content .float {
             top: 80px;
             right: 60px;
         }
@@ -43,47 +43,10 @@
 -->
 <embed class="internal container" title="214435" src="{{ $data.Url }}" type="application/pdf">
 
-<div class="float">
-    <p style="color: red;">{{ .resp.Msg }}</p>
-    {{ Localize "i18n.version" }}
-    <select name="version">
-        <option value="1.0">1.0</option>
-        <option value="2.0">2.0</option>
-    </select>
-    <br>
-    <br>
-    <table border="1" cellspacing="0" cellpadding="10" align="center">
-        <tbody>
-        <tr>
-            <td>{{ Localize "i18n.name" }}</td>
-            <td>{{ $data.Name }}</td>
-        </tr>
-        <tr>
-            <td>{{ Localize "i18n.path" }}</td>
-            <td name="path"></td>
-        </tr>
-        <tr>
-            <td>{{ Localize "i18n.type" }}</td>
-            <td>{{ $data.Type }}</td>
-        </tr>
-        <tr>
-            <td>{{ Localize "i18n.size" }}</td>
-            <td>{{ HumanizFileSize $data.Size }}</td>
-        </tr>
-        <tr>
-            <td>{{ Localize "i18n.addTime" }}</td>
-            <td>{{ HumanizUnix $data.AddTime }}</td>
-        </tr>
-        <tr>
-            <td>{{ Localize "i18n.updTime" }}</td>
-            <td>{{ HumanizUnix $data.UpdTime }}</td>
-        </tr>
-        </tbody>
-    </table>
-    <br>
-
-    <br>
-</div>
+<!-- 浮动窗口 -->
+<content>
+    {{ template "common/float.html" . }}
+</content>
 
 </body>
 </html>
@@ -92,7 +55,8 @@
 <script>
 
     ;(function () {
-        custom.note('{{ Serialize $data }}', '{{ .uri }}')
+        let data = JSON.parse('{{ Serialize $data }}')
+        custom.float('note', data)
 
         let $embed = $($('embed')[0])
         // console.log($embed)

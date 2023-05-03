@@ -124,6 +124,9 @@
      */
     obj.parseUrlQueryParams = function (url) {
         let params = {}
+        if (!url) {
+            url = window.location.href
+        }
         let index = url.indexOf("?")
         if (index === -1) {
             return params
@@ -163,8 +166,6 @@
      * @param error     请求错误回调函数
      */
     obj.ajax = function (url, method, data, async, complete, success, error) {
-        console.log(method, url, data)
-
         // url
         let timestamp = obj.timestamp()
         if (url.indexOf('?') > 0) {
@@ -172,6 +173,7 @@
         } else {
             url += '?t=' + timestamp
         }
+        console.log(method, url, data)
 
         if (obj.isUndefined(async)) {
             async = false
@@ -339,9 +341,6 @@
 })(custom)
 
 
-;(function (obj) {
-})(custom)
-
 // storage
 ;(function (obj) {
 
@@ -391,6 +390,20 @@
 
 })(custom)
 
+// element
+;(function (obj) {
+
+    // 显示元素
+    obj.displayE = function ($e) {
+        $e.css('display', 'block')
+    }
+
+    // 隐藏元素
+    obj.hideE = function ($e) {
+        $e.css('display', 'none')
+    }
+
+})(custom)
 
 // float 收缩/展开
 ;(function (obj) {
@@ -446,14 +459,14 @@
 
         // 显示 wrapper div
         function displayWrapperDiv() {
-            $wrapperDiv.css('display', 'block')
+            obj.displayE($wrapperDiv)
             setFloatDisplay()
             displayBtn()
         }
 
         // 隐藏 wrapper div
         function hideWrapperDiv() {
-            $wrapperDiv.css('display', 'none')
+            obj.hideE($wrapperDiv)
             setFloatHide()
             hideBtn()
         }
@@ -470,6 +483,40 @@
         // float
         let $float = $($('div[class="float"]')[0])
         $wrapperDiv.html($float.html())
+        // note ?
+        if (type === 'note') {
+            // path
+            let $path = $($wrapperDiv.find('td[name="path"]')[0])
+            $path.text(data.path)
+
+            // pdf ?
+            // version
+            if (data.type === 'pdf') {
+                let $version = $($wrapperDiv.find('div[name="version"]')[0])
+                obj.displayE($version)
+
+                // v
+                let params = obj.parseUrlQueryParams()
+                let v = params.v
+                if (!v) {
+                    v = '2.0'
+                }
+                let $option = $($version.find('option[value="' + v + '"]')[0])
+                $option.attr("selected", true);
+
+                // select
+                let $select = $($version.find('select')[0])
+                $select.change(function () {
+                    let v = $select.find("option:selected").attr("value");
+                    // console.log(value)
+                    let url = `/note/${data.id}/view?v=${v}`
+                    custom.ajax(url, "GET")
+                });
+            }
+        } else {
+            let $path = $($wrapperDiv.find('tr[name="path"]')[0])
+            $path.remove()
+        }
         $float.html('')
         $float.prepend($btn)
         $float.append($wrapperDiv)

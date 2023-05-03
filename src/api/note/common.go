@@ -113,7 +113,14 @@ func DbQry(context *gin.Context, note typ_api.Note) (typ_api.Note, int64, error)
 // del: 删除标识
 func DbQryNew(context *gin.Context, id int64, qryPath int8, del typ_api.Del) (typ_api.Note, int64, error) {
 	// sql
-	sql, args := DbQrySql(typ_api.Note{Abs: typ_api.Abs{Id: id, Del: byte(del)}, QryPath: qryPath}, "LIMIT 1")
+	sql, args := DbQrySql(typ_api.Note{
+		Abs: typ_api.Abs{
+			Id:  id,
+			Del: byte(del),
+		},
+		Pid:     -1,
+		QryPath: qryPath,
+	}, "LIMIT 1")
 
 	// qry
 	note, count, err := common.DbQry[typ_api.Note](context, sql, args...)
