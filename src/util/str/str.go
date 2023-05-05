@@ -18,8 +18,8 @@ func Uuid() string {
 	return uuid.New().String()
 }
 
-// NameHumpToUnderline 驼峰转下划线
-func NameHumpToUnderline(name string) string {
+// ConvNameHumpToUnderline 驼峰转下划线
+func ConvNameHumpToUnderline(name string) string {
 	pRegexp := regexp.MustCompile("([A-Z])")
 	r := pRegexp.FindAllIndex([]byte(name), -1)
 	l := len(r)
@@ -48,8 +48,8 @@ func NameHumpToUnderline(name string) string {
 	return strings.ToLower(strings.Join(res, "_"))
 }
 
-// TypeToStr 类型转string
-func TypeToStr(i any) string {
+// ConvTypeToStr 类型转string
+func ConvTypeToStr(i any) string {
 	if i == nil {
 		return ""
 	}
@@ -61,8 +61,8 @@ func TypeToStr(i any) string {
 	return fmt.Sprintf("%v", i)
 }
 
-// StrToType string转类型（基本数据类型）
-func StrToType[T any](value string) (T, error) {
+// ConvStrToType string转类型（基本数据类型）
+func ConvStrToType[T any](value string) (T, error) {
 	var t T
 	rflVal := reflect.ValueOf(t)
 	//log.Println(rflVal)

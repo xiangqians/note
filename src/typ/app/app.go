@@ -3,6 +3,11 @@
 // @date 20:53 2023/03/13
 package app
 
+const (
+	Zh = "zh"
+	En = "en"
+)
+
 // Arg 应用参数
 type Arg struct {
 	Port     int    // 监听端口

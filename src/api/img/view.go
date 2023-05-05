@@ -18,7 +18,7 @@ import (
 func HistView(context *gin.Context) {
 	html := func(img typ_api.Img, err any) {
 		resp := typ_resp.Resp[typ_api.Img]{
-			Msg:  util_str.TypeToStr(err),
+			Msg:  util_str.ConvTypeToStr(err),
 			Data: img,
 		}
 		common.HtmlOk(context, "img/view.html", resp)
@@ -71,7 +71,7 @@ func HistView(context *gin.Context) {
 func View(context *gin.Context) {
 	html := func(img typ_api.Img, err any) {
 		resp := typ_resp.Resp[typ_api.Img]{
-			Msg:  util_str.TypeToStr(err),
+			Msg:  util_str.ConvTypeToStr(err),
 			Data: img,
 		}
 		common.HtmlOk(context, "img/view.html", resp)

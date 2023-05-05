@@ -26,7 +26,7 @@ func Add(context *gin.Context) {
 
 	// redirect
 	redirect := func(err any) {
-		resp := typ_resp.Resp[any]{Msg: util_str.TypeToStr(err)}
+		resp := typ_resp.Resp[any]{Msg: util_str.ConvTypeToStr(err)}
 		common.Redirect(context, fmt.Sprintf("/note/list?pid=%d", pid), resp)
 	}
 

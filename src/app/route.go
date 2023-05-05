@@ -40,6 +40,7 @@ func route(engine *gin.Engine) {
 	noteGroup.Any("/list", api_note.List) // page
 	noteGroup.POST("", api_note.Add)
 	noteGroup.POST("/upload", api_note.Upload)
+	noteGroup.POST("/reUpload", api_note.ReUpload)
 	noteGroup.PUT("/name", api_note.UpdName)
 	noteGroup.GET("/:id", api_note.Get)
 	noteGroup.Any("/:id/view", api_note.View) // page

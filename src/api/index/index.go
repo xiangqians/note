@@ -15,7 +15,7 @@ import (
 func Index(context *gin.Context) {
 	html := func(noteStats, imgStats []typ_api.Stat, err error) {
 		resp := typ_resp.Resp[map[string][]typ_api.Stat]{
-			Msg: util_str.TypeToStr(err),
+			Msg: util_str.ConvTypeToStr(err),
 			Data: map[string][]typ_api.Stat{
 				"noteStats": noteStats,
 				"imgStats":  imgStats,

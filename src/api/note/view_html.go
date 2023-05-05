@@ -21,7 +21,7 @@ func ViewHtml(context *gin.Context, note typ_api.Note) {
 
 	// resp
 	resp := typ_resp.Resp[typ_api.Note]{
-		Msg:  util_str.TypeToStr(err),
+		Msg:  util_str.ConvTypeToStr(err),
 		Data: note,
 	}
 

@@ -29,7 +29,7 @@ func Upd(context *gin.Context) {
 	// 更新异常时，重定向到设置页
 	redirect := func(user typ_api.User, err any) {
 		resp := typ_resp.Resp[typ_api.User]{
-			Msg:  util_str.TypeToStr(err),
+			Msg:  util_str.ConvTypeToStr(err),
 			Data: user,
 		}
 		common.Redirect(context, "/user/settings", resp)
@@ -99,7 +99,7 @@ func Settings(context *gin.Context) {
 	resp, err := common.GetSessionV[typ_resp.Resp[typ_api.User]](context, common.RespSessionKey, true)
 	if err != nil {
 		user, err := common.GetSessionUser(context)
-		resp.Msg = util_str.TypeToStr(err)
+		resp.Msg = util_str.ConvTypeToStr(err)
 		resp.Data = user
 	}
 
@@ -123,7 +123,7 @@ func Login0(context *gin.Context) {
 	// redirect
 	redirect := func(err any) {
 		resp := typ_resp.Resp[typ_api.User]{
-			Msg:  util_str.TypeToStr(err),
+			Msg:  util_str.ConvTypeToStr(err),
 			Data: typ_api.User{Name: name},
 		}
 		common.Redirect(context, "/user/login", resp)
@@ -176,7 +176,7 @@ func Add(context *gin.Context) {
 	// 注册异常时，重定向到注册页
 	redirect := func(user typ_api.User, err any) {
 		resp := typ_resp.Resp[typ_api.User]{
-			Msg:  util_str.TypeToStr(err),
+			Msg:  util_str.ConvTypeToStr(err),
 			Data: user,
 		}
 		common.Redirect(context, "/user/reg", resp)

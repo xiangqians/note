@@ -52,7 +52,7 @@ func Sort(notes *[]typ_api.Note) {
 
 func RedirectToList(context *gin.Context, pid int64, err any) {
 	resp := typ_resp.Resp[any]{
-		Msg: util_str.TypeToStr(err),
+		Msg: util_str.ConvTypeToStr(err),
 	}
 
 	// 记录查询参数

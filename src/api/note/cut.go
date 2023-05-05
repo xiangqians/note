@@ -18,7 +18,7 @@ import (
 func Cut(context *gin.Context) {
 	redirect := func(id int64, err any) {
 		resp := typ_resp.Resp[any]{
-			Msg: util_str.TypeToStr(err),
+			Msg: util_str.ConvTypeToStr(err),
 		}
 		common.Redirect(context, fmt.Sprintf("/note/list?pid=%d", id), resp)
 	}

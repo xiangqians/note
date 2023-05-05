@@ -21,7 +21,7 @@ import (
 // ReUpload 重新上传图片
 func ReUpload(context *gin.Context) {
 	redirect := func(id int64, err any) {
-		resp := typ_resp.Resp[any]{Msg: util_str.TypeToStr(err)}
+		resp := typ_resp.Resp[any]{Msg: util_str.ConvTypeToStr(err)}
 		common.Redirect(context, fmt.Sprintf("/img/%d/view", id), resp)
 	}
 
@@ -198,7 +198,7 @@ func ReUpload(context *gin.Context) {
 // Upload 上传图片
 func Upload(context *gin.Context) {
 	redirect := func(err any) {
-		resp := typ_resp.Resp[any]{Msg: util_str.TypeToStr(err)}
+		resp := typ_resp.Resp[any]{Msg: util_str.ConvTypeToStr(err)}
 		common.Redirect(context, fmt.Sprintf("/img/list"), resp)
 	}
 

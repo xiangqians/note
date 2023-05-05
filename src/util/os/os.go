@@ -9,55 +9,19 @@ import (
 	"fmt"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"io"
-	typ_os "note/src/typ/os"
 	"os"
 	"os/exec"
 	"runtime"
 )
 
-var fileSeparator string
-var osTyp typ_os.OS
+// OS 操作系统标识
+type OS int8
 
-func init() {
-	// init os type
-	switch runtime.GOOS {
-	// windows
-	case "windows":
-		osTyp = typ_os.Windows
-
-	// linux
-	case "linux":
-		fallthrough // 执行穿透
-	case "android":
-		osTyp = typ_os.Linux
-
-	// unknown
-	default:
-		osTyp = typ_os.Unk
-	}
-
-	// init file separator
-	switch osTyp {
-	case typ_os.Windows:
-		fileSeparator = "\\"
-
-	case typ_os.Linux:
-		fileSeparator = "/"
-
-	default:
-		fileSeparator = "/"
-	}
-}
-
-// FileSeparator 文件分隔符
-func FileSeparator() string {
-	return fileSeparator
-}
-
-// OS 获取操作系统标识
-func OS() typ_os.OS {
-	return osTyp
-}
+const (
+	Windows OS = iota // Windows
+	Linux             // Linux
+	Unknown           // Unknown
+)
 
 // NotSupportedError 不支持当前系统错误
 func NotSupportedError() error {
@@ -66,11 +30,11 @@ func NotSupportedError() error {
 
 // Cmd 执行命令
 func Cmd(cmd string) (*exec.Cmd, error) {
-	switch OS() {
-	case typ_os.Windows:
+	switch GetOS() {
+	case Windows:
 		return exec.Command("cmd", "/C", cmd), nil
 
-	case typ_os.Linux:
+	case Linux:
 		return exec.Command("bash", "-c", cmd), nil
 
 	default:
@@ -80,11 +44,11 @@ func Cmd(cmd string) (*exec.Cmd, error) {
 
 // Cd 执行cd命令
 func Cd(path string) (*exec.Cmd, error) {
-	switch OS() {
-	case typ_os.Windows:
+	switch GetOS() {
+	case Windows:
 		return Cmd(fmt.Sprintf("cd /d %s", path))
 
-	case typ_os.Linux:
+	case Linux:
 		return Cmd(fmt.Sprintf("cd %s", path))
 
 	default:
@@ -118,11 +82,11 @@ func MkDir(path string) error {
 
 // CopyDir 拷贝目录
 func CopyDir(srcDir, dstDir string) (*exec.Cmd, error) {
-	switch OS() {
-	case typ_os.Windows:
+	switch GetOS() {
+	case Windows:
 		return Cmd(fmt.Sprintf("xcopy %s %s /s /e /h /i /y", srcDir, dstDir))
 
-	case typ_os.Linux:
+	case Linux:
 		return Cmd(fmt.Sprintf("cp -r %s %s", srcDir, dstDir))
 
 	default:
@@ -135,10 +99,10 @@ func DecodeBuf(buf []byte) string {
 		return ""
 	}
 
-	switch OS() {
+	switch GetOS() {
 	// 解决windows乱码问题
 	// GB18030编码
-	case typ_os.Windows:
+	case Windows:
 		var decodeBytes, _ = simplifiedchinese.GB18030.NewDecoder().Bytes(buf)
 		return string(decodeBytes)
 
@@ -249,4 +213,37 @@ func HumanizFileSize(size int64) string {
 
 	// B
 	return fmt.Sprintf("%v B", size)
+}
+
+// FileSeparator 文件分隔符
+func FileSeparator() string {
+	switch GetOS() {
+	case Windows:
+		return "\\"
+
+	case Linux:
+		return "/"
+
+	default:
+		return "/"
+	}
+}
+
+// GetOS 获取操作系统标识
+func GetOS() OS {
+	switch runtime.GOOS {
+	// windows
+	case "windows":
+		return Windows
+
+	// linux
+	case "linux":
+		fallthrough // 执行穿透
+	case "android":
+		return Linux
+
+	// unknown
+	default:
+		return Unknown
+	}
 }

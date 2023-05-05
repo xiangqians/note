@@ -17,10 +17,11 @@ import (
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
 	"os"
+	"strings"
 )
 
-// Upload 上传文件
-func Upload(context *gin.Context) {
+// ReUpload 重新上传文件
+func ReUpload(context *gin.Context) {
 	// method
 	method := context.Request.Method
 
@@ -29,7 +30,7 @@ func Upload(context *gin.Context) {
 	// redirect
 	redirect := func(id int64, pid int64, err any) {
 		resp := typ_resp.Resp[any]{
-			Msg: util_str.TypeToStr(err),
+			Msg: util_str.ConvTypeToStr(err),
 		}
 		switch method {
 		case http.MethodPost:
@@ -238,4 +239,96 @@ func Upload(context *gin.Context) {
 	// redirect
 	redirect(id, pid, err)
 	return
+}
+
+// Upload 上传文件
+func Upload(context *gin.Context) {
+	redirect := func(pid int64, err any) {
+		resp := typ_resp.Resp[any]{
+			Msg: util_str.ConvTypeToStr(err),
+		}
+		common.Redirect(context, fmt.Sprintf("/note/list?pid=%d", pid), resp)
+	}
+
+	// 上传文件，需要pid
+	pid, err := common.PostForm[int64](context, "pid")
+	if err != nil || pid < 0 {
+		redirect(pid, err)
+		return
+	}
+
+	// file header
+	fh, err := context.FormFile("file")
+	if err != nil || fh == nil {
+		redirect(pid, err)
+		return
+	}
+
+	// file name
+	name := strings.TrimSpace(fh.Filename)
+	err = common.VerifyName(name)
+	if err != nil {
+		redirect(pid, err)
+		return
+	}
+
+	// file type
+	// 校验文件类型，只支持上传 html/pdf/zip
+	contentType := fh.Header.Get("Content-Type")
+	ft := typ_ft.ContentTypeOf(contentType)
+	if ft == typ_ft.FtUnk || !(ft == typ_ft.FtHtml || ft == typ_ft.FtPdf || ft == typ_ft.FtZip) {
+		redirect(pid, fmt.Sprintf("%s, %s", i18n.MustGetMessage("i18n.fileTypeUnsupported"), contentType))
+		return
+	}
+	typ := string(ft)
+
+	// file size
+	size := fh.Size
+
+	// 校验 pid 是否存在
+	if pid != 0 {
+		note, count, err := DbQryNew(context, pid, 0, 0)
+		if err != nil || count == 0 || typ_ft.ExtNameOf(note.Type) != typ_ft.FtD { // 父节点必须是目录
+			redirect(pid, err)
+			return
+		}
+	}
+
+	// 查询是否有永久删除的笔记记录id，以复用
+	id, count, err := DbQryPermlyDelId(context)
+	// 新id
+	if err != nil || count == 0 {
+		id, err = common.DbAdd(context, "INSERT INTO `note` (`pid`, `name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?, ?)", pid, name, typ, size, util_time.NowUnix())
+	} else
+	// 复用id
+	{
+		_, err = common.DbUpd(context, "UPDATE `note` SET `pid` = ?, `name` = ?, `type` = ?, `size` = ?, `hist` = '', `hist_size` = 0, `del` = 0, `add_time` = ?, `upd_time` = 0 WHERE `id` = ?",
+			pid, name, typ, size, util_time.NowUnix(), id)
+	}
+	if err != nil {
+		redirect(pid, err)
+		return
+	}
+
+	// path
+	note := typ_api.Note{}
+	note.Id = id
+	note.Type = typ
+	path, err := Path(context, note)
+	if err != nil {
+		redirect(pid, err)
+		return
+	}
+
+	// 保存文件
+	err = context.SaveUploadedFile(fh, path)
+
+	// redirect
+	redirect(pid, err)
+}
+
+// DbQryPermlyDelId 查询永久删除的笔记记录id，以复用
+func DbQryPermlyDelId(context *gin.Context) (int64, int64, error) {
+	id, count, err := common.DbQry[int64](context, "SELECT `id` FROM `note` WHERE `del` = 2 LIMIT 1")
+	return id, count, err
 }

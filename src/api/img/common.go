@@ -48,7 +48,7 @@ func Sort(imgs *[]typ_api.Img) {
 
 func RedirectToList(context *gin.Context, err any) {
 	resp := typ_resp.Resp[any]{
-		Msg: util_str.TypeToStr(err),
+		Msg: util_str.ConvTypeToStr(err),
 	}
 
 	// 记录查询参数

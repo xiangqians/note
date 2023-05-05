@@ -44,7 +44,7 @@ func List(context *gin.Context) {
 
 	// resp
 	resp := typ_resp.Resp[map[string]any]{
-		Msg: util_str.TypeToStr(err),
+		Msg: util_str.ConvTypeToStr(err),
 		Data: map[string]any{
 			"img":   img,   // img query
 			"types": types, // types

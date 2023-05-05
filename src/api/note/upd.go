@@ -20,7 +20,7 @@ import (
 func UpdContent(context *gin.Context) {
 	json := func(err error) {
 		if err != nil {
-			common.JsonBadRequest(context, typ_resp.Resp[any]{Msg: util_str.TypeToStr(err)})
+			common.JsonBadRequest(context, typ_resp.Resp[any]{Msg: util_str.ConvTypeToStr(err)})
 			return
 		}
 

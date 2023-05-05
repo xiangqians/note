@@ -48,6 +48,11 @@ func HumanizUnix(unix int64) string {
 	return format("i18n.xSecondsAgo", second)
 }
 
+// ParseUnix 解析日期时间戳（s）
+func ParseUnix(unix int64) time.Time {
+	return time.Unix(unix, 0)
+}
+
 // FormatUnix 格式化日期时间戳（s）
 func FormatUnix(unix int64) string {
 	if unix <= 0 {
@@ -57,19 +62,14 @@ func FormatUnix(unix int64) string {
 	return FormatTime(ParseUnix(unix))
 }
 
-// ParseUnix 解析日期时间戳（s）
-func ParseUnix(unix int64) time.Time {
-	return time.Unix(unix, 0)
+// FormatTime 格式化时间
+func FormatTime(time time.Time) string {
+	return time.Format("2006/01/02 15:04:05")
 }
 
 // NowUnix 当前日期时间戳（s）
 func NowUnix() int64 {
 	return Now().Unix()
-}
-
-// FormatTime 格式化时间
-func FormatTime(time time.Time) string {
-	return time.Format("2006/01/02 15:04:05")
 }
 
 // Now 当前时间

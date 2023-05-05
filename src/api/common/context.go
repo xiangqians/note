@@ -75,17 +75,17 @@ func Redirect[T any](context *gin.Context, location string, resp typ_resp.Resp[T
 
 func PostForm[T any](context *gin.Context, key string) (T, error) {
 	value := context.PostForm(key)
-	return util_str.StrToType[T](value)
+	return util_str.ConvStrToType[T](value)
 }
 
 func Param[T any](context *gin.Context, key string) (T, error) {
 	value := context.Param(key)
-	return util_str.StrToType[T](value)
+	return util_str.ConvStrToType[T](value)
 }
 
 func Query[T any](context *gin.Context, key string) (T, error) {
 	value := context.Query(key)
-	return util_str.StrToType[T](value)
+	return util_str.ConvStrToType[T](value)
 }
 
 func PageReq(context *gin.Context) (typ_page.Req, error) {

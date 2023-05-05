@@ -63,7 +63,7 @@ func View(context *gin.Context) {
 // ViewUnsupported 不支持查看
 func ViewUnsupported(context *gin.Context, note typ_api.Note, err any) {
 	resp := typ_resp.Resp[typ_api.Note]{
-		Msg:  util_str.TypeToStr(err),
+		Msg:  util_str.ConvTypeToStr(err),
 		Data: note,
 	}
 	common.HtmlOk(context, "note/unsupported/view.html", resp)
