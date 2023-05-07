@@ -5,10 +5,11 @@ package test
 
 import (
 	"fmt"
+	util_validate "note/src/util/validate"
 	"testing"
 )
 
-func TestVerifyDirName(t *testing.T) {
+func TestValidateName(t *testing.T) {
 
 	// \ / : * ? " < > |
 
@@ -27,10 +28,9 @@ func TestVerifyDirName(t *testing.T) {
 		"world",
 	}
 
-	for _, name := range names {
-		//err := os.VerifyName(name)
-		//fmt.Println(name, err)
-		fmt.Println(name)
+	for i, name := range names {
+		err := util_validate.FileName(name)
+		fmt.Println(i, name, err)
 	}
 
 }

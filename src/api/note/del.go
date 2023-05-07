@@ -7,8 +7,7 @@ import (
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
-	typ_api "note/src/typ"
-	typ_ft "note/src/typ/ft"
+	"note/src/typ"
 	util_time "note/src/util/time"
 )
 
@@ -26,7 +25,7 @@ func Restore(context *gin.Context) {
 	}
 
 	// note
-	note, count, err := DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: id, Del: 1}, Pid: -1})
+	note, count, err := DbQry(context, typ.Note{Abs: typ.Abs{Id: id, Del: 1}, Pid: -1})
 	pid := note.Pid
 	if err != nil || count == 0 {
 		redirect(pid, err)
@@ -53,7 +52,7 @@ func Del(context *gin.Context) {
 	}
 
 	// note
-	note, count, err := DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: id}, Pid: -1})
+	note, count, err := DbQry(context, typ.Note{Abs: typ.Abs{Id: id}, Pid: -1})
 	pid := note.Pid
 	if err != nil || count == 0 {
 		redirect(pid, err)
@@ -61,7 +60,7 @@ func Del(context *gin.Context) {
 	}
 
 	// 如果是目录则校验目录下是否有子文件
-	if typ_ft.ExtNameOf(note.Type) == typ_ft.FtD {
+	if typ.ExtNameOf(note.Type) == typ.FtD {
 		var count int64
 		count, err = DbCount(context, id)
 		if err != nil {

@@ -7,4 +7,4 @@ import (
 	typ_app "note/src/typ"
 )
 
-var AppArg typ_app.Arg
+var AppArg typ_app.AppArg

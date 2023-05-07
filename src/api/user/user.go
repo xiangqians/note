@@ -13,13 +13,12 @@ import (
 	"io"
 	"log"
 	"note/src/api/common"
-	"note/src/db"
 	"note/src/typ"
 	util_os "note/src/util/os"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
+	util_validate "note/src/util/validate"
 	"os"
-	"regexp"
 	"strings"
 )
 
@@ -43,14 +42,14 @@ func Upd(context *gin.Context) {
 	}
 
 	// name
-	err = VerifyName(user.Name)
+	err = util_validate.UserName(user.Name)
 	if err != nil {
 		redirect(user, err)
 		return
 	}
 
 	// passwd
-	err = VerifyPasswd(user.Passwd)
+	err = util_validate.Passwd(user.Passwd)
 	if err != nil {
 		redirect(user, err)
 		return
@@ -129,7 +128,7 @@ func Login0(context *gin.Context) {
 	}
 
 	// verify name
-	err := VerifyName(name)
+	err := util_validate.UserName(name)
 	if err != nil {
 		redirect(err)
 		return
@@ -137,7 +136,7 @@ func Login0(context *gin.Context) {
 
 	// passwd
 	passwd := strings.TrimSpace(context.PostForm("passwd"))
-	err = VerifyPasswd(passwd)
+	err = util_validate.Passwd(passwd)
 	if err != nil {
 		redirect(err)
 		return
@@ -196,14 +195,14 @@ func Add(context *gin.Context) {
 	}
 
 	// name
-	err = VerifyName(user.Name)
+	err = util_validate.UserName(user.Name)
 	if err != nil {
 		redirect(user, err)
 		return
 	}
 
 	// passwd
-	err = VerifyPasswd(user.Passwd)
+	err = util_validate.Passwd(user.Passwd)
 	if err != nil {
 		redirect(user, err)
 		return
@@ -218,14 +217,12 @@ func Add(context *gin.Context) {
 
 	// db
 	// get
-	_db := db.Get(common.Dsn(nil))
-	defer _db.Close()
-	// open
-	err = _db.Open()
+	_db, err := common.Db(context)
 	if err != nil {
 		redirect(user, err)
 		return
 	}
+	defer _db.Close()
 	// begin
 	err = _db.Begin()
 	if err != nil {
@@ -267,7 +264,7 @@ func Add(context *gin.Context) {
 	}
 	defer dst.Close()
 	// copy
-	err = util_os.CopyIo(dst, src, 0)
+	_, err = util_os.CopyIo(dst, src, 0)
 	if err != nil {
 		_db.Rollback()
 		redirect(user, err)
@@ -323,30 +320,4 @@ func EncryptPasswd(passwd string) string {
 	}
 
 	return hex.EncodeToString(d.Sum(nil))
-}
-
-// VerifyName 校验用户名
-// 1-16位长度（字母，数字，下划线，减号）
-func VerifyName(username string) error {
-	if username == "" {
-		return errors.New(fmt.Sprintf(i18n.MustGetMessage("i18n.xCannotEmpty"), i18n.MustGetMessage("i18n.userName")))
-	}
-
-	matched, err := regexp.MatchString("^[a-zA-Z0-9_-]{1,16}$", username)
-	if err == nil && matched {
-		return nil
-	}
-
-	return errors.New(fmt.Sprintf(i18n.MustGetMessage("i18n.xMastNBitsLong"), i18n.MustGetMessage("i18n.userName")))
-}
-
-// VerifyPasswd 校验密码
-// 1-16位长度（字母，数字，特殊字符）
-func VerifyPasswd(passwd string) error {
-	matched, err := regexp.MatchString("^[a-zA-Z0-9!@#$%^&*()-_=+]{1,16}$", passwd)
-	if err == nil && matched {
-		return nil
-	}
-
-	return errors.New(fmt.Sprintf(i18n.MustGetMessage("i18n.xMastNBitsLong"), i18n.MustGetMessage("i18n.passwd")))
 }

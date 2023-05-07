@@ -8,8 +8,6 @@ import (
 	"log"
 	"note/src/api/common"
 	"note/src/typ"
-	typ_api "note/src/typ/api"
-	typ_ft "note/src/typ/ft"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
 )
@@ -24,7 +22,7 @@ func View(context *gin.Context) {
 	}
 
 	// query
-	note, count, err := DbQryNew(context, id, 1, typ_api.NotDeleted)
+	note, count, err := DbQryNew(context, id, 1, 0)
 	if err != nil || count == 0 {
 		ViewUnsupported(context, note, err)
 		return
@@ -41,17 +39,17 @@ func View(context *gin.Context) {
 	}
 
 	// type
-	switch typ_ft.ExtNameOf(note.Type) {
+	switch typ.ExtNameOf(note.Type) {
 	// markdown
-	case typ_ft.FtMd:
+	case typ.FtMd:
 		ViewMd(context, note)
 
 	// html
-	case typ_ft.FtHtml:
+	case typ.FtHtml:
 		ViewHtml(context, note)
 
 	// pdf
-	case typ_ft.FtPdf:
+	case typ.FtPdf:
 		ViewPdf(context, note)
 
 	// default
@@ -85,7 +83,7 @@ func Get(context *gin.Context) {
 	}
 
 	// 排除目录
-	if typ_ft.FtD == typ_ft.ExtNameOf(note.Type) {
+	if typ.FtD == typ.ExtNameOf(note.Type) {
 		return
 	}
 

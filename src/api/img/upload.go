@@ -9,10 +9,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
 	"note/src/typ"
-	typ_ft "note/src/typ/ft"
 	util_os "note/src/util/os"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
+	util_validate "note/src/util/validate"
 	"os"
 	"strings"
 )
@@ -40,7 +40,7 @@ func ReUpload(context *gin.Context) {
 
 	// file name
 	name := strings.TrimSpace(fh.Filename)
-	err = common.VerifyName(name)
+	err = util_validate.FileName(name)
 	if err != nil {
 		redirect(id, err)
 		return
@@ -48,12 +48,12 @@ func ReUpload(context *gin.Context) {
 
 	// file type
 	contentType := fh.Header.Get("Content-Type")
-	ft := typ_ft.ContentTypeOf(contentType)
-	if !typ_ft.IsImg(ft) {
+	ft := typ.ContentTypeOf(contentType)
+	if !typ.IsImg(ft) {
 		redirect(id, fmt.Sprintf("%s, %s", i18n.MustGetMessage("i18n.fileTypeUnsupported"), contentType))
 		return
 	}
-	typ := string(ft)
+	_type := string(ft)
 
 	// file size
 	size := fh.Size
@@ -106,7 +106,7 @@ func ReUpload(context *gin.Context) {
 		return
 	}
 	// copy
-	err = util_os.CopyFile(dstPath, srcPath)
+	_, err = util_os.CopyFile(dstPath, srcPath)
 	if err != nil {
 		redirect(id, err)
 		return
@@ -145,7 +145,7 @@ func ReUpload(context *gin.Context) {
 			UpdTime: util_time.NowUnix(),
 		},
 		Name:     name,
-		Type:     typ,
+		Type:     _type,
 		Size:     size,
 		Hist:     hist,
 		HistSize: histSize,
@@ -210,7 +210,7 @@ func Upload(context *gin.Context) {
 
 	// file name
 	name := strings.TrimSpace(fh.Filename)
-	err = common.VerifyName(name)
+	err = util_validate.FileName(name)
 	if err != nil {
 		redirect(err)
 		return
@@ -218,12 +218,12 @@ func Upload(context *gin.Context) {
 
 	// file type
 	contentType := fh.Header.Get("Content-Type")
-	ft := typ_ft.ContentTypeOf(contentType)
-	if !typ_ft.IsImg(ft) {
+	ft := typ.ContentTypeOf(contentType)
+	if !typ.IsImg(ft) {
 		redirect(fmt.Sprintf("%s, %s", i18n.MustGetMessage("i18n.fileTypeUnsupported"), contentType))
 		return
 	}
-	typ := string(ft)
+	_type := string(ft)
 
 	// file size
 	size := fh.Size
@@ -232,11 +232,11 @@ func Upload(context *gin.Context) {
 	id, count, err := DbQryPermlyDelId(context)
 	// 新id
 	if err != nil || count == 0 {
-		id, err = common.DbAdd(context, "INSERT INTO `img` (`name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?)", name, typ, size, util_time.NowUnix())
+		id, err = common.DbAdd(context, "INSERT INTO `img` (`name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?)", name, _type, size, util_time.NowUnix())
 	} else
 	// 复用id
 	{
-		_, err = common.DbUpd(context, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `hist` = '', `hist_size` = 0, `del` = 0, `add_time` = ?, `upd_time` = 0 WHERE `id` = ?", name, typ, size, util_time.NowUnix(), id)
+		_, err = common.DbUpd(context, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `hist` = '', `hist_size` = 0, `del` = 0, `add_time` = ?, `upd_time` = 0 WHERE `id` = ?", name, _type, size, util_time.NowUnix(), id)
 	}
 	if err != nil {
 		redirect(err)
@@ -246,7 +246,7 @@ func Upload(context *gin.Context) {
 	// path
 	img := typ.Img{}
 	img.Id = id
-	img.Type = typ
+	img.Type = _type
 	path, err := Path(context, img)
 	if err != nil {
 		redirect(err)

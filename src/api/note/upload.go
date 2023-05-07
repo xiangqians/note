@@ -10,11 +10,11 @@ import (
 	"net/http"
 	"note/src/api/common"
 	"note/src/typ"
-	typ_ft "note/src/typ/ft"
 	util_json "note/src/util/json"
 	util_os "note/src/util/os"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
+	util_validate "note/src/util/validate"
 	"os"
 	"strings"
 )
@@ -72,7 +72,7 @@ func ReUpload(context *gin.Context) {
 
 	// file name
 	fn := fh.Filename
-	err = common.VerifyName(fn)
+	err = util_validate.FileName(fn)
 	if err != nil {
 		redirect(id, pid, err)
 		return
@@ -81,8 +81,8 @@ func ReUpload(context *gin.Context) {
 	// file type
 	// 校验文件类型，只支持上传 html/pdf/zip
 	contentType := fh.Header.Get("Content-Type")
-	ft := typ_ft.ContentTypeOf(contentType)
-	if ft == typ_ft.FtUnk || !(ft == typ_ft.FtHtml || ft == typ_ft.FtPdf || ft == typ_ft.FtZip) {
+	ft := typ.ContentTypeOf(contentType)
+	if ft == typ.FtUnk || !(ft == typ.FtHtml || ft == typ.FtPdf || ft == typ.FtZip) {
 		redirect(id, pid, fmt.Sprintf("%s: %s", i18n.MustGetMessage("i18n.fileTypeUnsupported"), contentType))
 		return
 	}
@@ -102,7 +102,7 @@ func ReUpload(context *gin.Context) {
 			var note typ.Note
 			var count int64
 			note, count, err = DbQry(context, typ.Note{Abs: typ.Abs{Id: pid}, Pid: -1})
-			if err != nil || count == 0 || typ_ft.ExtNameOf(note.Type) != typ_ft.FtD { // 父节点必须是目录
+			if err != nil || count == 0 || typ.ExtNameOf(note.Type) != typ.FtD { // 父节点必须是目录
 				redirect(id, pid, err)
 				return
 			}
@@ -117,7 +117,7 @@ func ReUpload(context *gin.Context) {
 		// 校验 id 是否存在
 		var count int64
 		oldNote, count, err = DbQry(context, typ.Note{Abs: typ.Abs{Id: id}, Pid: -1})
-		if err != nil || count == 0 || typ_ft.ExtNameOf(oldNote.Type) == typ_ft.FtD { // 上传文件不能是目录类型
+		if err != nil || count == 0 || typ.ExtNameOf(oldNote.Type) == typ.FtD { // 上传文件不能是目录类型
 			redirect(id, pid, err)
 			return
 		}
@@ -162,7 +162,7 @@ func ReUpload(context *gin.Context) {
 			return
 		}
 		// copy
-		err = util_os.CopyFile(dstPath, srcPath)
+		_, err = util_os.CopyFile(dstPath, srcPath)
 		if err != nil {
 			redirect(id, pid, err)
 			return
@@ -265,7 +265,7 @@ func Upload(context *gin.Context) {
 
 	// file name
 	name := strings.TrimSpace(fh.Filename)
-	err = common.VerifyName(name)
+	err = util_validate.FileName(name)
 	if err != nil {
 		redirect(pid, err)
 		return
@@ -274,12 +274,12 @@ func Upload(context *gin.Context) {
 	// file type
 	// 校验文件类型，只支持上传 html/pdf/zip
 	contentType := fh.Header.Get("Content-Type")
-	ft := typ_ft.ContentTypeOf(contentType)
-	if ft == typ_ft.FtUnk || !(ft == typ_ft.FtHtml || ft == typ_ft.FtPdf || ft == typ_ft.FtZip) {
+	ft := typ.ContentTypeOf(contentType)
+	if ft == typ.FtUnk || !(ft == typ.FtHtml || ft == typ.FtPdf || ft == typ.FtZip) {
 		redirect(pid, fmt.Sprintf("%s, %s", i18n.MustGetMessage("i18n.fileTypeUnsupported"), contentType))
 		return
 	}
-	typ := string(ft)
+	_type := string(ft)
 
 	// file size
 	size := fh.Size
@@ -287,7 +287,7 @@ func Upload(context *gin.Context) {
 	// 校验 pid 是否存在
 	if pid != 0 {
 		note, count, err := DbQryNew(context, pid, 0, 0)
-		if err != nil || count == 0 || typ_ft.ExtNameOf(note.Type) != typ_ft.FtD { // 父节点必须是目录
+		if err != nil || count == 0 || typ.ExtNameOf(note.Type) != typ.FtD { // 父节点必须是目录
 			redirect(pid, err)
 			return
 		}
@@ -297,12 +297,12 @@ func Upload(context *gin.Context) {
 	id, count, err := DbQryPermlyDelId(context)
 	// 新id
 	if err != nil || count == 0 {
-		id, err = common.DbAdd(context, "INSERT INTO `note` (`pid`, `name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?, ?)", pid, name, typ, size, util_time.NowUnix())
+		id, err = common.DbAdd(context, "INSERT INTO `note` (`pid`, `name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?, ?)", pid, name, _type, size, util_time.NowUnix())
 	} else
 	// 复用id
 	{
 		_, err = common.DbUpd(context, "UPDATE `note` SET `pid` = ?, `name` = ?, `type` = ?, `size` = ?, `hist` = '', `hist_size` = 0, `del` = 0, `add_time` = ?, `upd_time` = 0 WHERE `id` = ?",
-			pid, name, typ, size, util_time.NowUnix(), id)
+			pid, name, _type, size, util_time.NowUnix(), id)
 	}
 	if err != nil {
 		redirect(pid, err)
@@ -312,7 +312,7 @@ func Upload(context *gin.Context) {
 	// path
 	note := typ.Note{}
 	note.Id = id
-	note.Type = typ
+	note.Type = _type
 	path, err := Path(context, note)
 	if err != nil {
 		redirect(pid, err)

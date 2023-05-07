@@ -9,9 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
 	"note/src/typ"
-	typ_ft "note/src/typ/ft"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
+	util_validate "note/src/util/validate"
 	"os"
 	"strings"
 )
@@ -37,7 +37,7 @@ func Add(context *gin.Context) {
 
 	// name
 	note.Name = strings.TrimSpace(note.Name)
-	err = common.VerifyName(note.Name)
+	err = util_validate.FileName(note.Name)
 	if err != nil {
 		redirect(err)
 		return
@@ -45,8 +45,8 @@ func Add(context *gin.Context) {
 
 	// 校验文件类型
 	// 只支持添加 目录 和 md文件
-	ft := typ_ft.ExtNameOf(strings.TrimSpace(note.Type))
-	if !(ft == typ_ft.FtD || ft == typ_ft.FtMd) {
+	ft := typ.ExtNameOf(strings.TrimSpace(note.Type))
+	if !(ft == typ.FtD || ft == typ.FtMd) {
 		redirect(fmt.Sprintf("%s: %s", i18n.MustGetMessage("i18n.fileTypeUnsupported"), note.Type))
 		return
 	}
@@ -61,7 +61,7 @@ func Add(context *gin.Context) {
 	note.Id = id
 
 	// 如果不是目录，则创建物理文件
-	if ft != typ_ft.FtD {
+	if ft != typ.FtD {
 		// path
 		var path string
 		path, err = Path(context, note)

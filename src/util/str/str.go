@@ -75,6 +75,10 @@ func ConvStrToType[T any](value string) (T, error) {
 		id, err := strconv.ParseInt(value, 10, 64)
 		return any(int8(any(id).(int64))).(T), err
 
+	case reflect.Uint8:
+		id, err := strconv.ParseInt(value, 10, 64)
+		return any(uint8(any(id).(int64))).(T), err
+
 	case reflect.Int64:
 		id, err := strconv.ParseInt(value, 10, 64)
 		return any(id).(T), err

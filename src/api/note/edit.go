@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
 	"note/src/typ"
-	typ_ft "note/src/typ/ft"
 	util_str "note/src/util/str"
 )
 
@@ -28,9 +27,9 @@ func Edit(context *gin.Context) {
 	}
 
 	// type
-	switch typ_ft.ExtNameOf(f.Type) {
+	switch typ.ExtNameOf(f.Type) {
 	// markdown
-	case typ_ft.FtMd:
+	case typ.FtMd:
 		FileMdEditPage(context, f)
 
 	// default

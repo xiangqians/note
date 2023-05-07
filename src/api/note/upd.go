@@ -8,9 +8,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
 	"note/src/typ"
-	typ_ft "note/src/typ/ft"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
+	util_validate "note/src/util/validate"
 	"os"
 	"strings"
 )
@@ -36,7 +36,7 @@ func UpdContent(context *gin.Context) {
 
 	// f
 	f, count, err := DbQry(context, typ.Note{Abs: typ.Abs{Id: id}, Pid: -1})
-	if count == 0 || typ_ft.ExtNameOf(f.Type) != typ_ft.FtMd {
+	if count == 0 || typ.ExtNameOf(f.Type) != typ.FtMd {
 		json(nil)
 		return
 	}
@@ -106,7 +106,7 @@ func UpdName(context *gin.Context) {
 
 	// name
 	note.Name = strings.TrimSpace(note.Name)
-	err = common.VerifyName(note.Name)
+	err = util_validate.FileName(note.Name)
 	if err != nil {
 		redirect(pid, err)
 		return

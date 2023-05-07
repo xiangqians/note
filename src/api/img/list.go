@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
 	"note/src/typ"
-	typ_ft "note/src/typ/ft"
 	util_str "note/src/util/str"
 	"strings"
 )
@@ -22,8 +21,8 @@ func List(context *gin.Context) {
 	img.Name = strings.TrimSpace(img.Name)
 
 	// type
-	ft := typ_ft.ExtNameOf(strings.TrimSpace(img.Type))
-	if typ_ft.IsImg(ft) {
+	ft := typ.ExtNameOf(strings.TrimSpace(img.Type))
+	if typ.IsImg(ft) {
 		img.Type = string(ft)
 	} else {
 		img.Type = ""
@@ -59,7 +58,15 @@ func List(context *gin.Context) {
 
 // DbPage 分页查询图片
 func DbPage(context *gin.Context, img typ.Img) (typ.Page[typ.Img], error) {
-	req, _ := common.PageReq(context)
+	current, _ := common.Param[int64](context, "current")
+	if current <= 0 {
+		current = 1
+	}
+
+	size, _ := common.Param[uint8](context, "size")
+	if size <= 0 {
+		size = 10
+	}
 
 	args := make([]any, 0, 1)
 	sql := "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`del`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = ? "
@@ -85,7 +92,7 @@ func DbPage(context *gin.Context, img typ.Img) (typ.Page[typ.Img], error) {
 
 	sql += "ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC"
 
-	return common.DbPage[typ.Img](context, req, sql, args...)
+	return common.DbPage[typ.Img](context, current, size, sql, args...)
 }
 
 // DbTypes 获取图片类型集合

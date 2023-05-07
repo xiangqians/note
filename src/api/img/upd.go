@@ -8,6 +8,7 @@ import (
 	"note/src/api/common"
 	typ_api "note/src/typ"
 	util_time "note/src/util/time"
+	util_validate "note/src/util/validate"
 	"strings"
 )
 
@@ -34,7 +35,7 @@ func UpdName(context *gin.Context) {
 
 	// name
 	name := strings.TrimSpace(img.Name)
-	err = common.VerifyName(name)
+	err = util_validate.FileName(name)
 	if err != nil {
 		redirect(err)
 		return

@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
 	"note/src/typ"
-	typ_ft "note/src/typ/ft"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
 )
@@ -41,7 +40,7 @@ func Cut(context *gin.Context) {
 		var note typ.Note
 		var count int64
 		note, count, err = DbQry(context, typ.Note{Abs: typ.Abs{Id: dstId}, Pid: -1})
-		if err != nil || count == 0 || typ_ft.FtD != typ_ft.ExtNameOf(note.Type) { // 拷贝到目标类型必须是目录
+		if err != nil || count == 0 || typ.FtD != typ.ExtNameOf(note.Type) { // 拷贝到目标类型必须是目录
 			redirect(dstId, err)
 			return
 		}

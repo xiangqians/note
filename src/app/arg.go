@@ -7,13 +7,13 @@ import (
 	"flag"
 	"log"
 	api_common "note/src/api/common"
-	typ_app "note/src/typ"
+	"note/src/typ"
 	util_os "note/src/util/os"
 	"path/filepath"
 	"strings"
 )
 
-var arg typ_app.Arg
+var appArg typ.AppArg
 
 // 解析应用参数
 func parseArg() {
@@ -41,12 +41,12 @@ func parseArg() {
 	log.Printf("DataDir: %v\n", dataDir)
 	log.Printf("AllowReg: %v\n", allowReg)
 
-	arg = typ_app.Arg{
+	appArg = typ.AppArg{
 		Port:     port,
 		DataDir:  dataDir,
 		AllowReg: allowReg,
 	}
 
 	// 设置api App Arg
-	api_common.AppArg = arg
+	api_common.AppArg = appArg
 }

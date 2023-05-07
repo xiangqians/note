@@ -43,7 +43,7 @@ func Run() {
 	route(engine)
 
 	// addr
-	addr := fmt.Sprintf(":%v", strconv.FormatInt(int64(arg.Port), 10))
+	addr := fmt.Sprintf(":%v", strconv.FormatInt(int64(appArg.Port), 10))
 
 	// run
 	engine.Run(addr)

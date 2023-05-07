@@ -9,7 +9,6 @@ import (
 	"io"
 	"note/src/api/common"
 	"note/src/typ"
-	typ_api "note/src/typ/api"
 	util_json "note/src/util/json"
 	util_os "note/src/util/os"
 	util_str "note/src/util/str"
@@ -111,7 +110,7 @@ func DbQry(context *gin.Context, note typ.Note) (typ.Note, int64, error) {
 // id: 主键id
 // qryPath: 查询路径，0-不查询，1-查询，2-查询并包含自身的
 // del: 删除标识
-func DbQryNew(context *gin.Context, id int64, qryPath int8, del typ_api.Del) (typ.Note, int64, error) {
+func DbQryNew(context *gin.Context, id int64, qryPath int8, del byte) (typ.Note, int64, error) {
 	// sql
 	sql, args := DbQrySql(typ.Note{
 		Abs: typ.Abs{

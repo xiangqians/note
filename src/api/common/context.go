@@ -87,18 +87,6 @@ func Query[T any](context *gin.Context, key string) (T, error) {
 	return util_str.ConvStrToType[T](value)
 }
 
-func PageReq(context *gin.Context) (typ_resp.Req, error) {
-	req := typ_resp.Req{Size: 10}
-	err := ShouldBind(context, &req)
-	if req.Current <= 0 {
-		req.Current = 1
-	}
-	if req.Size <= 0 {
-		req.Size = 10
-	}
-	return req, err
-}
-
 func ShouldBindQuery(context *gin.Context, i any) error {
 	err := context.ShouldBindQuery(i)
 	if err != nil {

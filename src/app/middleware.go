@@ -13,8 +13,7 @@ import (
 	"golang.org/x/text/language"
 	"net/http"
 	api_common "note/src/api/common"
-	typ_resp "note/src/typ"
-	typ_locale "note/src/typ/locale"
+	"note/src/typ"
 	"strings"
 )
 
@@ -47,7 +46,7 @@ func permMiddleware(engine *gin.Engine) {
 			(reqMethod == http.MethodPost && (reqPath == "/user" || reqPath == "/user/login0")) { // 注册接口和登录接口
 			// 如果已登录则重定向到首页
 			if login {
-				api_common.Redirect(context, "/", typ_resp.Resp[any]{})
+				api_common.Redirect(context, "/", typ.Resp[any]{})
 				context.Abort()
 			} else
 			// 如果未登录，放行登录或注册
@@ -63,7 +62,7 @@ func permMiddleware(engine *gin.Engine) {
 			//context.Request.URL.Path = "/user/login"
 			//engine.HandleContext(context)
 			// OR
-			api_common.Redirect(context, "/user/login", typ_resp.Resp[any]{})
+			api_common.Redirect(context, "/user/login", typ.Resp[any]{})
 
 			// 中止调用链
 			context.Abort()
@@ -93,7 +92,7 @@ func i18nMiddleware(engine *gin.Engine) {
 		func(context *gin.Context, defaultLang string) string {
 			// 从url中获取lang
 			lang := strings.ToLower(strings.TrimSpace(context.Query("lang")))
-			if lang != "" && !(lang == typ_locale.Zh || lang == typ_locale.En) {
+			if lang != "" && !(lang == typ.Zh || lang == typ.En) {
 				lang = ""
 			}
 
@@ -111,10 +110,10 @@ func i18nMiddleware(engine *gin.Engine) {
 				// 从请求头获取 Accept-Language
 				acceptLanguage := context.GetHeader("Accept-Language")
 				// en,zh-CN;q=0.9,zh;q=0.8
-				if strings.HasPrefix(acceptLanguage, typ_locale.Zh) {
-					lang = typ_locale.Zh
-				} else if strings.HasPrefix(acceptLanguage, typ_locale.En) {
-					lang = typ_locale.En
+				if strings.HasPrefix(acceptLanguage, typ.Zh) {
+					lang = typ.Zh
+				} else if strings.HasPrefix(acceptLanguage, typ.En) {
+					lang = typ.En
 				}
 			}
 
