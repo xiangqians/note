@@ -3,81 +3,77 @@
 // @date 12:00 2023/05/07
 package db
 
-import "database/sql"
+import _sql "database/sql"
 
-// DbImpl db implement
+type result int8
+
+const (
+	lastInsertId result = iota
+	rowsAffected result = iota
+)
+
+// DbImpl Db implement
 type DbImpl struct {
-	driver string  // driver
-	dsn    string  // Data Source Name
-	db     *sql.DB // db
-	tx     *sql.Tx // tx
-	err    error   // error
+	db *_sql.DB // db
+	tx *_sql.Tx // tx
 }
 
-func (db *DbImpl) Open() error {
-	db.db, db.err = sql.Open(db.driver, db.dsn)
-	return db.err
-}
-
-func (db *DbImpl) Begin() error {
-	if db.err != nil {
-		return db.err
-	}
-
-	db.tx, db.err = db.db.Begin()
-	return db.err
+func (db *DbImpl) Begin() (err error) {
+	db.tx, err = db.db.Begin()
+	return
 }
 
 func (db *DbImpl) Add(sql string, args ...any) (int64, error) {
-	res, err := db.tx.Exec(sql, args...)
-	if err != nil {
-		return 0, err
-	}
-	return res.LastInsertId()
-}
-
-func (db *DbImpl) exec(sql string, args ...any) (int64, error) {
-	if db.err != nil {
-		return 0, db.err
-	}
-
-	res, err := db.tx.Exec(sql, args...)
-	if err != nil {
-		return 0, err
-	}
-
-	return res.RowsAffected()
+	return db.exec(lastInsertId, sql, args...)
 }
 
 func (db *DbImpl) Del(sql string, args ...any) (int64, error) {
-	return db.exec(sql, args...)
+	return db.exec(rowsAffected, sql, args...)
 }
 
 func (db *DbImpl) Upd(sql string, args ...any) (int64, error) {
-	return db.exec(sql, args...)
+	return db.exec(rowsAffected, sql, args...)
 }
 
-func (db *DbImpl) Qry(sql string, args ...any) (*sql.Rows, error) {
+func (db *DbImpl) exec(result result, sql string, args ...any) (int64, error) {
+	res, err := db.tx.Exec(sql, args...)
+	if err != nil {
+		return 0, err
+	}
+
+	switch result {
+	case lastInsertId:
+		return res.LastInsertId()
+
+	case rowsAffected:
+		return res.RowsAffected()
+
+	default:
+		return 0, nil
+	}
+}
+
+func (db *DbImpl) Qry(sql string, args ...any) (*_sql.Rows, error) {
 	return db.tx.Query(sql, args...)
 }
 
-func (db *DbImpl) Commit() error {
-	if db.err == nil && db.tx != nil {
-		db.err = db.tx.Commit()
+func (db *DbImpl) Commit() (err error) {
+	if db.tx != nil {
+		err = db.tx.Commit()
 	}
-	return db.err
+	return
 }
 
-func (db *DbImpl) Rollback() error {
-	if db.err == nil && db.tx != nil {
-		db.err = db.tx.Rollback()
+func (db *DbImpl) Rollback() (err error) {
+	if db.tx != nil {
+		err = db.tx.Rollback()
 	}
-	return db.err
+	return
 }
 
-func (db *DbImpl) Close() error {
+func (db *DbImpl) Close() (err error) {
 	if db.db != nil {
-		db.err = db.db.Close()
+		err = db.db.Close()
 	}
-	return db.err
+	return
 }

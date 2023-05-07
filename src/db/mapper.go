@@ -10,17 +10,22 @@ import (
 	"reflect"
 )
 
+// defer的作用是把defer关键字之后的函数执行压入一个栈中延迟执行，多个defer的执行顺序是后进先出LIFO
+
 // rowsMapper 行映射
 // 支持：
 // 1、基本数据类型映射
 // 2、结构体类型映射
 // 3、基本数据类型/结构体 切片映射
-func rowsMapper[T any](rows *sql.Rows, err error) (T, int64, error) {
+func RowsMapper[T any](rows *sql.Rows) (T, int64, error) {
 	var t T
 
-	if err != nil {
-		return t, 0, err
+	// rows is nil ?
+	if rows == nil {
+		return t, 0, nil
 	}
+
+	// defer close rows
 	defer rows.Close()
 
 	// 获取数据库字段名称集
