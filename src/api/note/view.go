@@ -7,9 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"note/src/api/common"
+	"note/src/typ"
 	typ_api "note/src/typ/api"
 	typ_ft "note/src/typ/ft"
-	typ_resp "note/src/typ/resp"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
 )
@@ -19,7 +19,7 @@ func View(context *gin.Context) {
 	// id
 	id, err := common.Param[int64](context, "id")
 	if err != nil {
-		ViewUnsupported(context, typ_api.Note{}, err)
+		ViewUnsupported(context, typ.Note{}, err)
 		return
 	}
 
@@ -61,8 +61,8 @@ func View(context *gin.Context) {
 }
 
 // ViewUnsupported 不支持查看
-func ViewUnsupported(context *gin.Context, note typ_api.Note, err any) {
-	resp := typ_resp.Resp[typ_api.Note]{
+func ViewUnsupported(context *gin.Context, note typ.Note, err any) {
+	resp := typ.Resp[typ.Note]{
 		Msg:  util_str.ConvTypeToStr(err),
 		Data: note,
 	}
@@ -78,7 +78,7 @@ func Get(context *gin.Context) {
 	}
 
 	// note
-	note, count, err := DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: id}, Pid: -1})
+	note, count, err := DbQry(context, typ.Note{Abs: typ.Abs{Id: id}, Pid: -1})
 	if err != nil || count == 0 {
 		log.Println(err)
 		return

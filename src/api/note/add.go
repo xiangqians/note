@@ -8,9 +8,8 @@ import (
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
-	typ_api "note/src/typ/api"
+	"note/src/typ"
 	typ_ft "note/src/typ/ft"
-	typ_resp "note/src/typ/resp"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
 	"os"
@@ -20,13 +19,13 @@ import (
 // Add 新增文件
 func Add(context *gin.Context) {
 	// note
-	note := typ_api.Note{}
+	note := typ.Note{}
 	err := common.ShouldBind(context, &note)
 	pid := note.Pid
 
 	// redirect
 	redirect := func(err any) {
-		resp := typ_resp.Resp[any]{Msg: util_str.ConvTypeToStr(err)}
+		resp := typ.Resp[any]{Msg: util_str.ConvTypeToStr(err)}
 		common.Redirect(context, fmt.Sprintf("/note/list?pid=%d", pid), resp)
 	}
 

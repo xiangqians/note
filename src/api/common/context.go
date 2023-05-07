@@ -8,8 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
-	typ_page "note/src/typ/page"
-	typ_resp "note/src/typ/resp"
+	typ_resp "note/src/typ"
 	util_reflect "note/src/util/reflect"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
@@ -88,8 +87,8 @@ func Query[T any](context *gin.Context, key string) (T, error) {
 	return util_str.ConvStrToType[T](value)
 }
 
-func PageReq(context *gin.Context) (typ_page.Req, error) {
-	req := typ_page.Req{Size: 10}
+func PageReq(context *gin.Context) (typ_resp.Req, error) {
+	req := typ_resp.Req{Size: 10}
 	err := ShouldBind(context, &req)
 	if req.Current <= 0 {
 		req.Current = 1

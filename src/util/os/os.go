@@ -1,4 +1,4 @@
-// os
+// os util
 // @author xiangqian
 // @date 11:08 2023/02/04
 package os
@@ -81,7 +81,7 @@ func MkDir(path string) error {
 }
 
 // CopyDir 拷贝目录
-func CopyDir(srcDir, dstDir string) (*exec.Cmd, error) {
+func CopyDir(dstDir, srcDir string) (*exec.Cmd, error) {
 	switch GetOS() {
 	case Windows:
 		return Cmd(fmt.Sprintf("xcopy %s %s /s /e /h /i /y", srcDir, dstDir))
@@ -112,70 +112,84 @@ func DecodeBuf(buf []byte) string {
 }
 
 // CopyFile 拷贝文件
-func CopyFile(srcPath, dstPath string) error {
+func CopyFile(dstPath, srcPath string) (int64, error) {
 	// src
 	src, err := os.Open(srcPath)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer src.Close()
 
 	// dst
 	dst, err := os.Create(dstPath)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer dst.Close()
 
 	// copy
-	return CopyIo(src, dst, 0)
+	//return io.Copy(dst, src)
+	return CopyIo(dst, src, 0)
 }
 
 // CopyIo 流拷贝
 // src: io.Reader
 // dst: io.Writer
-// bufSize: 缓存大小，byte
-func CopyIo(src io.Reader, dst io.Writer, bufSize int) error {
-	var reader *bufio.Reader
-	var writer *bufio.Writer
-
+// bufSize: 缓存大小，byte。默认 bufio.defaultBufSize = 4KB
+func CopyIo(dst io.Writer, src io.Reader, bufSize int) (int64, error) {
+	// buf size
 	if bufSize <= 0 {
-		bufSize = 1024 * 4 // bufio.defaultBufSize
+		bufSize = 1024 * 4 // 4KB
 	}
+
+	// w & r
+	writer := bufio.NewWriterSize(dst, bufSize)
+	reader := bufio.NewReaderSize(src, bufSize)
+
+	// write func
+	var written int64
 
 	// 块缓存大小
 	buf := make([]byte, bufSize)
 
-	// <= 4KB
-	if bufSize <= 1024*4 {
-		reader = bufio.NewReader(src)
-		writer = bufio.NewWriter(dst)
-	} else
-	// > 4KB
-	{
-		reader = bufio.NewReaderSize(src, bufSize)
-		writer = bufio.NewWriterSize(dst, bufSize)
-	}
-
+	// write
 	for {
-		n, err := reader.Read(buf)
-		if err == io.EOF {
-			if n > 0 {
-				writer.Write(buf[:n])
-				writer.Flush()
+		// Read reads data into buf.
+		// It returns the number of bytes read into buf.
+		// The bytes are taken from at most one Read on the underlying Reader, hence n may be less than len(buf).
+		rn, rerr := reader.Read(buf)
+
+		// write
+		if rn > 0 {
+			wn, werr := writer.Write(buf[:rn])
+			if werr == nil && (wn < 0 || rn < wn) {
+				werr = errors.New("invalid write result")
 			}
+
+			if werr == nil && rn != wn {
+				werr = errors.New("short write")
+			}
+
+			if werr != nil {
+				return written, werr
+			}
+
+			writer.Flush()
+			written += int64(wn)
+		}
+
+		// If the underlying Reader can return a non-zero count with io.EOF,
+		// then this Read method can do so as well; see the [io.Reader] docs.
+		if rerr == io.EOF {
 			break
 		}
 
-		if err != nil {
-			return err
+		// err ?
+		if rerr != nil {
+			return written, rerr
 		}
-
-		writer.Write(buf[:n])
-		writer.Flush()
 	}
-
-	return nil
+	return written, nil
 }
 
 // HumanizFileSize 人性化文件大小

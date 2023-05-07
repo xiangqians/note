@@ -7,8 +7,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
-	typ_api "note/src/typ/api"
-	typ_resp "note/src/typ/resp"
+	"note/src/typ"
 	util_json "note/src/util/json"
 	util_os "note/src/util/os"
 	util_str "note/src/util/str"
@@ -16,13 +15,13 @@ import (
 )
 
 // DeserializeHist 反序列化历史记录
-func DeserializeHist(hist string) ([]typ_api.Img, error) {
+func DeserializeHist(hist string) ([]typ.Img, error) {
 	if hist == "" {
 		return nil, nil
 	}
 
 	// hists
-	hists := make([]typ_api.Img, 0, 1) // len 0, cap ?
+	hists := make([]typ.Img, 0, 1) // len 0, cap ?
 	err := util_json.Deserialize(hist, &hists)
 	if err != nil {
 		return nil, err
@@ -35,24 +34,24 @@ func DeserializeHist(hist string) ([]typ_api.Img, error) {
 }
 
 // SerializeHist 序列化历史记录
-func SerializeHist(hists []typ_api.Img) (string, error) {
+func SerializeHist(hists []typ.Img) (string, error) {
 	return util_json.Serialize(hists)
 }
 
 // Sort 对img进行排序
-func Sort(imgs *[]typ_api.Img) {
+func Sort(imgs *[]typ.Img) {
 	sort.Slice(*imgs, func(i, j int) bool {
 		return (*imgs)[i].UpdTime > (*imgs)[j].UpdTime
 	})
 }
 
 func RedirectToList(context *gin.Context, err any) {
-	resp := typ_resp.Resp[any]{
+	resp := typ.Resp[any]{
 		Msg: util_str.ConvTypeToStr(err),
 	}
 
 	// 记录查询参数
-	img, err := common.GetSessionV[typ_api.Img](context, "img", false)
+	img, err := common.GetSessionV[typ.Img](context, "img", false)
 	if err != nil {
 		common.Redirect(context, "/img/list", resp)
 		return
@@ -62,7 +61,7 @@ func RedirectToList(context *gin.Context, err any) {
 }
 
 // HistPath 获取图片历史记录物理路径
-func HistPath(context *gin.Context, img typ_api.Img) (string, error) {
+func HistPath(context *gin.Context, img typ.Img) (string, error) {
 	// dir
 	dataDir := common.DataDir(context)
 	imgDir := fmt.Sprintf("%s%s%s%s%s%s%s", dataDir,
@@ -85,7 +84,7 @@ func HistPath(context *gin.Context, img typ_api.Img) (string, error) {
 }
 
 // Path 获取图片物理路径
-func Path(context *gin.Context, img typ_api.Img) (string, error) {
+func Path(context *gin.Context, img typ.Img) (string, error) {
 	// dir
 	dataDir := common.DataDir(context)
 	imgDir := fmt.Sprintf("%s%s%s%s%s", dataDir,
@@ -106,7 +105,7 @@ func Path(context *gin.Context, img typ_api.Img) (string, error) {
 }
 
 // DbQry 查询图片信息
-func DbQry(context *gin.Context, id int64, del int) (typ_api.Img, int64, error) {
-	img, count, err := common.DbQry[typ_api.Img](context, "SELECT `id`, `name`, `type`, `size`, `hist`, `hist_size`, `del`, `add_time`, `upd_time` FROM `img` WHERE `del` = ? AND `id` = ?", del, id)
+func DbQry(context *gin.Context, id int64, del int) (typ.Img, int64, error) {
+	img, count, err := common.DbQry[typ.Img](context, "SELECT `id`, `name`, `type`, `size`, `hist`, `hist_size`, `del`, `add_time`, `upd_time` FROM `img` WHERE `del` = ? AND `id` = ?", del, id)
 	return img, count, err
 }

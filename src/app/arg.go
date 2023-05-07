@@ -7,7 +7,7 @@ import (
 	"flag"
 	"log"
 	api_common "note/src/api/common"
-	typ_app "note/src/typ/app"
+	typ_app "note/src/typ"
 	util_os "note/src/util/os"
 	"path/filepath"
 	"strings"

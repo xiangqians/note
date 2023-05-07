@@ -13,8 +13,8 @@ import (
 	"golang.org/x/text/language"
 	"net/http"
 	api_common "note/src/api/common"
+	typ_resp "note/src/typ"
 	typ_locale "note/src/typ/locale"
-	typ_resp "note/src/typ/resp"
 	"strings"
 )
 

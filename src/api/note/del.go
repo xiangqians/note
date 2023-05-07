@@ -7,7 +7,7 @@ import (
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
-	typ_api "note/src/typ/api"
+	typ_api "note/src/typ"
 	typ_ft "note/src/typ/ft"
 	util_time "note/src/util/time"
 )

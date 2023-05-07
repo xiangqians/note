@@ -8,9 +8,8 @@ import (
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
-	typ_api "note/src/typ/api"
+	"note/src/typ"
 	typ_ft "note/src/typ/ft"
-	typ_resp "note/src/typ/resp"
 	util_os "note/src/util/os"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
@@ -21,7 +20,7 @@ import (
 // ReUpload 重新上传图片
 func ReUpload(context *gin.Context) {
 	redirect := func(id int64, err any) {
-		resp := typ_resp.Resp[any]{Msg: util_str.ConvTypeToStr(err)}
+		resp := typ.Resp[any]{Msg: util_str.ConvTypeToStr(err)}
 		common.Redirect(context, fmt.Sprintf("/img/%d/view", id), resp)
 	}
 
@@ -74,12 +73,12 @@ func ReUpload(context *gin.Context) {
 		return
 	}
 	if histImgs == nil {
-		histImgs = make([]typ_api.Img, 0, 1)
+		histImgs = make([]typ.Img, 0, 1)
 	}
 
 	// 将原图片添加到历史记录
-	histImg := typ_api.Img{
-		Abs: typ_api.Abs{
+	histImg := typ.Img{
+		Abs: typ.Abs{
 			Id:      img.Id,
 			AddTime: img.AddTime,
 			UpdTime: img.UpdTime,
@@ -107,7 +106,7 @@ func ReUpload(context *gin.Context) {
 		return
 	}
 	// copy
-	err = util_os.CopyFile(srcPath, dstPath)
+	err = util_os.CopyFile(dstPath, srcPath)
 	if err != nil {
 		redirect(id, err)
 		return
@@ -140,8 +139,8 @@ func ReUpload(context *gin.Context) {
 	}
 
 	// new img
-	newImg := typ_api.Img{
-		Abs: typ_api.Abs{
+	newImg := typ.Img{
+		Abs: typ.Abs{
 			Id:      id,
 			UpdTime: util_time.NowUnix(),
 		},
@@ -198,7 +197,7 @@ func ReUpload(context *gin.Context) {
 // Upload 上传图片
 func Upload(context *gin.Context) {
 	redirect := func(err any) {
-		resp := typ_resp.Resp[any]{Msg: util_str.ConvTypeToStr(err)}
+		resp := typ.Resp[any]{Msg: util_str.ConvTypeToStr(err)}
 		common.Redirect(context, fmt.Sprintf("/img/list"), resp)
 	}
 
@@ -245,7 +244,7 @@ func Upload(context *gin.Context) {
 	}
 
 	// path
-	img := typ_api.Img{}
+	img := typ.Img{}
 	img.Id = id
 	img.Type = typ
 	path, err := Path(context, img)

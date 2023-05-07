@@ -7,13 +7,12 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
-	typ_api "note/src/typ/api"
-	typ_resp "note/src/typ/resp"
+	"note/src/typ"
 	"strings"
 )
 
 // ViewPdf 查看pdf文件
-func ViewPdf(context *gin.Context, note typ_api.Note) {
+func ViewPdf(context *gin.Context, note typ.Note) {
 	// version
 	v, _ := common.Query[string](context, "v")
 	v = strings.TrimSpace(v)
@@ -30,7 +29,7 @@ func ViewPdf(context *gin.Context, note typ_api.Note) {
 	}
 
 	// resp
-	resp := typ_resp.Resp[typ_api.Note]{
+	resp := typ.Resp[typ.Note]{
 		Data: note,
 	}
 

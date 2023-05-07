@@ -7,9 +7,8 @@ import (
 	"bufio"
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
-	typ_api "note/src/typ/api"
+	"note/src/typ"
 	typ_ft "note/src/typ/ft"
-	typ_resp "note/src/typ/resp"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
 	"os"
@@ -20,11 +19,11 @@ import (
 func UpdContent(context *gin.Context) {
 	json := func(err error) {
 		if err != nil {
-			common.JsonBadRequest(context, typ_resp.Resp[any]{Msg: util_str.ConvTypeToStr(err)})
+			common.JsonBadRequest(context, typ.Resp[any]{Msg: util_str.ConvTypeToStr(err)})
 			return
 		}
 
-		common.JsonOk(context, typ_resp.Resp[any]{})
+		common.JsonOk(context, typ.Resp[any]{})
 	}
 
 	// id
@@ -36,7 +35,7 @@ func UpdContent(context *gin.Context) {
 	//log.Println("id", id)
 
 	// f
-	f, count, err := DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: id}, Pid: -1})
+	f, count, err := DbQry(context, typ.Note{Abs: typ.Abs{Id: id}, Pid: -1})
 	if count == 0 || typ_ft.ExtNameOf(f.Type) != typ_ft.FtMd {
 		json(nil)
 		return
@@ -97,7 +96,7 @@ func UpdName(context *gin.Context) {
 	}
 
 	// note
-	note := typ_api.Note{}
+	note := typ.Note{}
 	err := common.ShouldBind(context, &note)
 	pid := note.Pid
 	if err != nil {

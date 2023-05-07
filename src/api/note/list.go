@@ -6,16 +6,15 @@ package note
 import (
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
-	typ_api "note/src/typ/api"
-	typ_resp "note/src/typ/resp"
+	"note/src/typ"
 	util_str "note/src/util/str"
 	"strings"
 )
 
 // List 文件列表页面
 func List(context *gin.Context) {
-	html := func(note typ_api.Note, types []string, err error) {
-		resp := typ_resp.Resp[map[string]any]{
+	html := func(note typ.Note, types []string, err error) {
+		resp := typ.Resp[map[string]any]{
 			Msg: util_str.ConvTypeToStr(err),
 			Data: map[string]any{
 				"note":  note,
@@ -26,7 +25,7 @@ func List(context *gin.Context) {
 	}
 
 	// note
-	note := typ_api.Note{}
+	note := typ.Note{}
 	err := common.ShouldBindQuery(context, &note)
 	note.Del = 0
 	note.QryPath = 0
@@ -50,10 +49,10 @@ func List(context *gin.Context) {
 		return
 	}
 
-	var pNote typ_api.Note
+	var pNote typ.Note
 	if pid != 0 {
 		var count int64
-		pNote, count, err = DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: pid}, Pid: -1, QryPath: 2})
+		pNote, count, err = DbQry(context, typ.Note{Abs: typ.Abs{Id: pid}, Pid: -1, QryPath: 2})
 		if err != nil || count == 0 {
 			html(note, nil, err)
 			return
@@ -88,7 +87,7 @@ func List(context *gin.Context) {
 	}
 
 	// 记录查询参数
-	common.SetSessionKv(context, "note", typ_api.Note{
+	common.SetSessionKv(context, "note", typ.Note{
 		Pid:     note.Pid,
 		Deleted: note.Deleted,
 	})

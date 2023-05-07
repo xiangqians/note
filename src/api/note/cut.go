@@ -7,9 +7,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
-	typ_api "note/src/typ/api"
+	"note/src/typ"
 	typ_ft "note/src/typ/ft"
-	typ_resp "note/src/typ/resp"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
 )
@@ -17,7 +16,7 @@ import (
 // Cut 剪切文件
 func Cut(context *gin.Context) {
 	redirect := func(id int64, err any) {
-		resp := typ_resp.Resp[any]{
+		resp := typ.Resp[any]{
 			Msg: util_str.ConvTypeToStr(err),
 		}
 		common.Redirect(context, fmt.Sprintf("/note/list?pid=%d", id), resp)
@@ -39,9 +38,9 @@ func Cut(context *gin.Context) {
 
 	// dst
 	if dstId != 0 {
-		var note typ_api.Note
+		var note typ.Note
 		var count int64
-		note, count, err = DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: dstId}, Pid: -1})
+		note, count, err = DbQry(context, typ.Note{Abs: typ.Abs{Id: dstId}, Pid: -1})
 		if err != nil || count == 0 || typ_ft.FtD != typ_ft.ExtNameOf(note.Type) { // 拷贝到目标类型必须是目录
 			redirect(dstId, err)
 			return

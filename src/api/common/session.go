@@ -7,7 +7,7 @@ import (
 	"errors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	typ_api "note/src/typ/api"
+	typ_api "note/src/typ"
 )
 
 const userSessionKey = "__user__"

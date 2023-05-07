@@ -24,8 +24,11 @@ func HumanizUnix(unix int64) string {
 		return fmt.Sprintf(i18n.MustGetMessage(i18nKey), value)
 	}
 
+	// Duration
+	duration := now.Sub(t)
+
 	// hour
-	hour := int64(now.Sub(t).Hours())
+	hour := int64(duration.Hours())
 	if hour >= 1 {
 		if hour >= 24 {
 			return FormatUnix(unix)
@@ -34,13 +37,13 @@ func HumanizUnix(unix int64) string {
 	}
 
 	// minute
-	minute := int64(now.Sub(t).Minutes())
+	minute := int64(duration.Minutes())
 	if minute >= 1 {
 		return format("i18n.xMinutesAgo", minute)
 	}
 
 	// second
-	second := int64(now.Sub(t).Seconds())
+	second := int64(duration.Seconds())
 	if second == 0 {
 		return i18n.MustGetMessage("i18n.now")
 	}

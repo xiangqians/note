@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"note/src/db"
-	typ_page "note/src/typ/page"
+	typ_page "note/src/typ"
 	util_os "note/src/util/os"
 )
 

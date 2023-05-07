@@ -1,11 +1,10 @@
 // response
 // @author xiangqian
 // @date 20:24 2023/03/22
-package resp
+package typ
 
 import (
 	"encoding/gob"
-	"note/src/typ/api"
 )
 
 // Resp 响应数据
@@ -18,5 +17,5 @@ type Resp[T any] struct {
 func init() {
 	gob.Register(Resp[any]{})
 	gob.Register(Resp[int64]{})
-	gob.Register(Resp[api.User]{})
+	gob.Register(Resp[User]{})
 }

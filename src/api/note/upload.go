@@ -9,9 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"note/src/api/common"
-	typ_api "note/src/typ/api"
+	"note/src/typ"
 	typ_ft "note/src/typ/ft"
-	typ_resp "note/src/typ/resp"
 	util_json "note/src/util/json"
 	util_os "note/src/util/os"
 	util_str "note/src/util/str"
@@ -29,7 +28,7 @@ func ReUpload(context *gin.Context) {
 
 	// redirect
 	redirect := func(id int64, pid int64, err any) {
-		resp := typ_resp.Resp[any]{
+		resp := typ.Resp[any]{
 			Msg: util_str.ConvTypeToStr(err),
 		}
 		switch method {
@@ -92,7 +91,7 @@ func ReUpload(context *gin.Context) {
 	fs := fh.Size
 
 	// 原笔记信息
-	var oldNote typ_api.Note
+	var oldNote typ.Note
 
 	// 操作数据库
 	switch method {
@@ -100,9 +99,9 @@ func ReUpload(context *gin.Context) {
 	case http.MethodPost:
 		// 校验 pid 是否存在
 		if pid != 0 {
-			var note typ_api.Note
+			var note typ.Note
 			var count int64
-			note, count, err = DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: pid}, Pid: -1})
+			note, count, err = DbQry(context, typ.Note{Abs: typ.Abs{Id: pid}, Pid: -1})
 			if err != nil || count == 0 || typ_ft.ExtNameOf(note.Type) != typ_ft.FtD { // 父节点必须是目录
 				redirect(id, pid, err)
 				return
@@ -117,7 +116,7 @@ func ReUpload(context *gin.Context) {
 	case http.MethodPut:
 		// 校验 id 是否存在
 		var count int64
-		oldNote, count, err = DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: id}, Pid: -1})
+		oldNote, count, err = DbQry(context, typ.Note{Abs: typ.Abs{Id: id}, Pid: -1})
 		if err != nil || count == 0 || typ_ft.ExtNameOf(oldNote.Type) == typ_ft.FtD { // 上传文件不能是目录类型
 			redirect(id, pid, err)
 			return
@@ -126,7 +125,7 @@ func ReUpload(context *gin.Context) {
 		// 笔记历史记录
 		hist := oldNote.Hist
 		histSize := oldNote.HistSize
-		histNotes := make([]typ_api.Note, 0, 1) // len 0, cap ?
+		histNotes := make([]typ.Note, 0, 1) // len 0, cap ?
 		if hist != "" {
 			err = util_json.Deserialize(hist, &histNotes)
 			if err != nil {
@@ -136,8 +135,8 @@ func ReUpload(context *gin.Context) {
 		}
 
 		// 将原笔记添加到历史记录
-		histNote := typ_api.Note{
-			Abs: typ_api.Abs{
+		histNote := typ.Note{
+			Abs: typ.Abs{
 				Id:      oldNote.Id,
 				AddTime: oldNote.AddTime,
 				UpdTime: oldNote.UpdTime,
@@ -163,7 +162,7 @@ func ReUpload(context *gin.Context) {
 			return
 		}
 		// copy
-		err = util_os.CopyFile(srcPath, dstPath)
+		err = util_os.CopyFile(dstPath, srcPath)
 		if err != nil {
 			redirect(id, pid, err)
 			return
@@ -204,7 +203,7 @@ func ReUpload(context *gin.Context) {
 	}
 
 	// path
-	note := typ_api.Note{}
+	note := typ.Note{}
 	note.Id = id
 	note.Type = string(ft)
 	path, err := Path(context, note)
@@ -244,7 +243,7 @@ func ReUpload(context *gin.Context) {
 // Upload 上传文件
 func Upload(context *gin.Context) {
 	redirect := func(pid int64, err any) {
-		resp := typ_resp.Resp[any]{
+		resp := typ.Resp[any]{
 			Msg: util_str.ConvTypeToStr(err),
 		}
 		common.Redirect(context, fmt.Sprintf("/note/list?pid=%d", pid), resp)
@@ -311,7 +310,7 @@ func Upload(context *gin.Context) {
 	}
 
 	// path
-	note := typ_api.Note{}
+	note := typ.Note{}
 	note.Id = id
 	note.Type = typ
 	path, err := Path(context, note)

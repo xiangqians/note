@@ -10,7 +10,7 @@ import (
 	api_index "note/src/api/index"
 	api_note "note/src/api/note"
 	api_user "note/src/api/user"
-	typ_resp "note/src/typ/resp"
+	typ_resp "note/src/typ"
 )
 
 func route(engine *gin.Engine) {

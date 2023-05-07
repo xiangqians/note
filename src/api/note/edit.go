@@ -6,9 +6,8 @@ package note
 import (
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
-	typ_api "note/src/typ/api"
+	"note/src/typ"
 	typ_ft "note/src/typ/ft"
-	typ_resp "note/src/typ/resp"
 	util_str "note/src/util/str"
 )
 
@@ -17,12 +16,12 @@ func Edit(context *gin.Context) {
 	// id
 	id, err := common.Param[int64](context, "id")
 	if err != nil {
-		FileDefaultEditPage(context, typ_api.Note{}, err)
+		FileDefaultEditPage(context, typ.Note{}, err)
 		return
 	}
 
 	// query
-	f, count, err := DbQry(context, typ_api.Note{Abs: typ_api.Abs{Id: id}, Pid: -1})
+	f, count, err := DbQry(context, typ.Note{Abs: typ.Abs{Id: id}, Pid: -1})
 	if err != nil || count == 0 {
 		FileDefaultEditPage(context, f, err)
 		return
@@ -41,8 +40,8 @@ func Edit(context *gin.Context) {
 }
 
 // FileDefaultEditPage 默认文件修改页
-func FileDefaultEditPage(context *gin.Context, note typ_api.Note, err error) {
-	resp := typ_resp.Resp[typ_api.Note]{
+func FileDefaultEditPage(context *gin.Context, note typ.Note, err error) {
+	resp := typ.Resp[typ.Note]{
 		Msg:  util_str.ConvTypeToStr(err),
 		Data: note,
 	}
@@ -50,9 +49,9 @@ func FileDefaultEditPage(context *gin.Context, note typ_api.Note, err error) {
 }
 
 // FileMdEditPage md文件修改页
-func FileMdEditPage(context *gin.Context, note typ_api.Note) {
+func FileMdEditPage(context *gin.Context, note typ.Note) {
 	html := func(content string, err any) {
-		resp := typ_resp.Resp[map[string]any]{
+		resp := typ.Resp[map[string]any]{
 			Msg: util_str.ConvTypeToStr(err),
 			Data: map[string]any{
 				"note":    note,

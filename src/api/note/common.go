@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"io"
 	"note/src/api/common"
+	"note/src/typ"
 	typ_api "note/src/typ/api"
-	typ_resp "note/src/typ/resp"
 	util_json "note/src/util/json"
 	util_os "note/src/util/os"
 	util_str "note/src/util/str"
@@ -20,13 +20,13 @@ import (
 )
 
 // DeserializeHist 反序列化历史记录
-func DeserializeHist(hist string) ([]typ_api.Note, error) {
+func DeserializeHist(hist string) ([]typ.Note, error) {
 	if hist == "" {
 		return nil, nil
 	}
 
 	// hists
-	hists := make([]typ_api.Note, 0, 1) // len 0, cap ?
+	hists := make([]typ.Note, 0, 1) // len 0, cap ?
 	err := util_json.Deserialize(hist, &hists)
 	if err != nil {
 		return nil, err
@@ -39,24 +39,24 @@ func DeserializeHist(hist string) ([]typ_api.Note, error) {
 }
 
 // SerializeHist 序列化历史记录
-func SerializeHist(hists []typ_api.Note) (string, error) {
+func SerializeHist(hists []typ.Note) (string, error) {
 	return util_json.Serialize(hists)
 }
 
 // Sort 对notes进行排序
-func Sort(notes *[]typ_api.Note) {
+func Sort(notes *[]typ.Note) {
 	sort.Slice(*notes, func(i, j int) bool {
 		return (*notes)[i].UpdTime > (*notes)[j].UpdTime
 	})
 }
 
 func RedirectToList(context *gin.Context, pid int64, err any) {
-	resp := typ_resp.Resp[any]{
+	resp := typ.Resp[any]{
 		Msg: util_str.ConvTypeToStr(err),
 	}
 
 	// 记录查询参数
-	note, err := common.GetSessionV[typ_api.Note](context, "note", false)
+	note, err := common.GetSessionV[typ.Note](context, "note", false)
 	if err == nil {
 		common.Redirect(context, fmt.Sprintf("/note/list?pid=%d&deleted=%d", pid, note.Deleted), resp)
 		return
@@ -72,14 +72,14 @@ func DbCount(context *gin.Context, pid int64) (int64, error) {
 }
 
 // DbList 查询列表
-func DbList(context *gin.Context, note typ_api.Note) ([]typ_api.Note, int64, error) {
+func DbList(context *gin.Context, note typ.Note) ([]typ.Note, int64, error) {
 	// sql
 	sql, args := DbQrySql(note,
 		"ORDER BY n.`type`, n.`name`, (CASE WHEN n.`upd_time` > n.`add_time` THEN n.`upd_time` ELSE n.`add_time` END) DESC ", "LIMIT 10000")
 	qryPath := note.QryPath
 
 	// qry
-	notes, count, err := common.DbQry[[]typ_api.Note](context, sql, args...)
+	notes, count, err := common.DbQry[[]typ.Note](context, sql, args...)
 	if err != nil || count == 0 {
 		notes = nil
 	}
@@ -93,13 +93,13 @@ func DbList(context *gin.Context, note typ_api.Note) ([]typ_api.Note, int64, err
 }
 
 // DbQry 查询
-func DbQry(context *gin.Context, note typ_api.Note) (typ_api.Note, int64, error) {
+func DbQry(context *gin.Context, note typ.Note) (typ.Note, int64, error) {
 	// sql
 	sql, args := DbQrySql(note, "LIMIT 1")
 	qryPath := note.QryPath
 
 	// qry
-	note, count, err := common.DbQry[typ_api.Note](context, sql, args...)
+	note, count, err := common.DbQry[typ.Note](context, sql, args...)
 	if qryPath > 0 && err == nil && count > 0 {
 		InitPath(&note)
 	}
@@ -111,10 +111,10 @@ func DbQry(context *gin.Context, note typ_api.Note) (typ_api.Note, int64, error)
 // id: 主键id
 // qryPath: 查询路径，0-不查询，1-查询，2-查询并包含自身的
 // del: 删除标识
-func DbQryNew(context *gin.Context, id int64, qryPath int8, del typ_api.Del) (typ_api.Note, int64, error) {
+func DbQryNew(context *gin.Context, id int64, qryPath int8, del typ_api.Del) (typ.Note, int64, error) {
 	// sql
-	sql, args := DbQrySql(typ_api.Note{
-		Abs: typ_api.Abs{
+	sql, args := DbQrySql(typ.Note{
+		Abs: typ.Abs{
 			Id:  id,
 			Del: byte(del),
 		},
@@ -123,7 +123,7 @@ func DbQryNew(context *gin.Context, id int64, qryPath int8, del typ_api.Del) (ty
 	}, "LIMIT 1")
 
 	// qry
-	note, count, err := common.DbQry[typ_api.Note](context, sql, args...)
+	note, count, err := common.DbQry[typ.Note](context, sql, args...)
 	if qryPath > 0 && err == nil && count > 0 {
 		InitPath(&note)
 	}
@@ -132,7 +132,7 @@ func DbQryNew(context *gin.Context, id int64, qryPath int8, del typ_api.Del) (ty
 }
 
 // InitPath 初始化Note path & pathLink
-func InitPath(note *typ_api.Note) {
+func InitPath(note *typ.Note) {
 	path := (*note).Path
 	if path == "" {
 		return
@@ -159,7 +159,7 @@ func InitPath(note *typ_api.Note) {
 
 // DbQrySql 查询sql
 // note: 查询实体类
-func DbQrySql(note typ_api.Note, last ...string) (string, []any) {
+func DbQrySql(note typ.Note, last ...string) (string, []any) {
 	args := make([]any, 0, 1)
 	sql := "SELECT n.`id`, n.`pid`, n.`name`, n.`type`, n.`size`, n.`hist`, n.`hist_size`, n.`del`, n.`add_time`, n.`upd_time` "
 
@@ -268,7 +268,7 @@ func DbQrySql(note typ_api.Note, last ...string) (string, []any) {
 	return sql, args
 }
 
-func ReadHist(context *gin.Context, note typ_api.Note) ([]byte, error) {
+func ReadHist(context *gin.Context, note typ.Note) ([]byte, error) {
 	// file path
 	path, err := HistPath(context, note)
 	if err != nil {
@@ -288,7 +288,7 @@ func ReadHist(context *gin.Context, note typ_api.Note) ([]byte, error) {
 }
 
 // Read 读取笔记信息
-func Read(context *gin.Context, note typ_api.Note) ([]byte, error) {
+func Read(context *gin.Context, note typ.Note) ([]byte, error) {
 	// file path
 	path, err := Path(context, note)
 	if err != nil {
@@ -308,7 +308,7 @@ func Read(context *gin.Context, note typ_api.Note) ([]byte, error) {
 }
 
 // HistPath 获取笔记历史记录物理路径
-func HistPath(context *gin.Context, note typ_api.Note) (string, error) {
+func HistPath(context *gin.Context, note typ.Note) (string, error) {
 	// dir
 	dataDir := common.DataDir(context)
 	noteDir := fmt.Sprintf("%s%s%s%s%s%s%s", dataDir,
@@ -331,7 +331,7 @@ func HistPath(context *gin.Context, note typ_api.Note) (string, error) {
 }
 
 // Path 获取文件物理路径
-func Path(context *gin.Context, note typ_api.Note) (string, error) {
+func Path(context *gin.Context, note typ.Note) (string, error) {
 	// dir
 	dataDir := common.DataDir(context)
 	noteDir := fmt.Sprintf("%s%s%s%s%s", dataDir,

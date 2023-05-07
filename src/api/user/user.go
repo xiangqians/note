@@ -14,8 +14,7 @@ import (
 	"log"
 	"note/src/api/common"
 	"note/src/db"
-	typ_api "note/src/typ/api"
-	typ_resp "note/src/typ/resp"
+	"note/src/typ"
 	util_os "note/src/util/os"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
@@ -27,8 +26,8 @@ import (
 // Upd 更新用户信息
 func Upd(context *gin.Context) {
 	// 更新异常时，重定向到设置页
-	redirect := func(user typ_api.User, err any) {
-		resp := typ_resp.Resp[typ_api.User]{
+	redirect := func(user typ.User, err any) {
+		resp := typ.Resp[typ.User]{
 			Msg:  util_str.ConvTypeToStr(err),
 			Data: user,
 		}
@@ -36,7 +35,7 @@ func Upd(context *gin.Context) {
 	}
 
 	// bind
-	user := typ_api.User{}
+	user := typ.User{}
 	err := common.ShouldBind(context, &user)
 	if err != nil {
 		redirect(user, err)
@@ -96,7 +95,7 @@ func Upd(context *gin.Context) {
 
 // Settings 用户设置页
 func Settings(context *gin.Context) {
-	resp, err := common.GetSessionV[typ_resp.Resp[typ_api.User]](context, common.RespSessionKey, true)
+	resp, err := common.GetSessionV[typ.Resp[typ.User]](context, common.RespSessionKey, true)
 	if err != nil {
 		user, err := common.GetSessionUser(context)
 		resp.Msg = util_str.ConvTypeToStr(err)
@@ -112,7 +111,7 @@ func Logout(context *gin.Context) {
 	common.ClearSession(context)
 
 	// 重定向
-	common.Redirect(context, "/user/login", typ_resp.Resp[any]{})
+	common.Redirect(context, "/user/login", typ.Resp[any]{})
 }
 
 // Login0 用户登录
@@ -122,9 +121,9 @@ func Login0(context *gin.Context) {
 
 	// redirect
 	redirect := func(err any) {
-		resp := typ_resp.Resp[typ_api.User]{
+		resp := typ.Resp[typ.User]{
 			Msg:  util_str.ConvTypeToStr(err),
-			Data: typ_api.User{Name: name},
+			Data: typ.User{Name: name},
 		}
 		common.Redirect(context, "/user/login", resp)
 	}
@@ -145,7 +144,7 @@ func Login0(context *gin.Context) {
 	}
 
 	// query
-	user, count, err := common.DbQry[typ_api.User](nil,
+	user, count, err := common.DbQry[typ.User](nil,
 		"SELECT `id`, `name`, `nickname`, `rem`, `add_time`, `upd_time` FROM `user` WHERE `del` = 0 AND `name` = ? AND `passwd` = ? LIMIT 1",
 		name, EncryptPasswd(passwd))
 	if err != nil {
@@ -162,20 +161,20 @@ func Login0(context *gin.Context) {
 	common.SetSessionUser(context, user)
 
 	// 重定向
-	common.Redirect(context, "/", typ_resp.Resp[any]{})
+	common.Redirect(context, "/", typ.Resp[any]{})
 }
 
 // Login 用户登录页
 func Login(context *gin.Context) {
-	resp, _ := common.GetSessionV[typ_resp.Resp[typ_api.User]](context, common.RespSessionKey, true)
+	resp, _ := common.GetSessionV[typ.Resp[typ.User]](context, common.RespSessionKey, true)
 	common.HtmlOk(context, "user/login.html", resp)
 }
 
 // Add 添加用户（用户注册）
 func Add(context *gin.Context) {
 	// 注册异常时，重定向到注册页
-	redirect := func(user typ_api.User, err any) {
-		resp := typ_resp.Resp[typ_api.User]{
+	redirect := func(user typ.User, err any) {
+		resp := typ.Resp[typ.User]{
 			Msg:  util_str.ConvTypeToStr(err),
 			Data: user,
 		}
@@ -184,12 +183,12 @@ func Add(context *gin.Context) {
 
 	// 是否允许用户注册
 	if common.AppArg.AllowReg != 1 {
-		redirect(typ_api.User{}, i18n.MustGetMessage("i18n.regNotOpen"))
+		redirect(typ.User{}, i18n.MustGetMessage("i18n.regNotOpen"))
 		return
 	}
 
 	// bind
-	user := typ_api.User{}
+	user := typ.User{}
 	err := common.ShouldBind(context, &user)
 	if err != nil {
 		redirect(user, err)
@@ -268,7 +267,7 @@ func Add(context *gin.Context) {
 	}
 	defer dst.Close()
 	// copy
-	err = util_os.CopyIo(src, dst, 0)
+	err = util_os.CopyIo(dst, src, 0)
 	if err != nil {
 		_db.Rollback()
 		redirect(user, err)
@@ -279,7 +278,7 @@ func Add(context *gin.Context) {
 	_db.Commit()
 
 	// 用户注册成功后，重定向到登录页
-	resp := typ_resp.Resp[typ_api.User]{
+	resp := typ.Resp[typ.User]{
 		Msg:  i18n.MustGetMessage("i18n.accountRegSuccess"),
 		Data: user,
 	}
@@ -288,7 +287,7 @@ func Add(context *gin.Context) {
 
 // Reg 用户注册页
 func Reg(context *gin.Context) {
-	resp, _ := common.GetSessionV[typ_resp.Resp[typ_api.User]](context, common.RespSessionKey, true)
+	resp, _ := common.GetSessionV[typ.Resp[typ.User]](context, common.RespSessionKey, true)
 	common.HtmlOk(context, "user/reg.html", resp)
 }
 

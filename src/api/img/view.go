@@ -8,16 +8,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"note/src/api/common"
-	typ_api "note/src/typ/api"
-	typ_resp "note/src/typ/resp"
+	"note/src/typ"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
 )
 
 // HistView 查看图片历史页面
 func HistView(context *gin.Context) {
-	html := func(img typ_api.Img, err any) {
-		resp := typ_resp.Resp[typ_api.Img]{
+	html := func(img typ.Img, err any) {
+		resp := typ.Resp[typ.Img]{
 			Msg:  util_str.ConvTypeToStr(err),
 			Data: img,
 		}
@@ -27,7 +26,7 @@ func HistView(context *gin.Context) {
 	// id
 	id, err := common.Param[int64](context, "id")
 	if err != nil || id <= 0 {
-		html(typ_api.Img{}, err)
+		html(typ.Img{}, err)
 		return
 	}
 
@@ -69,8 +68,8 @@ func HistView(context *gin.Context) {
 
 // View 查看图片页面
 func View(context *gin.Context) {
-	html := func(img typ_api.Img, err any) {
-		resp := typ_resp.Resp[typ_api.Img]{
+	html := func(img typ.Img, err any) {
+		resp := typ.Resp[typ.Img]{
 			Msg:  util_str.ConvTypeToStr(err),
 			Data: img,
 		}
@@ -80,7 +79,7 @@ func View(context *gin.Context) {
 	// id
 	id, err := common.Param[int64](context, "id")
 	if err != nil {
-		html(typ_api.Img{}, err)
+		html(typ.Img{}, err)
 		return
 	}
 

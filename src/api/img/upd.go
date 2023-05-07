@@ -6,7 +6,7 @@ package img
 import (
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
-	typ_api "note/src/typ/api"
+	typ_api "note/src/typ"
 	util_time "note/src/util/time"
 	"strings"
 )
