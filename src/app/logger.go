@@ -15,14 +15,14 @@ import (
 
 // 日志记录器
 func logger() {
-	// dir
-	dir, err := filepath.Abs("./")
+	// current directory
+	curDir, err := filepath.Abs("./")
 	if err != nil {
 		panic(err)
 	}
 
 	// 创建日志文件夹，如果不存在的话
-	logDir := fmt.Sprintf("%s%s%s", dir, util_os.FileSeparator(), "logs")
+	logDir := fmt.Sprintf("%s%s%s", curDir, util_os.FileSeparator(), "logs")
 	fileInfo, err := os.Stat(logDir)
 	if err != nil || !fileInfo.IsDir() {
 		err = os.Mkdir(logDir, 0666)
@@ -48,5 +48,6 @@ func logger() {
 	// 设置日志输出
 	log.SetOutput(writer)
 
+	// print log dir
 	log.Printf("logDir: %s\n", logDir)
 }

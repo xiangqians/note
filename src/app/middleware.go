@@ -17,6 +17,14 @@ import (
 	"strings"
 )
 
+// middleware 中间件
+func middleware(engine *gin.Engine) {
+	sessionMiddleware(engine)
+	i18nMiddleware(engine)
+	staticMiddleware(engine)
+	permMiddleware(engine)
+}
+
 // 权限中间件
 func permMiddleware(engine *gin.Engine) {
 	// 未授权拦截

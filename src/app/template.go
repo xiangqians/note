@@ -9,7 +9,7 @@ import (
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/render"
-	"html/template"
+	html_template "html/template"
 	util_json "note/src/util/json"
 	util_num "note/src/util/num"
 	util_os "note/src/util/os"
@@ -20,14 +20,14 @@ import (
 	"strings"
 )
 
-// 初始化HTML模板
-func htmlTemplate(engine *gin.Engine) {
+// 初始化模板（HTML模板）
+func template(engine *gin.Engine) {
 
 	// gin内置模板函数
 	// go1.19.3/src/text/template/funcs.go:40
 
 	// 自定义模板函数
-	engine.SetFuncMap(template.FuncMap{
+	engine.SetFuncMap(html_template.FuncMap{
 		// 为了获取 i18n 文件中 key 对应的 value
 		"Localize": i18n.GetMessage,
 
@@ -122,7 +122,7 @@ func htmlTemplate(engine *gin.Engine) {
 	}("./templates")
 }
 
-func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap template.FuncMap, commons []string, name string) {
+func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap html_template.FuncMap, commons []string, name string) {
 	// 打开文件
 	file, err := os.Open(name)
 	if err != nil {

@@ -16,7 +16,8 @@ import (
 var appArg typ.AppArg
 
 // 解析应用参数
-func parseArg() {
+func arg() {
+	var loc string
 	var port int
 	var dataDir string
 	var allowReg int
@@ -24,10 +25,14 @@ func parseArg() {
 	// -dataDir "C:\Users\xiangqian\Desktop\tmp\note\data"
 
 	// parse
+	flag.StringVar(&loc, "loc", "Asia/Shanghai", "-loc Asia/Shanghai")
 	flag.IntVar(&port, "port", 8080, "-port 8080")
 	flag.StringVar(&dataDir, "dataDir", "./data", "-dataDir ./data")
 	flag.IntVar(&allowReg, "allowReg", 1, "-allowReg 1")
 	flag.Parse()
+
+	// loc
+	loc = strings.TrimSpace(loc)
 
 	// DataDir
 	dataDir = strings.TrimSpace(dataDir)
@@ -37,15 +42,13 @@ func parseArg() {
 	// 获取绝对路径
 	dataDir, _ = filepath.Abs(dataDir)
 
-	log.Printf("Port: %v\n", port)
-	log.Printf("DataDir: %v\n", dataDir)
-	log.Printf("AllowReg: %v\n", allowReg)
-
 	appArg = typ.AppArg{
+		Loc:      loc,
 		Port:     port,
 		DataDir:  dataDir,
 		AllowReg: allowReg,
 	}
+	log.Println(appArg)
 
 	// 设置api App Arg
 	api_common.AppArg = appArg
