@@ -112,7 +112,7 @@ func DecodeBuf(buf []byte) string {
 }
 
 // CopyFile 拷贝文件
-func CopyFile(dstPath, srcPath string) (int64, error) {
+func CopyFile(dstPath, srcPath string) (int, error) {
 	// src
 	src, err := os.Open(srcPath)
 	if err != nil {
@@ -136,7 +136,7 @@ func CopyFile(dstPath, srcPath string) (int64, error) {
 // src: io.Reader
 // dst: io.Writer
 // bufSize: 缓存大小，byte。默认 bufio.defaultBufSize = 4KB
-func CopyIo(dst io.Writer, src io.Reader, bufSize int) (int64, error) {
+func CopyIo(dst io.Writer, src io.Reader, bufSize int) (int, error) {
 	// buf size
 	if bufSize <= 0 {
 		bufSize = 1024 * 4 // 4KB
@@ -147,7 +147,7 @@ func CopyIo(dst io.Writer, src io.Reader, bufSize int) (int64, error) {
 	reader := bufio.NewReaderSize(src, bufSize)
 
 	// write func
-	var written int64
+	var written int
 
 	// 块缓存大小
 	buf := make([]byte, bufSize)
@@ -175,7 +175,7 @@ func CopyIo(dst io.Writer, src io.Reader, bufSize int) (int64, error) {
 			}
 
 			writer.Flush()
-			written += int64(wn)
+			written += wn
 		}
 
 		// If the underlying Reader can return a non-zero count with io.EOF,

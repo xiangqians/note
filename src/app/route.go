@@ -5,10 +5,10 @@ package app
 
 import (
 	"github.com/gin-gonic/gin"
-	note2 "note/app/api/note"
 	api_common_context "note/src/api/common/context"
 	"note/src/api/img"
 	"note/src/api/index"
+	"note/src/api/note"
 	"note/src/api/user"
 	"note/src/typ"
 )
@@ -37,17 +37,17 @@ func route(engine *gin.Engine) {
 
 	// note
 	noteGroup := engine.Group("/note")
-	noteGroup.Any("/list", note2.List) // page
-	noteGroup.POST("", note2.Add)
-	noteGroup.POST("/upload", note2.Upload)
-	noteGroup.POST("/reUpload", note2.ReUpload)
-	noteGroup.PUT("/name", note2.UpdName)
-	noteGroup.GET("/:id", note2.Get)
-	noteGroup.Any("/:id/view", note2.View) // page
-	noteGroup.PUT("/content", note2.UpdContent)
-	noteGroup.PUT("/cut/:srcId/to/:dstId", note2.Cut)
-	noteGroup.DELETE("/:id", note2.Del)
-	noteGroup.PUT("/:id/restore", note2.Restore)
+	noteGroup.Any("/list", note.List) // page
+	noteGroup.POST("", note.Add)
+	noteGroup.POST("/upload", note.Upload)
+	noteGroup.POST("/reUpload", note.ReUpload)
+	noteGroup.PUT("/name", note.UpdName)
+	noteGroup.GET("/:id", note.Get)
+	noteGroup.Any("/:id/view", note.View) // page
+	noteGroup.PUT("/content", note.UpdContent)
+	noteGroup.PUT("/cut/:srcId/to/:dstId", note.Cut)
+	noteGroup.DELETE("/:id", note.Del)
+	noteGroup.PUT("/:id/restore", note.Restore)
 
 	// img
 	imgGroup := engine.Group("/img")

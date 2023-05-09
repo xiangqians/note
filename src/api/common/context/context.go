@@ -6,87 +6,90 @@ package context
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 	"note/src/api/common/session"
 	"note/src/api/common/trans"
-	typ_resp "note/src/typ"
-	util_reflect "note/src/util/reflect"
-	util_str "note/src/util/str"
-	util_time "note/src/util/time"
+	"note/src/typ"
+	"note/src/util/reflect"
+	"note/src/util/str"
+	"note/src/util/time"
 	"os"
 	"strings"
 )
 
-func HtmlNotFound[T any](context *gin.Context, name string, resp typ_resp.Resp[T]) {
+const UserSessionKey = "user"
+const RespSessionKey = "resp"
+const UrlSessionKey = "url"
+
+func HtmlNotFound[T any](context *gin.Context, name string, resp typ.Resp[T]) {
 	Html[T](context, http.StatusNotFound, name, resp)
 }
 
-func HtmlOk[T any](context *gin.Context, name string, resp typ_resp.Resp[T]) {
+func HtmlOk[T any](context *gin.Context, name string, resp typ.Resp[T]) {
 	Html[T](context, http.StatusOK, name, resp)
 }
 
 // Html
 // name: templateName
-func Html[T any](context *gin.Context, code int, name string, resp typ_resp.Resp[T]) {
+func Html[T any](context *gin.Context, code int, name string, resp typ.Resp[T]) {
 	// resp msg
-	resp0, err := session.GetSessionV[any](context, session.RespSessionKey, true)
+	resp0, err := session.Get[any](context, RespSessionKey, true)
 	if err == nil {
-		msg := util_reflect.CallField[string](resp0, "Msg")
+		msg := reflect.CallField[string](resp0, "Msg")
 		if msg != "" {
 			resp.Msg = fmt.Sprintf("%s\n%s", msg, resp.Msg)
 		}
 	}
 
 	// user
-	user, _ := session.GetSessionUser(context)
+	user, _ := session.GetUser(context)
 
 	// url
 	url := context.Request.RequestURI
 
 	// html
 	context.HTML(code, name, gin.H{
-		session.RespSessionKey: resp,
-		session.UserSessionKey: user,
-		session.UrlSessionKey:  url,
+		RespSessionKey: resp,
+		UserSessionKey: user,
+		UrlSessionKey:  url,
 	})
 }
 
-func JsonBadRequest[T any](context *gin.Context, resp typ_resp.Resp[T]) {
+func JsonBadRequest[T any](context *gin.Context, resp typ.Resp[T]) {
 	Json(context, http.StatusBadRequest, resp)
 }
 
-func JsonOk[T any](context *gin.Context, resp typ_resp.Resp[T]) {
+func JsonOk[T any](context *gin.Context, resp typ.Resp[T]) {
 	Json(context, http.StatusOK, resp)
 }
 
-func Json[T any](context *gin.Context, code int, resp typ_resp.Resp[T]) {
+func Json[T any](context *gin.Context, code int, resp typ.Resp[T]) {
 	context.JSON(code, resp)
 }
 
-func Redirect[T any](context *gin.Context, location string, resp typ_resp.Resp[T]) {
-	session.SetSessionKv(context, session.RespSessionKey, resp)
+func Redirect[T any](context *gin.Context, location string, resp typ.Resp[T]) {
+	session.Set(context, RespSessionKey, resp)
 	if strings.Contains(location, "?") {
-		location = fmt.Sprintf("%s&t=%d", location, util_time.NowUnix())
+		location = fmt.Sprintf("%s&t=%d", location, time.NowUnix())
 	} else {
-		location = fmt.Sprintf("%s?t=%d", location, util_time.NowUnix())
+		location = fmt.Sprintf("%s?t=%d", location, time.NowUnix())
 	}
 	context.Redirect(http.StatusMovedPermanently, location)
 }
 
 func PostForm[T any](context *gin.Context, key string) (T, error) {
 	value := context.PostForm(key)
-	return util_str.ConvStrToType[T](value)
+	return str.ConvStrToType[T](value)
 }
 
 func Param[T any](context *gin.Context, key string) (T, error) {
 	value := context.Param(key)
-	return util_str.ConvStrToType[T](value)
+	return str.ConvStrToType[T](value)
 }
 
 func Query[T any](context *gin.Context, key string) (T, error) {
 	value := context.Query(key)
-	return util_str.ConvStrToType[T](value)
+	return str.ConvStrToType[T](value)
 }
 
 func ShouldBindQuery(context *gin.Context, i any) error {
@@ -106,16 +109,16 @@ func ShouldBind(context *gin.Context, i any) error {
 	return err
 }
 
-func Write(context *gin.Context, path string) {
+// WriteFile 写入文件
+// path: 文件路径
+func WriteFile(context *gin.Context, path string) (written int, err error) {
 	// read
 	buf, err := os.ReadFile(path)
 	if err != nil {
-		log.Println(err)
 		return
 	}
 
 	// write
-	n, err := context.Writer.Write(buf)
-	log.Println(path, n, err)
+	written, err = context.Writer.Write(buf)
 	return
 }

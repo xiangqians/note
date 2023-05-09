@@ -27,8 +27,8 @@ cp -r i18n "${outputDir}/"
 echo "cp i18n"
 cp -r static "${outputDir}/"
 echo "cp static"
-cp -r templates "${outputDir}/"
-echo "cp templates"
+cp -r template "${outputDir}/"
+echo "cp template"
 echo
 
 # pkgName

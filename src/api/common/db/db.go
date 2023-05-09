@@ -4,29 +4,29 @@
 package db
 
 import (
-	_sql "database/sql"
+	database_sql "database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
-	"note/src/db"
+	_db "note/src/db"
 	"note/src/typ"
-	util_os "note/src/util/os"
+	"note/src/util/os"
 	"strings"
 )
 
-type dbExecType int8
+type Type int8
 
 const (
-	add dbExecType = iota
+	add Type = iota
 	del
 	upd
 	qry
 )
 
-// DbPage 分页查询
+// Page 分页查询
 // current: 当前页
 // size: 页数量
-func DbPage[T any](context *gin.Context, current int64, size uint8, sql string, args ...any) (typ.Page[T], error) {
+func Page[T any](context *gin.Context, current int64, size uint8, sql string, args ...any) (typ.Page[T], error) {
 	// page
 	page := typ.Page[T]{
 		Current: current,
@@ -56,7 +56,7 @@ func DbPage[T any](context *gin.Context, current int64, size uint8, sql string, 
 	if err != nil {
 		return page, err
 	}
-	total, _, err := db.RowsMapper[int64](rows)
+	total, _, err := _db.RowsMapper[int64](rows)
 	if err != nil || total == 0 {
 		return page, err
 	}
@@ -78,7 +78,7 @@ func DbPage[T any](context *gin.Context, current int64, size uint8, sql string, 
 	if err != nil {
 		return page, err
 	}
-	data, count, err := db.RowsMapper[[]T](rows)
+	data, count, err := _db.RowsMapper[[]T](rows)
 	if err != nil {
 		return page, err
 	}
@@ -91,34 +91,34 @@ func DbPage[T any](context *gin.Context, current int64, size uint8, sql string, 
 	return page, nil
 }
 
-func DbQry[T any](context *gin.Context, sql string, args ...any) (T, int64, error) {
+func Qry[T any](context *gin.Context, sql string, args ...any) (T, int64, error) {
 	// query
-	rows, _, err := dbExec(context, qry, sql, args...)
+	rows, _, err := exec(context, qry, sql, args...)
 	if err != nil {
 		var t T
 		return t, 0, err
 	}
 
 	// mapper
-	return db.RowsMapper[T](rows)
+	return _db.RowsMapper[T](rows)
 }
 
-func DbUpd(context *gin.Context, sql string, args ...any) (rowsAffected int64, err error) {
-	_, rowsAffected, err = dbExec(context, upd, sql, args...)
+func Upd(context *gin.Context, sql string, args ...any) (rowsAffected int64, err error) {
+	_, rowsAffected, err = exec(context, upd, sql, args...)
 	return
 }
 
-func DbDel(context *gin.Context, sql string, args ...any) (rowsAffected int64, err error) {
-	_, rowsAffected, err = dbExec(context, del, sql, args...)
+func Del(context *gin.Context, sql string, args ...any) (rowsAffected int64, err error) {
+	_, rowsAffected, err = exec(context, del, sql, args...)
 	return
 }
 
-func DbAdd(context *gin.Context, sql string, args ...any) (lastInsertId int64, err error) {
-	_, lastInsertId, err = dbExec(context, add, sql, args...)
+func Add(context *gin.Context, sql string, args ...any) (lastInsertId int64, err error) {
+	_, lastInsertId, err = exec(context, add, sql, args...)
 	return
 }
 
-func dbExec(context *gin.Context, typ dbExecType, sql string, args ...any) (*_sql.Rows, int64, error) {
+func exec(context *gin.Context, typ Type, sql string, args ...any) (*database_sql.Rows, int64, error) {
 	// db
 	db, err := Db(context)
 	if err != nil {
@@ -132,7 +132,8 @@ func dbExec(context *gin.Context, typ dbExecType, sql string, args ...any) (*_sq
 		return nil, 0, err
 	}
 
-	var rows *_sql.Rows
+	// exec
+	var rows *database_sql.Rows
 	var i int64 = 0
 	switch typ {
 	// add
@@ -162,8 +163,8 @@ func dbExec(context *gin.Context, typ dbExecType, sql string, args ...any) (*_sq
 	return rows, i, err
 }
 
-func Db(context *gin.Context) (db.Db, error) {
+func Db(context *gin.Context) (_db.Db, error) {
 	dataDir := common.DataDir(context)
-	dsn := fmt.Sprintf("%s%s%s", dataDir, util_os.FileSeparator(), "database.db")
-	return db.Get(dsn)
+	dsn := fmt.Sprintf("%s%s%s", dataDir, os.FileSeparator(), "database.db")
+	return _db.Get(dsn)
 }

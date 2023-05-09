@@ -3,7 +3,9 @@
 // @date 20:53 2023/03/13
 package typ
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // AppArg 应用参数
 type AppArg struct {
@@ -13,7 +15,7 @@ type AppArg struct {
 	AllowReg int    // 是否允许用户注册，0-不允许，1-允许
 }
 
-// String returns the name of k.
+// String 返回结构体类型字符串
 func (appArg AppArg) String() string {
 	return fmt.Sprintf("AppArg: Loc = %s, Port = %d, DataDir = %s, AllowReg = %d", appArg.Loc, appArg.Port, appArg.DataDir, appArg.AllowReg)
 }

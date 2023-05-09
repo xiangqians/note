@@ -10,16 +10,16 @@ import (
 
 // 时区
 func loc() {
-	l, err := time.LoadLocation(appArg.Loc)
+	loc, err := time.LoadLocation(appArg.Loc)
 	if err != nil {
 		log.Println(appArg.Loc, err)
 
 		// GoLang time 包默认是UTC
-		l = time.UTC
+		loc = time.UTC
 	}
 
 	// set loc
-	time.Local = l
+	time.Local = loc
 
-	log.Printf("set loc: %s\n", l)
+	log.Printf("set loc: %s\n", loc)
 }

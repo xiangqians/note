@@ -58,14 +58,8 @@ func template(engine *gin.Engine) {
 			return num.Int64(i1) + num.Int64(i2)
 		},
 
-		// put
-		"Put": func(h gin.H, key string, value any) string {
-			h[key] = value
-			return ""
-		},
-
-		// Timestamp
-		"Timestamp": func() int64 {
+		// NowUnix
+		"NowUnix": func() int64 {
 			return time.NowUnix()
 		},
 
@@ -94,21 +88,21 @@ func template(engine *gin.Engine) {
 	})
 
 	// HTML模板
-	//engine.LoadHTMLGlob("templates/*")
-	//engine.LoadHTMLGlob("templates/**/*")
+	//engine.LoadHTMLGlob("template/*")
+	//engine.LoadHTMLGlob("template/**/*")
 	// https://github.com/gin-contrib/multitemplate
-	engine.HTMLRender = func(templatesDir string) render.HTMLRender {
+	engine.HTMLRender = func(templateDir string) render.HTMLRender {
 		// if gin.DebugMode -> NewDynamic()
 		renderer := multitemplate.NewRenderer()
 
 		// 获取所有匹配的html模板
-		matches, err := filepath.Glob(templatesDir + "/*")
+		matches, err := filepath.Glob(templateDir + "/*")
 		if err != nil {
 			panic(err)
 		}
 
 		// 获取公共html模板
-		commons, err := filepath.Glob(templatesDir + "/common/*")
+		commons, err := filepath.Glob(templateDir + "/common/*")
 		if err != nil {
 			panic(err)
 		}
@@ -119,7 +113,7 @@ func template(engine *gin.Engine) {
 		}
 
 		return renderer
-	}("./templates")
+	}("./template")
 }
 
 func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap html_template.FuncMap, commons []string, name string) {
@@ -160,7 +154,7 @@ func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap html_template.Fu
 						files = append(files, commons...)
 					}
 
-					renderer.AddFromFilesFuncs(strings.ReplaceAll(fmt.Sprintf("%s/%s", name, sfName), "\\", "/")[len("templates/"):], funcMap, files...)
+					renderer.AddFromFilesFuncs(strings.ReplaceAll(fmt.Sprintf("%s/%s", name, sfName), "\\", "/")[len("template/"):], funcMap, files...)
 				}
 			}
 		}
@@ -172,6 +166,6 @@ func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap html_template.Fu
 		files = append(files, name)
 		files = append(files, commons...)
 		//renderer.AddFromFilesFuncs(filepath.Base(name), funcMap, files...)
-		renderer.AddFromFilesFuncs(strings.ReplaceAll(name, "\\", "/")[len("templates/"):], funcMap, files...)
+		renderer.AddFromFilesFuncs(strings.ReplaceAll(name, "\\", "/")[len("template/"):], funcMap, files...)
 	}
 }

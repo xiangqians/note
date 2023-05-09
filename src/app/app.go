@@ -7,7 +7,7 @@ package app
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	api_common_trans "note/src/api/common/trans"
+	"note/src/api/common/trans"
 )
 
 // Run 运行Application
@@ -21,8 +21,8 @@ func Run() {
 	// 设置时区
 	loc()
 
-	// ValidateTrans
-	api_common_trans.Validate()
+	// 检验器翻译
+	trans.Translator()
 
 	// gin模式
 	gin.SetMode(gin.DebugMode)

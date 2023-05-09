@@ -15,6 +15,7 @@ import (
 	api_common_context "note/src/api/common/context"
 	"note/src/api/common/session"
 	"note/src/typ"
+	"note/src/util/crypto/bcrypt"
 	"strings"
 )
 
@@ -142,7 +143,12 @@ func i18nMiddleware(engine *gin.Engine) {
 // session中间件
 func sessionMiddleware(engine *gin.Engine) {
 	// 密钥
-	keyPairs := []byte("123456")
+	passwd := "$2a$10$NkWzRTyz1ZNnNfjLmxreaeZ31DCiwCEWJlXJAVDkG8fD9Ble2mg4K"
+	hash, err := bcrypt.Generate(passwd)
+	if err != nil {
+		hash = passwd
+	}
+	keyPairs := []byte(hash)[:32]
 
 	// 创建基于cookie的存储引擎
 	//store := cookie.NewStore(keyPairs)

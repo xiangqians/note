@@ -7,17 +7,14 @@ import (
 	"errors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	typ_api "note/src/typ"
+	"note/src/typ"
 )
 
 const userSessionKey = "__user__"
-const UserSessionKey = "user"
-const RespSessionKey = "resp"
-const UrlSessionKey = "url"
 
-// GetSessionUser 获取session用户信息
-func GetSessionUser(context *gin.Context) (typ_api.User, error) {
-	user, err := GetSessionV[typ_api.User](context, userSessionKey, false)
+// GetUser 获取session用户信息
+func GetUser(context *gin.Context) (typ.User, error) {
+	user, err := Get[typ.User](context, userSessionKey, false)
 
 	// 如果返回指针值，有可能会发生逃逸
 	//return &user
@@ -25,22 +22,22 @@ func GetSessionUser(context *gin.Context) (typ_api.User, error) {
 	return user, err
 }
 
-// SetSessionUser 保存用户信息到session
-func SetSessionUser(context *gin.Context, user typ_api.User) {
-	SetSessionKv(context, userSessionKey, user)
+// SetUser 保存用户信息到session
+func SetUser(context *gin.Context, user typ.User) {
+	Set(context, userSessionKey, user)
 }
 
-// SetSessionKv 设置session kv
-func SetSessionKv(context *gin.Context, key string, value any) {
+// Set 设置session <k, v>
+func Set(context *gin.Context, key string, value any) {
 	session := Session(context)
 	session.Set(key, value)
 	session.Save()
 }
 
-// GetSessionV 根据key获取session value
+// Get 根据key获取session value
 // key: key
 // del: 是否删除session中的key
-func GetSessionV[T any](context *gin.Context, key any, del bool) (T, error) {
+func Get[T any](context *gin.Context, key any, del bool) (T, error) {
 	session := Session(context)
 	value := session.Get(key)
 	if del {
@@ -58,17 +55,19 @@ func GetSessionV[T any](context *gin.Context, key any, del bool) (T, error) {
 	return t, errors.New("unknown")
 }
 
-// ClearSession 清空session
-func ClearSession(context *gin.Context) {
+// Clear 清空session
+func Clear(context *gin.Context) {
 	// 解析session
 	session := Session(context)
+
 	// 清除session
 	session.Clear()
+
 	// 保存session数据
 	session.Save()
 }
 
-// Session 解析session
+// Session 获取session
 func Session(context *gin.Context) sessions.Session {
 	return sessions.Default(context)
 }

@@ -6,7 +6,7 @@ package app
 import (
 	"flag"
 	"log"
-	api_common "note/src/api/common"
+	"note/src/api/common"
 	"note/src/typ"
 	"note/src/util/os"
 	"path/filepath"
@@ -50,6 +50,5 @@ func arg() {
 	}
 	log.Println(appArg)
 
-	// 设置api App Arg
-	api_common.AppArg = appArg
+	common.AppArg = appArg
 }

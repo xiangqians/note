@@ -24,8 +24,8 @@ xcopy i18n "%outputDir%/i18n" /s /e /h /i /y
 echo "cp i18n"
 xcopy static "%outputDir%/static" /s /e /h /i /y
 echo "cp static"
-xcopy templates "%outputDir%/templates" /s /e /h /i /y
-echo "cp templates"
+xcopy template "%outputDir%/template" /s /e /h /i /y
+echo "cp template"
 echo
 
 :: pkgName

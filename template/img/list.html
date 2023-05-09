@@ -44,7 +44,7 @@
                                                    type="checkbox"
                                                    {{ if ne $img.Del 0 }}checked{{ end }}/>&nbsp;&nbsp;
             <button search="search">{{ Localize "i18n.search" }}</button>&nbsp;
-            <a href="/img/list?t={{ Timestamp }}"><button>{{ Localize "i18n.reset" }}</button></a>
+            <a href="/img/list?t={{ NowUnix }}"><button>{{ Localize "i18n.reset" }}</button></a>
         </span>
     </p>
 
@@ -73,7 +73,7 @@
                 {{ if ne $img.Del 0 }}
                 <span>{{ $img.Name }}</span>
                 {{ else }}
-                <a href="/img/{{ $img.Id }}/view?t={{ Timestamp }}" target="_blank">{{ $img.Name }}</a>
+                <a href="/img/{{ $img.Id }}/view?t={{ NowUnix }}" target="_blank">{{ $img.Name }}</a>
                 {{ end }}
             </td>
             <td>{{ $img.Type }}</td>
@@ -117,14 +117,14 @@
                     {{ if le $page.Current 1 }}
                     {{ Localize "i18n.prevPage" }}
                     {{ else }}
-                    <a href="/img/list?id={{ $img.Id }}&name={{ $img.Name }}&type={{ $img.Type }}&del={{ $img.Del }}&current={{ Add $page.Current -1 }}&t={{ Timestamp }}">{{ Localize "i18n.prevPage" }}</a>
+                    <a href="/img/list?id={{ $img.Id }}&name={{ $img.Name }}&type={{ $img.Type }}&del={{ $img.Del }}&current={{ Add $page.Current -1 }}&t={{ NowUnix }}">{{ Localize "i18n.prevPage" }}</a>
                     {{  end }}
                 </span>
                 <span>
                     {{ if ge $page.Current $page.Pages }}
                     {{ Localize "i18n.nextPage" }}
                     {{ else }}
-                    <a href="/img/list?id={{ $img.Id }}&name={{ $img.Name }}&type={{ $img.Type }}&del={{ $img.Del }}&current={{ Add $page.Current 1 }}&t={{ Timestamp }}">{{ Localize "i18n.nextPage" }}</a>
+                    <a href="/img/list?id={{ $img.Id }}&name={{ $img.Name }}&type={{ $img.Type }}&del={{ $img.Del }}&current={{ Add $page.Current 1 }}&t={{ NowUnix }}">{{ Localize "i18n.nextPage" }}</a>
                     {{  end }}
                 </span>
             </td>
@@ -136,7 +136,7 @@
     <br>
     <br>
     <div>
-        <form action="/img/upload?t={{ Timestamp }}" method="POST" enctype="multipart/form-data">
+        <form action="/img/upload?t={{ NowUnix }}" method="POST" enctype="multipart/form-data">
             <input name="file" type="file"/>
             <button type="submit">{{ Localize "i18n.upload" }}</button>
         </form>

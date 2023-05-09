@@ -25,8 +25,8 @@ var (
 	enTrans ut.Translator
 )
 
-// Validate 检验器翻译
-func Validate() {
+// Translator 检验器翻译
+func Translator() {
 	if v, r := binding.Validator.Engine().(*validator.Validate); r {
 		uni := ut.New(zh.New(), // 备用语言
 			// 支持的语言

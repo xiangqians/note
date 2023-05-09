@@ -46,9 +46,9 @@
                                                   type="checkbox"
                                                   {{ if ne $note.Deleted 0 }}checked{{ end }}/>&nbsp;&nbsp;
             <button search="search">{{ Localize "i18n.search" }}</button>&nbsp;
-            <a href="/note/list?pid={{ $note.Id }}&t={{ Timestamp }}"><button>{{ Localize "i18n.reset" }}</button></a>
+            <a href="/note/list?pid={{ $note.Id }}&t={{ NowUnix }}"><button>{{ Localize "i18n.reset" }}</button></a>
             &nbsp;&nbsp;&nbsp;&nbsp;
-            <a href="/note/list?t={{ Timestamp }}"><button>/</button></a>
+            <a href="/note/list?t={{ NowUnix }}"><button>/</button></a>
         </span>
     </p>
 
@@ -70,7 +70,7 @@
 
         {{ if gt $note.Id 0 }}
         <tr>
-            <td><a href="/note/list?pid={{ $note.Pid }}&t={{ Timestamp }}">../</a></td>
+            <td><a href="/note/list?pid={{ $note.Pid }}&t={{ NowUnix }}">../</a></td>
             <td colspan="7"></td>
         </tr>
         {{ end }}
@@ -88,9 +88,9 @@
                 {{ if ne $childNote.Del 0 }}
                 <span>{{ $childNote.Name }}</span>
                 {{ else }}
-                <a {{ if eq $childNote.Type "d" }}href="/note/list?pid={{ $childNote.Id }}&t={{ Timestamp }}"
+                <a {{ if eq $childNote.Type "d" }}href="/note/list?pid={{ $childNote.Id }}&t={{ NowUnix }}"
                 {{ else }}
-                href="/note/{{$childNote.Id }}/view?t={{ Timestamp }}" target="_blank"
+                href="/note/{{$childNote.Id }}/view?t={{ NowUnix }}" target="_blank"
                 {{ end }}>
                 {{ $childNote.Name }}{{ if eq $childNote.Type "d" }}/{{end}}
                 </a>
@@ -147,7 +147,7 @@
     <br>
     <hr width="30%">
     <div style="padding: 5px">
-        <form action="/note/upload?t={{ Timestamp }}" method="POST" enctype="multipart/form-data">
+        <form action="/note/upload?t={{ NowUnix }}" method="POST" enctype="multipart/form-data">
             <input name="pid" type="text" value="{{ $note.Id }}" hidden/>
             <input name="file" type="file"/>
             <button type="submit">{{ Localize "i18n.upload" }}</button>
