@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
+	"note/src/api/common/db"
+	"note/src/api/common/session"
 	"note/src/typ"
 	util_json "note/src/util/json"
 	util_os "note/src/util/os"
@@ -51,13 +53,13 @@ func RedirectToList(context *gin.Context, err any) {
 	}
 
 	// 记录查询参数
-	img, err := common.GetSessionV[typ.Img](context, "img", false)
+	img, err := session.GetSessionV[typ.Img](context, "img", false)
 	if err != nil {
-		common.Redirect(context, "/img/list", resp)
+		context.Redirect(context, "/img/list", resp)
 		return
 	}
 
-	common.Redirect(context, fmt.Sprintf("/img/list?id=%d&name=%s&type=%s&del=%d", img.Id, img.Name, img.Type, img.Del), resp)
+	context.Redirect(context, fmt.Sprintf("/img/list?id=%d&name=%s&type=%s&del=%d", img.Id, img.Name, img.Type, img.Del), resp)
 }
 
 // HistPath 获取图片历史记录物理路径
@@ -106,6 +108,6 @@ func Path(context *gin.Context, img typ.Img) (string, error) {
 
 // DbQry 查询图片信息
 func DbQry(context *gin.Context, id int64, del int) (typ.Img, int64, error) {
-	img, count, err := common.DbQry[typ.Img](context, "SELECT `id`, `name`, `type`, `size`, `hist`, `hist_size`, `del`, `add_time`, `upd_time` FROM `img` WHERE `del` = ? AND `id` = ?", del, id)
+	img, count, err := db.DbQry[typ.Img](context, "SELECT `id`, `name`, `type`, `size`, `hist`, `hist_size`, `del`, `add_time`, `upd_time` FROM `img` WHERE `del` = ? AND `id` = ?", del, id)
 	return img, count, err
 }

@@ -1,0 +1,73 @@
+<!--
+ | @author xiangqian
+ | @date 19:23 2023/04/10
+ |-->
+{{ define "common/float.html" }}
+{{ $data := .resp.Data }}
+<div class="float" style="display: none;">
+    <p style="color: red;">{{ .resp.Msg }}</p>
+    <p name="version">
+        {{ Localize "i18n.version" }}
+        <select>
+            <option value="1.0">1.0</option>
+            <option value="2.0">2.0</option>
+        </select>
+    </p>
+    <table border="1" cellspacing="0" cellpadding="10" align="center">
+        <tbody>
+        <tr>
+            <td>{{ Localize "i18n.name" }}</td>
+            <td>{{ $data.Name }}</td>
+        </tr>
+        <tr name="path">
+            <td>{{ Localize "i18n.path" }}</td>
+            <td name="path"></td>
+        </tr>
+        <tr>
+            <td>{{ Localize "i18n.type" }}</td>
+            <td>{{ $data.Type }}</td>
+        </tr>
+        <tr>
+            <td>{{ Localize "i18n.size" }}</td>
+            <td>{{ HumanizFileSize $data.Size }}</td>
+        </tr>
+        <tr>
+            <td>{{ Localize "i18n.addTime" }}</td>
+            <td>{{ HumanizUnix $data.AddTime }}</td>
+        </tr>
+        <tr>
+            <td>{{ Localize "i18n.updTime" }}</td>
+            <td>{{ HumanizUnix $data.UpdTime }}</td>
+        </tr>
+        </tbody>
+    </table>
+    <p name="hist">
+        {{ Localize "i18n.hist" }}:&nbsp;
+        {{ $len := len $data.Hists }}
+        <select {{ if eq $len 0 }}disabled{{end}}>
+            <option value="-1"></option>
+            {{ if gt $len 0 }}
+            {{ range $index,$hist := $data.Hists }}
+            <option value="{{ $index }}" {{ if eq $data.HistIdx $index }}selected{{ end }}>
+                {{ $hist.Name }}&nbsp;&nbsp;&nbsp;
+                {{ $hist.Type }}&nbsp;&nbsp;&nbsp;
+                {{ if eq $hist.UpdTime 0 }}{{ HumanizUnix $hist.AddTime }}{{ else }}{{ HumanizUnix $hist.UpdTime }}{{
+                end }}
+            </option>
+            {{ end }}
+            {{ end }}
+        </select>
+    </p>
+    <form name="upload"
+          action=""
+          method="POST"
+          enctype="multipart/form-data">
+        <input name="id" type="text" value="{{ $data.Id }}" hidden/>
+        <input name="file" type="file"/>
+        <button type="submit">{{ Localize "i18n.upload" }}</button>
+    </form>
+    <p name="edit">
+        <a href="/note/{{ $data.Id }}/edit" target="_blank">{{ Localize "i18n.edit" }} →</a>
+    </p>
+</div>
+{{ end }}

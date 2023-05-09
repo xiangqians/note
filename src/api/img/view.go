@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
-	"note/src/api/common"
 	"note/src/typ"
 	util_str "note/src/util/str"
 	util_time "note/src/util/time"
@@ -20,18 +19,18 @@ func HistView(context *gin.Context) {
 			Msg:  util_str.ConvTypeToStr(err),
 			Data: img,
 		}
-		common.HtmlOk(context, "img/view.html", resp)
+		context.HtmlOk(context, "img/view.html", resp)
 	}
 
 	// id
-	id, err := common.Param[int64](context, "id")
+	id, err := context.Param[int64](context, "id")
 	if err != nil || id <= 0 {
 		html(typ.Img{}, err)
 		return
 	}
 
 	// idx
-	idx, err := common.Param[int](context, "idx")
+	idx, err := context.Param[int](context, "idx")
 	if err != nil || idx < 0 {
 		idx = 0
 	}
@@ -73,11 +72,11 @@ func View(context *gin.Context) {
 			Msg:  util_str.ConvTypeToStr(err),
 			Data: img,
 		}
-		common.HtmlOk(context, "img/view.html", resp)
+		context.HtmlOk(context, "img/view.html", resp)
 	}
 
 	// id
-	id, err := common.Param[int64](context, "id")
+	id, err := context.Param[int64](context, "id")
 	if err != nil {
 		html(typ.Img{}, err)
 		return
@@ -106,14 +105,14 @@ func View(context *gin.Context) {
 // GetHist 获取历史图片
 func GetHist(context *gin.Context) {
 	// id
-	id, err := common.Param[int64](context, "id")
+	id, err := context.Param[int64](context, "id")
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
 	// idx
-	idx, err := common.Param[int](context, "idx")
+	idx, err := context.Param[int](context, "idx")
 	if err != nil || idx < 0 {
 		log.Println(err)
 		return
@@ -150,13 +149,13 @@ func GetHist(context *gin.Context) {
 	}
 
 	// write
-	common.Write(context, path)
+	context.Write(context, path)
 }
 
 // Get 获取图片
 func Get(context *gin.Context) {
 	// id
-	id, err := common.Param[int64](context, "id")
+	id, err := context.Param[int64](context, "id")
 	if err != nil {
 		log.Println(err)
 		return
@@ -177,5 +176,5 @@ func Get(context *gin.Context) {
 	}
 
 	// write
-	common.Write(context, path)
+	context.Write(context, path)
 }

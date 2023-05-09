@@ -3,7 +3,7 @@
 // @date 12:00 2023/05/07
 package db
 
-import _sql "database/sql"
+import database_sql "database/sql"
 
 type result int8
 
@@ -14,8 +14,8 @@ const (
 
 // DbImpl Db implement
 type DbImpl struct {
-	db *_sql.DB // db
-	tx *_sql.Tx // tx
+	db *database_sql.DB // db
+	tx *database_sql.Tx // tx
 }
 
 func (db *DbImpl) Begin() (err error) {
@@ -53,7 +53,7 @@ func (db *DbImpl) exec(result result, sql string, args ...any) (int64, error) {
 	}
 }
 
-func (db *DbImpl) Qry(sql string, args ...any) (*_sql.Rows, error) {
+func (db *DbImpl) Qry(sql string, args ...any) (*database_sql.Rows, error) {
 	return db.tx.Query(sql, args...)
 }
 

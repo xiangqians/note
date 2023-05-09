@@ -6,11 +6,8 @@ package note
 import (
 	"bufio"
 	"github.com/gin-gonic/gin"
-	"note/src/api/common"
-	"note/src/typ"
-	util_str "note/src/util/str"
-	util_time "note/src/util/time"
-	util_validate "note/src/util/validate"
+	"note/app/api/common/db"
+	typ2 "note/app/typ"
 	"os"
 	"strings"
 )
@@ -19,15 +16,15 @@ import (
 func UpdContent(context *gin.Context) {
 	json := func(err error) {
 		if err != nil {
-			common.JsonBadRequest(context, typ.Resp[any]{Msg: util_str.ConvTypeToStr(err)})
+			context.JsonBadRequest(context, typ2.Resp[any]{Msg: str.ConvTypeToStr(err)})
 			return
 		}
 
-		common.JsonOk(context, typ.Resp[any]{})
+		context.JsonOk(context, typ2.Resp[any]{})
 	}
 
 	// id
-	id, err := common.PostForm[int64](context, "id")
+	id, err := context.PostForm[int64](context, "id")
 	if err != nil {
 		json(err)
 		return
@@ -35,14 +32,14 @@ func UpdContent(context *gin.Context) {
 	//log.Println("id", id)
 
 	// f
-	f, count, err := DbQry(context, typ.Note{Abs: typ.Abs{Id: id}, Pid: -1})
-	if count == 0 || typ.ExtNameOf(f.Type) != typ.FtMd {
+	f, count, err := DbQry(context, typ2.Note{Abs: typ2.Abs{Id: id}, Pid: -1})
+	if count == 0 || typ2.ExtNameOf(f.Type) != typ2.FtMd {
 		json(nil)
 		return
 	}
 
 	// content
-	content, err := common.PostForm[string](context, "content")
+	content, err := context.PostForm[string](context, "content")
 	if err != nil {
 		json(err)
 		return
@@ -79,7 +76,7 @@ func UpdContent(context *gin.Context) {
 	size := fInfo.Size()
 
 	// update
-	_, err = common.DbUpd(context, "UPDATE `note` SET `size` = ?, `upd_time` = ? WHERE id = ?", size, util_time.NowUnix(), id)
+	_, err = db.DbUpd(context, "UPDATE `note` SET `size` = ?, `upd_time` = ? WHERE id = ?", size, time.NowUnix(), id)
 	if err != nil {
 		json(err)
 		return
@@ -96,8 +93,8 @@ func UpdName(context *gin.Context) {
 	}
 
 	// note
-	note := typ.Note{}
-	err := common.ShouldBind(context, &note)
+	note := typ2.Note{}
+	err := context.ShouldBind(context, &note)
 	pid := note.Pid
 	if err != nil {
 		redirect(pid, err)
@@ -106,14 +103,14 @@ func UpdName(context *gin.Context) {
 
 	// name
 	note.Name = strings.TrimSpace(note.Name)
-	err = util_validate.FileName(note.Name)
+	err = validate.FileName(note.Name)
 	if err != nil {
 		redirect(pid, err)
 		return
 	}
 
 	// update
-	_, err = common.DbUpd(context, "UPDATE `note` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", note.Name, util_time.NowUnix(), note.Id, note.Name)
+	_, err = db.DbUpd(context, "UPDATE `note` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", note.Name, time.NowUnix(), note.Id, note.Name)
 
 	redirect(pid, err)
 	return

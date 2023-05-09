@@ -1,13 +1,14 @@
 // db
 // @author xiangqian
 // @date 19:59 2023/03/22
-package common
+package db
 
 import (
 	_sql "database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	_db "note/src/db"
+	"note/src/api/common"
+	"note/src/db"
 	"note/src/typ"
 	util_os "note/src/util/os"
 	"strings"
@@ -55,7 +56,7 @@ func DbPage[T any](context *gin.Context, current int64, size uint8, sql string, 
 	if err != nil {
 		return page, err
 	}
-	total, _, err := _db.RowsMapper[int64](rows)
+	total, _, err := db.RowsMapper[int64](rows)
 	if err != nil || total == 0 {
 		return page, err
 	}
@@ -77,7 +78,7 @@ func DbPage[T any](context *gin.Context, current int64, size uint8, sql string, 
 	if err != nil {
 		return page, err
 	}
-	data, count, err := _db.RowsMapper[[]T](rows)
+	data, count, err := db.RowsMapper[[]T](rows)
 	if err != nil {
 		return page, err
 	}
@@ -99,7 +100,7 @@ func DbQry[T any](context *gin.Context, sql string, args ...any) (T, int64, erro
 	}
 
 	// mapper
-	return _db.RowsMapper[T](rows)
+	return db.RowsMapper[T](rows)
 }
 
 func DbUpd(context *gin.Context, sql string, args ...any) (rowsAffected int64, err error) {
@@ -161,8 +162,8 @@ func dbExec(context *gin.Context, typ dbExecType, sql string, args ...any) (*_sq
 	return rows, i, err
 }
 
-func Db(context *gin.Context) (_db.Db, error) {
-	dataDir := DataDir(context)
+func Db(context *gin.Context) (db.Db, error) {
+	dataDir := common.DataDir(context)
 	dsn := fmt.Sprintf("%s%s%s", dataDir, util_os.FileSeparator(), "database.db")
-	return _db.Get(dsn)
+	return db.Get(dsn)
 }

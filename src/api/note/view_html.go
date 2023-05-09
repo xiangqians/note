@@ -5,13 +5,11 @@ package note
 
 import (
 	"github.com/gin-gonic/gin"
-	"note/src/api/common"
-	"note/src/typ"
-	util_str "note/src/util/str"
+	typ2 "note/app/typ"
 )
 
 // ViewHtml 查看html文件
-func ViewHtml(context *gin.Context, note typ.Note) {
+func ViewHtml(context *gin.Context, note typ2.Note) {
 	// read
 	buf, err := Read(context, note)
 	if err == nil && len(buf) > 0 {
@@ -19,11 +17,11 @@ func ViewHtml(context *gin.Context, note typ.Note) {
 	}
 
 	// resp
-	resp := typ.Resp[typ.Note]{
-		Msg:  util_str.ConvTypeToStr(err),
+	resp := typ2.Resp[typ2.Note]{
+		Msg:  str.ConvTypeToStr(err),
 		Data: note,
 	}
 
 	// html
-	common.HtmlOk(context, "note/html/view.html", resp)
+	context.HtmlOk(context, "note/html/view.html", resp)
 }

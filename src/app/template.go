@@ -10,11 +10,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/render"
 	html_template "html/template"
-	util_json "note/src/util/json"
-	util_num "note/src/util/num"
+	"note/src/util/json"
+	"note/src/util/num"
 	util_os "note/src/util/os"
-	util_reflect "note/src/util/reflect"
-	util_time "note/src/util/time"
+	"note/src/util/reflect"
+	"note/src/util/time"
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,12 +33,12 @@ func template(engine *gin.Engine) {
 
 		// 格式化日期时间戳（s）
 		"FormatUnix": func(unix int64) string {
-			return util_time.FormatUnix(unix)
+			return time.FormatUnix(unix)
 		},
 
 		// 人性化日期时间戳（s）
 		"HumanizUnix": func(unix int64) string {
-			return util_time.HumanizUnix(unix)
+			return time.HumanizUnix(unix)
 		},
 
 		// 人性化文件大小
@@ -48,14 +48,14 @@ func template(engine *gin.Engine) {
 
 		// No.
 		"No_": func(page any, index int) int64 {
-			current := util_reflect.CallField[int64](page, "Current")
-			size := util_reflect.CallField[uint8](page, "Size")
+			current := reflect.CallField[int64](page, "Current")
+			size := reflect.CallField[uint8](page, "Size")
 			return (current-1)*int64(size) + int64(index) + 1
 		},
 
 		// add 两数相加
 		"Add": func(i1 any, i2 any) int64 {
-			return util_num.Int64(i1) + util_num.Int64(i2)
+			return num.Int64(i1) + num.Int64(i2)
 		},
 
 		// put
@@ -66,12 +66,12 @@ func template(engine *gin.Engine) {
 
 		// Timestamp
 		"Timestamp": func() int64 {
-			return util_time.NowUnix()
+			return time.NowUnix()
 		},
 
 		// JSON Serialize
 		"Serialize": func(i any) string {
-			json, _ := util_json.Serialize(i)
+			json, _ := json.Serialize(i)
 			return json
 		},
 

@@ -1,0 +1,44 @@
+<!--
+ | @author xiangqian
+ | @date 15:38 2023/02/04
+ |-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/custom/custom.css" type="text/css"/>
+    <title>{{ Localize "i18n.login" }}</title>
+</head>
+<body>
+
+<content>
+    <form action="/user/login0?t={{ Timestamp }}" method="post">
+        <p style="color: red;">{{ .resp.Msg }}</p>
+
+        {{ $data := .resp.Data }}
+
+        <div>
+            *<label for="name">{{ Localize "i18n.userName" }}</label>
+            <input id="name" name="name" type="text" value="{{ $data.Name }}">
+        </div>
+        <div>
+            *<label for="passwd">{{ Localize "i18n.passwd" }}</label>
+            <input id="passwd" name="passwd" type="password">
+        </div>
+        <div>
+            <input type="submit" value='{{ Localize "i18n.login" }}'>
+        </div>
+
+        <br>
+        <div>
+            {{ Localize "i18n.newToNote" }} <a href="/user/reg?t={{ Timestamp }}">{{ Localize "i18n.createAnAccount"
+            }}</a>
+        </div>
+    </form>
+</content>
+
+{{ template "common/footer.html" . }}
+
+</body>
+</html>

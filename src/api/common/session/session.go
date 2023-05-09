@@ -1,7 +1,7 @@
 // session
 // @author xiangqian
 // @date 20:01 2023/03/22
-package common
+package session
 
 import (
 	"errors"
@@ -68,6 +68,7 @@ func ClearSession(context *gin.Context) {
 	session.Save()
 }
 
+// Session 解析session
 func Session(context *gin.Context) sessions.Session {
 	return sessions.Default(context)
 }

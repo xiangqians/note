@@ -7,7 +7,7 @@ package app
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	api_common "note/src/api/common"
+	api_common_trans "note/src/api/common/trans"
 )
 
 // Run 运行Application
@@ -22,7 +22,7 @@ func Run() {
 	loc()
 
 	// ValidateTrans
-	api_common.ValidateTrans()
+	api_common_trans.Validate()
 
 	// gin模式
 	gin.SetMode(gin.DebugMode)

@@ -1,0 +1,229 @@
+<!--
+ | @author xiangqian
+ | @date 22:53 2023/02/08
+ |-->
+<!DOCTYPE html>
+<html lang="en">
+{{ $data := .resp.Data }}
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
+
+    <!--
+     | https://codemirror.net
+     | GitHub: https://github.com/codemirror/codemirror5
+     | doc: https://codemirror.net/5/doc/manual.html
+     |-->
+    <!-- 引入codemirror核心css文件 codemirror.css -->
+    <link rel="stylesheet" href="/static/codemirror/lib/codemirror.css">
+
+    <title>{{ $data.note.Name }}</title>
+
+    <style>
+
+        .CodeMirror {
+            font-size: 16px;
+        }
+
+    </style>
+</head>
+<body>
+
+<p style="color: red;">{{ .resp.Msg }}</p>
+
+<textarea type="text">{{ $data.content }}</textarea>
+
+</body>
+</html>
+
+<script type="text/javascript" src="/static/jquery/jquery.js"></script>
+
+<!-- 引入codemirror核心js文件 codemirror.js -->
+<script type="text/javascript" src="/static/codemirror/lib/codemirror.js"></script>
+
+<!-- 引入codemirror mode代码高亮js -->
+<script type="text/javascript" src="/static/codemirror/mode/markdown/markdown.js"></script>
+
+<!-- md5.js -->
+<script src="/static/md5/md5.js"></script>
+
+<script type="text/javascript" src="/static/custom/custom.js"></script>
+
+<script>
+    ;
+    (function () {
+
+        let $textarea = $('textarea')
+        let editor = CodeMirror.fromTextArea($textarea[0], {
+            mode: 'markdown', // 语言模式
+            lineNumbers: true,  // 显示行数
+            // indentUnit: 4,         // 缩进单位为4
+            smartIndent: true, //智能缩进
+            styleActiveLine: true, // 当前行背景高亮
+            lineWrapping: true, // 自动换行
+            matchBrackets: true,  // 括号匹配
+            autoRefresh: true,
+
+            // keyMap：快捷键，default使用默认快捷键
+
+        })
+        editor.setSize('100%', '100%')
+
+        // hash
+        editor.hash = md5(editor.getValue())
+
+        // 内容变化监听
+        // https://codemirror.net/5/doc/manual.html#events
+        editor.on("changes", function () {
+            // console.log($textarea.val())
+            editor.refresh()
+            editor.save()
+            // console.log(editor.getValue())
+            // console.log($textarea.val())
+        })
+
+        function save() {
+            custom.ajax('/note/content', 'PUT', {
+                    'id': "{{ $data.note.Id }}",
+                    'content': editor.getValue()
+                },
+                'json',
+                false,
+                function () {
+                    editor.hash = md5(editor.getValue())
+                    alert('{{ Localize "i18n.success" }}')
+                },
+                function (e) {
+                    let msg = e.responseJSON.msg
+                    alert(msg)
+                })
+        }
+        ;
+
+        // 监听 ctrl + s 按键
+        document.onkeydown = function (event) {
+            // ctrl + s
+            if ((navigator.platform.match("Mac") ? event.metaKey : event.ctrlKey) // ctrl
+                && event.keyCode == 83) { // s
+                // console.log("Ctrl + S", event)
+                save()
+
+                // Prevent the default handler from running.
+                // 阻止默认行为
+                event.preventDefault()
+                return
+            }
+        }
+
+        ;
+
+        // 前端js获取剪切板中的文本或者图片文件数据
+        // 监听paste事件，在进行粘贴的时候会触发
+        // https://developer.mozilla.org/en-US/docs/Web/API/Element/paste_event
+        document.addEventListener('paste', function (event) {
+            // clipboardData
+            // 粘贴事件提供了一个clipboardData的属性
+            let clipboardData = event.clipboardData
+            // console.log('clipboardData', clipboardData)
+            if (!(clipboardData)) {
+                return
+            }
+
+            // 如果是 Safari 直接 return
+            if (!(event.clipboardData && event.clipboardData.items)) {
+                console.warn("不支持当前浏览器")
+                return
+            }
+
+            // dropEffect
+            // String，默认是 none
+            // let dropEffect = clipboardData.dropEffect
+            // console.log('dropEffect', dropEffect)
+
+            // effectAllowed
+            // String，默认是 uninitialized
+            // let effectAllowed = clipboardData.effectAllowed
+            // console.log('effectAllowed', effectAllowed)
+
+            // files
+            // FileList，文件列表
+            // let files = clipboardData.files
+            // console.log('files', files)
+
+            // items
+            // DataTransferItemList，剪切板中的各项数据，Chrome有该属性，Safari没有。
+            //
+            // DataTransferItem属性：
+            // 1、kind：一般为string或者file
+            // 2、type：具体的数据类型，例如具体是哪种类型字符串或者哪种类型的文件，即MIME-Type
+            // DataTransferItem方法：
+            // 1、getAsFile：如果kind是file，可以用该方法获取到文件
+            // 2、getAsString：入参是回调函数；如果kind是string，可以用该方法获取到字符串，字符串需要用回调函数得到，回调函数的第一个参数就是剪切板中的字符串
+            //
+            // let items = clipboardData.items
+            // console.log('items', items)
+
+            // types
+            // Array，剪切板中的数据类型 该属性在Safari下比较混乱
+            // 一般types中常见的值有：text/plain（普通字符串）、text/html（带有样式的html）、Files（文件）。
+            // let types = clipboardData.types
+            // console.log('types', types)
+
+            // -----------------------------
+
+            // Chrome浏览器
+
+            // 上传图片
+            function uploadImg(file) {
+                // console.log('file:', file)
+
+                // 上传
+                let formData = new FormData()
+                formData.append('file', file)
+                formData.append('dataType', 'json')
+                custom.ajax('/img/upload', 'POST', formData, 'form', false, function (resp) {
+                    // console.log(resp)
+                    document.execCommand('insertText', false, '![image](/img/' + resp.Data + ')');
+                }, function (resp) {
+                    alert(JSON.stringify(resp))
+                })
+            }
+
+            let items = clipboardData.items
+            // console.log('items', items)
+            for (let i = 0, len = items.length; i < len; i++) {
+                let item = items[i]
+                // console.log('item', item)
+                if (item.kind === 'file' && (/^image\/[jpeg|png|gif|jpg]/.test(item.type))) {
+                    // blob 就是从剪切板获得的文件 可以进行上传或其他操作
+                    let blob = item.getAsFile()
+                    if (blob.size === 0) {
+                        continue
+                    }
+
+                    uploadImg(blob)
+
+                    // Prevent the default handler from running.
+                    // 阻止默认行为
+                    event.preventDefault()
+                    return
+
+                } else if (item.kind === 'file') {
+                    console.warn('type', item.type)
+                }
+            }
+        })
+
+        ;
+        // onbeforeunload
+        window.onbeforeunload = function (e) {
+            var e = window.event || e
+            if (editor.hash !== md5(editor.getValue())) {
+                e.returnValue = "数据发生改变！"
+                return e.returnValue
+            }
+        }
+
+    })()
+    ;
+</script>

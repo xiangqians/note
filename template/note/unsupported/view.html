@@ -1,0 +1,45 @@
+<!--
+ | @author xiangqian
+ | @date 22:32 2023/02/08
+ |-->
+<!DOCTYPE html>
+<html lang="en" url="{{ .url }}">
+{{ $data := .resp.Data }}
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/custom/custom.css" type="text/css"/>
+    <title>{{ $data.Name }}</title>
+</head>
+<body>
+
+<!--
+只有 Firefox 和 Chrome 支持 download 属性。
+download 属性规定被下载的超链接目标。
+该属性也可以设置一个值来规定下载文件的名称。所允许的值没有限制，浏览器将自动检测正确的文件扩展名并添加到文件 (.img, .pdf, .txt, .html, 等等)。
+-->
+<!--
+<a href="/note/{{ $data.Id }}" download="{{ $data.Name }}">{{ Localize "i18n.download" }}</a>
+-->
+
+<!-- 浮动窗口 -->
+<content>
+    <p style="color: red;">{{ .resp.Msg }}</p>
+
+    <p style="font-size: 26px">{{ Localize "i18n.fileTypeUnsupported" }}</p>
+
+    {{ template "common/float.html" . }}
+</content>
+
+</body>
+</html>
+<script type="text/javascript" src="/static/jquery/jquery.js"></script>
+<script type="text/javascript" src="/static/custom/custom.js"></script>
+<script>
+
+    ;(function () {
+        let data = JSON.parse('{{ Serialize $data }}')
+        custom.float('note', data)
+    })()
+
+</script>

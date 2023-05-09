@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
-	"note/src/api/common"
+	"note/src/api/common/db"
 	"note/src/typ"
 	util_os "note/src/util/os"
 	util_str "note/src/util/str"
@@ -21,11 +21,11 @@ import (
 func ReUpload(context *gin.Context) {
 	redirect := func(id int64, err any) {
 		resp := typ.Resp[any]{Msg: util_str.ConvTypeToStr(err)}
-		common.Redirect(context, fmt.Sprintf("/img/%d/view", id), resp)
+		context.Redirect(context, fmt.Sprintf("/img/%d/view", id), resp)
 	}
 
 	// id
-	id, err := common.PostForm[int64](context, "id")
+	id, err := context.PostForm[int64](context, "id")
 	if err != nil || id <= 0 {
 		redirect(id, err)
 		return
@@ -152,7 +152,7 @@ func ReUpload(context *gin.Context) {
 	}
 
 	// update
-	_, err = common.DbUpd(context, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `hist` = ?, `hist_size` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?",
+	_, err = db.DbUpd(context, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `hist` = ?, `hist_size` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?",
 		newImg.Name, newImg.Type, newImg.Size, newImg.Hist, newImg.HistSize, newImg.UpdTime, newImg.Id)
 	if err != nil {
 		redirect(id, err)
@@ -198,7 +198,7 @@ func ReUpload(context *gin.Context) {
 func Upload(context *gin.Context) {
 	redirect := func(err any) {
 		resp := typ.Resp[any]{Msg: util_str.ConvTypeToStr(err)}
-		common.Redirect(context, fmt.Sprintf("/img/list"), resp)
+		context.Redirect(context, fmt.Sprintf("/img/list"), resp)
 	}
 
 	// file header
@@ -232,11 +232,11 @@ func Upload(context *gin.Context) {
 	id, count, err := DbQryPermlyDelId(context)
 	// 新id
 	if err != nil || count == 0 {
-		id, err = common.DbAdd(context, "INSERT INTO `img` (`name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?)", name, _type, size, util_time.NowUnix())
+		id, err = db.DbAdd(context, "INSERT INTO `img` (`name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?)", name, _type, size, util_time.NowUnix())
 	} else
 	// 复用id
 	{
-		_, err = common.DbUpd(context, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `hist` = '', `hist_size` = 0, `del` = 0, `add_time` = ?, `upd_time` = 0 WHERE `id` = ?", name, _type, size, util_time.NowUnix(), id)
+		_, err = db.DbUpd(context, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `hist` = '', `hist_size` = 0, `del` = 0, `add_time` = ?, `upd_time` = 0 WHERE `id` = ?", name, _type, size, util_time.NowUnix(), id)
 	}
 	if err != nil {
 		redirect(err)
@@ -275,6 +275,6 @@ func Upload(context *gin.Context) {
 
 // DbQryPermlyDelId 查询永久删除的图片记录id，以复用
 func DbQryPermlyDelId(context *gin.Context) (int64, int64, error) {
-	id, count, err := common.DbQry[int64](context, "SELECT `id` FROM `img` WHERE `del` = 2 LIMIT 1")
+	id, count, err := db.DbQry[int64](context, "SELECT `id` FROM `img` WHERE `del` = 2 LIMIT 1")
 	return id, count, err
 }

@@ -7,15 +7,13 @@ import (
 	"bytes"
 	"github.com/gin-gonic/gin"
 	"github.com/russross/blackfriday/v2"
-	"note/src/api/common"
-	"note/src/typ"
-	util_str "note/src/util/str"
+	typ2 "note/app/typ"
 )
 
 // ViewMd 查看md文件
 // https://github.com/russross/blackfriday
 // https://pkg.go.dev/github.com/russross/blackfriday/v2
-func ViewMd(context *gin.Context, note typ.Note) {
+func ViewMd(context *gin.Context, note typ2.Note) {
 	// read
 	buf, err := Read(context, note)
 	if err == nil && len(buf) > 0 {
@@ -35,11 +33,11 @@ func ViewMd(context *gin.Context, note typ.Note) {
 	}
 
 	// resp
-	resp := typ.Resp[typ.Note]{
-		Msg:  util_str.ConvTypeToStr(err),
+	resp := typ2.Resp[typ2.Note]{
+		Msg:  str.ConvTypeToStr(err),
 		Data: note,
 	}
 
 	// html
-	common.HtmlOk(context, "note/md/view.html", resp)
+	context.HtmlOk(context, "note/md/view.html", resp)
 }

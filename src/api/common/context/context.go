@@ -1,13 +1,15 @@
 // context
 // @author xiangqian
 // @date 20:04 2023/03/22
-package common
+package context
 
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"note/src/api/common/session"
+	"note/src/api/common/trans"
 	typ_resp "note/src/typ"
 	util_reflect "note/src/util/reflect"
 	util_str "note/src/util/str"
@@ -28,7 +30,7 @@ func HtmlOk[T any](context *gin.Context, name string, resp typ_resp.Resp[T]) {
 // name: templateName
 func Html[T any](context *gin.Context, code int, name string, resp typ_resp.Resp[T]) {
 	// resp msg
-	resp0, err := GetSessionV[any](context, RespSessionKey, true)
+	resp0, err := session.GetSessionV[any](context, session.RespSessionKey, true)
 	if err == nil {
 		msg := util_reflect.CallField[string](resp0, "Msg")
 		if msg != "" {
@@ -37,16 +39,16 @@ func Html[T any](context *gin.Context, code int, name string, resp typ_resp.Resp
 	}
 
 	// user
-	user, _ := GetSessionUser(context)
+	user, _ := session.GetSessionUser(context)
 
 	// url
 	url := context.Request.RequestURI
 
 	// html
 	context.HTML(code, name, gin.H{
-		RespSessionKey: resp,
-		UserSessionKey: user,
-		UrlSessionKey:  url,
+		session.RespSessionKey: resp,
+		session.UserSessionKey: user,
+		session.UrlSessionKey:  url,
 	})
 }
 
@@ -63,7 +65,7 @@ func Json[T any](context *gin.Context, code int, resp typ_resp.Resp[T]) {
 }
 
 func Redirect[T any](context *gin.Context, location string, resp typ_resp.Resp[T]) {
-	SetSessionKv(context, RespSessionKey, resp)
+	session.SetSessionKv(context, session.RespSessionKey, resp)
 	if strings.Contains(location, "?") {
 		location = fmt.Sprintf("%s&t=%d", location, util_time.NowUnix())
 	} else {
@@ -90,7 +92,7 @@ func Query[T any](context *gin.Context, key string) (T, error) {
 func ShouldBindQuery(context *gin.Context, i any) error {
 	err := context.ShouldBindQuery(i)
 	if err != nil {
-		err = TransErr(context, err)
+		err = trans.Err(context, err)
 	}
 	return err
 }
@@ -99,7 +101,7 @@ func ShouldBindQuery(context *gin.Context, i any) error {
 func ShouldBind(context *gin.Context, i any) error {
 	err := context.ShouldBind(i)
 	if err != nil {
-		err = TransErr(context, err)
+		err = trans.Err(context, err)
 	}
 	return err
 }

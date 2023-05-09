@@ -13,6 +13,8 @@ import (
 	"io"
 	"log"
 	"note/src/api/common"
+	"note/src/api/common/db"
+	"note/src/api/common/session"
 	"note/src/typ"
 	util_os "note/src/util/os"
 	util_str "note/src/util/str"
@@ -30,12 +32,12 @@ func Upd(context *gin.Context) {
 			Msg:  util_str.ConvTypeToStr(err),
 			Data: user,
 		}
-		common.Redirect(context, "/user/settings", resp)
+		context.Redirect(context, "/user/settings", resp)
 	}
 
 	// bind
 	user := typ.User{}
-	err := common.ShouldBind(context, &user)
+	err := context.ShouldBind(context, &user)
 	if err != nil {
 		redirect(user, err)
 		return
@@ -56,7 +58,7 @@ func Upd(context *gin.Context) {
 	}
 
 	// name
-	sessionUser, err := common.GetSessionUser(context)
+	sessionUser, err := session.GetSessionUser(context)
 	if err != nil {
 		redirect(user, err)
 		return
@@ -75,7 +77,7 @@ func Upd(context *gin.Context) {
 
 	// update
 	updTime := util_time.NowUnix()
-	_, err = common.DbUpd(nil, "UPDATE `user` SET `name` = ?, nickname = ?, `passwd` = ?, rem = ?, upd_time = ? WHERE id = ?",
+	_, err = db.DbUpd(nil, "UPDATE `user` SET `name` = ?, nickname = ?, `passwd` = ?, rem = ?, upd_time = ? WHERE id = ?",
 		user.Name, user.Nickname, EncryptPasswd(user.Passwd), user.Rem, updTime, sessionUser.Id)
 	if err != nil {
 		redirect(user, err)
@@ -87,30 +89,30 @@ func Upd(context *gin.Context) {
 	sessionUser.Nickname = user.Nickname
 	sessionUser.Rem = user.Rem
 	sessionUser.UpdTime = updTime
-	common.SetSessionUser(context, sessionUser)
+	session.SetSessionUser(context, sessionUser)
 
 	redirect(user, nil)
 }
 
 // Settings 用户设置页
 func Settings(context *gin.Context) {
-	resp, err := common.GetSessionV[typ.Resp[typ.User]](context, common.RespSessionKey, true)
+	resp, err := session.GetSessionV[typ.Resp[typ.User]](context, session.RespSessionKey, true)
 	if err != nil {
-		user, err := common.GetSessionUser(context)
+		user, err := session.GetSessionUser(context)
 		resp.Msg = util_str.ConvTypeToStr(err)
 		resp.Data = user
 	}
 
-	common.HtmlOk(context, "user/settings.html", resp)
+	context.HtmlOk(context, "user/settings.html", resp)
 }
 
 // Logout 用户登出
 func Logout(context *gin.Context) {
 	// 清除session
-	common.ClearSession(context)
+	session.ClearSession(context)
 
 	// 重定向
-	common.Redirect(context, "/user/login", typ.Resp[any]{})
+	context.Redirect(context, "/user/login", typ.Resp[any]{})
 }
 
 // Login0 用户登录
@@ -124,7 +126,7 @@ func Login0(context *gin.Context) {
 			Msg:  util_str.ConvTypeToStr(err),
 			Data: typ.User{Name: name},
 		}
-		common.Redirect(context, "/user/login", resp)
+		context.Redirect(context, "/user/login", resp)
 	}
 
 	// verify name
@@ -143,7 +145,7 @@ func Login0(context *gin.Context) {
 	}
 
 	// query
-	user, count, err := common.DbQry[typ.User](nil,
+	user, count, err := db.DbQry[typ.User](nil,
 		"SELECT `id`, `name`, `nickname`, `rem`, `add_time`, `upd_time` FROM `user` WHERE `del` = 0 AND `name` = ? AND `passwd` = ? LIMIT 1",
 		name, EncryptPasswd(passwd))
 	if err != nil {
@@ -157,16 +159,16 @@ func Login0(context *gin.Context) {
 	}
 
 	// 保存用户信息到session
-	common.SetSessionUser(context, user)
+	session.SetSessionUser(context, user)
 
 	// 重定向
-	common.Redirect(context, "/", typ.Resp[any]{})
+	context.Redirect(context, "/", typ.Resp[any]{})
 }
 
 // Login 用户登录页
 func Login(context *gin.Context) {
-	resp, _ := common.GetSessionV[typ.Resp[typ.User]](context, common.RespSessionKey, true)
-	common.HtmlOk(context, "user/login.html", resp)
+	resp, _ := session.GetSessionV[typ.Resp[typ.User]](context, session.RespSessionKey, true)
+	context.HtmlOk(context, "user/login.html", resp)
 }
 
 // Add 添加用户（用户注册）
@@ -177,7 +179,7 @@ func Add(context *gin.Context) {
 			Msg:  util_str.ConvTypeToStr(err),
 			Data: user,
 		}
-		common.Redirect(context, "/user/reg", resp)
+		context.Redirect(context, "/user/reg", resp)
 	}
 
 	// 是否允许用户注册
@@ -188,7 +190,7 @@ func Add(context *gin.Context) {
 
 	// bind
 	user := typ.User{}
-	err := common.ShouldBind(context, &user)
+	err := context.ShouldBind(context, &user)
 	if err != nil {
 		redirect(user, err)
 		return
@@ -217,7 +219,7 @@ func Add(context *gin.Context) {
 
 	// db
 	// get
-	_db, err := common.Db(context)
+	_db, err := db.Db(context)
 	if err != nil {
 		redirect(user, err)
 		return
@@ -279,17 +281,17 @@ func Add(context *gin.Context) {
 		Msg:  i18n.MustGetMessage("i18n.accountRegSuccess"),
 		Data: user,
 	}
-	common.Redirect(context, "/user/login", resp)
+	context.Redirect(context, "/user/login", resp)
 }
 
 // Reg 用户注册页
 func Reg(context *gin.Context) {
-	resp, _ := common.GetSessionV[typ.Resp[typ.User]](context, common.RespSessionKey, true)
-	common.HtmlOk(context, "user/reg.html", resp)
+	resp, _ := session.GetSessionV[typ.Resp[typ.User]](context, session.RespSessionKey, true)
+	context.HtmlOk(context, "user/reg.html", resp)
 }
 
 func VerifyDbName(name string) error {
-	_, count, err := common.DbQry[int64](nil, "SELECT `id` FROM `user` WHERE `del` = 0 AND `name` = ? LIMIT 1", name)
+	_, count, err := db.DbQry[int64](nil, "SELECT `id` FROM `user` WHERE `del` = 0 AND `name` = ? LIMIT 1", name)
 	if err != nil {
 		return err
 	}

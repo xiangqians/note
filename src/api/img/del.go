@@ -5,7 +5,7 @@ package img
 
 import (
 	"github.com/gin-gonic/gin"
-	"note/src/api/common"
+	"note/src/api/common/db"
 	util_os "note/src/util/os"
 	util_time "note/src/util/time"
 )
@@ -17,7 +17,7 @@ func PermlyDel(context *gin.Context) {
 	}
 
 	// id
-	id, err := common.Param[int64](context, "id")
+	id, err := context.Param[int64](context, "id")
 	if err != nil {
 		redirect(err)
 		return
@@ -52,7 +52,7 @@ func PermlyDel(context *gin.Context) {
 	}
 
 	// delete
-	_, err = common.DbDel(context, "UPDATE `img` SET `name` = '', `type` = '', `size` = 0, `hist` = '', `hist_size` = 0, `del` = 2, `add_time` = 0, `upd_time` = 0 WHERE `del` = 1 AND `id` = ?", id)
+	_, err = db.DbDel(context, "UPDATE `img` SET `name` = '', `type` = '', `size` = 0, `hist` = '', `hist_size` = 0, `del` = 2, `add_time` = 0, `upd_time` = 0 WHERE `del` = 1 AND `id` = ?", id)
 	redirect(err)
 }
 
@@ -63,14 +63,14 @@ func Del(context *gin.Context) {
 	}
 
 	// id
-	id, err := common.Param[int64](context, "id")
+	id, err := context.Param[int64](context, "id")
 	if err != nil {
 		redirect(err)
 		return
 	}
 
 	// delete
-	_, err = common.DbDel(context, "UPDATE `img` SET `del` = 1, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", util_time.NowUnix(), id)
+	_, err = db.DbDel(context, "UPDATE `img` SET `del` = 1, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", util_time.NowUnix(), id)
 	redirect(err)
 	return
 }

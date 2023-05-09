@@ -6,15 +6,14 @@ package note
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"note/src/api/common"
-	"note/src/typ"
+	typ2 "note/app/typ"
 	"strings"
 )
 
 // ViewPdf 查看pdf文件
-func ViewPdf(context *gin.Context, note typ.Note) {
+func ViewPdf(context *gin.Context, note typ2.Note) {
 	// version
-	v, _ := common.Query[string](context, "v")
+	v, _ := context.Query[string](context, "v")
 	v = strings.TrimSpace(v)
 	switch v {
 	// v1.0
@@ -29,10 +28,10 @@ func ViewPdf(context *gin.Context, note typ.Note) {
 	}
 
 	// resp
-	resp := typ.Resp[typ.Note]{
+	resp := typ2.Resp[typ2.Note]{
 		Data: note,
 	}
 
 	// html
-	common.HtmlOk(context, fmt.Sprintf("note/pdf/view_v%s.html", v), resp)
+	context.HtmlOk(context, fmt.Sprintf("note/pdf/view_v%s.html", v), resp)
 }

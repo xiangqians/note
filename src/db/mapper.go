@@ -6,7 +6,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	util_str "note/src/util/str"
+	"note/src/util/str"
 	"reflect"
 )
 
@@ -174,7 +174,7 @@ func getStructDest(cols []string, rflType reflect.Type, rflVal reflect.Value) []
 func setStructDest(cols []string, dest *[]any, typeField reflect.StructField, rflVal reflect.Value) {
 	name := typeField.Tag.Get("sql")
 	if name == "" {
-		name = util_str.ConvNameHumpToUnderline(typeField.Name)
+		name = str.ConvNameHumpToUnderline(typeField.Name)
 	}
 	for ci, col := range cols {
 		if col == name {

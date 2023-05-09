@@ -1,0 +1,438 @@
+<!--
+ | @author xiangqian
+ | @date 14:44 2023/02/04
+ |-->
+<!DOCTYPE html>
+<html lang="en" url="{{ .url }}">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/custom/custom.css" type="text/css"/>
+    <title>{{ Localize "i18n.note" }}</title>
+</head>
+<body>
+
+{{ template "common/header.html" . }}
+
+<content>
+    <p style="color: red;">{{ .resp.Msg }}</p>
+
+    {{ $data := .resp.Data }}
+    {{ $note := $data.note }}
+    {{ $types := $data.types }}
+
+    <p>
+        <span>
+            <script>
+                document.write("{{ $note.PathLink }}")
+            </script>
+        </span>
+        &nbsp;&nbsp;
+        <span>
+            {{ Localize "i18n.name" }}: <input search="name" type="text" size="15" value="{{ $note.Name }}">&nbsp;&nbsp;
+            {{ Localize "i18n.type" }}: <select search="type">
+                <option value=""></option>
+                {{ $len := len $data.types }}
+                {{ if gt $len 0 }}
+                {{ range $index,$type := $types }}
+                <option value="{{ $type }}" {{ if eq $note.Type $type }}selected{{ end }}>{{ $type }}</option>
+                {{ end }}
+                {{ end }}
+            </select>&nbsp;&nbsp;
+            {{ Localize "i18n.sub" }}: <input search="sub"
+                                              type="checkbox"
+                                              {{ if ne $note.Sub 0 }}checked{{ end }}/>&nbsp;&nbsp;
+            {{ Localize "i18n.deleted" }}: <input search="deleted"
+                                                  type="checkbox"
+                                                  {{ if ne $note.Deleted 0 }}checked{{ end }}/>&nbsp;&nbsp;
+            <button search="search">{{ Localize "i18n.search" }}</button>&nbsp;
+            <a href="/note/list?pid={{ $note.Id }}&t={{ Timestamp }}"><button>{{ Localize "i18n.reset" }}</button></a>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="/note/list?t={{ Timestamp }}"><button>/</button></a>
+        </span>
+    </p>
+
+    <table cellspacing="1" cellpadding="10" align="center">
+        <thead>
+        <tr>
+            <td>{{ Localize "i18n.name" }}</td>
+            {{ if ne $note.Sub 0 }}
+            <td>{{ Localize "i18n.path" }}</td>
+            {{ end }}
+            <td>{{ Localize "i18n.type" }}</td>
+            <td>{{ Localize "i18n.size" }}</td>
+            <td>{{ Localize "i18n.addTime" }}</td>
+            <td>{{ Localize "i18n.updTime" }}</td>
+            <td colspan="3">{{ Localize "i18n.op" }}</td>
+        </tr>
+        </thead>
+        <tbody>
+
+        {{ if gt $note.Id 0 }}
+        <tr>
+            <td><a href="/note/list?pid={{ $note.Pid }}&t={{ Timestamp }}">../</a></td>
+            <td colspan="7"></td>
+        </tr>
+        {{ end }}
+
+        {{ $len := len $note.Children }}
+        {{ if gt $len 0 }}
+        {{ range $index,$childNote := $note.Children }}
+        <tr note-id="{{ $childNote.Id }}"
+            note-pid="{{ $childNote.Pid }}"
+            note-name="{{ $childNote.Name }}"
+            note-type="{{ $childNote.Type }}"
+            note-path="{{ if ne $note.Sub 0 }}{{ $childNote.Path }}{{ else }}{{ $note.Path }}{{ end }}"
+            {{ if ne $childNote.Del 0 }}class="gray" {{ end }}>
+            <td>
+                {{ if ne $childNote.Del 0 }}
+                <span>{{ $childNote.Name }}</span>
+                {{ else }}
+                <a {{ if eq $childNote.Type "d" }}href="/note/list?pid={{ $childNote.Id }}&t={{ Timestamp }}"
+                {{ else }}
+                href="/note/{{$childNote.Id }}/view?t={{ Timestamp }}" target="_blank"
+                {{ end }}>
+                {{ $childNote.Name }}{{ if eq $childNote.Type "d" }}/{{end}}
+                </a>
+                {{ end }}
+            </td>
+            {{ if ne $note.Sub 0 }}
+            <td>
+                <script>
+                    document.write("{{ $childNote.PathLink }}")
+                </script>
+            </td>
+            {{ end }}
+            <td>{{ $childNote.Type }}</td>
+            <td>{{ HumanizFileSize $childNote.Size }}</td>
+            <td>{{ HumanizUnix $childNote.AddTime }}</td>
+            <td>{{ HumanizUnix $childNote.UpdTime }}</td>
+            {{ if ne $childNote.Del 0 }}
+            <td>
+                <button restore>{{ Localize "i18n.restore" }}</button>
+            </td>
+            <td colspan="2">
+                <button permly-del>{{ Localize "i18n.permlyDel" }}</button>
+            </td>
+            {{ else }}
+            <td>
+                <button rename>{{ Localize "i18n.rename" }}</button>
+            </td>
+            <td>
+                <button cut>{{ Localize "i18n.cut" }}</button>
+            </td>
+            <td>
+                <button del>{{ Localize "i18n.del" }}</button>
+            </td>
+            {{ end }}
+        </tr>
+        {{ end }}
+        {{ end }}
+        </tbody>
+    </table>
+    {{ if eq $note.Deleted 0 }}
+    <br>
+    <div>
+        <a name="paste" method="PUT" value="{{ $data.pnote.Id }}">
+            <button name="paste" disabled="disabled">{{ Localize "i18n.paste" }}</button>
+        </a>
+    </div>
+    <br>
+    <br>
+    <br>
+
+    <div>
+        <a add href="#">{{ Localize "i18n.add" }} →</a>
+    </div>
+    <br>
+    <hr width="30%">
+    <div style="padding: 5px">
+        <form action="/note/upload?t={{ Timestamp }}" method="POST" enctype="multipart/form-data">
+            <input name="pid" type="text" value="{{ $note.Id }}" hidden/>
+            <input name="file" type="file"/>
+            <button type="submit">{{ Localize "i18n.upload" }}</button>
+        </form>
+    </div>
+    {{ end }}
+
+</content>
+
+{{ template "common/footer.html" . }}
+
+</body>
+</html>
+<script type="text/javascript" src="/static/jquery/jquery.js"></script>
+<script type="text/javascript" src="/static/custom/custom.js"></script>
+<script type="text/javascript">
+
+    // search
+    ;(function () {
+
+        let $search = $($('[search="search"]')[0])
+        custom.clickE($search, function ($e) {
+            let $name = $($('input[search="name"]')[0])
+            let $type = $($('select[search="type"]')[0])
+            let $sub = $($('input[search="sub"]')[0])
+            let $deleted = $($('input[search="deleted"]')[0])
+
+            let pid = '{{ $note.Id }}'
+            let name = $name.val().trim()
+            let type = $type.find("option:selected").text()
+            let sub = $sub.is(":checked") ? 1 : 0
+            let deleted = $deleted.is(":checked") ? 1 : 0
+
+            return {
+                url: `/note/list?pid=${pid}&name=${name}&type=${type}&sub=${sub}&deleted=${deleted}`,
+                method: 'GET',
+            }
+        })
+
+    })()
+
+    // rename, cut, del
+    ;(function () {
+
+        function getNote($e) {
+            let $tr = $($e.parents("tr:first")[0])
+            let id = $tr.attr("note-id")
+            let pid = $tr.attr("note-pid")
+            let name = $tr.attr("note-name")
+            let type = $tr.attr("note-type")
+            let path = $tr.attr("note-path")
+
+            return {
+                id: id,
+                pid: pid,
+                name: name,
+                type: type,
+                path: path,
+                getFormatName: function () {
+                    return this.name + (this.type === 'd' ? '/' : '')
+                }
+            }
+        }
+
+        let cutKey = 'cut'
+
+        function setCutNote(note) {
+            return custom.storage.set(cutKey, note)
+        }
+
+        function getCutNote() {
+            return custom.storage.get(cutKey)
+        }
+
+        function delCutNote() {
+            return custom.storage.del(cutKey)
+        }
+
+        function disable($e) {
+            $e.attr('disabled', 'disabled')
+        }
+
+        function enable($e) {
+            $e.removeAttr('disabled')
+        }
+
+        // rename
+        let renames = $('[rename]')
+        for (let i = 0; i < renames.length; i++) {
+            let $rename = $(renames[i])
+            custom.clickE($rename, function ($e) {
+                let note = getNote($e)
+                let name = prompt('{{ Localize "i18n.name" }}', note.name)
+                if (!name || (name = name.trim()) === '') {
+                    return
+                }
+
+                let data = new FormData();
+                data.append('id', note.id)
+                data.append('pid', note.pid)
+                data.append('name', name)
+
+                let cutNote = getCutNote()
+                if (cutNote && cutNote.id === note.id) {
+                    delCutNote()
+                }
+
+                return {
+                    url: `/note/name`,
+                    method: 'PUT',
+                    data: data
+                }
+            })
+        }
+
+        // paste
+        let $paste = $($('button[name="paste"]')[0])
+
+        let cutNote = getCutNote()
+        if (cutNote) {
+            enable($paste)
+        }
+
+        custom.clickE($paste, function ($e) {
+            let cutNote = getCutNote();
+            if (!cutNote) {
+                return
+            }
+
+            let srcPath = cutNote.path + (cutNote.pid !== '0' ? '/' : '') + cutNote.name
+            let dstPath = "{{ $note.Path }}{{ if ne $note.Id 0 }}/{{ end }}"
+            if (!confirm('{{ Localize "i18n.cut" }} "' + srcPath + '" {{ Localize "i18n.to" }} "' + dstPath + '" ?')) {
+                return
+            }
+
+            delCutNote()
+            disable($paste)
+
+            return {
+                url: '/note/cut/' + cutNote.id + '/to/{{ $note.Id }}',
+                method: 'PUT'
+            };
+        })
+
+        // cut
+        let cuts = $('[cut]')
+        for (let i = 0; i < cuts.length; i++) {
+            let $cut = $(cuts[i])
+            if (cutNote) {
+                let note = getNote($cut)
+                if (note.id === cutNote.id) {
+                    disable($cut)
+                }
+            }
+            custom.clickE($cut, function ($e) {
+                // 移除已cut的笔记
+                for (let i = 0; i < cuts.length; i++) {
+                    let $cut = $(cuts[i])
+                    enable($cut)
+                }
+
+                // 设置当前cut
+                disable($e)
+                setCutNote(getNote($e))
+
+                // 显示paste
+                $paste.removeAttr('disabled')
+            })
+        }
+
+        // del
+        let dels = $('[del]')
+        for (let i = 0; i < dels.length; i++) {
+            let $del = $(dels[i])
+            custom.clickE($del, function ($e) {
+                let note = getNote($e)
+                if (!confirm('{{ Localize "i18n.del" }} "' + note.getFormatName() + '" ?')) {
+                    return
+                }
+
+                let cutNote = getCutNote()
+                if (cutNote && cutNote.id === note.id) {
+                    delCutNote()
+                }
+
+                return {
+                    url: `/note/${note.id}`,
+                    method: 'DELETE',
+                }
+            })
+        }
+
+        // restore
+        let restores = $('[restore]')
+        for (let i = 0; i < restores.length; i++) {
+            let $restore = $(restores[i])
+            custom.clickE($restore, function ($e) {
+                let note = getNote($e)
+                if (!confirm('{{ Localize "i18n.restore" }} "' + note.getFormatName() + '" ?')) {
+                    return
+                }
+
+                return {
+                    url: `/note/${note.id}/restore`,
+                    method: 'PUT',
+                }
+            })
+        }
+
+        // permly-del
+        let permlyDels = $('[permly-del]')
+        for (let i = 0; i < permlyDels.length; i++) {
+            let $permlyDel = $(permlyDels[i])
+            custom.clickE($permlyDel, function ($e) {
+                let note = getNote($e)
+                if (!confirm('{{ Localize "i18n.permlyDel" }} "' + note.getFormatName() + '" ?')) {
+                    return
+                }
+
+                return {
+                    // url: `/note/${note.id}/restore`,
+                    // method: 'DELETE',
+                }
+            })
+        }
+
+    })()
+
+    // add
+    ;(function () {
+
+        let $add = $($('[add]')[0])
+        custom.clickE($add, function ($e) {
+            // flag判断是否已点击 'Add →'
+            let flag = $e.attr('flag')
+            if (flag !== "1") {
+                let $input = $('<input name="name" placeholder="name">')
+                $e.before($input)
+                $e.html('<span style="margin-left: 10px">{{ Localize "i18n.add" }}</span>')
+                $e.attr('flag', '1')
+                return
+            }
+
+            // 获取上一个 input 兄弟节点
+            let $input = $e.prev('input')
+            // console.log($input)
+
+            let name = $input.val().trim();
+            $input.val(name)
+            // console.log(name)
+
+            let legal = true
+            let type = null
+            if (name.endsWith("/")) {
+                name = name.substring(0, name.length - 1)
+                type = 'd'
+            } else if (name.endsWith(".md")) {
+                name = name.substring(0, name.length - 3)
+                type = 'md'
+            } else {
+                legal = false
+            }
+
+            if (name === "" || !legal) {
+                // 添加 css border
+                $input.css('border', '2px solid red')
+                return
+            }
+
+            // 删除 css border
+            $input.css('border', '')
+
+            // data
+            let data = new FormData()
+            data.append('pid', "{{ $note.Id }}")
+            data.append('name', name)
+            data.append('type', type)
+
+            return {
+                url: '/note',
+                method: 'POST',
+                data: data
+            }
+        })
+
+    })()
+
+</script>

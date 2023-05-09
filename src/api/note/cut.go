@@ -6,30 +6,28 @@ package note
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"note/src/api/common"
-	"note/src/typ"
-	util_str "note/src/util/str"
-	util_time "note/src/util/time"
+	"note/app/api/common/db"
+	typ2 "note/app/typ"
 )
 
 // Cut 剪切文件
 func Cut(context *gin.Context) {
 	redirect := func(id int64, err any) {
-		resp := typ.Resp[any]{
-			Msg: util_str.ConvTypeToStr(err),
+		resp := typ2.Resp[any]{
+			Msg: str.ConvTypeToStr(err),
 		}
-		common.Redirect(context, fmt.Sprintf("/note/list?pid=%d", id), resp)
+		context.Redirect(context, fmt.Sprintf("/note/list?pid=%d", id), resp)
 	}
 
 	// dst id
-	dstId, err := common.Param[int64](context, "dstId")
+	dstId, err := context.Param[int64](context, "dstId")
 	if err != nil {
 		redirect(dstId, err)
 		return
 	}
 
 	// src id
-	srcId, err := common.Param[int64](context, "srcId")
+	srcId, err := context.Param[int64](context, "srcId")
 	if err != nil {
 		redirect(dstId, err)
 		return
@@ -37,19 +35,19 @@ func Cut(context *gin.Context) {
 
 	// dst
 	if dstId != 0 {
-		var note typ.Note
+		var note typ2.Note
 		var count int64
-		note, count, err = DbQry(context, typ.Note{Abs: typ.Abs{Id: dstId}, Pid: -1})
-		if err != nil || count == 0 || typ.FtD != typ.ExtNameOf(note.Type) { // 拷贝到目标类型必须是目录
+		note, count, err = DbQry(context, typ2.Note{Abs: typ2.Abs{Id: dstId}, Pid: -1})
+		if err != nil || count == 0 || typ2.FtD != typ2.ExtNameOf(note.Type) { // 拷贝到目标类型必须是目录
 			redirect(dstId, err)
 			return
 		}
 	}
 
 	// update
-	_, err = common.DbUpd(context, "UPDATE `note` SET `pid` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `pid` <> ?",
+	_, err = db.DbUpd(context, "UPDATE `note` SET `pid` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `pid` <> ?",
 		dstId,
-		util_time.NowUnix(),
+		time.NowUnix(),
 		srcId,
 		dstId)
 

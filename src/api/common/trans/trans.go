@@ -1,7 +1,7 @@
 // trans
 // @author xiangqian
 // @date 20:02 2023/03/22
-package common
+package trans
 
 import (
 	"errors"
@@ -15,6 +15,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	en_trans "github.com/go-playground/validator/v10/translations/en"
 	zh_trans "github.com/go-playground/validator/v10/translations/zh"
+	"note/src/api/common/session"
 	"note/src/typ"
 	"strings"
 )
@@ -24,8 +25,8 @@ var (
 	enTrans ut.Translator
 )
 
-// ValidateTrans 检验器翻译
-func ValidateTrans() {
+// Validate 检验器翻译
+func Validate() {
 	if v, r := binding.Validator.Engine().(*validator.Validate); r {
 		uni := ut.New(zh.New(), // 备用语言
 			// 支持的语言
@@ -42,10 +43,10 @@ func ValidateTrans() {
 	}
 }
 
-// TransErr 翻译异常
-func TransErr(context *gin.Context, err error) error {
+// Err 翻译异常
+func Err(context *gin.Context, err error) error {
 	if errs, r := err.(validator.ValidationErrors); r {
-		session := Session(context)
+		session := session.Session(context)
 		lang := ""
 		if v, r := session.Get("lang").(string); r {
 			lang = v

@@ -4,12 +4,12 @@
 package json
 
 import (
-	_json "encoding/json"
+	encoding_json "encoding/json"
 )
 
 // Serialize 使用 Marshal 序列化
 func Serialize(v any) (string, error) {
-	buf, err := _json.Marshal(v)
+	buf, err := encoding_json.Marshal(v)
 	if err != nil {
 		return "", err
 	}
@@ -19,5 +19,5 @@ func Serialize(v any) (string, error) {
 
 // Deserialize 使用 Unmarshal 反序列化
 func Deserialize(text string, v any) error {
-	return _json.Unmarshal([]byte(text), v)
+	return encoding_json.Unmarshal([]byte(text), v)
 }

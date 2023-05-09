@@ -8,7 +8,7 @@ import (
 	"log"
 	api_common "note/src/api/common"
 	"note/src/typ"
-	util_os "note/src/util/os"
+	"note/src/util/os"
 	"path/filepath"
 	"strings"
 )
@@ -36,8 +36,8 @@ func arg() {
 
 	// DataDir
 	dataDir = strings.TrimSpace(dataDir)
-	if !util_os.IsExist(dataDir) {
-		util_os.MkDir(dataDir)
+	if !os.IsExist(dataDir) {
+		os.MkDir(dataDir)
 	}
 	// 获取绝对路径
 	dataDir, _ = filepath.Abs(dataDir)

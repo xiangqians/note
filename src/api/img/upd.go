@@ -5,7 +5,7 @@ package img
 
 import (
 	"github.com/gin-gonic/gin"
-	"note/src/api/common"
+	"note/src/api/common/db"
 	typ_api "note/src/typ"
 	util_time "note/src/util/time"
 	util_validate "note/src/util/validate"
@@ -20,7 +20,7 @@ func UpdName(context *gin.Context) {
 
 	// img
 	img := typ_api.Img{}
-	err := common.ShouldBind(context, &img)
+	err := context.ShouldBind(context, &img)
 	if err != nil {
 		redirect(err)
 		return
@@ -42,7 +42,7 @@ func UpdName(context *gin.Context) {
 	}
 
 	// update
-	_, err = common.DbUpd(context, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", name, util_time.NowUnix(), id, name)
+	_, err = db.DbUpd(context, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", name, util_time.NowUnix(), id, name)
 
 	// redirect
 	redirect(err)

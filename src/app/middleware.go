@@ -12,7 +12,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/text/language"
 	"net/http"
-	api_common "note/src/api/common"
+	api_common_context "note/src/api/common/context"
+	"note/src/api/common/session"
 	"note/src/typ"
 	"strings"
 )
@@ -43,7 +44,7 @@ func permMiddleware(engine *gin.Engine) {
 
 		// is login ?
 		login := false
-		user, err := api_common.GetSessionUser(context)
+		user, err := session.GetSessionUser(context)
 		if err == nil && user.Id > 0 {
 			login = true
 		}
@@ -54,7 +55,7 @@ func permMiddleware(engine *gin.Engine) {
 			(reqMethod == http.MethodPost && (reqPath == "/user" || reqPath == "/user/login0")) { // 注册接口和登录接口
 			// 如果已登录则重定向到首页
 			if login {
-				api_common.Redirect(context, "/", typ.Resp[any]{})
+				api_common_context.Redirect(context, "/", typ.Resp[any]{})
 				context.Abort()
 			} else
 			// 如果未登录，放行登录或注册
@@ -70,7 +71,7 @@ func permMiddleware(engine *gin.Engine) {
 			//context.Request.URL.Path = "/user/login"
 			//engine.HandleContext(context)
 			// OR
-			api_common.Redirect(context, "/user/login", typ.Resp[any]{})
+			api_common_context.Redirect(context, "/user/login", typ.Resp[any]{})
 
 			// 中止调用链
 			context.Abort()
@@ -105,7 +106,7 @@ func i18nMiddleware(engine *gin.Engine) {
 			}
 
 			// 从session中获取lang
-			session := api_common.Session(context)
+			session := session.Session(context)
 			sessionLang := ""
 			if v, r := session.Get("lang").(string); r {
 				sessionLang = v

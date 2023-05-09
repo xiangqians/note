@@ -5,7 +5,8 @@ package img
 
 import (
 	"github.com/gin-gonic/gin"
-	"note/src/api/common"
+	"note/src/api/common/db"
+	"note/src/api/common/session"
 	"note/src/typ"
 	util_str "note/src/util/str"
 	"strings"
@@ -15,7 +16,7 @@ import (
 func List(context *gin.Context) {
 	// img
 	img := typ.Img{}
-	err := common.ShouldBindQuery(context, &img)
+	err := context.ShouldBindQuery(context, &img)
 
 	// name
 	img.Name = strings.TrimSpace(img.Name)
@@ -50,20 +51,20 @@ func List(context *gin.Context) {
 	}
 
 	// 记录查询参数
-	common.SetSessionKv(context, "img", img)
+	session.SetSessionKv(context, "img", img)
 
 	// html
-	common.HtmlOk(context, "img/list.html", resp)
+	context.HtmlOk(context, "img/list.html", resp)
 }
 
 // DbPage 分页查询图片
 func DbPage(context *gin.Context, img typ.Img) (typ.Page[typ.Img], error) {
-	current, _ := common.Param[int64](context, "current")
+	current, _ := context.Param[int64](context, "current")
 	if current <= 0 {
 		current = 1
 	}
 
-	size, _ := common.Param[uint8](context, "size")
+	size, _ := context.Param[uint8](context, "size")
 	if size <= 0 {
 		size = 10
 	}
@@ -92,13 +93,13 @@ func DbPage(context *gin.Context, img typ.Img) (typ.Page[typ.Img], error) {
 
 	sql += "ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC"
 
-	return common.DbPage[typ.Img](context, current, size, sql, args...)
+	return db.DbPage[typ.Img](context, current, size, sql, args...)
 }
 
 // DbTypes 获取图片类型集合
 func DbTypes(context *gin.Context) []string {
 	// types
-	types, count, err := common.DbQry[[]string](context, "SELECT DISTINCT(`type`) FROM `img` WHERE `del` = 0")
+	types, count, err := db.DbQry[[]string](context, "SELECT DISTINCT(`type`) FROM `img` WHERE `del` = 0")
 	if err != nil || count == 0 {
 		types = nil
 	}
