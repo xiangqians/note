@@ -12,6 +12,8 @@ type User struct {
 	Nickname string `json:"nickname" form:"nickname"binding:"max=60"`                                     // 昵称
 	Passwd   string `json:"passwd" form:"passwd" binding:"required,excludes= ,max=60"`                    // 密码
 	RePasswd string `json:"rePasswd" form:"rePasswd" binding:"required,excludes= ,max=60,eqfield=Passwd"` // retype Passwd
+	Try      byte   `json:"try" form:"try"`                                                               // 尝试输入次数
+	Lock     byte   `json:"lock" form:"lock"`                                                             // 锁定标识，0-正常，1-锁定
 }
 
 // 注册模型

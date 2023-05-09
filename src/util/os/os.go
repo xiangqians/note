@@ -226,7 +226,7 @@ func HumanizFileSize(size int64) string {
 	}
 
 	// B
-	return fmt.Sprintf("%v B", size)
+	return fmt.Sprintf("%d B", size)
 }
 
 // FileSeparator 文件分隔符
