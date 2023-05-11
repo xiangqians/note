@@ -25,8 +25,8 @@ func route(engine *gin.Engine) {
 		userGroup.Any("/login", user.Login) // page
 		userGroup.POST("/login0", user.Login0)
 		userGroup.Any("/logout", user.Logout)
-		//userGroup.Any("/settings", user.Settings) // page
-		//userGroup.PUT("", user.Upd)
+		userGroup.Any("/settings", user.Settings) // page
+		userGroup.POST("/settings0", user.Settings0)
 	}
 
 	// index
@@ -38,13 +38,13 @@ func route(engine *gin.Engine) {
 	//noteGroup.POST("", note.Add)
 	//noteGroup.POST("/upload", note.Upload)
 	//noteGroup.POST("/reUpload", note.ReUpload)
-	//noteGroup.PUT("/name", note.UpdName)
+	//noteGroup.POST("/name", note.UpdName)
 	//noteGroup.GET("/:id", note.Get)
 	//noteGroup.Any("/:id/view", note.View) // page
-	//noteGroup.PUT("/content", note.UpdContent)
-	//noteGroup.PUT("/cut/:srcId/to/:dstId", note.Cut)
+	//noteGroup.POST("/content", note.UpdContent)
+	//noteGroup.POST("/cut/:srcId/to/:dstId", note.Cut)
 	//noteGroup.DELETE("/:id", note.Del)
-	//noteGroup.PUT("/:id/restore", note.Restore)
+	//noteGroup.POST("/:id/restore", note.Restore)
 
 	// img
 	//imgGroup := engine.Group("/img")

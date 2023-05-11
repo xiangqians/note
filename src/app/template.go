@@ -69,8 +69,8 @@ func template(engine *gin.Engine) {
 			return json
 		},
 
-		// Equal Uri
-		"EqualUri": func(url1, url2 string) bool {
+		// Uri Equal
+		"UriEqual": func(url1, url2 string) bool {
 			uri1, uri2 := url1, url2
 
 			index := strings.Index(url1, "?")

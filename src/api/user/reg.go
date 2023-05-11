@@ -11,6 +11,7 @@ import (
 	"note/src/api/common"
 	api_common_context "note/src/api/common/context"
 	api_common_db "note/src/api/common/db"
+	"note/src/api/common/session"
 	"note/src/typ"
 	"note/src/util/crypto/bcrypt"
 	util_os "note/src/util/os"
@@ -127,5 +128,6 @@ func Reg0(context *gin.Context) {
 
 // Reg 用户注册页
 func Reg(context *gin.Context) {
-	api_common_context.HtmlOk(context, "user/reg.html", typ.Resp[typ.User]{})
+	resp, _ := session.Get[typ.Resp[typ.User]](context, api_common_context.RespSessionKey, true)
+	api_common_context.HtmlOk(context, "user/reg.html", resp)
 }

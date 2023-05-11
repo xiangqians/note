@@ -4,6 +4,7 @@
   "i18n.userName": "UserName",
   "i18n.passwd": "Password",
   "i18n.rePasswd": "Retype Password",
+  "i18n.origPasswd": "Original Password",
   "i18n.nickname": "Nickname",
   "i18n.rem": "Remark",
   "i18n.alreadyHaveAnAccount": "Already have an account?",
