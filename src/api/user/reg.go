@@ -35,7 +35,7 @@ func Reg0(context *gin.Context) {
 	user := typ.User{}
 
 	// 是否允许用户注册
-	if common.AppArg.AllowReg != 1 {
+	if common.AppArg.AllowReg == 0 {
 		redirect(user, i18n.MustGetMessage("i18n.regNotOpen"))
 		return
 	}
@@ -76,7 +76,7 @@ func Reg0(context *gin.Context) {
 	}
 
 	// db
-	db, err := api_common_db.Db(context)
+	db, err := api_common_db.Db(nil)
 	if err != nil {
 		redirect(user, err)
 		return
