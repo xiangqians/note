@@ -19,7 +19,6 @@
   "i18n.userOrPasswdIncorrect": "用户名或密码不正确",
   "i18n.regNotOpen": "注册未开放",
   "i18n.userNameAlreadyExists": "用户名已存在",
-  "i18n.accountRegSuccess": "账号注册成功",
   "i18n.index": "首页",
   "i18n.note": "笔记",
   "i18n.img": "图片",
@@ -75,5 +74,7 @@
   "i18n.num": "数量",
   "i18n.sub": "子",
   "i18n.deleted": "已删除",
-  "i18n.dataNotExist": "数据不存在"
+  "i18n.dataNotExist": "数据不存在",
+  "i18n.accountWillBeLocked": "您已连续两次输错登录密码，如连续输错三次，您的账号将被锁定。",
+  "i18n.accountHasBeenLocked": "账号已被锁定"
 }

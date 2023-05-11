@@ -18,6 +18,6 @@ func DataDir(context *gin.Context) string {
 		return AppArg.DataDir
 	}
 
-	user, _ := session.GetSessionUser(context)
+	user, _ := session.GetUser(context)
 	return fmt.Sprintf("%s%s%d", AppArg.DataDir, os.FileSeparator(), user.Id)
 }

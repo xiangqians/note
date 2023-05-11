@@ -11,6 +11,7 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/text/language"
+	"log"
 	"net/http"
 	api_common_context "note/src/api/common/context"
 	"note/src/api/common/session"
@@ -45,7 +46,7 @@ func permMiddleware(engine *gin.Engine) {
 
 		// is login ?
 		login := false
-		user, err := session.GetSessionUser(context)
+		user, err := session.GetUser(context)
 		if err == nil && user.Id > 0 {
 			login = true
 		}
@@ -53,7 +54,7 @@ func permMiddleware(engine *gin.Engine) {
 		// 用户注册和登录放行
 		if reqPath == "/user/reg" || // 注册页
 			reqPath == "/user/login" || // 登录页
-			(reqMethod == http.MethodPost && (reqPath == "/user" || reqPath == "/user/login0")) { // 注册接口和登录接口
+			(reqMethod == http.MethodPost && (reqPath == "/user/reg0" || reqPath == "/user/login0")) { // 注册接口和登录接口
 			// 如果已登录则重定向到首页
 			if login {
 				api_common_context.Redirect(context, "/", typ.Resp[any]{})
@@ -146,6 +147,7 @@ func sessionMiddleware(engine *gin.Engine) {
 	passwd := "$2a$10$NkWzRTyz1ZNnNfjLmxreaeZ31DCiwCEWJlXJAVDkG8fD9Ble2mg4K"
 	hash, err := bcrypt.Generate(passwd)
 	if err != nil {
+		log.Println(err)
 		hash = passwd
 	}
 	keyPairs := []byte(hash)[:32]

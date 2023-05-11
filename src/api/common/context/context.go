@@ -33,9 +33,9 @@ func HtmlOk[T any](context *gin.Context, name string, resp typ.Resp[T]) {
 // name: templateName
 func Html[T any](context *gin.Context, code int, name string, resp typ.Resp[T]) {
 	// resp msg
-	resp0, err := session.Get[any](context, RespSessionKey, true)
+	storedResp, err := session.Get[any](context, RespSessionKey, true)
 	if err == nil {
-		msg := reflect.CallField[string](resp0, "Msg")
+		msg := reflect.CallField[string](storedResp, "Msg")
 		if msg != "" {
 			resp.Msg = fmt.Sprintf("%s\n%s", msg, resp.Msg)
 		}

@@ -6,9 +6,6 @@ package app
 import (
 	"github.com/gin-gonic/gin"
 	api_common_context "note/src/api/common/context"
-	"note/src/api/img"
-	"note/src/api/index"
-	"note/src/api/note"
 	"note/src/api/user"
 	"note/src/typ"
 )
@@ -20,47 +17,47 @@ func route(engine *gin.Engine) {
 		api_common_context.HtmlNotFound(context, "404.html", resp)
 	})
 
-	// index
-	engine.Any("/", index.Index)
-
 	// user
 	userGroup := engine.Group("/user")
 	{
 		userGroup.Any("/reg", user.Reg) // page
-		userGroup.POST("", user.Add)
+		userGroup.POST("/reg0", user.Reg0)
 		userGroup.Any("/login", user.Login) // page
 		userGroup.POST("/login0", user.Login0)
 		userGroup.Any("/logout", user.Logout)
-		userGroup.Any("/settings", user.Settings) // page
-		userGroup.PUT("", user.Upd)
+		//userGroup.Any("/settings", user.Settings) // page
+		//userGroup.PUT("", user.Upd)
 	}
 
+	// index
+	//engine.Any("/", index.Index)
+
 	// note
-	noteGroup := engine.Group("/note")
-	noteGroup.Any("/list", note.List) // page
-	noteGroup.POST("", note.Add)
-	noteGroup.POST("/upload", note.Upload)
-	noteGroup.POST("/reUpload", note.ReUpload)
-	noteGroup.PUT("/name", note.UpdName)
-	noteGroup.GET("/:id", note.Get)
-	noteGroup.Any("/:id/view", note.View) // page
-	noteGroup.PUT("/content", note.UpdContent)
-	noteGroup.PUT("/cut/:srcId/to/:dstId", note.Cut)
-	noteGroup.DELETE("/:id", note.Del)
-	noteGroup.PUT("/:id/restore", note.Restore)
+	//noteGroup := engine.Group("/note")
+	//noteGroup.Any("/list", note.List) // page
+	//noteGroup.POST("", note.Add)
+	//noteGroup.POST("/upload", note.Upload)
+	//noteGroup.POST("/reUpload", note.ReUpload)
+	//noteGroup.PUT("/name", note.UpdName)
+	//noteGroup.GET("/:id", note.Get)
+	//noteGroup.Any("/:id/view", note.View) // page
+	//noteGroup.PUT("/content", note.UpdContent)
+	//noteGroup.PUT("/cut/:srcId/to/:dstId", note.Cut)
+	//noteGroup.DELETE("/:id", note.Del)
+	//noteGroup.PUT("/:id/restore", note.Restore)
 
 	// img
-	imgGroup := engine.Group("/img")
-	imgGroup.Any("/list", img.List) // page
-	imgGroup.POST("/upload", img.Upload)
-	imgGroup.POST("/reUpload", img.ReUpload)
-	imgGroup.GET("/:id", img.Get)
-	imgGroup.GET("/:id/hist/:idx", img.GetHist)
-	imgGroup.Any("/:id/view", img.View)               // page
-	imgGroup.Any("/:id/hist/:idx/view", img.HistView) // page
-	imgGroup.PUT("/name", img.UpdName)
-	imgGroup.DELETE("/:id", img.Del)
-	imgGroup.PUT("/:id/restore", img.Restore)
-	imgGroup.DELETE("/:id/permlyDel", img.PermlyDel)
+	//imgGroup := engine.Group("/img")
+	//imgGroup.Any("/list", img.List) // page
+	//imgGroup.POST("/upload", img.Upload)
+	//imgGroup.POST("/reUpload", img.ReUpload)
+	//imgGroup.GET("/:id", img.Get)
+	//imgGroup.GET("/:id/hist/:idx", img.GetHist)
+	//imgGroup.Any("/:id/view", img.View)               // page
+	//imgGroup.Any("/:id/hist/:idx/view", img.HistView) // page
+	//imgGroup.PUT("/name", img.UpdName)
+	//imgGroup.DELETE("/:id", img.Del)
+	//imgGroup.PUT("/:id/restore", img.Restore)
+	//imgGroup.DELETE("/:id/permlyDel", img.PermlyDel)
 
 }

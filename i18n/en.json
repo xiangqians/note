@@ -19,7 +19,6 @@
   "i18n.userOrPasswdIncorrect": "The username or password is incorrect.",
   "i18n.regNotOpen": "Registration function is not open",
   "i18n.userNameAlreadyExists": "User Name already exists.",
-  "i18n.accountRegSuccess": "Account registration succeeded",
   "i18n.index": "Index",
   "i18n.note": "Note",
   "i18n.img": "Image",
@@ -75,5 +74,7 @@
   "i18n.num": "Num",
   "i18n.sub": "Sub",
   "i18n.deleted": "Deleted",
-  "i18n.dataNotExist": "Data does not exist"
+  "i18n.dataNotExist": "Data does not exist",
+  "i18n.accountWillBeLocked": "You have entered the wrong login password twice in a row. If you enter the wrong password three times in a row, your account will be locked.",
+  "i18n.accountHasBeenLocked": "Account has been locked"
 }

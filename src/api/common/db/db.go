@@ -4,7 +4,6 @@
 package db
 
 import (
-	database_sql "database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
@@ -20,7 +19,6 @@ const (
 	add Type = iota
 	del
 	upd
-	qry
 )
 
 // Page 分页查询
@@ -92,11 +90,29 @@ func Page[T any](context *gin.Context, current int64, size uint8, sql string, ar
 }
 
 func Qry[T any](context *gin.Context, sql string, args ...any) (T, int64, error) {
-	// query
-	rows, _, err := exec(context, qry, sql, args...)
+	var t T
+
+	// db
+	db, err := Db(context)
 	if err != nil {
-		var t T
 		return t, 0, err
+	}
+	defer db.Close()
+
+	// begin
+	err = db.Begin()
+	if err != nil {
+		return t, 0, err
+	}
+
+	// query
+	rows, err := db.Qry(sql, args...)
+
+	// Commit or rollback ?
+	if err != nil {
+		defer db.Rollback()
+	} else {
+		defer db.Commit()
 	}
 
 	// mapper
@@ -104,36 +120,35 @@ func Qry[T any](context *gin.Context, sql string, args ...any) (T, int64, error)
 }
 
 func Upd(context *gin.Context, sql string, args ...any) (rowsAffected int64, err error) {
-	_, rowsAffected, err = exec(context, upd, sql, args...)
+	rowsAffected, err = exec(context, upd, sql, args...)
 	return
 }
 
 func Del(context *gin.Context, sql string, args ...any) (rowsAffected int64, err error) {
-	_, rowsAffected, err = exec(context, del, sql, args...)
+	rowsAffected, err = exec(context, del, sql, args...)
 	return
 }
 
 func Add(context *gin.Context, sql string, args ...any) (lastInsertId int64, err error) {
-	_, lastInsertId, err = exec(context, add, sql, args...)
+	lastInsertId, err = exec(context, add, sql, args...)
 	return
 }
 
-func exec(context *gin.Context, typ Type, sql string, args ...any) (*database_sql.Rows, int64, error) {
+func exec(context *gin.Context, typ Type, sql string, args ...any) (int64, error) {
 	// db
 	db, err := Db(context)
 	if err != nil {
-		return nil, 0, err
+		return 0, err
 	}
 	defer db.Close()
 
 	// begin
 	err = db.Begin()
 	if err != nil {
-		return nil, 0, err
+		return 0, err
 	}
 
 	// exec
-	var rows *database_sql.Rows
 	var i int64 = 0
 	switch typ {
 	// add
@@ -147,10 +162,6 @@ func exec(context *gin.Context, typ Type, sql string, args ...any) (*database_sq
 	// upd
 	case upd:
 		i, err = db.Upd(sql, args...)
-
-	// qry
-	case qry:
-		rows, err = db.Qry(sql, args...)
 	}
 
 	// Commit or rollback ?
@@ -160,7 +171,7 @@ func exec(context *gin.Context, typ Type, sql string, args ...any) (*database_sq
 		defer db.Commit()
 	}
 
-	return rows, i, err
+	return i, err
 }
 
 func Db(context *gin.Context) (_db.Db, error) {
