@@ -76,6 +76,9 @@ func Reg0(context *gin.Context) {
 		return
 	}
 
+	user.Nickname = strings.TrimSpace(user.Nickname)
+	user.Rem = strings.TrimSpace(user.Rem)
+
 	// db
 	db, err := api_common_db.Db(nil)
 	if err != nil {
@@ -93,7 +96,7 @@ func Reg0(context *gin.Context) {
 
 	// add
 	id, err := db.Add("INSERT INTO `user` (`name`, `nickname`, `passwd`, `rem`, `add_time`) VALUES (?, ?, ?, ?, ?)",
-		user.Name, strings.TrimSpace(user.Nickname), passwdHash, strings.TrimSpace(user.Rem), time.NowUnix())
+		user.Name, user.Nickname, passwdHash, user.Rem, time.NowUnix())
 	if err != nil {
 		db.Rollback()
 		redirect(user, err)

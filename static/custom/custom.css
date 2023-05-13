@@ -42,6 +42,9 @@ content button, [type="submit"] {
 content textarea[name="rem"] {
     width: 300px;
     height: 100px;
+    vertical-align: middle;
+    margin-top: 3px;
+    margin-bottom: 5px;
 }
 
 content .float {

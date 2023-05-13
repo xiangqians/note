@@ -43,26 +43,28 @@ func Settings0(context *gin.Context) {
 		return
 	}
 
-	// validate passwd
+	// validate new passwd
 	err = validate.Passwd(user.Passwd)
 	if err != nil {
 		redirect(user, err)
 		return
 	}
+
+	// validate original passwd
 	err = validate.Passwd(user.OrigPasswd)
 	if err != nil {
 		redirect(user, err)
 		return
 	}
 
-	// 密码加密
-	passwd, err := bcrypt.Generate(user.Passwd)
+	// 新密码加密
+	newPasswdHash, err := bcrypt.Generate(user.Passwd)
 	if err != nil {
 		redirect(user, err)
 		return
 	}
 
-	// name
+	// validate name
 	sessionUser, err := session.GetUser(context)
 	if err != nil {
 		redirect(user, err)
@@ -87,14 +89,14 @@ func Settings0(context *gin.Context) {
 		return
 	}
 	if !bcrypt.CompareHash(origPasswdHash, user.OrigPasswd) {
-		redirect(user, i18n.MustGetMessage("i18n.userOrPasswdIncorrect"))
+		redirect(user, i18n.MustGetMessage("i18n.passwdIncorrect"))
 		return
 	}
 
 	// update
 	updTime := time.NowUnix()
 	_, err = db.Upd(nil, "UPDATE `user` SET `name` = ?, nickname = ?, `passwd` = ?, rem = ?, upd_time = ? WHERE id = ?",
-		user.Name, user.Nickname, passwd, user.Rem, updTime, sessionUser.Id)
+		user.Name, user.Nickname, newPasswdHash, user.Rem, updTime, sessionUser.Id)
 	if err != nil {
 		redirect(user, err)
 		return
