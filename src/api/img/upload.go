@@ -7,25 +7,27 @@ import (
 	"fmt"
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
+	api_common_context "note/src/api/common/context"
 	"note/src/api/common/db"
+	"note/src/api/common/file"
 	"note/src/typ"
-	util_os "note/src/util/os"
-	util_str "note/src/util/str"
-	util_time "note/src/util/time"
-	util_validate "note/src/util/validate"
-	"os"
+	"note/src/util/os"
+	"note/src/util/str"
+	"note/src/util/time"
+	"note/src/util/validate"
 	"strings"
 )
 
 // ReUpload 重新上传图片
 func ReUpload(context *gin.Context) {
+	// redirect
 	redirect := func(id int64, err any) {
-		resp := typ.Resp[any]{Msg: util_str.ConvTypeToStr(err)}
-		context.Redirect(context, fmt.Sprintf("/img/%d/view", id), resp)
+		resp := typ.Resp[any]{Msg: str.ConvTypeToStr(err)}
+		api_common_context.Redirect(context, fmt.Sprintf("/img/%d/view", id), resp)
 	}
 
 	// id
-	id, err := context.PostForm[int64](context, "id")
+	id, err := api_common_context.PostForm[int64](context, "id")
 	if err != nil || id <= 0 {
 		redirect(id, err)
 		return
@@ -38,15 +40,16 @@ func ReUpload(context *gin.Context) {
 		return
 	}
 
-	// file name
+	// name
 	name := strings.TrimSpace(fh.Filename)
-	err = util_validate.FileName(name)
+	// validate name
+	err = validate.FileName(name)
 	if err != nil {
 		redirect(id, err)
 		return
 	}
 
-	// file type
+	// type
 	contentType := fh.Header.Get("Content-Type")
 	ft := typ.ContentTypeOf(contentType)
 	if !typ.IsImg(ft) {
@@ -90,7 +93,7 @@ func ReUpload(context *gin.Context) {
 	histImgs = append(histImgs, histImg)
 	Sort(&histImgs)
 
-	// 备份历史记录
+	// 备份最近一条历史记录
 	// src
 	var srcPath string
 	srcPath, err = Path(context, histImg)
@@ -106,7 +109,7 @@ func ReUpload(context *gin.Context) {
 		return
 	}
 	// copy
-	_, err = util_os.CopyFile(dstPath, srcPath)
+	_, err = os.CopyFile(dstPath, srcPath)
 	if err != nil {
 		redirect(id, err)
 		return
@@ -119,7 +122,7 @@ func ReUpload(context *gin.Context) {
 		for i := max; i < l; i++ {
 			path, err := HistPath(context, histImgs[i])
 			if err == nil {
-				util_os.DelFile(path)
+				os.DelFile(path)
 			}
 		}
 		histImgs = histImgs[:max]
@@ -142,7 +145,7 @@ func ReUpload(context *gin.Context) {
 	newImg := typ.Img{
 		Abs: typ.Abs{
 			Id:      id,
-			UpdTime: util_time.NowUnix(),
+			UpdTime: time.NowUnix(),
 		},
 		Name:     name,
 		Type:     _type,
@@ -152,7 +155,7 @@ func ReUpload(context *gin.Context) {
 	}
 
 	// update
-	_, err = db.DbUpd(context, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `hist` = ?, `hist_size` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?",
+	_, err = db.Upd(context, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `hist` = ?, `hist_size` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?",
 		newImg.Name, newImg.Type, newImg.Size, newImg.Hist, newImg.HistSize, newImg.UpdTime, newImg.Id)
 	if err != nil {
 		redirect(id, err)
@@ -167,16 +170,10 @@ func ReUpload(context *gin.Context) {
 	}
 
 	// 清空文件
-	if util_os.IsExist(path) {
-		var file *os.File
-		file, err = os.OpenFile(path,
-			os.O_WRONLY|os.O_TRUNC, // 只写（O_WRONLY） & 清空文件（O_TRUNC）
-			0666)
-		if err != nil {
-			redirect(id, err)
-			return
-		}
-		file.Close()
+	err = file.Clear(path)
+	if err != nil {
+		redirect(id, err)
+		return
 	}
 
 	// 保存文件
@@ -186,7 +183,7 @@ func ReUpload(context *gin.Context) {
 	if img.Type != newImg.Type {
 		path, err = Path(context, img)
 		if err == nil {
-			util_os.DelFile(path)
+			os.DelFile(path)
 		}
 	}
 
@@ -196,9 +193,10 @@ func ReUpload(context *gin.Context) {
 
 // Upload 上传图片
 func Upload(context *gin.Context) {
+	// redirect
 	redirect := func(err any) {
-		resp := typ.Resp[any]{Msg: util_str.ConvTypeToStr(err)}
-		context.Redirect(context, fmt.Sprintf("/img/list"), resp)
+		resp := typ.Resp[any]{Msg: str.ConvTypeToStr(err)}
+		api_common_context.Redirect(context, fmt.Sprintf("/img/list"), resp)
 	}
 
 	// file header
@@ -208,15 +206,16 @@ func Upload(context *gin.Context) {
 		return
 	}
 
-	// file name
+	// name
 	name := strings.TrimSpace(fh.Filename)
-	err = util_validate.FileName(name)
+	// validate name
+	err = validate.FileName(name)
 	if err != nil {
 		redirect(err)
 		return
 	}
 
-	// file type
+	// type
 	contentType := fh.Header.Get("Content-Type")
 	ft := typ.ContentTypeOf(contentType)
 	if !typ.IsImg(ft) {
@@ -232,11 +231,11 @@ func Upload(context *gin.Context) {
 	id, count, err := DbQryPermlyDelId(context)
 	// 新id
 	if err != nil || count == 0 {
-		id, err = db.DbAdd(context, "INSERT INTO `img` (`name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?)", name, _type, size, util_time.NowUnix())
+		id, err = db.Add(context, "INSERT INTO `img` (`name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?)", name, _type, size, time.NowUnix())
 	} else
 	// 复用id
 	{
-		_, err = db.DbUpd(context, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `hist` = '', `hist_size` = 0, `del` = 0, `add_time` = ?, `upd_time` = 0 WHERE `id` = ?", name, _type, size, util_time.NowUnix(), id)
+		_, err = db.Upd(context, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `hist` = '', `hist_size` = 0, `del` = 0, `add_time` = ?, `upd_time` = 0 WHERE `id` = ?", name, _type, size, time.NowUnix(), id)
 	}
 	if err != nil {
 		redirect(err)
@@ -244,26 +243,20 @@ func Upload(context *gin.Context) {
 	}
 
 	// path
-	img := typ.Img{}
-	img.Id = id
-	img.Type = _type
-	path, err := Path(context, img)
+	path, err := Path(context, typ.Img{
+		Abs:  typ.Abs{Id: id},
+		Type: _type,
+	})
 	if err != nil {
 		redirect(err)
 		return
 	}
 
-	// 清空文件
-	if util_os.IsExist(path) {
-		var file *os.File
-		file, err = os.OpenFile(path,
-			os.O_WRONLY|os.O_TRUNC, // 只写（O_WRONLY） & 清空文件（O_TRUNC）
-			0666)
-		if err != nil {
-			redirect(err)
-			return
-		}
-		file.Close()
+	// 清空文件，如果文件存在
+	err = file.Clear(path)
+	if err != nil {
+		redirect(err)
+		return
 	}
 
 	// 保存文件
@@ -275,6 +268,6 @@ func Upload(context *gin.Context) {
 
 // DbQryPermlyDelId 查询永久删除的图片记录id，以复用
 func DbQryPermlyDelId(context *gin.Context) (int64, int64, error) {
-	id, count, err := db.DbQry[int64](context, "SELECT `id` FROM `img` WHERE `del` = 2 LIMIT 1")
+	id, count, err := db.Qry[int64](context, "SELECT `id` FROM `img` WHERE `del` = 2 LIMIT 1")
 	return id, count, err
 }

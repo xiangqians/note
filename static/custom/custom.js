@@ -263,48 +263,6 @@
      * @param callback
      */
     obj.clickE = function ($e, callback) {
-        // form
-        if ($e.is('form')) {
-            let $form = $e
-            // console.log($form)
-            $form.find("[type=submit]").click(function () {
-                // url
-                let url = $form.attr("action")
-                // console.log('url', url)
-
-                // method
-                let method = $form.attr("method").trim().toUpperCase()
-                // console.log('method', method)
-
-                // data
-                let data = new FormData()
-                $form.serializeArray().forEach(e => {
-                    // console.log(e.name, e.value)
-                    data.append(e.name, e.value);
-                })
-                // file
-                let $input = $form.find("input[type='file']");
-                if ($input.length > 0) {
-                    let files = $input[0].files;
-                    // console.log($input.attr('name'), files);
-                    if (files.length > 0) {
-                        data.append($input.attr('name'), files[0]);
-                    }
-                }
-
-                // console.log('data', data);
-                // data.forEach((value, key) => {
-                //     console.log(key, value);
-                // })
-
-                // ajax
-                obj.ajax(url, method, data)
-                return false
-            })
-            return
-        }
-
-        // e
         $e.click(function () {
             let params = null
             if (callback) {

@@ -5,10 +5,12 @@ package img
 
 import (
 	"github.com/gin-gonic/gin"
+	api_common_context "note/src/api/common/context"
 	"note/src/api/common/db"
-	typ_api "note/src/typ"
-	util_time "note/src/util/time"
-	util_validate "note/src/util/validate"
+	"note/src/typ"
+	"note/src/util/time"
+	"note/src/util/validate"
+
 	"strings"
 )
 
@@ -19,8 +21,8 @@ func UpdName(context *gin.Context) {
 	}
 
 	// img
-	img := typ_api.Img{}
-	err := context.ShouldBind(context, &img)
+	img := typ.Img{}
+	err := api_common_context.ShouldBind(context, &img)
 	if err != nil {
 		redirect(err)
 		return
@@ -35,14 +37,15 @@ func UpdName(context *gin.Context) {
 
 	// name
 	name := strings.TrimSpace(img.Name)
-	err = util_validate.FileName(name)
+	// validate name
+	err = validate.FileName(name)
 	if err != nil {
 		redirect(err)
 		return
 	}
 
 	// update
-	_, err = db.DbUpd(context, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", name, util_time.NowUnix(), id, name)
+	_, err = db.Upd(context, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", name, time.NowUnix(), id, name)
 
 	// redirect
 	redirect(err)

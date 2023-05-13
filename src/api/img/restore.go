@@ -5,8 +5,9 @@ package img
 
 import (
 	"github.com/gin-gonic/gin"
+	api_common_context "note/src/api/common/context"
 	"note/src/api/common/db"
-	util_time "note/src/util/time"
+	"note/src/util/time"
 )
 
 // Restore img恢复（还原）
@@ -16,14 +17,15 @@ func Restore(context *gin.Context) {
 	}
 
 	// id
-	id, err := context.Param[int64](context, "id")
+	id, err := api_common_context.Param[int64](context, "id")
 	if err != nil {
 		redirect(err)
 		return
 	}
 
 	// update
-	_, err = db.DbUpd(context, "UPDATE `img` SET `del` = 0, `upd_time` = ? WHERE `del` = 1 AND `id` = ?", util_time.NowUnix(), id)
+	_, err = db.Upd(context, "UPDATE `img` SET `del` = 0, `upd_time` = ? WHERE `del` = 1 AND `id` = ?", time.NowUnix(), id)
+
+	// redirect
 	redirect(err)
-	return
 }

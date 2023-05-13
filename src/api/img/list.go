@@ -5,10 +5,12 @@ package img
 
 import (
 	"github.com/gin-gonic/gin"
+	"note/src/api/common"
+	api_common_context "note/src/api/common/context"
 	"note/src/api/common/db"
 	"note/src/api/common/session"
 	"note/src/typ"
-	util_str "note/src/util/str"
+	"note/src/util/str"
 	"strings"
 )
 
@@ -16,7 +18,7 @@ import (
 func List(context *gin.Context) {
 	// img
 	img := typ.Img{}
-	err := context.ShouldBindQuery(context, &img)
+	err := api_common_context.ShouldBindQuery(context, &img)
 
 	// name
 	img.Name = strings.TrimSpace(img.Name)
@@ -42,7 +44,7 @@ func List(context *gin.Context) {
 
 	// resp
 	resp := typ.Resp[map[string]any]{
-		Msg: util_str.ConvTypeToStr(err),
+		Msg: str.ConvTypeToStr(err),
 		Data: map[string]any{
 			"img":   img,   // img query
 			"types": types, // types
@@ -51,24 +53,18 @@ func List(context *gin.Context) {
 	}
 
 	// 记录查询参数
-	session.SetSessionKv(context, "img", img)
+	session.Set(context, ImgSessionKey, img)
 
 	// html
-	context.HtmlOk(context, "img/list.html", resp)
+	api_common_context.HtmlOk(context, "img/list.html", resp)
 }
 
 // DbPage 分页查询图片
 func DbPage(context *gin.Context, img typ.Img) (typ.Page[typ.Img], error) {
-	current, _ := context.Param[int64](context, "current")
-	if current <= 0 {
-		current = 1
-	}
+	// page request
+	current, size := common.PageReq(context)
 
-	size, _ := context.Param[uint8](context, "size")
-	if size <= 0 {
-		size = 10
-	}
-
+	// sql & args
 	args := make([]any, 0, 1)
 	sql := "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`del`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = ? "
 	args = append(args, img.Del)
@@ -93,13 +89,12 @@ func DbPage(context *gin.Context, img typ.Img) (typ.Page[typ.Img], error) {
 
 	sql += "ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC"
 
-	return db.DbPage[typ.Img](context, current, size, sql, args...)
+	return db.Page[typ.Img](context, current, size, sql, args...)
 }
 
 // DbTypes 获取图片类型集合
 func DbTypes(context *gin.Context) []string {
-	// types
-	types, count, err := db.DbQry[[]string](context, "SELECT DISTINCT(`type`) FROM `img` WHERE `del` = 0")
+	types, count, err := db.Qry[[]string](context, "SELECT DISTINCT(`type`) FROM `img` WHERE `del` = 0")
 	if err != nil || count == 0 {
 		types = nil
 	}

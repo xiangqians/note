@@ -7,14 +7,17 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"note/src/api/common"
+	api_common_context "note/src/api/common/context"
 	"note/src/api/common/db"
 	"note/src/api/common/session"
 	"note/src/typ"
-	util_json "note/src/util/json"
-	util_os "note/src/util/os"
-	util_str "note/src/util/str"
+	"note/src/util/json"
+	"note/src/util/os"
+	"note/src/util/str"
 	"sort"
 )
+
+const ImgSessionKey = "img"
 
 // DeserializeHist 反序列化历史记录
 func DeserializeHist(hist string) ([]typ.Img, error) {
@@ -24,7 +27,7 @@ func DeserializeHist(hist string) ([]typ.Img, error) {
 
 	// hists
 	hists := make([]typ.Img, 0, 1) // len 0, cap ?
-	err := util_json.Deserialize(hist, &hists)
+	err := json.Deserialize(hist, &hists)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +40,7 @@ func DeserializeHist(hist string) ([]typ.Img, error) {
 
 // SerializeHist 序列化历史记录
 func SerializeHist(hists []typ.Img) (string, error) {
-	return util_json.Serialize(hists)
+	return json.Serialize(hists)
 }
 
 // Sort 对img进行排序
@@ -49,17 +52,23 @@ func Sort(imgs *[]typ.Img) {
 
 func RedirectToList(context *gin.Context, err any) {
 	resp := typ.Resp[any]{
-		Msg: util_str.ConvTypeToStr(err),
+		Msg: str.ConvTypeToStr(err),
 	}
 
 	// 记录查询参数
-	img, err := session.GetSessionV[typ.Img](context, "img", false)
+	img, err := session.Get[typ.Img](context, ImgSessionKey, false)
 	if err != nil {
-		context.Redirect(context, "/img/list", resp)
+		api_common_context.Redirect(context, "/img/list", resp)
 		return
 	}
 
-	context.Redirect(context, fmt.Sprintf("/img/list?id=%d&name=%s&type=%s&del=%d", img.Id, img.Name, img.Type, img.Del), resp)
+	api_common_context.Redirect(context, fmt.Sprintf("/img/list?id=%d&name=%s&type=%s&del=%d", img.Id, img.Name, img.Type, img.Del), resp)
+}
+
+// DbQry 查询图片信息
+func DbQry(context *gin.Context, id int64, del int) (typ.Img, int64, error) {
+	img, count, err := db.Qry[typ.Img](context, "SELECT `id`, `name`, `type`, `size`, `hist`, `hist_size`, `del`, `add_time`, `upd_time` FROM `img` WHERE `del` = ? AND `id` = ?", del, id)
+	return img, count, err
 }
 
 // HistPath 获取图片历史记录物理路径
@@ -67,11 +76,11 @@ func HistPath(context *gin.Context, img typ.Img) (string, error) {
 	// dir
 	dataDir := common.DataDir(context)
 	imgDir := fmt.Sprintf("%s%s%s%s%s%s%s", dataDir,
-		util_os.FileSeparator(), "hist",
-		util_os.FileSeparator(), "img",
-		util_os.FileSeparator(), img.Type)
-	if !util_os.IsExist(imgDir) {
-		err := util_os.MkDir(imgDir)
+		os.FileSeparator(), "hist",
+		os.FileSeparator(), "img",
+		os.FileSeparator(), img.Type)
+	if !os.IsExist(imgDir) {
+		err := os.MkDir(imgDir)
 		if err != nil {
 			return "", err
 		}
@@ -82,7 +91,7 @@ func HistPath(context *gin.Context, img typ.Img) (string, error) {
 	name := fmt.Sprintf("%d_%d", img.Id, time)
 
 	// path
-	return fmt.Sprintf("%s%s%s", imgDir, util_os.FileSeparator(), name), nil
+	return fmt.Sprintf("%s%s%s", imgDir, os.FileSeparator(), name), nil
 }
 
 // Path 获取图片物理路径
@@ -90,10 +99,10 @@ func Path(context *gin.Context, img typ.Img) (string, error) {
 	// dir
 	dataDir := common.DataDir(context)
 	imgDir := fmt.Sprintf("%s%s%s%s%s", dataDir,
-		util_os.FileSeparator(), "img",
-		util_os.FileSeparator(), img.Type)
-	if !util_os.IsExist(imgDir) {
-		err := util_os.MkDir(imgDir)
+		os.FileSeparator(), "img",
+		os.FileSeparator(), img.Type)
+	if !os.IsExist(imgDir) {
+		err := os.MkDir(imgDir)
 		if err != nil {
 			return "", err
 		}
@@ -103,11 +112,5 @@ func Path(context *gin.Context, img typ.Img) (string, error) {
 	name := fmt.Sprintf("%d", img.Id)
 
 	// path
-	return fmt.Sprintf("%s%s%s", imgDir, util_os.FileSeparator(), name), nil
-}
-
-// DbQry 查询图片信息
-func DbQry(context *gin.Context, id int64, del int) (typ.Img, int64, error) {
-	img, count, err := db.DbQry[typ.Img](context, "SELECT `id`, `name`, `type`, `size`, `hist`, `hist_size`, `del`, `add_time`, `upd_time` FROM `img` WHERE `del` = ? AND `id` = ?", del, id)
-	return img, count, err
+	return fmt.Sprintf("%s%s%s", imgDir, os.FileSeparator(), name), nil
 }

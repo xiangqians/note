@@ -7,7 +7,7 @@ package typ
 type Ft string
 
 const (
-	FtUnk  Ft = "unk"  // unknown
+	FtUnk  Ft = ""     // unknown
 	FtD       = "d"    // 目录
 	FtMd      = "md"   // md文件
 	FtHtml    = "html" // html文件

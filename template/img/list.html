@@ -70,10 +70,10 @@
             {{ if ne $img.Del 0 }}class="gray" {{ end }}>
             <td>{{ No_ $page $index }}</td>
             <td>
-                {{ if ne $img.Del 0 }}
-                <span>{{ $img.Name }}</span>
-                {{ else }}
+                {{ if eq $img.Del 0 }}
                 <a href="/img/{{ $img.Id }}/view?t={{ NowUnix }}" target="_blank">{{ $img.Name }}</a>
+                {{ else }}
+                <span>{{ $img.Name }}</span>
                 {{ end }}
             </td>
             <td>{{ $img.Type }}</td>
