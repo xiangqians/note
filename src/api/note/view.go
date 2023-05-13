@@ -6,15 +6,18 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
-	typ2 "note/app/typ"
+	api_common_context "note/src/api/common/context"
+	"note/src/typ"
+	"note/src/util/str"
+	"note/src/util/time"
 )
 
 // View 查看文件页面
 func View(context *gin.Context) {
 	// id
-	id, err := context.Param[int64](context, "id")
+	id, err := api_common_context.Param[int64](context, "id")
 	if err != nil {
-		ViewUnsupported(context, typ2.Note{}, err)
+		ViewUnsupported(context, typ.Note{}, err)
 		return
 	}
 
@@ -36,17 +39,17 @@ func View(context *gin.Context) {
 	}
 
 	// type
-	switch typ2.ExtNameOf(note.Type) {
+	switch typ.ExtNameOf(note.Type) {
 	// markdown
-	case typ2.FtMd:
+	case typ.FtMd:
 		ViewMd(context, note)
 
 	// html
-	case typ2.FtHtml:
+	case typ.FtHtml:
 		ViewHtml(context, note)
 
 	// pdf
-	case typ2.FtPdf:
+	case typ.FtPdf:
 		ViewPdf(context, note)
 
 	// default
@@ -56,31 +59,31 @@ func View(context *gin.Context) {
 }
 
 // ViewUnsupported 不支持查看
-func ViewUnsupported(context *gin.Context, note typ2.Note, err any) {
-	resp := typ2.Resp[typ2.Note]{
+func ViewUnsupported(context *gin.Context, note typ.Note, err any) {
+	resp := typ.Resp[typ.Note]{
 		Msg:  str.ConvTypeToStr(err),
 		Data: note,
 	}
-	context.HtmlOk(context, "note/unsupported/view.html", resp)
+	api_common_context.HtmlOk(context, "note/unsupported/view.html", resp)
 }
 
 func Get(context *gin.Context) {
 	// id
-	id, err := context.Param[int64](context, "id")
+	id, err := api_common_context.Param[int64](context, "id")
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
 	// note
-	note, count, err := DbQry(context, typ2.Note{Abs: typ2.Abs{Id: id}, Pid: -1})
+	note, count, err := DbQry(context, typ.Note{Abs: typ.Abs{Id: id}, Pid: -1})
 	if err != nil || count == 0 {
 		log.Println(err)
 		return
 	}
 
 	// 排除目录
-	if typ2.FtD == typ2.ExtNameOf(note.Type) {
+	if typ.FtD == typ.ExtNameOf(note.Type) {
 		return
 	}
 

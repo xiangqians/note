@@ -6,8 +6,12 @@ package note
 import (
 	"bufio"
 	"github.com/gin-gonic/gin"
-	"note/app/api/common/db"
-	typ2 "note/app/typ"
+	api_common_context "note/src/api/common/context"
+	"note/src/api/common/db"
+	"note/src/typ"
+	"note/src/util/str"
+	"note/src/util/time"
+	"note/src/util/validate"
 	"os"
 	"strings"
 )
@@ -16,15 +20,15 @@ import (
 func UpdContent(context *gin.Context) {
 	json := func(err error) {
 		if err != nil {
-			context.JsonBadRequest(context, typ2.Resp[any]{Msg: str.ConvTypeToStr(err)})
+			api_common_context.JsonBadRequest(context, typ.Resp[any]{Msg: str.ConvTypeToStr(err)})
 			return
 		}
 
-		context.JsonOk(context, typ2.Resp[any]{})
+		api_common_context.JsonOk(context, typ.Resp[any]{})
 	}
 
 	// id
-	id, err := context.PostForm[int64](context, "id")
+	id, err := api_common_context.PostForm[int64](context, "id")
 	if err != nil {
 		json(err)
 		return
@@ -32,14 +36,14 @@ func UpdContent(context *gin.Context) {
 	//log.Println("id", id)
 
 	// f
-	f, count, err := DbQry(context, typ2.Note{Abs: typ2.Abs{Id: id}, Pid: -1})
-	if count == 0 || typ2.ExtNameOf(f.Type) != typ2.FtMd {
+	f, count, err := DbQry(context, typ.Note{Abs: typ.Abs{Id: id}, Pid: -1})
+	if count == 0 || typ.ExtNameOf(f.Type) != typ.FtMd {
 		json(nil)
 		return
 	}
 
 	// content
-	content, err := context.PostForm[string](context, "content")
+	content, err := api_common_context.PostForm[string](context, "content")
 	if err != nil {
 		json(err)
 		return
@@ -76,7 +80,7 @@ func UpdContent(context *gin.Context) {
 	size := fInfo.Size()
 
 	// update
-	_, err = db.DbUpd(context, "UPDATE `note` SET `size` = ?, `upd_time` = ? WHERE id = ?", size, time.NowUnix(), id)
+	_, err = db.Upd(context, "UPDATE `note` SET `size` = ?, `upd_time` = ? WHERE id = ?", size, time.NowUnix(), id)
 	if err != nil {
 		json(err)
 		return
@@ -93,8 +97,8 @@ func UpdName(context *gin.Context) {
 	}
 
 	// note
-	note := typ2.Note{}
-	err := context.ShouldBind(context, &note)
+	note := typ.Note{}
+	err := api_common_context.ShouldBind(context, &note)
 	pid := note.Pid
 	if err != nil {
 		redirect(pid, err)
@@ -110,7 +114,7 @@ func UpdName(context *gin.Context) {
 	}
 
 	// update
-	_, err = db.DbUpd(context, "UPDATE `note` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", note.Name, time.NowUnix(), note.Id, note.Name)
+	_, err = db.Upd(context, "UPDATE `note` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", note.Name, time.NowUnix(), note.Id, note.Name)
 
 	redirect(pid, err)
 	return

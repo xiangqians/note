@@ -8,9 +8,14 @@ import (
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"note/app/api/common/db"
-	typ2 "note/app/typ"
-	util_os "note/app/util/os"
+	api_common_context "note/src/api/common/context"
+	"note/src/api/common/db"
+	"note/src/typ"
+	"note/src/util/json"
+	util_os "note/src/util/os"
+	"note/src/util/str"
+	"note/src/util/time"
+	"note/src/util/validate"
 	"os"
 	"strings"
 )
@@ -24,15 +29,15 @@ func ReUpload(context *gin.Context) {
 
 	// redirect
 	redirect := func(id int64, pid int64, err any) {
-		resp := typ2.Resp[any]{
+		resp := typ.Resp[any]{
 			Msg: str.ConvTypeToStr(err),
 		}
 		switch method {
 		case http.MethodPost:
-			context.Redirect(context, fmt.Sprintf("/note/list?pid=%d", pid), resp)
+			api_common_context.Redirect(context, fmt.Sprintf("/note/list?pid=%d", pid), resp)
 
 		case http.MethodPut:
-			context.Redirect(context, fmt.Sprintf("/note/%d/view", id), resp)
+			api_common_context.Redirect(context, fmt.Sprintf("/note/%d/view", id), resp)
 		}
 	}
 
@@ -44,11 +49,11 @@ func ReUpload(context *gin.Context) {
 	switch method {
 	// 上传文件，需要pid
 	case http.MethodPost:
-		pid, err = context.PostForm[int64](context, "pid")
+		pid, err = api_common_context.PostForm[int64](context, "pid")
 
 	// 重传文件，需要id
 	case http.MethodPut:
-		id, err = context.PostForm[int64](context, "id")
+		id, err = api_common_context.PostForm[int64](context, "id")
 	}
 	if err != nil {
 		redirect(id, pid, err)
@@ -77,8 +82,8 @@ func ReUpload(context *gin.Context) {
 	// file type
 	// 校验文件类型，只支持上传 html/pdf/zip
 	contentType := fh.Header.Get("Content-Type")
-	ft := typ2.ContentTypeOf(contentType)
-	if ft == typ2.FtUnk || !(ft == typ2.FtHtml || ft == typ2.FtPdf || ft == typ2.FtZip) {
+	ft := typ.ContentTypeOf(contentType)
+	if ft == typ.FtUnk || !(ft == typ.FtHtml || ft == typ.FtPdf || ft == typ.FtZip) {
 		redirect(id, pid, fmt.Sprintf("%s: %s", i18n.MustGetMessage("i18n.fileTypeUnsupported"), contentType))
 		return
 	}
@@ -87,7 +92,7 @@ func ReUpload(context *gin.Context) {
 	fs := fh.Size
 
 	// 原笔记信息
-	var oldNote typ2.Note
+	var oldNote typ.Note
 
 	// 操作数据库
 	switch method {
@@ -95,25 +100,25 @@ func ReUpload(context *gin.Context) {
 	case http.MethodPost:
 		// 校验 pid 是否存在
 		if pid != 0 {
-			var note typ2.Note
+			var note typ.Note
 			var count int64
-			note, count, err = DbQry(context, typ2.Note{Abs: typ2.Abs{Id: pid}, Pid: -1})
-			if err != nil || count == 0 || typ2.ExtNameOf(note.Type) != typ2.FtD { // 父节点必须是目录
+			note, count, err = DbQry(context, typ.Note{Abs: typ.Abs{Id: pid}, Pid: -1})
+			if err != nil || count == 0 || typ.ExtNameOf(note.Type) != typ.FtD { // 父节点必须是目录
 				redirect(id, pid, err)
 				return
 			}
 		}
 
 		// add
-		id, err = db.DbAdd(context, "INSERT INTO `note` (`pid`, `name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?, ?)",
+		id, err = db.Add(context, "INSERT INTO `note` (`pid`, `name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?, ?)",
 			pid, fn, ft, fs, time.NowUnix())
 
 	// 修改笔记
 	case http.MethodPut:
 		// 校验 id 是否存在
 		var count int64
-		oldNote, count, err = DbQry(context, typ2.Note{Abs: typ2.Abs{Id: id}, Pid: -1})
-		if err != nil || count == 0 || typ2.ExtNameOf(oldNote.Type) == typ2.FtD { // 上传文件不能是目录类型
+		oldNote, count, err = DbQry(context, typ.Note{Abs: typ.Abs{Id: id}, Pid: -1})
+		if err != nil || count == 0 || typ.ExtNameOf(oldNote.Type) == typ.FtD { // 上传文件不能是目录类型
 			redirect(id, pid, err)
 			return
 		}
@@ -121,7 +126,7 @@ func ReUpload(context *gin.Context) {
 		// 笔记历史记录
 		hist := oldNote.Hist
 		histSize := oldNote.HistSize
-		histNotes := make([]typ2.Note, 0, 1) // len 0, cap ?
+		histNotes := make([]typ.Note, 0, 1) // len 0, cap ?
 		if hist != "" {
 			err = json.Deserialize(hist, &histNotes)
 			if err != nil {
@@ -131,8 +136,8 @@ func ReUpload(context *gin.Context) {
 		}
 
 		// 将原笔记添加到历史记录
-		histNote := typ2.Note{
-			Abs: typ2.Abs{
+		histNote := typ.Note{
+			Abs: typ.Abs{
 				Id:      oldNote.Id,
 				AddTime: oldNote.AddTime,
 				UpdTime: oldNote.UpdTime,
@@ -190,7 +195,7 @@ func ReUpload(context *gin.Context) {
 		}
 
 		// update
-		_, err = db.DbUpd(context, "UPDATE `note` SET `name` = ?, `type` = ?, `size` = ?, `hist` = ?, `hist_size` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?",
+		_, err = db.Upd(context, "UPDATE `note` SET `name` = ?, `type` = ?, `size` = ?, `hist` = ?, `hist_size` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?",
 			fn, ft, fs, hist, histSize, time.NowUnix(), id)
 	}
 	if err != nil {
@@ -199,7 +204,7 @@ func ReUpload(context *gin.Context) {
 	}
 
 	// path
-	note := typ2.Note{}
+	note := typ.Note{}
 	note.Id = id
 	note.Type = string(ft)
 	path, err := Path(context, note)
@@ -239,14 +244,14 @@ func ReUpload(context *gin.Context) {
 // Upload 上传文件
 func Upload(context *gin.Context) {
 	redirect := func(pid int64, err any) {
-		resp := typ2.Resp[any]{
+		resp := typ.Resp[any]{
 			Msg: str.ConvTypeToStr(err),
 		}
-		context.Redirect(context, fmt.Sprintf("/note/list?pid=%d", pid), resp)
+		api_common_context.Redirect(context, fmt.Sprintf("/note/list?pid=%d", pid), resp)
 	}
 
 	// 上传文件，需要pid
-	pid, err := context.PostForm[int64](context, "pid")
+	pid, err := api_common_context.PostForm[int64](context, "pid")
 	if err != nil || pid < 0 {
 		redirect(pid, err)
 		return
@@ -270,8 +275,8 @@ func Upload(context *gin.Context) {
 	// file type
 	// 校验文件类型，只支持上传 html/pdf/zip
 	contentType := fh.Header.Get("Content-Type")
-	ft := typ2.ContentTypeOf(contentType)
-	if ft == typ2.FtUnk || !(ft == typ2.FtHtml || ft == typ2.FtPdf || ft == typ2.FtZip) {
+	ft := typ.ContentTypeOf(contentType)
+	if ft == typ.FtUnk || !(ft == typ.FtHtml || ft == typ.FtPdf || ft == typ.FtZip) {
 		redirect(pid, fmt.Sprintf("%s, %s", i18n.MustGetMessage("i18n.fileTypeUnsupported"), contentType))
 		return
 	}
@@ -283,7 +288,7 @@ func Upload(context *gin.Context) {
 	// 校验 pid 是否存在
 	if pid != 0 {
 		note, count, err := DbQryNew(context, pid, 0, 0)
-		if err != nil || count == 0 || typ2.ExtNameOf(note.Type) != typ2.FtD { // 父节点必须是目录
+		if err != nil || count == 0 || typ.ExtNameOf(note.Type) != typ.FtD { // 父节点必须是目录
 			redirect(pid, err)
 			return
 		}
@@ -293,11 +298,11 @@ func Upload(context *gin.Context) {
 	id, count, err := DbQryPermlyDelId(context)
 	// 新id
 	if err != nil || count == 0 {
-		id, err = db.DbAdd(context, "INSERT INTO `note` (`pid`, `name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?, ?)", pid, name, _type, size, time.NowUnix())
+		id, err = db.Add(context, "INSERT INTO `note` (`pid`, `name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?, ?)", pid, name, _type, size, time.NowUnix())
 	} else
 	// 复用id
 	{
-		_, err = db.DbUpd(context, "UPDATE `note` SET `pid` = ?, `name` = ?, `type` = ?, `size` = ?, `hist` = '', `hist_size` = 0, `del` = 0, `add_time` = ?, `upd_time` = 0 WHERE `id` = ?",
+		_, err = db.Upd(context, "UPDATE `note` SET `pid` = ?, `name` = ?, `type` = ?, `size` = ?, `hist` = '', `hist_size` = 0, `del` = 0, `add_time` = ?, `upd_time` = 0 WHERE `id` = ?",
 			pid, name, _type, size, time.NowUnix(), id)
 	}
 	if err != nil {
@@ -306,7 +311,7 @@ func Upload(context *gin.Context) {
 	}
 
 	// path
-	note := typ2.Note{}
+	note := typ.Note{}
 	note.Id = id
 	note.Type = _type
 	path, err := Path(context, note)
@@ -324,6 +329,6 @@ func Upload(context *gin.Context) {
 
 // DbQryPermlyDelId 查询永久删除的笔记记录id，以复用
 func DbQryPermlyDelId(context *gin.Context) (int64, int64, error) {
-	id, count, err := db.DbQry[int64](context, "SELECT `id` FROM `note` WHERE `del` = 2 LIMIT 1")
+	id, count, err := db.Qry[int64](context, "SELECT `id` FROM `note` WHERE `del` = 2 LIMIT 1")
 	return id, count, err
 }

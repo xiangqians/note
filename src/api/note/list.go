@@ -5,35 +5,33 @@ package note
 
 import (
 	"github.com/gin-gonic/gin"
-	"note/app/api/common/db"
-	"note/app/api/common/session"
-	typ2 "note/app/typ"
+	api_common_context "note/src/api/common/context"
+	"note/src/api/common/db"
+	"note/src/api/common/session"
+	"note/src/typ"
+	"note/src/util/str"
 	"strings"
 )
 
 // List 文件列表页面
 func List(context *gin.Context) {
-	html := func(note typ2.Note, types []string, err error) {
-		resp := typ2.Resp[map[string]any]{
+	html := func(note typ.Note, types []string, err error) {
+		resp := typ.Resp[map[string]any]{
 			Msg: str.ConvTypeToStr(err),
 			Data: map[string]any{
 				"note":  note,
 				"types": types,
 			},
 		}
-		context.HtmlOk(context, "note/list.html", resp)
+		api_common_context.HtmlOk(context, "note/list.html", resp)
 	}
 
 	// note
-	note := typ2.Note{}
-	err := context.ShouldBindQuery(context, &note)
+	note := typ.Note{}
+	err := api_common_context.ShouldBindQuery(context, &note)
 	note.Del = 0
 	note.QryPath = 0
 	note.Children = nil
-	//if err != nil {
-	//	html(note, nil, err)
-	//	return
-	//}
 
 	// name
 	note.Name = strings.TrimSpace(note.Name)
@@ -42,17 +40,18 @@ func List(context *gin.Context) {
 	// type
 	note.Type = strings.TrimSpace(note.Type)
 
-	// p
+	// pid
 	pid := note.Pid
 	if pid < 0 {
 		html(note, nil, err)
 		return
 	}
 
-	var pNote typ2.Note
+	// p note
+	var pNote typ.Note
 	if pid != 0 {
 		var count int64
-		pNote, count, err = DbQry(context, typ2.Note{Abs: typ2.Abs{Id: pid}, Pid: -1, QryPath: 2})
+		pNote, count, err = DbQry(context, typ.Note{Abs: typ.Abs{Id: pid}, Pid: -1, QryPath: 2})
 		if err != nil || count == 0 {
 			html(note, nil, err)
 			return
@@ -60,7 +59,7 @@ func List(context *gin.Context) {
 	}
 
 	// types
-	types, count, err := db.DbQry[[]string](context, "SELECT DISTINCT(`type`) FROM `note` WHERE `del` = 0")
+	types, count, err := db.Qry[[]string](context, "SELECT DISTINCT(`type`) FROM `note` WHERE `del` = 0")
 	if err != nil || count == 0 {
 		types = nil
 	}
@@ -87,7 +86,7 @@ func List(context *gin.Context) {
 	}
 
 	// 记录查询参数
-	session.SetSessionKv(context, "note", typ2.Note{
+	session.Set(context, "note", typ.Note{
 		Pid:     note.Pid,
 		Deleted: note.Deleted,
 	})

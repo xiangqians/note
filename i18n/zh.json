@@ -63,6 +63,7 @@
   "i18n.view": "查看",
   "i18n.edit": "编辑",
   "i18n.fileTypeUnsupported": "不支持此文件类型",
+  "i18n.fileTypeUnsupportedView": "此文件类型不支持查看",
   "i18n.success": "成功",
   "i18n.failure": "失败",
   "i18n.copy": "复制",

@@ -63,6 +63,7 @@
   "i18n.view": "View",
   "i18n.edit": "Edit",
   "i18n.fileTypeUnsupported": "This file type is not supported",
+  "i18n.fileTypeUnsupportedView": "This file type is not supported for viewing",
   "i18n.success": "Success",
   "i18n.failure": "Failure",
   "i18n.copy": "Copy",

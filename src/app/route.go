@@ -8,6 +8,7 @@ import (
 	api_common_context "note/src/api/common/context"
 	"note/src/api/img"
 	"note/src/api/index"
+	"note/src/api/note"
 	"note/src/api/user"
 	"note/src/typ"
 )
@@ -49,17 +50,17 @@ func route(engine *gin.Engine) {
 	imgGroup.DELETE("/:id/permlyDel", img.PermlyDel)
 
 	// note
-	//noteGroup := engine.Group("/note")
-	//noteGroup.Any("/list", note.List) // page
-	//noteGroup.POST("", note.Add)
-	//noteGroup.POST("/upload", note.Upload)
-	//noteGroup.POST("/reUpload", note.ReUpload)
-	//noteGroup.POST("/name", note.UpdName)
-	//noteGroup.GET("/:id", note.Get)
-	//noteGroup.Any("/:id/view", note.View) // page
-	//noteGroup.POST("/content", note.UpdContent)
-	//noteGroup.POST("/cut/:srcId/to/:dstId", note.Cut)
-	//noteGroup.DELETE("/:id", note.Del)
-	//noteGroup.POST("/:id/restore", note.Restore)
+	noteGroup := engine.Group("/note")
+	noteGroup.Any("/list", note.List) // page
+	noteGroup.POST("", note.Add)
+	noteGroup.POST("/upload", note.Upload)
+	noteGroup.POST("/reUpload", note.ReUpload)
+	noteGroup.POST("/name", note.UpdName)
+	noteGroup.GET("/:id", note.Get)
+	noteGroup.Any("/:id/view", note.View) // page
+	noteGroup.POST("/content", note.UpdContent)
+	noteGroup.POST("/cut/:srcId/to/:dstId", note.Cut)
+	noteGroup.DELETE("/:id", note.Del)
+	noteGroup.POST("/:id/restore", note.Restore)
 
 }
