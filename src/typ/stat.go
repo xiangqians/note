@@ -5,7 +5,7 @@ package typ
 
 import "encoding/gob"
 
-// Stat 统计（file和img）
+// Stat 统计note/img
 type Stat struct {
 	Type     string `json:"type"`     // 文件类型
 	Num      int64  `json:"num"`      // 文件数量

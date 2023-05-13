@@ -6,6 +6,7 @@ package app
 import (
 	"github.com/gin-gonic/gin"
 	api_common_context "note/src/api/common/context"
+	"note/src/api/index"
 	"note/src/api/user"
 	"note/src/typ"
 )
@@ -30,7 +31,7 @@ func route(engine *gin.Engine) {
 	}
 
 	// index
-	//engine.Any("/", index.Index)
+	engine.Any("/", index.Index)
 
 	// note
 	//noteGroup := engine.Group("/note")

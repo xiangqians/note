@@ -5,6 +5,7 @@ package index
 
 import (
 	"github.com/gin-gonic/gin"
+	api_common_context "note/src/api/common/context"
 	"note/src/api/common/db"
 	"note/src/typ"
 	util_str "note/src/util/str"
@@ -20,15 +21,15 @@ func Index(context *gin.Context) {
 				"imgStats":  imgStats,
 			},
 		}
-		context.HtmlOk(context, "index.html", resp)
+		api_common_context.HtmlOk(context, "index.html", resp)
 	}
 
 	// stat
-	noteStats := []typ.Stat{}
-	imgStats := []typ.Stat{}
+	var noteStats []typ.Stat = nil
+	var imgStats []typ.Stat = nil
 
 	// note
-	stats, count, err := db.DbQry[[]typ.Stat](context, "SELECT `type`, COUNT(`id`) AS 'num', SUM(`size`) AS 'size', SUM(`hist_size`) AS 'hist_size' FROM `note` WHERE `del` = 0 GROUP BY `type` ORDER BY COUNT(`id`) DESC")
+	stats, count, err := db.Qry[[]typ.Stat](context, "SELECT `type`, COUNT(`id`) AS 'num', SUM(`size`) AS 'size', SUM(`hist_size`) AS 'hist_size' FROM `note` WHERE `del` = 0 GROUP BY `type` ORDER BY COUNT(`id`) DESC")
 	if err != nil {
 		html(noteStats, imgStats, err)
 		return
@@ -38,7 +39,7 @@ func Index(context *gin.Context) {
 	}
 
 	// img
-	stats, count, err = db.DbQry[[]typ.Stat](context, "SELECT `type`, COUNT(`id`) AS 'num', SUM(`size`) AS 'size', SUM(`hist_size`) AS 'hist_size' FROM `img` WHERE `del` = 0 GROUP BY `type` ORDER BY COUNT(`id`) DESC")
+	stats, count, err = db.Qry[[]typ.Stat](context, "SELECT `type`, COUNT(`id`) AS 'num', SUM(`size`) AS 'size', SUM(`hist_size`) AS 'hist_size' FROM `img` WHERE `del` = 0 GROUP BY `type` ORDER BY COUNT(`id`) DESC")
 	if count > 0 {
 		imgStats = stats
 	}
