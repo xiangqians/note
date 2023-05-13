@@ -39,8 +39,10 @@ func Login0(context *gin.Context) {
 		return
 	}
 
+	// passwd
+	passwd, _ := api_common_context.PostForm[string](context, "passwd")
+	passwd = strings.TrimSpace(passwd)
 	// validate passwd
-	passwd := strings.TrimSpace(context.PostForm("passwd"))
 	err = validate.Passwd(passwd)
 	if err != nil {
 		redirect(err)

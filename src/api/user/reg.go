@@ -63,7 +63,7 @@ func Reg0(context *gin.Context) {
 	}
 
 	// 密码加密
-	passwd, err := bcrypt.Generate(user.Passwd)
+	passwdHash, err := bcrypt.Generate(user.Passwd)
 	if err != nil {
 		redirect(user, err)
 		return
@@ -93,7 +93,7 @@ func Reg0(context *gin.Context) {
 
 	// add
 	id, err := db.Add("INSERT INTO `user` (`name`, `nickname`, `passwd`, `rem`, `add_time`) VALUES (?, ?, ?, ?, ?)",
-		user.Name, strings.TrimSpace(user.Nickname), passwd, strings.TrimSpace(user.Rem), time.NowUnix())
+		user.Name, strings.TrimSpace(user.Nickname), passwdHash, strings.TrimSpace(user.Rem), time.NowUnix())
 	if err != nil {
 		db.Rollback()
 		redirect(user, err)
@@ -101,7 +101,7 @@ func Reg0(context *gin.Context) {
 	}
 
 	// 创建用户数据目录
-	dataDir := fmt.Sprintf("%s%s%d", common.AppArg.DataDir, util_os.FileSeparator(), id)
+	dataDir := common.DataDirOnUserId(id)
 	if !util_os.IsExist(dataDir) {
 		util_os.MkDir(dataDir)
 	}

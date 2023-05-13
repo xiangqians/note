@@ -119,5 +119,5 @@ func Settings(context *gin.Context) {
 		resp.Msg = str.ConvTypeToStr(err)
 		resp.Data = user
 	}
-	api_common_context.HtmlOk(context, "user/reg.html", resp)
+	api_common_context.HtmlOk(context, "user/settings.html", resp)
 }

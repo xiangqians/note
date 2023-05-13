@@ -8,7 +8,11 @@
     <meta charset="UTF-8">
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/custom/custom.css" type="text/css"/>
+    {{ if UriEqual .url "/user/reg" }}
     <title>{{ Localize "i18n.reg" }}</title>
+    {{ else }}
+    <title>{{ Localize "i18n.userSettings" }}</title>
+    {{ end }}
     <style>
         content table tbody tr:hover {
             background-color: white;
@@ -18,7 +22,7 @@
 <body>
 
 <content>
-    <form action="/user/reg0?t={{ NowUnix }}"
+    <form action='{{ if UriEqual .url "/user/reg" }}/user/reg0{{ else }}/user/settings0{{ end }}?t={{ NowUnix }}'
           method="post">
         <p style="color: red;">{{ .resp.Msg }}</p>
 
@@ -34,6 +38,12 @@
                 <td><label>{{ Localize "i18n.nickname" }}</label></td>
                 <td><input name="nickname" type="text" value="{{ $data.Nickname }}"></td>
             </tr>
+            {{ if UriEqual .url "/user/settings" }}
+            <tr>
+                <td>*<label>{{ Localize "i18n.origPasswd" }}:</label></td>
+                <td><input name="origPasswd" type="password"></td>
+            </tr>
+            {{ end }}
             <tr>
                 <td>*<label>{{ Localize "i18n.passwd" }}:</label></td>
                 <td><input name="passwd" type="password"></td>
@@ -49,13 +59,26 @@
             <textarea name="rem" type="text">{{ $data.Rem }}</textarea>
         </div>
         <div>
+            {{ if UriEqual .url "/user/reg" }}
             <input type="submit" value='{{ Localize "i18n.reg" }}'>
+            {{ else }}
+            <input type="submit" value='{{ Localize "i18n.save" }}'>
+            {{ end }}
         </div>
+        {{ if UriEqual .url "/user/reg" }}
         <br>
         <div>
-            {{ Localize "i18n.alreadyHaveAnAccount" }} <a href="/user/login?t={{ NowUnix }}">{{ Localize "i18n.login" }}</a>
+            {{ Localize "i18n.alreadyHaveAnAccount" }}<a href="/user/login?t={{ NowUnix }}">{{ Localize "i18n.login" }}</a>
         </div>
+        {{ end }}
     </form>
+    {{ if UriEqual .url "/user/settings" }}
+    <br>
+    <br>
+    <div>
+        <a href="/?t={{ NowUnix }}">{{ Localize "i18n.index" }} →</a>
+    </div>
+    {{ end }}
 </content>
 
 {{ template "common/footer.html" . }}

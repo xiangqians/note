@@ -13,11 +13,17 @@ import (
 
 var AppArg typ.AppArg
 
+// DataDir 根据 context 获取数据目录
 func DataDir(context *gin.Context) string {
 	if context == nil {
 		return AppArg.DataDir
 	}
 
 	user, _ := session.GetUser(context)
-	return fmt.Sprintf("%s%s%d", AppArg.DataDir, os.FileSeparator(), user.Id)
+	return DataDirOnUserId(user.Id)
+}
+
+// DataDirOnUserId 根据用户id获取数据目录
+func DataDirOnUserId(userId int64) string {
+	return fmt.Sprintf("%s%s%d", AppArg.DataDir, os.FileSeparator(), userId)
 }
