@@ -451,16 +451,20 @@
             // note ?
             if (type === 'note') {
                 // path
-                $path.find('td[name="path"]').html(data.pathLink)
-                let $as = $path.find('a')
-                for (let i = 0; i < $as.length; i++) {
-                    let $a = $($as[i])
-                    $a.attr('target', '_blank')
-                }
+                if (data.histIdx === -1) {
+                    $path.find('td[name="path"]').html(data.pathLink)
+                    let $as = $path.find('a')
+                    for (let i = 0; i < $as.length; i++) {
+                        let $a = $($as[i])
+                        $a.attr('target', '_blank')
+                    }
 
-                // !md edit
-                if (data.type !== 'md') {
-                    $edit.remove()
+                    // !md edit
+                    if (data.type !== 'md') {
+                        $edit.remove()
+                    }
+                } else {
+                    $path.find('td[name="path"]').html(data.path)
                 }
 
                 // !pdf version

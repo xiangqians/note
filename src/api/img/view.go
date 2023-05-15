@@ -113,20 +113,20 @@ func GetHist(context *gin.Context) {
 	}
 
 	// hists
-	hists, err := DeserializeHist(img.Hist)
-	if err != nil || hists == nil {
+	histImgs, err := DeserializeHist(img.Hist)
+	if err != nil || histImgs == nil {
 		log.Println("hist is empty")
 		return
 	}
 
 	// 校验idx是否合法
-	if idx >= len(hists) {
+	if idx >= len(histImgs) {
 		log.Println(err)
 		return
 	}
 
 	// hist img
-	histImg := hists[idx]
+	histImg := histImgs[idx]
 
 	// path
 	path, err := HistPath(context, histImg)

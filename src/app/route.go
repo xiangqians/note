@@ -57,8 +57,10 @@ func route(engine *gin.Engine) {
 	noteGroup.POST("/reUpload", note.ReUpload)
 	noteGroup.POST("/updName", note.UpdName)
 	noteGroup.GET("/:id", note.Get)
-	noteGroup.Any("/:id/view", note.View) // page
-	noteGroup.Any("/:id/edit", note.Edit) // page
+	noteGroup.GET("/:id/hist/:idx", note.GetHist)
+	noteGroup.Any("/:id/view", note.View)               // page
+	noteGroup.Any("/:id/hist/:idx/view", note.HistView) // page
+	noteGroup.Any("/:id/edit", note.Edit)               // page
 	noteGroup.POST("/updContent", note.UpdContent)
 	noteGroup.POST("/cut/:srcId/to/:dstId", note.Cut)
 	noteGroup.DELETE("/:id", note.Del)

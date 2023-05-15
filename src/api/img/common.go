@@ -12,8 +12,9 @@ import (
 	"note/src/api/common/session"
 	"note/src/typ"
 	"note/src/util/json"
-	"note/src/util/os"
+	util_os "note/src/util/os"
 	"note/src/util/str"
+	"os"
 	"sort"
 )
 
@@ -76,11 +77,11 @@ func HistPath(context *gin.Context, img typ.Img) (string, error) {
 	// dir
 	dataDir := common.DataDir(context)
 	imgDir := fmt.Sprintf("%s%s%s%s%s%s%s", dataDir,
-		os.FileSeparator(), "hist",
-		os.FileSeparator(), "img",
-		os.FileSeparator(), img.Type)
-	if !os.IsExist(imgDir) {
-		err := os.MkDir(imgDir)
+		util_os.FileSeparator(), "hist",
+		util_os.FileSeparator(), "img",
+		util_os.FileSeparator(), img.Type)
+	if !util_os.IsExist(imgDir) {
+		err := util_os.MkDir(imgDir)
 		if err != nil {
 			return "", err
 		}
@@ -91,7 +92,43 @@ func HistPath(context *gin.Context, img typ.Img) (string, error) {
 	name := fmt.Sprintf("%d_%d", img.Id, time)
 
 	// path
-	return fmt.Sprintf("%s%s%s", imgDir, os.FileSeparator(), name), nil
+	return fmt.Sprintf("%s%s%s", imgDir, util_os.FileSeparator(), name), nil
+}
+
+// DelImg 删除图片
+func DelImg(context *gin.Context, img typ.Img) (string, error) {
+	// path
+	path, err := Path(context, img)
+	if err != nil {
+		return path, err
+	}
+
+	// del
+	return path, util_os.DelFile(path)
+}
+
+// ClearImg 清空图片
+func ClearImg(context *gin.Context, img typ.Img) (string, error) {
+	// path
+	path, err := Path(context, img)
+	if err != nil {
+		return path, err
+	}
+
+	// exist ?
+	if !util_os.IsExist(path) {
+		return path, nil
+	}
+
+	// open
+	file, err := os.OpenFile(path,
+		os.O_WRONLY|os.O_TRUNC, // 只写（O_WRONLY） & 清空文件（O_TRUNC）
+		0666)
+
+	// close
+	file.Close()
+
+	return path, err
 }
 
 // Path 获取图片物理路径
@@ -99,10 +136,10 @@ func Path(context *gin.Context, img typ.Img) (string, error) {
 	// dir
 	dataDir := common.DataDir(context)
 	imgDir := fmt.Sprintf("%s%s%s%s%s", dataDir,
-		os.FileSeparator(), "img",
-		os.FileSeparator(), img.Type)
-	if !os.IsExist(imgDir) {
-		err := os.MkDir(imgDir)
+		util_os.FileSeparator(), "img",
+		util_os.FileSeparator(), img.Type)
+	if !util_os.IsExist(imgDir) {
+		err := util_os.MkDir(imgDir)
 		if err != nil {
 			return "", err
 		}
@@ -112,5 +149,5 @@ func Path(context *gin.Context, img typ.Img) (string, error) {
 	name := fmt.Sprintf("%d", img.Id)
 
 	// path
-	return fmt.Sprintf("%s%s%s", imgDir, os.FileSeparator(), name), nil
+	return fmt.Sprintf("%s%s%s", imgDir, util_os.FileSeparator(), name), nil
 }

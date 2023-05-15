@@ -5,7 +5,6 @@ package note
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"log"
 	api_common_context "note/src/api/common/context"
 	"note/src/typ"
 	"note/src/util/str"
@@ -22,7 +21,7 @@ func View(context *gin.Context) {
 	view(context, false)
 }
 
-// view 查看文件页面
+// view 查看页面
 // hist: 是否是历史记录
 func view(context *gin.Context, hist bool) {
 	// id
@@ -48,6 +47,35 @@ func view(context *gin.Context, hist bool) {
 	if err != nil {
 		ViewUnsupported(context, note, err)
 		return
+	}
+
+	// 如果查询的是历史记录
+	if hist {
+		histNotes := note.Hists
+		if err != nil || histNotes == nil {
+			ViewUnsupported(context, note, err)
+			return
+		}
+
+		// 校验idx是否合法
+		l := len(histNotes)
+		var idx int
+		idx, err = api_common_context.Param[int](context, "idx")
+		if err != nil || idx < 0 {
+			idx = 0
+		}
+		if idx >= l {
+			idx = l - 1
+		}
+
+		// hist note
+		histNote := histNotes[idx]
+		histNote.Path = note.Path
+		histNote.PathLink = note.PathLink
+		histNote.Url = fmt.Sprintf("/note/%d/hist/%d?t=%d", id, idx, time.NowUnix())
+		histNote.Hists = histNotes
+		histNote.HistIdx = int8(idx)
+		note = histNote
 	}
 
 	// type
@@ -78,62 +106,4 @@ func ViewUnsupported(context *gin.Context, note typ.Note, err any) {
 		Data: note,
 	}
 	api_common_context.HtmlOk(context, "note/unsupported/view.html", resp)
-}
-
-func Get(context *gin.Context) {
-	// id
-	id, err := api_common_context.Param[int64](context, "id")
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	// note
-	note, count, err := DbQry(context, id, 0, 0)
-	if err != nil || count == 0 {
-		log.Println(err)
-		return
-	}
-
-	// 排除目录
-	if typ.FtD == typ.ExtNameOf(note.Type) {
-		return
-	}
-
-	// path
-	path, err := Path(context, note)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	/**
-	// read all
-	buf, err := os.ReadFile(fPath)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	writer := context.Writer
-	writer.Write(buf)
-	writer.Flush()
-	*/
-
-	/**
-	// open
-	pFile, err := os.Open(fPath)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	// write
-	err = util.IOCopy(pFile, context.Writer, 0)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	*/
-
-	context.File(path)
 }
