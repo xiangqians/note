@@ -286,6 +286,18 @@ func read(context *gin.Context, note typ.Note, hist bool) ([]byte, error) {
 	return buf, err
 }
 
+// DelHistNote 删除历史笔记
+func DelHistNote(context *gin.Context, note typ.Note) (string, error) {
+	// path
+	path, err := HistPath(context, note)
+	if err != nil {
+		return path, err
+	}
+
+	// del
+	return path, util_os.DelFile(path)
+}
+
 // HistPath 获取笔记历史记录物理路径
 func HistPath(context *gin.Context, note typ.Note) (string, error) {
 	// dir

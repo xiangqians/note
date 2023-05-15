@@ -121,10 +121,7 @@ func ReUpload(context *gin.Context) {
 	l := len(histNotes)
 	if l > max {
 		for i := max; i < l; i++ {
-			path, err := HistPath(context, histNotes[i])
-			if err == nil {
-				os.DelFile(path)
-			}
+			DelHistNote(context, histNotes[i])
 		}
 		histNotes = histNotes[:max]
 	}
