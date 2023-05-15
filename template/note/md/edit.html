@@ -47,17 +47,19 @@
 <!-- md5.js -->
 <script src="/static/md5/md5.js"></script>
 
+<!-- custom.js -->
 <script type="text/javascript" src="/static/custom/custom.js"></script>
 
 <script>
     ;
     (function () {
 
+        // editor
         let $textarea = $('textarea')
         let editor = CodeMirror.fromTextArea($textarea[0], {
             mode: 'markdown', // 语言模式
             lineNumbers: true,  // 显示行数
-            // indentUnit: 4,         // 缩进单位为4
+            // indentUnit: 4,   // 缩进单位为4
             smartIndent: true, //智能缩进
             styleActiveLine: true, // 当前行背景高亮
             lineWrapping: true, // 自动换行
@@ -65,12 +67,22 @@
             autoRefresh: true,
 
             // keyMap：快捷键，default使用默认快捷键
-
         })
+
+        // set size
         editor.setSize('100%', '100%')
+
+        // title
+        let $title = $('title')
+        let title = $title.text()
 
         // hash
         editor.hash = md5(editor.getValue())
+
+        // 内容是否已更改
+        editor.hasChanged = function () {
+            return this.hash !== md5(this.getValue())
+        }
 
         // 内容变化监听
         // https://codemirror.net/5/doc/manual.html#events
@@ -80,32 +92,57 @@
             editor.save()
             // console.log(editor.getValue())
             // console.log($textarea.val())
+
+            if (editor.hasChanged()) {
+                $title.text(`* ${title}`)
+            } else {
+                $title.text(title)
+            }
         })
 
+        // onbeforeunload
+        window.onbeforeunload = function (e) {
+            var e = window.event || e
+            if (editor.hasChanged()) {
+                e.returnValue = "数据发生改变！"
+                return e.returnValue
+            }
+        }
+
+        // 保存内容
         function save() {
-            custom.ajax('/note/content', 'PUT', {
-                    'id': "{{ $data.note.Id }}",
-                    'content': editor.getValue()
-                },
-                'json',
+            if (!editor.hasChanged()) {
+                return
+            }
+
+            let data = new FormData()
+            data.append('id', "{{ $data.note.Id }}")
+            let value = editor.getValue()
+            data.append('content', value)
+            custom.ajax('/note/updContent',
+                'POST',
+                data,
                 false,
+                undefined,
                 function () {
-                    editor.hash = md5(editor.getValue())
-                    alert('{{ Localize "i18n.success" }}')
+                    editor.hash = md5(value)
+                    $title.text(title)
                 },
                 function (e) {
                     let msg = e.responseJSON.msg
                     alert(msg)
                 })
         }
-        ;
 
         // 监听 ctrl + s 按键
         document.onkeydown = function (event) {
             // ctrl + s
             if ((navigator.platform.match("Mac") ? event.metaKey : event.ctrlKey) // ctrl
                 && event.keyCode == 83) { // s
+
                 // console.log("Ctrl + S", event)
+
+                // 保存内容
                 save()
 
                 // Prevent the default handler from running.
@@ -114,8 +151,6 @@
                 return
             }
         }
-
-        ;
 
         // 前端js获取剪切板中的文本或者图片文件数据
         // 监听paste事件，在进行粘贴的时候会触发
@@ -178,15 +213,23 @@
                 // console.log('file:', file)
 
                 // 上传
-                let formData = new FormData()
-                formData.append('file', file)
-                formData.append('dataType', 'json')
-                custom.ajax('/img/upload', 'POST', formData, 'form', false, function (resp) {
-                    // console.log(resp)
-                    document.execCommand('insertText', false, '![image](/img/' + resp.Data + ')');
-                }, function (resp) {
-                    alert(JSON.stringify(resp))
-                })
+                let data = new FormData()
+                data.append('file', file)
+                // 预期服务器返回的数据类型
+                data.append('dataType', 'json')
+                custom.ajax('/img/upload',
+                    'POST',
+                    data,
+                    false,
+                    undefined,
+                    function (resp) {
+                        // console.log(resp)
+                        let data = resp.data
+                        document.execCommand('insertText', false, `![${data.name}}](/img/${data.id})`);
+                    },
+                    function (resp) {
+                        alert(JSON.stringify(resp))
+                    })
             }
 
             let items = clipboardData.items
@@ -209,20 +252,12 @@
                     return
 
                 } else if (item.kind === 'file') {
-                    console.warn('type', item.type)
+                    console.warn(item)
+                    alert(`${item.type}`)
                 }
             }
         })
 
-        ;
-        // onbeforeunload
-        window.onbeforeunload = function (e) {
-            var e = window.event || e
-            if (editor.hash !== md5(editor.getValue())) {
-                e.returnValue = "数据发生改变！"
-                return e.returnValue
-            }
-        }
 
     })()
     ;

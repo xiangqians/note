@@ -15,58 +15,35 @@ func Edit(context *gin.Context) {
 	// id
 	id, err := api_common_context.Param[int64](context, "id")
 	if err != nil {
-		FileDefaultEditPage(context, typ.Note{}, err)
+		EditUnsupported(context, typ.Note{}, err)
 		return
 	}
 
 	// query
-	f, count, err := DbQry(context, typ.Note{Abs: typ.Abs{Id: id}, Pid: -1})
+	f, count, err := DbQry(context, id, 0, 0)
 	if err != nil || count == 0 {
-		FileDefaultEditPage(context, f, err)
+		EditUnsupported(context, f, err)
 		return
 	}
 
 	// type
 	switch typ.ExtNameOf(f.Type) {
+
 	// markdown
 	case typ.FtMd:
-		FileMdEditPage(context, f)
+		EditMd(context, f)
 
-	// default
+	// unsupported
 	default:
-		FileDefaultEditPage(context, f, err)
+		EditUnsupported(context, f, err)
 	}
 }
 
-// FileDefaultEditPage 默认文件修改页
-func FileDefaultEditPage(context *gin.Context, note typ.Note, err error) {
+// EditUnsupported 不支持编辑
+func EditUnsupported(context *gin.Context, note typ.Note, err any) {
 	resp := typ.Resp[typ.Note]{
 		Msg:  str.ConvTypeToStr(err),
 		Data: note,
 	}
-	api_common_context.HtmlOk(context, "note/default/edit.html", resp)
-}
-
-// FileMdEditPage md文件修改页
-func FileMdEditPage(context *gin.Context, note typ.Note) {
-	html := func(content string, err any) {
-		resp := typ.Resp[map[string]any]{
-			Msg: str.ConvTypeToStr(err),
-			Data: map[string]any{
-				"note":    note,
-				"content": content,
-			},
-		}
-
-		api_common_context.HtmlOk(context, "note/md/edit.html", resp)
-	}
-
-	// read
-	buf, err := Read(context, note)
-	content := ""
-	if err == nil {
-		content = string(buf)
-	}
-
-	html(content, err)
+	api_common_context.HtmlOk(context, "note/unsupported/edit.html", resp)
 }

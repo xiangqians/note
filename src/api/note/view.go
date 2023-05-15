@@ -22,7 +22,7 @@ func View(context *gin.Context) {
 	}
 
 	// query
-	note, count, err := DbQryNew(context, id, 1, 0)
+	note, count, err := DbQry(context, id, 1, 0)
 	if err != nil || count == 0 {
 		ViewUnsupported(context, note, err)
 		return
@@ -40,6 +40,7 @@ func View(context *gin.Context) {
 
 	// type
 	switch typ.ExtNameOf(note.Type) {
+
 	// markdown
 	case typ.FtMd:
 		ViewMd(context, note)
@@ -52,7 +53,7 @@ func View(context *gin.Context) {
 	case typ.FtPdf:
 		ViewPdf(context, note)
 
-	// default
+	// unsupported
 	default:
 		ViewUnsupported(context, note, err)
 	}
@@ -76,7 +77,7 @@ func Get(context *gin.Context) {
 	}
 
 	// note
-	note, count, err := DbQry(context, typ.Note{Abs: typ.Abs{Id: id}, Pid: -1})
+	note, count, err := DbQry(context, id, 0, 0)
 	if err != nil || count == 0 {
 		log.Println(err)
 		return

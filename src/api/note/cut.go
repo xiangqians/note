@@ -40,7 +40,7 @@ func Cut(context *gin.Context) {
 	if dstId != 0 {
 		var note typ.Note
 		var count int64
-		note, count, err = DbQry(context, typ.Note{Abs: typ.Abs{Id: dstId}, Pid: -1})
+		note, count, err = DbQry(context, dstId, 0, 0)
 		if err != nil || count == 0 || typ.FtD != typ.ExtNameOf(note.Type) { // 拷贝到目标类型必须是目录
 			redirect(dstId, err)
 			return
@@ -56,5 +56,4 @@ func Cut(context *gin.Context) {
 
 	// redirect
 	redirect(dstId, err)
-	return
 }

@@ -51,7 +51,7 @@ func List(context *gin.Context) {
 	var pNote typ.Note
 	if pid != 0 {
 		var count int64
-		pNote, count, err = DbQry(context, typ.Note{Abs: typ.Abs{Id: pid}, Pid: -1, QryPath: 2})
+		pNote, count, err = DbQry(context, pid, 2, 0)
 		if err != nil || count == 0 {
 			html(note, nil, err)
 			return
@@ -86,12 +86,11 @@ func List(context *gin.Context) {
 	}
 
 	// 记录查询参数
-	session.Set(context, "note", typ.Note{
+	session.Set(context, NoteSessionKey, typ.Note{
 		Pid:     note.Pid,
 		Deleted: note.Deleted,
 	})
 
 	// html
 	html(note, types, err)
-	return
 }

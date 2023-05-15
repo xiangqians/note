@@ -21,6 +21,8 @@ import (
 	"strings"
 )
 
+const NoteSessionKey = "note"
+
 // DeserializeHist 反序列化历史记录
 func DeserializeHist(hist string) ([]typ.Note, error) {
 	if hist == "" {
@@ -67,12 +69,6 @@ func RedirectToList(context *gin.Context, pid int64, err any) {
 	api_common_context.Redirect(context, fmt.Sprintf("/note/list?pid=%d", pid), resp)
 }
 
-// DbCount 子集计数
-func DbCount(context *gin.Context, pid int64) (int64, error) {
-	count, _, err := db.Qry[int64](context, "SELECT COUNT(1) FROM `note` WHERE `del` IN (0, 1) AND `pid` = ?", pid)
-	return count, err
-}
-
 // DbList 查询列表
 func DbList(context *gin.Context, note typ.Note) ([]typ.Note, int64, error) {
 	// sql
@@ -95,30 +91,15 @@ func DbList(context *gin.Context, note typ.Note) ([]typ.Note, int64, error) {
 }
 
 // DbQry 查询
-func DbQry(context *gin.Context, note typ.Note) (typ.Note, int64, error) {
-	// sql
-	sql, args := DbQrySql(note, "LIMIT 1")
-	qryPath := note.QryPath
-
-	// qry
-	note, count, err := db.Qry[typ.Note](context, sql, args...)
-	if qryPath > 0 && err == nil && count > 0 {
-		InitPath(&note)
-	}
-
-	return note, count, err
-}
-
-// DbQry 查询
 // id: 主键id
 // qryPath: 查询路径，0-不查询，1-查询，2-查询并包含自身的
 // del: 删除标识
-func DbQryNew(context *gin.Context, id int64, qryPath int8, del byte) (typ.Note, int64, error) {
+func DbQry(context *gin.Context, id int64, qryPath int8, del byte) (typ.Note, int64, error) {
 	// sql
 	sql, args := DbQrySql(typ.Note{
 		Abs: typ.Abs{
 			Id:  id,
-			Del: byte(del),
+			Del: del,
 		},
 		Pid:     -1,
 		QryPath: qryPath,

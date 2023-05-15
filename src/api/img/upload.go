@@ -194,15 +194,24 @@ func ReUpload(context *gin.Context) {
 // Upload 上传图片
 func Upload(context *gin.Context) {
 	// redirect
-	redirect := func(err any) {
-		resp := typ.Resp[any]{Msg: str.ConvTypeToStr(err)}
-		api_common_context.Redirect(context, fmt.Sprintf("/img/list"), resp)
+	redirect := func(img typ.Img, err any) {
+		resp := typ.Resp[typ.Img]{Msg: str.ConvTypeToStr(err), Data: img}
+		dataType, _ := api_common_context.PostForm[string](context, "dataType")
+		if dataType == "json" {
+			if err != nil {
+				api_common_context.JsonBadRequest(context, resp)
+			} else {
+				api_common_context.JsonOk(context, resp)
+			}
+		} else {
+			api_common_context.Redirect(context, fmt.Sprintf("/img/list"), resp)
+		}
 	}
 
 	// file header
 	fh, err := context.FormFile("file")
 	if err != nil || fh == nil {
-		redirect(err)
+		redirect(typ.Img{}, err)
 		return
 	}
 
@@ -211,7 +220,7 @@ func Upload(context *gin.Context) {
 	// validate name
 	err = validate.FileName(name)
 	if err != nil {
-		redirect(err)
+		redirect(typ.Img{}, err)
 		return
 	}
 
@@ -219,7 +228,7 @@ func Upload(context *gin.Context) {
 	contentType := fh.Header.Get("Content-Type")
 	ft := typ.ContentTypeOf(contentType)
 	if !typ.IsImg(ft) {
-		redirect(fmt.Sprintf("%s, %s", i18n.MustGetMessage("i18n.fileTypeUnsupported"), contentType))
+		redirect(typ.Img{}, fmt.Sprintf("%s, %s", i18n.MustGetMessage("i18n.fileTypeUnsupported"), contentType))
 		return
 	}
 	_type := string(ft)
@@ -237,25 +246,23 @@ func Upload(context *gin.Context) {
 	{
 		_, err = db.Upd(context, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `hist` = '', `hist_size` = 0, `del` = 0, `add_time` = ?, `upd_time` = 0 WHERE `id` = ?", name, _type, size, time.NowUnix(), id)
 	}
+	img := typ.Img{Abs: typ.Abs{Id: id}, Name: name, Type: _type}
 	if err != nil {
-		redirect(err)
+		redirect(img, err)
 		return
 	}
 
 	// path
-	path, err := Path(context, typ.Img{
-		Abs:  typ.Abs{Id: id},
-		Type: _type,
-	})
+	path, err := Path(context, img)
 	if err != nil {
-		redirect(err)
+		redirect(img, err)
 		return
 	}
 
 	// 清空文件，如果文件存在
 	err = file.Clear(path)
 	if err != nil {
-		redirect(err)
+		redirect(img, err)
 		return
 	}
 
@@ -263,7 +270,7 @@ func Upload(context *gin.Context) {
 	err = context.SaveUploadedFile(fh, path)
 
 	// redirect
-	redirect(err)
+	redirect(img, err)
 }
 
 // DbQryPermlyDelId 查询永久删除的图片记录id，以复用

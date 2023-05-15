@@ -19,6 +19,7 @@
 
     {{ $data := .resp.Data }}
     {{ $note := $data.note }}
+    {{ $children := $note.Children }}
     {{ $types := $data.types }}
 
     <p>
@@ -32,7 +33,7 @@
             {{ Localize "i18n.name" }}: <input search="name" type="text" size="15" value="{{ $note.Name }}">&nbsp;&nbsp;
             {{ Localize "i18n.type" }}: <select search="type">
                 <option value=""></option>
-                {{ $len := len $data.types }}
+                {{ $len := len $types }}
                 {{ if gt $len 0 }}
                 {{ range $index,$type := $types }}
                 <option value="{{ $type }}" {{ if eq $note.Type $type }}selected{{ end }}>{{ $type }}</option>
@@ -75,9 +76,9 @@
         </tr>
         {{ end }}
 
-        {{ $len := len $note.Children }}
+        {{ $len := len $children }}
         {{ if gt $len 0 }}
-        {{ range $index,$childNote := $note.Children }}
+        {{ range $index,$childNote := $children }}
         <tr note-id="{{ $childNote.Id }}"
             note-pid="{{ $childNote.Pid }}"
             note-name="{{ $childNote.Name }}"
@@ -85,15 +86,15 @@
             note-path="{{ if ne $note.Sub 0 }}{{ $childNote.Path }}{{ else }}{{ $note.Path }}{{ end }}"
             {{ if ne $childNote.Del 0 }}class="gray" {{ end }}>
             <td>
-                {{ if ne $childNote.Del 0 }}
-                <span>{{ $childNote.Name }}</span>
-                {{ else }}
+                {{ if eq $childNote.Del 0 }}
                 <a {{ if eq $childNote.Type "d" }}href="/note/list?pid={{ $childNote.Id }}&t={{ NowUnix }}"
                 {{ else }}
                 href="/note/{{$childNote.Id }}/view?t={{ NowUnix }}" target="_blank"
                 {{ end }}>
                 {{ $childNote.Name }}{{ if eq $childNote.Type "d" }}/{{end}}
                 </a>
+                {{ else }}
+                <span>{{ $childNote.Name }}</span>
                 {{ end }}
             </td>
             {{ if ne $note.Sub 0 }}
@@ -107,14 +108,7 @@
             <td>{{ HumanizFileSize $childNote.Size }}</td>
             <td>{{ HumanizUnix $childNote.AddTime }}</td>
             <td>{{ HumanizUnix $childNote.UpdTime }}</td>
-            {{ if ne $childNote.Del 0 }}
-            <td>
-                <button restore>{{ Localize "i18n.restore" }}</button>
-            </td>
-            <td colspan="2">
-                <button permly-del>{{ Localize "i18n.permlyDel" }}</button>
-            </td>
-            {{ else }}
+            {{ if eq $childNote.Del 0 }}
             <td>
                 <button rename>{{ Localize "i18n.rename" }}</button>
             </td>
@@ -123,6 +117,13 @@
             </td>
             <td>
                 <button del>{{ Localize "i18n.del" }}</button>
+            </td>
+            {{ else }}
+            <td>
+                <button restore>{{ Localize "i18n.restore" }}</button>
+            </td>
+            <td colspan="2">
+                <button permly-del>{{ Localize "i18n.permlyDel" }}</button>
             </td>
             {{ end }}
         </tr>
@@ -133,7 +134,7 @@
     {{ if eq $note.Deleted 0 }}
     <br>
     <div>
-        <a name="paste" method="PUT" value="{{ $data.pnote.Id }}">
+        <a name="paste" method="PUT" note-id="{{ $note.Pid }}">
             <button name="paste" disabled="disabled">{{ Localize "i18n.paste" }}</button>
         </a>
     </div>
@@ -256,8 +257,8 @@
                 }
 
                 return {
-                    url: `/note/name`,
-                    method: 'PUT',
+                    url: `/note/updName`,
+                    method: 'POST',
                     data: data
                 }
             })
@@ -288,7 +289,7 @@
 
             return {
                 url: '/note/cut/' + cutNote.id + '/to/{{ $note.Id }}',
-                method: 'PUT'
+                method: 'POST'
             };
         })
 
@@ -352,7 +353,7 @@
 
                 return {
                     url: `/note/${note.id}/restore`,
-                    method: 'PUT',
+                    method: 'POST',
                 }
             })
         }

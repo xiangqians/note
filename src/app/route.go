@@ -44,9 +44,9 @@ func route(engine *gin.Engine) {
 	imgGroup.GET("/:id/hist/:idx", img.GetHist)
 	imgGroup.Any("/:id/view", img.View)               // page
 	imgGroup.Any("/:id/hist/:idx/view", img.HistView) // page
-	imgGroup.PUT("/name", img.UpdName)
+	imgGroup.POST("/name", img.UpdName)
 	imgGroup.DELETE("/:id", img.Del)
-	imgGroup.PUT("/:id/restore", img.Restore)
+	imgGroup.POST("/:id/restore", img.Restore)
 	imgGroup.DELETE("/:id/permlyDel", img.PermlyDel)
 
 	// note
@@ -55,10 +55,11 @@ func route(engine *gin.Engine) {
 	noteGroup.POST("", note.Add)
 	noteGroup.POST("/upload", note.Upload)
 	noteGroup.POST("/reUpload", note.ReUpload)
-	noteGroup.POST("/name", note.UpdName)
+	noteGroup.POST("/updName", note.UpdName)
 	noteGroup.GET("/:id", note.Get)
 	noteGroup.Any("/:id/view", note.View) // page
-	noteGroup.POST("/content", note.UpdContent)
+	noteGroup.Any("/:id/edit", note.Edit) // page
+	noteGroup.POST("/updContent", note.UpdContent)
 	noteGroup.POST("/cut/:srcId/to/:dstId", note.Cut)
 	noteGroup.DELETE("/:id", note.Del)
 	noteGroup.POST("/:id/restore", note.Restore)

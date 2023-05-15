@@ -26,7 +26,7 @@ func Restore(context *gin.Context) {
 	}
 
 	// note
-	note, count, err := DbQry(context, typ.Note{Abs: typ.Abs{Id: id, Del: 1}, Pid: -1})
+	note, count, err := DbQry(context, id, 0, 1)
 	pid := note.Pid
 	if err != nil || count == 0 {
 		redirect(pid, err)
@@ -34,7 +34,7 @@ func Restore(context *gin.Context) {
 	}
 
 	// update
-	_, err = db.Upd(context, "UPDATE `note` SET `del` = 0, `upd_time` = ? WHERE `id` = ?", time.NowUnix(), id)
+	_, err = db.Upd(context, "UPDATE `note` SET `del` = 0, `upd_time` = ? WHERE `del` = 1 AND `id` = ?", time.NowUnix(), id)
 	redirect(pid, err)
 	return
 }
@@ -53,7 +53,7 @@ func Del(context *gin.Context) {
 	}
 
 	// note
-	note, count, err := DbQry(context, typ.Note{Abs: typ.Abs{Id: id}, Pid: -1})
+	note, count, err := DbQry(context, id, 0, 0)
 	pid := note.Pid
 	if err != nil || count == 0 {
 		redirect(pid, err)
@@ -62,8 +62,7 @@ func Del(context *gin.Context) {
 
 	// 如果是目录则校验目录下是否有子文件
 	if typ.ExtNameOf(note.Type) == typ.FtD {
-		var count int64
-		count, err = DbCount(context, id)
+		count, _, err = db.Qry[int64](context, "SELECT COUNT(1) FROM `note` WHERE `del` IN (0, 1) AND `pid` = ?", id)
 		if err != nil {
 			redirect(pid, err)
 			return
@@ -80,5 +79,4 @@ func Del(context *gin.Context) {
 
 	// redirect
 	redirect(pid, err)
-	return
 }

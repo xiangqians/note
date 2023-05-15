@@ -25,10 +25,12 @@ download 属性规定被下载的超链接目标。
 <!-- 浮动窗口 -->
 <content>
     <p style="color: red;">{{ .resp.Msg }}</p>
-
+    {{ if ne $data.Id 0 }}
     <p style="font-size: 26px">{{ Localize "i18n.fileTypeUnsupportedView" }}</p>
-
     {{ template "common/float.html" . }}
+    {{ else }}
+    <p style="font-size: 26px">{{ Localize "i18n.dataNotExist" }}</p>
+    {{ end }}
 </content>
 
 </body>
