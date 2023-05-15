@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
+	"note/src/api/common"
 	api_common_context "note/src/api/common/context"
 	"note/src/api/common/db"
-	"note/src/api/common/file"
 	"note/src/typ"
 	"note/src/util/os"
 	"note/src/util/str"
@@ -170,7 +170,7 @@ func ReUpload(context *gin.Context) {
 	}
 
 	// 清空文件
-	err = file.Clear(path)
+	err = common.ClearFile(path)
 	if err != nil {
 		redirect(id, err)
 		return
@@ -260,7 +260,7 @@ func Upload(context *gin.Context) {
 	}
 
 	// 清空文件，如果文件存在
-	err = file.Clear(path)
+	err = common.ClearFile(path)
 	if err != nil {
 		redirect(img, err)
 		return

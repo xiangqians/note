@@ -12,8 +12,19 @@ import (
 	"note/src/util/time"
 )
 
-// View 查看文件页面
+// HistView 查看历史页面
+func HistView(context *gin.Context) {
+	view(context, true)
+}
+
+// View 查看页面
 func View(context *gin.Context) {
+	view(context, false)
+}
+
+// view 查看文件页面
+// hist: 是否是历史记录
+func view(context *gin.Context, hist bool) {
 	// id
 	id, err := api_common_context.Param[int64](context, "id")
 	if err != nil {
@@ -33,6 +44,7 @@ func View(context *gin.Context) {
 
 	// 笔记历史记录
 	note.Hists, err = DeserializeHist(note.Hist)
+	note.HistIdx = -1
 	if err != nil {
 		ViewUnsupported(context, note, err)
 		return

@@ -13,18 +13,18 @@ import (
 	"note/src/util/time"
 )
 
-// HistView 查看图片历史页面
+// HistView 查看历史页面
 func HistView(context *gin.Context) {
 	view(context, true)
 }
 
-// View 查看图片页面
+// View 查看页面
 func View(context *gin.Context) {
 	view(context, false)
 }
 
 // view 查看图片页面
-// hist: 是否是显示历史记录
+// hist: 是否是历史记录
 func view(context *gin.Context, hist bool) {
 	// html
 	html := func(img typ.Img, err any) {

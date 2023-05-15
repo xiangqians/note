@@ -309,6 +309,42 @@ func HistPath(context *gin.Context, note typ.Note) (string, error) {
 	return fmt.Sprintf("%s%s%s", noteDir, util_os.FileSeparator(), name), nil
 }
 
+// DelNote 删除笔记
+func DelNote(context *gin.Context, note typ.Note) (string, error) {
+	// path
+	path, err := Path(context, note)
+	if err != nil {
+		return path, err
+	}
+
+	// del
+	return path, util_os.DelFile(path)
+}
+
+// ClearNote 清空笔记
+func ClearNote(context *gin.Context, note typ.Note) (string, error) {
+	// path
+	path, err := Path(context, note)
+	if err != nil {
+		return path, err
+	}
+
+	// exist ?
+	if !util_os.IsExist(path) {
+		return path, nil
+	}
+
+	// open
+	file, err := os.OpenFile(path,
+		os.O_WRONLY|os.O_TRUNC, // 只写（O_WRONLY） & 清空文件（O_TRUNC）
+		0666)
+
+	// close
+	file.Close()
+
+	return path, err
+}
+
 // Path 获取文件物理路径
 func Path(context *gin.Context, note typ.Note) (string, error) {
 	// dir
