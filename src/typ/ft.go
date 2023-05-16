@@ -54,13 +54,14 @@ func ContentTypeOf(contentType string) Ft {
 		return FtPng
 	case "image/webp":
 		return FtWebp
-	// file
+	// note
 	case "text/html":
 		return FtHtml
 	case "application/pdf":
 		return FtPdf
 	case "application/x-zip-compressed":
 		return FtZip
+	// unknown
 	default:
 		return FtUnk
 	}
