@@ -18,8 +18,8 @@ func Uuid() string {
 	return uuid.New().String()
 }
 
-// ConvNameHumpToUnderline 驼峰转下划线
-func ConvNameHumpToUnderline(name string) string {
+// ConvHumpToUnderline 驼峰转下划线
+func ConvHumpToUnderline(name string) string {
 	pRegexp := regexp.MustCompile("([A-Z])")
 	r := pRegexp.FindAllIndex([]byte(name), -1)
 	l := len(r)

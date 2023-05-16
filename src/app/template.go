@@ -31,11 +31,6 @@ func template(engine *gin.Engine) {
 		// 为了获取 i18n 文件中 key 对应的 value
 		"Localize": i18n.GetMessage,
 
-		// 格式化日期时间戳（s）
-		"FormatUnix": func(unix int64) string {
-			return time.FormatUnix(unix)
-		},
-
 		// 人性化日期时间戳（s）
 		"HumanizUnix": func(unix int64) string {
 			return time.HumanizUnix(unix)

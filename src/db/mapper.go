@@ -174,7 +174,7 @@ func getStructDest(cols []string, rflType reflect.Type, rflVal reflect.Value) []
 func setStructDest(cols []string, dest *[]any, typeField reflect.StructField, rflVal reflect.Value) {
 	name := typeField.Tag.Get("sql")
 	if name == "" {
-		name = str.ConvNameHumpToUnderline(typeField.Name)
+		name = str.ConvHumpToUnderline(typeField.Name)
 	}
 	for ci, col := range cols {
 		if col == name {
