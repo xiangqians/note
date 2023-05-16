@@ -458,13 +458,13 @@
                         let $a = $($as[i])
                         $a.attr('target', '_blank')
                     }
-
-                    // !md edit
-                    if (data.type !== 'md') {
-                        $edit.remove()
-                    }
                 } else {
                     $path.find('td[name="path"]').html(data.path)
+                }
+
+                // !md edit
+                if (data.histIdx !== -1 || data.type !== 'md') {
+                    $edit.remove()
                 }
 
                 // !pdf version

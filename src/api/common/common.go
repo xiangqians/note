@@ -10,6 +10,7 @@ import (
 	"note/src/api/common/session"
 	"note/src/typ"
 	"note/src/util/os"
+	"note/src/util/str"
 )
 
 var AppArg typ.AppArg
@@ -44,4 +45,11 @@ func PageReq(context *gin.Context) (current int64, size uint8) {
 	}
 
 	return
+}
+
+// DataNotExist 数据不存在
+func DataNotExist(context *gin.Context, err error) {
+	api_common_context.HtmlOk(context, "dataNotExist.html", typ.Resp[any]{
+		Msg: str.ConvTypeToStr(err),
+	})
 }

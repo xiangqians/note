@@ -5,6 +5,7 @@ package note
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"note/src/api/common"
 	api_common_context "note/src/api/common/context"
 	"note/src/typ"
 	"note/src/util/str"
@@ -27,14 +28,14 @@ func view(context *gin.Context, hist bool) {
 	// id
 	id, err := api_common_context.Param[int64](context, "id")
 	if err != nil {
-		ViewUnsupported(context, typ.Note{}, err)
+		common.DataNotExist(context, err)
 		return
 	}
 
 	// query
 	note, count, err := DbQry(context, id, 1, 0)
 	if err != nil || count == 0 {
-		ViewUnsupported(context, note, err)
+		common.DataNotExist(context, err)
 		return
 	}
 
@@ -45,15 +46,15 @@ func view(context *gin.Context, hist bool) {
 	note.Hists, err = DeserializeHist(note.Hist)
 	note.HistIdx = -1
 	if err != nil {
-		ViewUnsupported(context, note, err)
+		common.DataNotExist(context, err)
 		return
 	}
 
 	// 如果查询的是历史记录
 	if hist {
 		histNotes := note.Hists
-		if err != nil || histNotes == nil {
-			ViewUnsupported(context, note, err)
+		if histNotes == nil {
+			common.DataNotExist(context, err)
 			return
 		}
 
@@ -61,11 +62,9 @@ func view(context *gin.Context, hist bool) {
 		l := len(histNotes)
 		var idx int
 		idx, err = api_common_context.Param[int](context, "idx")
-		if err != nil || idx < 0 {
-			idx = 0
-		}
-		if idx >= l {
-			idx = l - 1
+		if err != nil || idx < 0 || idx >= l {
+			common.DataNotExist(context, err)
+			return
 		}
 
 		// hist note
@@ -80,30 +79,24 @@ func view(context *gin.Context, hist bool) {
 
 	// type
 	switch typ.ExtNameOf(note.Type) {
-
 	// markdown
 	case typ.FtMd:
-		ViewMd(context, note)
+		ViewMd(context, note, hist)
 
 	// html
 	case typ.FtHtml:
-		ViewHtml(context, note)
+		ViewHtml(context, note, hist)
 
 	// pdf
 	case typ.FtPdf:
 		ViewPdf(context, note)
 
-	// unsupported
+	// unsupported，不支持查看
 	default:
-		ViewUnsupported(context, note, err)
+		resp := typ.Resp[typ.Note]{
+			Msg:  str.ConvTypeToStr(err),
+			Data: note,
+		}
+		api_common_context.HtmlOk(context, "note/unsupported/view.html", resp)
 	}
-}
-
-// ViewUnsupported 不支持查看
-func ViewUnsupported(context *gin.Context, note typ.Note, err any) {
-	resp := typ.Resp[typ.Note]{
-		Msg:  str.ConvTypeToStr(err),
-		Data: note,
-	}
-	api_common_context.HtmlOk(context, "note/unsupported/view.html", resp)
 }

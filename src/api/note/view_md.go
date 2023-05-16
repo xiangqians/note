@@ -15,9 +15,18 @@ import (
 // ViewMd 查看md文件
 // https://github.com/russross/blackfriday
 // https://pkg.go.dev/github.com/russross/blackfriday/v2
-func ViewMd(context *gin.Context, note typ.Note) {
+func ViewMd(context *gin.Context, note typ.Note, hist bool) {
 	// read
-	buf, err := Read(context, note)
+	var buf []byte
+	var err error
+	if hist {
+		buf, err = ReadHist(context, note)
+	} else {
+		buf, err = Read(context, note)
+	}
+	if err == nil && len(buf) > 0 {
+		note.Content = string(buf)
+	}
 	if err == nil && len(buf) > 0 {
 		//output := blackfriday.Run(input)
 		//output := blackfriday.Run(input, blackfriday.WithNoExtensions())

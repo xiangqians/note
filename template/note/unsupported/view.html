@@ -15,7 +15,6 @@
 
 <!-- 浮动窗口 -->
 <content>
-    {{ if ne $data.Id 0 }}
     <p style="font-size: 26px">{{ Localize "i18n.fileTypeUnsupportedView" }}</p>
     <br>
     <br>
@@ -29,9 +28,6 @@
         "i18n.download" }}</a>
 
     {{ template "common/float.html" . }}
-    {{ else }}
-    <p style="font-size: 26px">{{ Localize "i18n.dataNotExist" }}</p>
-    {{ end }}
 </content>
 
 </body>

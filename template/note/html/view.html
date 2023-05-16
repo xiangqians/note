@@ -10,53 +10,56 @@
 </content>
 
 <script>
-    document.write('{{ $data.Content }}')
-    window.onload = function () {
-        // title
-        let titleElem = document.getElementsByTagName("title")[0]
-        titleElem.text = '{{ $data.Name }}'
+    ;(function () {
+        document.write('{{ $data.Content }}')
+        let html = document.getElementsByTagName('html')[0]
+        html.setAttribute('url', '{{ .url }}')
+        window.onload = function () {
+            // title
+            let titleElem = document.getElementsByTagName("title")[0]
+            titleElem.text = '{{ $data.Name }}'
 
-        // head
-        let head = document.getElementsByTagName("head")[0]
+            // head
+            let head = document.getElementsByTagName("head")[0]
 
-        ;
-        // favicon.ico
-        // <link rel="shortcut icon" href="/static/favicon.ico">
-        (function () {
-            let links = document.getElementsByTagName("link")
-            let link = null
-            for (let i = 0, len = links.length; i < len; i++) {
-                if ('shortcut icon'.toLowerCase() === links[i].getAttribute('rel').toLowerCase()) {
-                    link = links[i]
+            ;
+            // favicon.ico
+            // <link rel="shortcut icon" href="/static/favicon.ico">
+            (function () {
+                let links = document.getElementsByTagName("link")
+                let link = null
+                for (let i = 0, len = links.length; i < len; i++) {
+                    if ('shortcut icon'.toLowerCase() === links[i].getAttribute('rel').toLowerCase()) {
+                        link = links[i]
+                    }
                 }
-            }
-            if (link == null) {
-                link = document.createElement('link')
-                link.setAttribute('rel', 'shortcut icon')
+                if (link == null) {
+                    link = document.createElement('link')
+                    link.setAttribute('rel', 'shortcut icon')
+                    head.appendChild(link)
+                }
+                link.setAttribute('href', '/static/favicon.ico')
+            })()
+
+            ;
+            // content.css
+            // <link rel="stylesheet" href="/static/custom/content.css" type="text/css"/>
+            (function () {
+                let link = document.createElement('link')
+                link.setAttribute('rel', 'stylesheet')
+                link.setAttribute('href', '/static/custom/content.css')
+                link.setAttribute('type', 'text/css')
                 head.appendChild(link)
-            }
-            link.setAttribute('href', '/static/favicon.ico')
-        })()
+            })()
 
-        ;
-        // content.css
-        // <link rel="stylesheet" href="/static/custom/content.css" type="text/css"/>
-        (function () {
-            let link = document.createElement('link')
-            link.setAttribute('rel', 'stylesheet')
-            link.setAttribute('href', '/static/custom/content.css')
-            link.setAttribute('type', 'text/css')
-            head.appendChild(link)
-        })()
-
-        ;
-        // float
-        (function () {
-            let data = JSON.parse('{{ Serialize $data }}')
-            custom.float('note', data)
-        })()
-
-    }
+            ;
+            // float
+            (function () {
+                let data = JSON.parse('{{ Serialize $data }}')
+                custom.float('note', data)
+            })()
+        }
+    })()
 </script>
 
 <!-- jquery.js -->

@@ -16,11 +16,7 @@
 <!-- 浮动窗口 -->
 <content>
     <p style="color: red;">{{ .resp.Msg }}</p>
-    {{ if ne $data.Id 0 }}
     <p style="font-size: 26px">{{ Localize "i18n.fileTypeUnsupportedEdit" }}</p>
-    {{ else }}
-    <p style="font-size: 26px">{{ Localize "i18n.dataNotExist" }}</p>
-    {{ end }}
 </content>
 
 </body>

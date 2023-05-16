@@ -11,9 +11,15 @@ import (
 )
 
 // ViewHtml 查看html文件
-func ViewHtml(context *gin.Context, note typ.Note) {
+func ViewHtml(context *gin.Context, note typ.Note, hist bool) {
 	// read
-	buf, err := Read(context, note)
+	var buf []byte
+	var err error
+	if hist {
+		buf, err = ReadHist(context, note)
+	} else {
+		buf, err = Read(context, note)
+	}
 	if err == nil && len(buf) > 0 {
 		note.Content = string(buf)
 	}
