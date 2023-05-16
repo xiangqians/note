@@ -23,11 +23,11 @@ CREATE TABLE `note` -- 笔记信息表
 (
     `id`        INTEGER PRIMARY KEY AUTOINCREMENT, -- id
     `pid`       INTEGER     DEFAULT 0,             -- 父id
-    `name`      VARCHAR(64) DEFAULT '',            -- 文件名称
-    `type`      VARCHAR(8)  DEFAULT '',            -- 文件类型
-    `size`      INTEGER     DEFAULT 0,             -- 文件大小，单位：byte
+    `name`      VARCHAR(64) DEFAULT '',            -- 笔记名称
+    `type`      VARCHAR(8)  DEFAULT '',            -- 笔记类型
+    `size`      INTEGER     DEFAULT 0,             -- 笔记大小，单位：byte
     `hist`      TEXT        DEFAULT '',            -- history（历史记录）
-    `hist_size` INTEGER     DEFAULT 0,             -- history（历史记录）文件大小，单位：byte
+    `hist_size` INTEGER     DEFAULT 0,             -- history（历史记录）笔记大小，单位：byte
     `del`       TINYINT     DEFAULT 0,             -- 删除标识，0-正常，1-删除
     `add_time`  INTEGER     DEFAULT 0,             -- 创建时间（时间戳，s）
     `upd_time`  INTEGER     DEFAULT 0              -- 修改时间（时间戳，s）
