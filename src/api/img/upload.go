@@ -52,7 +52,7 @@ func ReUpload(context *gin.Context) {
 	contentType := fh.Header.Get("Content-Type")
 	ft := typ.ContentTypeOf(contentType)
 	if !typ.IsImg(ft) {
-		redirect(id, fmt.Sprintf("%s, %s", i18n.MustGetMessage("i18n.fileTypeUnsupported"), contentType))
+		redirect(id, fmt.Sprintf("%s, %s", i18n.MustGetMessage("i18n.fileTypeUnsupportedUpload"), contentType))
 		return
 	}
 	_type := string(ft)
@@ -216,7 +216,7 @@ func Upload(context *gin.Context) {
 	contentType := fh.Header.Get("Content-Type")
 	ft := typ.ContentTypeOf(contentType)
 	if !typ.IsImg(ft) {
-		redirect(typ.Img{}, fmt.Sprintf("%s, %s", i18n.MustGetMessage("i18n.fileTypeUnsupported"), contentType))
+		redirect(typ.Img{}, fmt.Sprintf("%s, %s", i18n.MustGetMessage("i18n.fileTypeUnsupportedUpload"), contentType))
 		return
 	}
 	_type := string(ft)

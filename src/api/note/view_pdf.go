@@ -16,15 +16,8 @@ func ViewPdf(context *gin.Context, note typ.Note) {
 	// version
 	v, _ := api_common_context.Query[string](context, "v")
 	v = strings.TrimSpace(v)
-	switch v {
-	// v1.0
-	case "1.0":
-
-	// v2.0
-	case "2.0":
-
-	// default v2.0
-	default:
+	if !(v == "1.0" || v == "2.0") {
+		//  default v2.0
 		v = "2.0"
 	}
 

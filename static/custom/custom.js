@@ -503,7 +503,7 @@
 
             // upload
             console.log('histIdx', data.histIdx)
-            if (data.histIdx !== -1) {
+            if (data.histIdx !== -1 || data.type === 'md') {
                 let $upload = $wrapperDiv.find('form[name="upload"]')
                 $upload.remove()
             }

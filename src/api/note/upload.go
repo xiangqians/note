@@ -116,7 +116,7 @@ func ReUpload(context *gin.Context) {
 		return
 	}
 
-	// 笔记历史记录至多保存15张，超过15张则删除最早地历史笔记
+	// 笔记历史记录至多保存15条，超过15条则删除最早地历史笔记
 	max := 15
 	l := len(histNotes)
 	if l > max {
@@ -269,7 +269,7 @@ func validateType(fh *multipart.FileHeader) (ft typ.Ft, err error) {
 	contentType := fh.Header.Get("Content-Type")
 	ft = typ.ContentTypeOf(contentType)
 	if ft == typ.FtUnk || !(ft == typ.FtHtml || ft == typ.FtPdf || ft == typ.FtZip) {
-		err = errors.New(fmt.Sprintf("%s, %s", i18n.MustGetMessage("i18n.fileTypeUnsupported"), contentType))
+		err = errors.New(fmt.Sprintf("%s, %s", i18n.MustGetMessage("i18n.fileTypeUnsupportedUpload"), contentType))
 	}
 	return
 }

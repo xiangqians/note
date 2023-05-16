@@ -5,6 +5,7 @@ package note
 
 import (
 	"github.com/gin-gonic/gin"
+	"note/src/api/common"
 	api_common_context "note/src/api/common/context"
 	"note/src/typ"
 	"note/src/util/str"
@@ -15,35 +16,29 @@ func Edit(context *gin.Context) {
 	// id
 	id, err := api_common_context.Param[int64](context, "id")
 	if err != nil {
-		EditUnsupported(context, typ.Note{}, err)
+		common.DataNotExist(context, err)
 		return
 	}
 
 	// query
-	f, count, err := DbQry(context, id, 0, 0)
+	note, count, err := DbQry(context, id, 0, 0)
 	if err != nil || count == 0 {
-		EditUnsupported(context, f, err)
+		common.DataNotExist(context, err)
 		return
 	}
 
 	// type
-	switch typ.ExtNameOf(f.Type) {
-
+	switch typ.ExtNameOf(note.Type) {
 	// markdown
 	case typ.FtMd:
-		EditMd(context, f)
+		EditMd(context, note)
 
-	// unsupported
+	// unsupported，不支持编辑
 	default:
-		EditUnsupported(context, f, err)
+		resp := typ.Resp[typ.Note]{
+			Msg:  str.ConvTypeToStr(err),
+			Data: note,
+		}
+		api_common_context.HtmlOk(context, "note/unsupported/edit.html", resp)
 	}
-}
-
-// EditUnsupported 不支持编辑
-func EditUnsupported(context *gin.Context, note typ.Note, err any) {
-	resp := typ.Resp[typ.Note]{
-		Msg:  str.ConvTypeToStr(err),
-		Data: note,
-	}
-	api_common_context.HtmlOk(context, "note/unsupported/edit.html", resp)
 }
