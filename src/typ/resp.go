@@ -18,4 +18,5 @@ func init() {
 	gob.Register(Resp[any]{})
 	gob.Register(Resp[int64]{})
 	gob.Register(Resp[User]{})
+	gob.Register(Resp[Img]{})
 }

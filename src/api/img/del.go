@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	api_common_context "note/src/api/common/context"
 	"note/src/api/common/db"
-	"note/src/util/os"
 	"note/src/util/time"
 )
 
@@ -39,18 +38,12 @@ func PermlyDel(context *gin.Context) {
 	}
 	if histImgs != nil {
 		for _, histImg := range histImgs {
-			path, err := HistPath(context, histImg)
-			if err == nil {
-				os.DelFile(path)
-			}
+			DelHistImg(context, histImg)
 		}
 	}
 
 	// 删除图片
-	path, err := Path(context, img)
-	if err == nil {
-		os.DelFile(path)
-	}
+	_, err = DelImg(context, img)
 
 	// delete
 	_, err = db.Del(context, "UPDATE `img` SET `name` = '', `type` = '', `size` = 0, `hist` = '', `hist_size` = 0, `del` = 2, `add_time` = 0, `upd_time` = 0 WHERE `del` = 1 AND `id` = ?", id)

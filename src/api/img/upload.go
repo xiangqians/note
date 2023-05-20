@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
+	"log"
 	api_common_context "note/src/api/common/context"
 	"note/src/api/common/db"
 	"note/src/typ"
@@ -19,7 +20,7 @@ import (
 
 // ReUpload 重新上传图片
 func ReUpload(context *gin.Context) {
-	// redirect
+	// redirect func
 	redirect := func(id int64, err any) {
 		resp := typ.Resp[any]{Msg: str.ConvTypeToStr(err)}
 		api_common_context.Redirect(context, fmt.Sprintf("/img/%d/view", id), resp)
@@ -56,6 +57,12 @@ func ReUpload(context *gin.Context) {
 		return
 	}
 	_type := string(ft)
+
+	// 去除文件名后缀
+	suffix := fmt.Sprintf(".%s", _type)
+	if strings.HasSuffix(name, suffix) {
+		name = name[:len(name)-len(suffix)]
+	}
 
 	// file size
 	size := fh.Size
@@ -119,9 +126,9 @@ func ReUpload(context *gin.Context) {
 	l := len(histImgs)
 	if l > max {
 		for i := max; i < l; i++ {
-			path, err := HistPath(context, histImgs[i])
-			if err == nil {
-				os.DelFile(path)
+			path, err := DelHistImg(context, histImgs[i])
+			if err != nil {
+				log.Println(path, err)
 			}
 		}
 		histImgs = histImgs[:max]
@@ -153,27 +160,32 @@ func ReUpload(context *gin.Context) {
 		HistSize: histSize,
 	}
 
-	// update
-	_, err = db.Upd(context, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `hist` = ?, `hist_size` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?",
-		newImg.Name, newImg.Type, newImg.Size, newImg.Hist, newImg.HistSize, newImg.UpdTime, newImg.Id)
+	// 清空文件
+	path, err := ClearImg(context, newImg)
 	if err != nil {
 		redirect(id, err)
 		return
 	}
 
-	// 清空文件
-	path, err := ClearImg(context, newImg)
+	// 判断如果重传不是同一个文件类型，则删除之前文件
+	if img.Type != newImg.Type {
+		_, err := DelImg(context, img)
+		if err != nil {
+			redirect(id, err)
+			return
+		}
+	}
 
 	// 保存文件
 	err = context.SaveUploadedFile(fh, path)
-
-	// 保存文件成功时，判断如果重传不是同一个文件类型，则删除之前文件
-	if img.Type != newImg.Type {
-		path, err = Path(context, img)
-		if err == nil {
-			os.DelFile(path)
-		}
+	if err != nil {
+		redirect(id, err)
+		return
 	}
+
+	// update
+	_, err = db.Upd(context, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `hist` = ?, `hist_size` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?",
+		newImg.Name, newImg.Type, newImg.Size, newImg.Hist, newImg.HistSize, newImg.UpdTime, newImg.Id)
 
 	// redirect
 	redirect(id, err)
@@ -181,7 +193,7 @@ func ReUpload(context *gin.Context) {
 
 // Upload 上传图片
 func Upload(context *gin.Context) {
-	// redirect
+	// redirect func
 	redirect := func(img typ.Img, err any) {
 		resp := typ.Resp[typ.Img]{Msg: str.ConvTypeToStr(err), Data: img}
 		dataType, _ := api_common_context.PostForm[string](context, "dataType")
@@ -220,6 +232,12 @@ func Upload(context *gin.Context) {
 		return
 	}
 	_type := string(ft)
+
+	// 去除文件名后缀
+	suffix := fmt.Sprintf(".%s", _type)
+	if strings.HasSuffix(name, suffix) {
+		name = name[:len(name)-len(suffix)]
+	}
 
 	// file size
 	size := fh.Size

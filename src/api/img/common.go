@@ -72,6 +72,18 @@ func DbQry(context *gin.Context, id int64, del int) (typ.Img, int64, error) {
 	return img, count, err
 }
 
+// DelHistImg 删除历史图片
+func DelHistImg(context *gin.Context, img typ.Img) (string, error) {
+	// path
+	path, err := HistPath(context, img)
+	if err != nil {
+		return path, err
+	}
+
+	// del
+	return path, util_os.DelFile(path)
+}
+
 // HistPath 获取图片历史记录物理路径
 func HistPath(context *gin.Context, img typ.Img) (string, error) {
 	// dir
