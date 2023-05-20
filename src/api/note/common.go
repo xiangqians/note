@@ -62,7 +62,7 @@ func RedirectToList(context *gin.Context, pid int64, err any) {
 	// 记录查询参数
 	note, err := session.Get[typ.Note](context, "note", false)
 	if err == nil {
-		api_common_context.Redirect(context, fmt.Sprintf("/note/list?pid=%d&deleted=%d", pid, note.Deleted), resp)
+		api_common_context.Redirect(context, fmt.Sprintf("/note/list?pid=%d&deleted=%d", pid, note.Del), resp)
 		return
 	}
 
@@ -74,14 +74,15 @@ func DbList(context *gin.Context, note typ.Note) ([]typ.Note, int64, error) {
 	// sql
 	sql, args := DbQrySql(note,
 		"ORDER BY n.`type`, n.`name`, (CASE WHEN n.`upd_time` > n.`add_time` THEN n.`upd_time` ELSE n.`add_time` END) DESC ", "LIMIT 10000")
-	qryPath := note.QryPath
 
 	// qry
 	notes, count, err := db.Qry[[]typ.Note](context, sql, args...)
 	if err != nil || count == 0 {
 		notes = nil
 	}
-	if qryPath > 0 && err == nil && count > 0 {
+
+	// init path
+	if note.QryPath > 0 && notes != nil {
 		for i, l := 0, len(notes); i < l; i++ {
 			InitPath(&notes[i])
 		}
@@ -147,7 +148,7 @@ func DbQrySql(note typ.Note, last ...string) (string, []any) {
 	sql := "SELECT n.`id`, n.`pid`, n.`name`, n.`type`, n.`size`, n.`hist`, n.`hist_size`, n.`del`, n.`add_time`, n.`upd_time` "
 
 	// path sql
-	sql0 := "(CASE WHEN pn10.`id` IS NULL THEN '' ELSE '/' || pn10.`id` || ':' ||pn10.`name` END) " +
+	qryPathSql := "(CASE WHEN pn10.`id` IS NULL THEN '' ELSE '/' || pn10.`id` || ':' ||pn10.`name` END) " +
 		"|| (CASE WHEN pn9.`id` IS NULL THEN '' ELSE '/' || pn9.`id` || ':' || pn9.`name` END) " +
 		"|| (CASE WHEN pn8.`id` IS NULL THEN '' ELSE '/' || pn8.`id` || ':' || pn8.`name` END) " +
 		"|| (CASE WHEN pn7.`id` IS NULL THEN '' ELSE '/' || pn7.`id` || ':' || pn7.`name` END) " +
@@ -160,11 +161,11 @@ func DbQrySql(note typ.Note, last ...string) (string, []any) {
 	switch note.QryPath {
 	// 查询路径
 	case 1:
-		sql += fmt.Sprintf(", CASE WHEN n.`pid` = 0 THEN  '/' ELSE (%s) END AS 'path' ", sql0)
+		sql += fmt.Sprintf(", CASE WHEN n.`pid` = 0 THEN  '/' ELSE (%s) END AS 'path' ", qryPathSql)
 
 	// 查询包含自身的
 	case 2:
-		sql += fmt.Sprintf(", (%s || (CASE WHEN n.`id` IS NULL THEN '' ELSE '/' || n.`id` || ':' || n.`name` END)) AS 'path' ", sql0)
+		sql += fmt.Sprintf(", (%s || (CASE WHEN n.`id` IS NULL THEN '' ELSE '/' || n.`id` || ':' || n.`name` END)) AS 'path' ", qryPathSql)
 
 	default:
 		//
@@ -184,8 +185,8 @@ func DbQrySql(note typ.Note, last ...string) (string, []any) {
 			"LEFT JOIN `note` pn10 ON pn10.`type` = 'd' AND pn10.id = pn9.pid "
 	}
 
-	// sub
-	if note.Sub != 0 && note.Pid > 0 {
+	// contains sub
+	if note.ContainsSub != 0 && note.Pid > 0 {
 
 		// 递归查询所有子节点
 		//WITH RECURSIVE tmp AS (
@@ -206,13 +207,11 @@ func DbQrySql(note typ.Note, last ...string) (string, []any) {
 		args = append(args, note.Pid)
 	}
 
-	// del
-	if note.Deleted != 0 {
-		//sql += "WHERE n.`del` IN (0, 1) "
+	// del, 只查询 0/1 状态
+	if note.Del != 0 {
 		sql += "WHERE n.`del` = 1 "
 	} else {
-		sql += "WHERE n.`del` = ? "
-		args = append(args, note.Del)
+		sql += "WHERE n.`del` = 0 "
 	}
 
 	// id
@@ -222,7 +221,7 @@ func DbQrySql(note typ.Note, last ...string) (string, []any) {
 	}
 
 	// pid
-	if note.Sub == 0 && note.Pid >= 0 {
+	if note.ContainsSub == 0 && note.Pid >= 0 {
 		sql += "AND n.`pid` = ? "
 		args = append(args, note.Pid)
 	}

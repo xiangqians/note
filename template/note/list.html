@@ -40,12 +40,12 @@
                 {{ end }}
                 {{ end }}
             </select>&nbsp;&nbsp;
-            {{ Localize "i18n.sub" }}: <input search="sub"
-                                              type="checkbox"
-                                              {{ if ne $note.Sub 0 }}checked{{ end }}/>&nbsp;&nbsp;
-            {{ Localize "i18n.deleted" }}: <input search="deleted"
+            {{ Localize "i18n.containsSub" }}: <input search="containsSub"
+                                                      type="checkbox"
+                                                      {{ if ne $note.ContainsSub 0 }}checked{{ end }}/>&nbsp;&nbsp;
+            {{ Localize "i18n.deleted" }}: <input search="del"
                                                   type="checkbox"
-                                                  {{ if ne $note.Deleted 0 }}checked{{ end }}/>&nbsp;&nbsp;
+                                                  {{ if ne $note.Del 0 }}checked{{ end }}/>&nbsp;&nbsp;
             <button search="search">{{ Localize "i18n.search" }}</button>&nbsp;
             <a href="/note/list?pid={{ $note.Id }}&t={{ NowUnix }}"><button>{{ Localize "i18n.reset" }}</button></a>
             &nbsp;&nbsp;&nbsp;&nbsp;
@@ -57,7 +57,7 @@
         <thead>
         <tr>
             <td>{{ Localize "i18n.name" }}</td>
-            {{ if ne $note.Sub 0 }}
+            {{ if ne $note.ContainsSub 0 }}
             <td>{{ Localize "i18n.path" }}</td>
             {{ end }}
             <td>{{ Localize "i18n.type" }}</td>
@@ -83,7 +83,7 @@
             note-pid="{{ $childNote.Pid }}"
             note-name="{{ $childNote.Name }}"
             note-type="{{ $childNote.Type }}"
-            note-path="{{ if ne $note.Sub 0 }}{{ $childNote.Path }}{{ else }}{{ $note.Path }}{{ end }}"
+            note-path="{{ if ne $note.ContainsSub 0 }}{{ $childNote.Path }}{{ else }}{{ $note.Path }}{{ end }}"
             {{ if ne $childNote.Del 0 }}class="gray" {{ end }}>
             <td>
                 {{ if eq $childNote.Del 0 }}
@@ -97,7 +97,7 @@
                 <span>{{ $childNote.Name }}</span>
                 {{ end }}
             </td>
-            {{ if ne $note.Sub 0 }}
+            {{ if ne $note.ContainsSub 0 }}
             <td>
                 <script>
                     document.write("{{ $childNote.PathLink }}")
@@ -131,7 +131,7 @@
         {{ end }}
         </tbody>
     </table>
-    {{ if eq $note.Deleted 0 }}
+    {{ if eq $note.Del 0 }}
     <br>
     <div>
         <a name="paste" method="PUT" note-id="{{ $note.Pid }}">
@@ -173,17 +173,17 @@
         custom.clickE($search, function ($e) {
             let $name = $($('input[search="name"]')[0])
             let $type = $($('select[search="type"]')[0])
-            let $sub = $($('input[search="sub"]')[0])
-            let $deleted = $($('input[search="deleted"]')[0])
+            let $containsSub = $($('input[search="containsSub"]')[0])
+            let $del = $($('input[search="del"]')[0])
 
             let pid = '{{ $note.Id }}'
             let name = $name.val().trim()
             let type = $type.find("option:selected").text()
-            let sub = $sub.is(":checked") ? 1 : 0
-            let deleted = $deleted.is(":checked") ? 1 : 0
+            let containsSub = $containsSub.is(":checked") ? 1 : 0
+            let del = $del.is(":checked") ? 1 : 0
 
             return {
-                url: `/note/list?pid=${pid}&name=${name}&type=${type}&sub=${sub}&deleted=${deleted}`,
+                url: `/note/list?pid=${pid}&name=${name}&type=${type}&containsSub=${containsSub}&del=${del}`,
                 method: 'GET',
             }
         })

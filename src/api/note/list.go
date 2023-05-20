@@ -29,16 +29,12 @@ func List(context *gin.Context) {
 	// note
 	note := typ.Note{}
 	err := api_common_context.ShouldBindQuery(context, &note)
-	note.Del = 0
-	note.QryPath = 0
-	note.Children = nil
 
 	// name
 	note.Name = strings.TrimSpace(note.Name)
-	//log.Printf("name = %s\n", name)
 
 	// type
-	note.Type = strings.TrimSpace(note.Type)
+	note.Type = string(typ.ExtNameOf(strings.TrimSpace(note.Type)))
 
 	// pid
 	pid := note.Pid
@@ -65,13 +61,14 @@ func List(context *gin.Context) {
 	}
 
 	// list
-	if note.Sub != 0 {
+	if note.ContainsSub != 0 {
 		note.QryPath = 1
 	}
 	children, count, err := DbList(context, note)
-	if err == nil && count > 0 {
-		note.Children = children
+	if err != nil || count == 0 {
+		children = nil
 	}
+	note.Children = children
 
 	if pid == 0 {
 		note.Id = 0
@@ -87,8 +84,8 @@ func List(context *gin.Context) {
 
 	// 记录查询参数
 	session.Set(context, NoteSessionKey, typ.Note{
-		Pid:     note.Pid,
-		Deleted: note.Deleted,
+		Abs: typ.Abs{Del: note.Del},
+		Pid: note.Pid,
 	})
 
 	// html

@@ -78,7 +78,7 @@
   "i18n.path": "Path",
   "i18n.version": "Version",
   "i18n.num": "Num",
-  "i18n.sub": "Sub",
+  "i18n.containsSub": "Contains Sub",
   "i18n.deleted": "Deleted",
   "i18n.dataNotExist": "Data does not exist",
   "i18n.accountWillBeLocked": "You have entered the wrong login password twice in a row. If you enter the wrong password three times in a row, your account will be locked.",

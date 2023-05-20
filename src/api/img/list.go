@@ -24,12 +24,7 @@ func List(context *gin.Context) {
 	img.Name = strings.TrimSpace(img.Name)
 
 	// type
-	ft := typ.ExtNameOf(strings.TrimSpace(img.Type))
-	if typ.IsImg(ft) {
-		img.Type = string(ft)
-	} else {
-		img.Type = ""
-	}
+	img.Type = string(typ.ExtNameOf(strings.TrimSpace(img.Type)))
 
 	// del
 	if !(img.Del == 0 || img.Del == 1) {
