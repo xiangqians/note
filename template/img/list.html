@@ -258,7 +258,7 @@
                 let $del = $(dels[i])
                 custom.clickE($del, function ($e) {
                     let img = getImg($e)
-                    if (!confirm('{{ Localize "i18n.del" }} "' + img.name + '" ?')) {
+                    if (!confirm('{{ Localize "i18n.del" }} ' + `"${img.name}" ?`)) {
                         return
                     }
 
@@ -277,7 +277,7 @@
                 let $restore = $(restores[i])
                 custom.clickE($restore, function ($e) {
                     let img = getImg($e)
-                    if (!confirm('{{ Localize "i18n.restore" }} "' + img.name + '" ?')) {
+                    if (!confirm('{{ Localize "i18n.restore" }} ' + `"${img.name}" ?`)) {
                         return
                     }
 
@@ -296,7 +296,7 @@
                 let $permlyDel = $(permlyDels[i])
                 custom.clickE($permlyDel, function ($e) {
                     let img = getImg($e)
-                    if (!confirm('{{ Localize "i18n.permlyDel" }} "' + img.name + '" ?')) {
+                    if (!confirm('{{ Localize "i18n.permlyDel" }} ' + `"${img.name}" ?`)) {
                         return
                     }
 
