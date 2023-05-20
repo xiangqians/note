@@ -13,7 +13,6 @@ import (
 	"note/src/util/reflect"
 	"note/src/util/str"
 	"note/src/util/time"
-	"os"
 	"strings"
 )
 
@@ -107,18 +106,4 @@ func ShouldBind(context *gin.Context, i any) error {
 		err = trans.Err(context, err)
 	}
 	return err
-}
-
-// WriteFile 写入文件
-// path: 文件路径
-func WriteFile(context *gin.Context, path string) (written int, err error) {
-	// read
-	buf, err := os.ReadFile(path)
-	if err != nil {
-		return
-	}
-
-	// write
-	written, err = context.Writer.Write(buf)
-	return
 }

@@ -17,5 +17,5 @@ type AppArg struct {
 
 // String 返回结构体类型字符串
 func (appArg AppArg) String() string {
-	return fmt.Sprintf("AppArg(Loc = %s, Port = %d, DataDir = %s, AllowReg = %d)", appArg.Loc, appArg.Port, appArg.DataDir, appArg.AllowReg)
+	return fmt.Sprintf("AppArg { Loc = %s, Port = %d, DataDir = %s, AllowReg = %d }", appArg.Loc, appArg.Port, appArg.DataDir, appArg.AllowReg)
 }

@@ -136,7 +136,7 @@ func GetHist(context *gin.Context) {
 	}
 
 	// write
-	api_common_context.WriteFile(context, path)
+	context.File(path)
 }
 
 // Get 获取图片
@@ -163,5 +163,5 @@ func Get(context *gin.Context) {
 	}
 
 	// write
-	api_common_context.WriteFile(context, path)
+	context.File(path)
 }
