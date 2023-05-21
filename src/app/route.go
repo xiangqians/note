@@ -65,5 +65,6 @@ func route(engine *gin.Engine) {
 	noteGroup.POST("/cut/:srcId/to/:dstId", note.Cut)
 	noteGroup.DELETE("/:id", note.Del)
 	noteGroup.POST("/:id/restore", note.Restore)
+	//noteGroup.DELETE("/:id/permlyDel", note.PermlyDel)
 
 }

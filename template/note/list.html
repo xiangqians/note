@@ -363,14 +363,16 @@
         for (let i = 0; i < permlyDels.length; i++) {
             let $permlyDel = $(permlyDels[i])
             custom.clickE($permlyDel, function ($e) {
+                alert('暂不支持')
+                return 
                 let note = getNote($e)
                 if (!confirm('{{ Localize "i18n.permlyDel" }} "' + note.getFormatName() + '" ?')) {
                     return
                 }
 
                 return {
-                    // url: `/note/${note.id}/restore`,
-                    // method: 'DELETE',
+                    url: `/note/${note.id}/restore`,
+                    method: 'DELETE',
                 }
             })
         }
