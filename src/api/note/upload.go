@@ -43,24 +43,12 @@ func ReUpload(context *gin.Context) {
 		return
 	}
 
-	// name
-	name, err := validateName(fh)
+	// file info
+	name, _type, size, err := fileInfo(fh)
 	if err != nil {
 		redirect(err)
 		return
 	}
-
-	// validate type
-	ft, err := validateType(fh)
-	if err != nil {
-		redirect(err)
-		return
-	}
-	// type
-	_type := string(ft)
-
-	// size
-	size := fh.Size
 
 	// 校验 id 是否存在
 	note, count, err := DbQry(context, id, 0, 0)
@@ -205,32 +193,18 @@ func Upload(context *gin.Context) {
 		return
 	}
 
-	// name
-	name, err := validateName(fh)
+	// file info
+	name, _type, size, err := fileInfo(fh)
 	if err != nil {
 		redirect(err)
 		return
 	}
 
-	// validate type
-	ft, err := validateType(fh)
+	// 校验 pid 是否是目录类型
+	err = validateD(context, pid)
 	if err != nil {
 		redirect(err)
 		return
-	}
-	// type
-	_type := string(ft)
-
-	// size
-	size := fh.Size
-
-	// 校验 pid 是否存在
-	if pid != 0 {
-		note, count, err := DbQry(context, pid, 0, 0)
-		if err != nil || count == 0 || typ.ExtNameOf(note.Type) != typ.FtD { // 父节点必须是目录
-			redirect(err)
-			return
-		}
 	}
 
 	// 查询是否有永久删除的笔记记录id，以复用
@@ -263,23 +237,59 @@ func Upload(context *gin.Context) {
 	redirect(err)
 }
 
-// validateType 校验上传数据类型
-// 校验文件类型，只支持上传 html/pdf/zip
-func validateType(fh *multipart.FileHeader) (ft typ.Ft, err error) {
-	contentType := fh.Header.Get("Content-Type")
-	ft = typ.ContentTypeOf(contentType)
-	if ft == typ.FtUnk || !(ft == typ.FtHtml || ft == typ.FtPdf || ft == typ.FtZip) {
-		err = errors.New(fmt.Sprintf("%s, %s", i18n.MustGetMessage("i18n.fileTypeUnsupportedUpload"), contentType))
+// validateD 校验目录类型
+func validateD(context *gin.Context, id int64) error {
+	// 根节点，属于目录节点
+	if id == 0 {
+		return nil
 	}
-	return
+
+	// qry
+	note, count, err := DbQry(context, id, 0, 0)
+	if err != nil {
+		return err
+	}
+
+	if count == 0 {
+		return errors.New(fmt.Sprintf("%d 记录不存在", id))
+	}
+
+	// 节点必须是目录
+	if typ.ExtNameOf(note.Type) != typ.FtD {
+		return errors.New(fmt.Sprintf("%d 不是目录类型", id))
+	}
+
+	return nil
 }
 
-// validateType 校验上传文件名称
-func validateName(fh *multipart.FileHeader) (name string, err error) {
+func fileInfo(fh *multipart.FileHeader) (name string, _type string, size int64, err error) {
+	// 校验上传数据类型
+	// 校验文件类型，只支持上传 html/pdf/zip
+	contentType := fh.Header.Get("Content-Type")
+	ft := typ.ContentTypeOf(contentType)
+	if ft == typ.FtUnk || !(ft == typ.FtHtml || ft == typ.FtPdf || ft == typ.FtZip) {
+		err = errors.New(fmt.Sprintf("%s, %s", i18n.MustGetMessage("i18n.fileTypeUnsupportedUpload"), contentType))
+		return
+	}
+	_type = string(ft)
+
 	// name
 	name = strings.TrimSpace(fh.Filename)
 	// validate name
 	err = validate.FileName(name)
+	if err != nil {
+		return
+	}
+
+	// 去除文件名后缀
+	suffix := fmt.Sprintf(".%s", string(ft))
+	if strings.HasSuffix(name, suffix) {
+		name = name[:len(name)-len(suffix)]
+	}
+
+	// size
+	size = fh.Size
+
 	return
 }
 

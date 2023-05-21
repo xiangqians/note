@@ -33,13 +33,13 @@ func DataDirOnUserId(userId int64) string {
 // PageReq 获取分页查询参数
 func PageReq(context *gin.Context) (current int64, size uint8) {
 	//  current
-	current, _ = api_common_context.Param[int64](context, "current")
+	current, _ = api_common_context.Query[int64](context, "current")
 	if current <= 0 {
 		current = 1
 	}
 
 	// size
-	size, _ = api_common_context.Param[uint8](context, "size")
+	size, _ = api_common_context.Query[uint8](context, "size")
 	if size <= 0 {
 		size = 10
 	}

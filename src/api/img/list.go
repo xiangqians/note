@@ -27,8 +27,8 @@ func List(context *gin.Context) {
 	img.Type = string(typ.ExtNameOf(strings.TrimSpace(img.Type)))
 
 	// del
-	if !(img.Del == 0 || img.Del == 1) {
-		img.Del = 0
+	if img.Del != 0 {
+		img.Del = 1
 	}
 
 	// types
