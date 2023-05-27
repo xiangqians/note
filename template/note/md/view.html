@@ -123,17 +123,19 @@
 
             // count
             let count = idMap.get(id)
-            if (count) {
-                id += count
+            if (!custom.isUndefined(count)) {
+                count++
             } else {
                 count = 0
             }
-            count++
 
             // set
             idMap.set(id, count)
 
-            return id
+            if (count == 0) {
+                return id
+            }
+            return id + count
         }
 
         // root directory
