@@ -1,7 +1,7 @@
-// img update
+// lib update
 // @author xiangqian
 // @date 21:58 2023/04/27
-package img
+package lib
 
 import (
 	"github.com/gin-gonic/gin"
@@ -20,8 +20,8 @@ func UpdName(context *gin.Context) {
 		RedirectToList(context, err)
 	}
 
-	// img
-	img := typ.Img{}
+	// lib
+	img := typ.Lib{}
 	err := api_common_context.ShouldBind(context, &img)
 	if err != nil {
 		redirect(err)
@@ -45,7 +45,7 @@ func UpdName(context *gin.Context) {
 	}
 
 	// update
-	_, err = db.Upd(context, "UPDATE `img` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", name, time.NowUnix(), id, name)
+	_, err = db.Upd(context, "UPDATE `lib` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` <> ?", name, time.NowUnix(), id, name)
 
 	// redirect
 	redirect(err)

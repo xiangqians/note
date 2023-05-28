@@ -38,8 +38,8 @@ func Index(context *gin.Context) {
 		noteStats = stats
 	}
 
-	// img
-	stats, count, err = db.Qry[[]typ.Stat](context, "SELECT `type`, COUNT(`id`) AS 'num', SUM(`size`) AS 'size', SUM(`hist_size`) AS 'hist_size' FROM `img` WHERE `del` = 0 GROUP BY `type` ORDER BY COUNT(`id`) DESC")
+	// lib
+	stats, count, err = db.Qry[[]typ.Stat](context, "SELECT `type`, COUNT(`id`) AS 'num', SUM(`size`) AS 'size', SUM(`hist_size`) AS 'hist_size' FROM `lib` WHERE `del` = 0 GROUP BY `type` ORDER BY COUNT(`id`) DESC")
 	if count > 0 {
 		imgStats = stats
 	}

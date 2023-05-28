@@ -1,7 +1,7 @@
-// img del
+// lib del
 // @author xiangqian
 // @date 21:48 2023/04/27
-package img
+package lib
 
 import (
 	"github.com/gin-gonic/gin"
@@ -23,7 +23,7 @@ func PermlyDel(context *gin.Context) {
 		return
 	}
 
-	// img
+	// lib
 	img, count, err := DbQry(context, id, 1)
 	if err != nil || count == 0 {
 		redirect(err)
@@ -46,7 +46,7 @@ func PermlyDel(context *gin.Context) {
 	_, err = DelImg(context, img)
 
 	// delete
-	_, err = db.Del(context, "UPDATE `img` SET `name` = '', `type` = '', `size` = 0, `hist` = '', `hist_size` = 0, `del` = 2, `add_time` = 0, `upd_time` = 0 WHERE `del` = 1 AND `id` = ?", id)
+	_, err = db.Del(context, "UPDATE `lib` SET `name` = '', `type` = '', `size` = 0, `hist` = '', `hist_size` = 0, `del` = 2, `add_time` = 0, `upd_time` = 0 WHERE `del` = 1 AND `id` = ?", id)
 
 	// redirect
 	redirect(err)
@@ -67,7 +67,7 @@ func Del(context *gin.Context) {
 	}
 
 	// delete
-	_, err = db.Del(context, "UPDATE `img` SET `del` = 1, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", time.NowUnix(), id)
+	_, err = db.Del(context, "UPDATE `lib` SET `del` = 1, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", time.NowUnix(), id)
 
 	// redirect
 	redirect(err)

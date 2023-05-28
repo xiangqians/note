@@ -6,8 +6,8 @@ package app
 import (
 	"github.com/gin-gonic/gin"
 	api_common_context "note/src/api/common/context"
-	"note/src/api/img"
 	"note/src/api/index"
+	"note/src/api/lib"
 	"note/src/api/note"
 	"note/src/api/user"
 	"note/src/typ"
@@ -35,19 +35,19 @@ func route(engine *gin.Engine) {
 	// index
 	engine.Any("/", index.Index)
 
-	// img
-	imgGroup := engine.Group("/img")
-	imgGroup.Any("/list", img.List) // page
-	imgGroup.POST("/upload", img.Upload)
-	imgGroup.POST("/reUpload", img.ReUpload)
-	imgGroup.GET("/:id", img.Get)
-	imgGroup.GET("/:id/hist/:idx", img.GetHist)
-	imgGroup.Any("/:id/view", img.View)               // page
-	imgGroup.Any("/:id/hist/:idx/view", img.HistView) // page
-	imgGroup.PUT("/name", img.UpdName)
-	imgGroup.DELETE("/:id", img.Del)
-	imgGroup.PUT("/:id/restore", img.Restore)
-	imgGroup.DELETE("/:id/permlyDel", img.PermlyDel)
+	// lib
+	imgGroup := engine.Group("/lib")
+	imgGroup.Any("/list", lib.List) // page
+	imgGroup.POST("/upload", lib.Upload)
+	imgGroup.POST("/reUpload", lib.ReUpload)
+	imgGroup.GET("/:id", lib.Get)
+	imgGroup.GET("/:id/hist/:idx", lib.GetHist)
+	imgGroup.Any("/:id/view", lib.View)               // page
+	imgGroup.Any("/:id/hist/:idx/view", lib.HistView) // page
+	imgGroup.PUT("/name", lib.UpdName)
+	imgGroup.DELETE("/:id", lib.Del)
+	imgGroup.PUT("/:id/restore", lib.Restore)
+	imgGroup.DELETE("/:id/permlyDel", lib.PermlyDel)
 
 	// note
 	noteGroup := engine.Group("/note")

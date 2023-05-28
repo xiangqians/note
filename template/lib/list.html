@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/custom/custom.css" type="text/css"/>
-    <title>{{ Localize "i18n.img" }}</title>
+    <title>{{ Localize "i18n.lib" }}</title>
 </head>
 <body>
 
@@ -21,7 +21,7 @@
     <!-- response data -->
     <!-- 变量赋值 -->
     {{ $data := .resp.Data }}
-    {{ $img := $data.img }} <!-- img query -->
+    {{ $img := $data.img }} <!-- lib query -->
     {{ $types := $data.types }}
     {{ $page := $data.page }}
     {{ $imgs := $page.Data }}
@@ -203,7 +203,7 @@
                 text: function (e) {
                     let $e = $(e)
                     let img = getImg($e)
-                    // console.log(img)
+                    // console.log(lib)
                     return `![${img.name}](/img/${img.id})`
                 },
             });

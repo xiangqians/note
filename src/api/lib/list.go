@@ -1,7 +1,7 @@
-// img list
+// lib list
 // @author xiangqian
 // @date 20:29 2023/04/27
-package img
+package lib
 
 import (
 	"github.com/gin-gonic/gin"
@@ -16,8 +16,8 @@ import (
 
 // List 图片列表页面
 func List(context *gin.Context) {
-	// img
-	img := typ.Img{}
+	// lib
+	img := typ.Lib{}
 	err := api_common_context.ShouldBindQuery(context, &img)
 
 	// name
@@ -41,7 +41,7 @@ func List(context *gin.Context) {
 	resp := typ.Resp[map[string]any]{
 		Msg: str.ConvTypeToStr(err),
 		Data: map[string]any{
-			"img":   img,   // img query
+			"lib":   img,   // lib query
 			"types": types, // types
 			"page":  page,  // page
 		},
@@ -51,17 +51,17 @@ func List(context *gin.Context) {
 	session.Set(context, ImgSessionKey, img)
 
 	// html
-	api_common_context.HtmlOk(context, "img/list.html", resp)
+	api_common_context.HtmlOk(context, "lib/list.html", resp)
 }
 
 // DbPage 分页查询图片
-func DbPage(context *gin.Context, img typ.Img) (typ.Page[typ.Img], error) {
+func DbPage(context *gin.Context, img typ.Lib) (typ.Page[typ.Lib], error) {
 	// page request
 	current, size := common.PageReq(context)
 
 	// sql & args
 	args := make([]any, 0, 1)
-	sql := "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`del`, i.`add_time`, i.`upd_time` FROM `img` i WHERE i.`del` = ? "
+	sql := "SELECT i.`id`, i.`name`, i.`type`, i.`size`, i.`del`, i.`add_time`, i.`upd_time` FROM `lib` i WHERE i.`del` = ? "
 	args = append(args, img.Del)
 
 	// id
@@ -84,12 +84,12 @@ func DbPage(context *gin.Context, img typ.Img) (typ.Page[typ.Img], error) {
 
 	sql += "ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC"
 
-	return db.Page[typ.Img](context, current, size, sql, args...)
+	return db.Page[typ.Lib](context, current, size, sql, args...)
 }
 
 // DbTypes 获取图片类型集合
 func DbTypes(context *gin.Context) []string {
-	types, count, err := db.Qry[[]string](context, "SELECT DISTINCT(`type`) FROM `img` WHERE `del` = 0")
+	types, count, err := db.Qry[[]string](context, "SELECT DISTINCT(`type`) FROM `lib` WHERE `del` = 0")
 	if err != nil || count == 0 {
 		types = nil
 	}

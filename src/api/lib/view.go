@@ -1,7 +1,7 @@
-// img view
+// lib view
 // @author xiangqian
 // @date 21:25 2023/04/10
-package img
+package lib
 
 import (
 	"fmt"
@@ -26,24 +26,24 @@ func View(context *gin.Context) {
 // hist: 是否是历史记录
 func view(context *gin.Context, hist bool) {
 	// html
-	html := func(img typ.Img, err any) {
-		resp := typ.Resp[typ.Img]{
+	html := func(img typ.Lib, err any) {
+		resp := typ.Resp[typ.Lib]{
 			Msg:  str.ConvTypeToStr(err),
 			Data: img,
 		}
-		api_common_context.HtmlOk(context, "img/view.html", resp)
+		api_common_context.HtmlOk(context, "lib/view.html", resp)
 	}
 
 	// id
 	id, err := api_common_context.Param[int64](context, "id")
 	if err != nil {
-		html(typ.Img{}, err)
+		html(typ.Lib{}, err)
 		return
 	}
 
-	// img
+	// lib
 	img, count, err := DbQry(context, id, 0)
-	// current img
+	// current lib
 	img.HistIdx = -1
 	// err ? / count == 0 ?
 	if err != nil || count == 0 {
@@ -52,7 +52,7 @@ func view(context *gin.Context, hist bool) {
 	}
 
 	// url
-	img.Url = fmt.Sprintf("/img/%d?t=%d", id, time.NowUnix())
+	img.Url = fmt.Sprintf("/lib/%d?t=%d", id, time.NowUnix())
 
 	// hists
 	img.Hists, err = DeserializeHist(img.Hist)
@@ -76,9 +76,9 @@ func view(context *gin.Context, hist bool) {
 			idx = l - 1
 		}
 
-		// hist img
+		// hist lib
 		histImg := hists[idx]
-		histImg.Url = fmt.Sprintf("/img/%d/hist/%d?t=%d", id, idx, time.NowUnix())
+		histImg.Url = fmt.Sprintf("/lib/%d/hist/%d?t=%d", id, idx, time.NowUnix())
 		histImg.Hists = hists
 		histImg.HistIdx = int8(idx)
 		img = histImg

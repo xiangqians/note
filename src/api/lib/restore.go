@@ -1,7 +1,7 @@
-// img restore
+// lib restore
 // @author xiangqian
 // @date 21:24 2023/04/27
-package img
+package lib
 
 import (
 	"github.com/gin-gonic/gin"
@@ -24,7 +24,7 @@ func Restore(context *gin.Context) {
 	}
 
 	// update
-	_, err = db.Upd(context, "UPDATE `img` SET `del` = 0, `upd_time` = ? WHERE `del` = 1 AND `id` = ?", time.NowUnix(), id)
+	_, err = db.Upd(context, "UPDATE `lib` SET `del` = 0, `upd_time` = ? WHERE `del` = 1 AND `id` = ?", time.NowUnix(), id)
 
 	// redirect
 	redirect(err)

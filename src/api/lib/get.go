@@ -1,7 +1,7 @@
 // get
 // @author xiangqian
 // @date 14:41 2023/05/20
-package img
+package lib
 
 import (
 	"github.com/gin-gonic/gin"
@@ -25,7 +25,7 @@ func GetHist(context *gin.Context) {
 		return
 	}
 
-	// img
+	// lib
 	img, count, err := DbQry(context, id, 0)
 	if err != nil || count == 0 {
 		log.Println(err)
@@ -45,7 +45,7 @@ func GetHist(context *gin.Context) {
 		return
 	}
 
-	// hist img
+	// hist lib
 	histImg := histImgs[idx]
 
 	// path
@@ -68,7 +68,7 @@ func Get(context *gin.Context) {
 		return
 	}
 
-	// img
+	// lib
 	img, count, err := DbQry(context, id, 0)
 	if err != nil || count == 0 {
 		log.Println(err)

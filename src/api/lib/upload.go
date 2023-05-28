@@ -1,7 +1,7 @@
-// img upload
+// lib upload
 // @author xiangqian
 // @date 21:26 2023/04/10
-package img
+package lib
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ func ReUpload(context *gin.Context) {
 	// redirect func
 	redirect := func(id int64, err any) {
 		resp := typ.Resp[any]{Msg: str.ConvTypeToStr(err)}
-		api_common_context.Redirect(context, fmt.Sprintf("/img/%d/view", id), resp)
+		api_common_context.Redirect(context, fmt.Sprintf("/lib/%d/view", id), resp)
 	}
 
 	// id
@@ -67,7 +67,7 @@ func ReUpload(context *gin.Context) {
 	// file size
 	size := fh.Size
 
-	// img
+	// lib
 	var count int64
 	img, count, err := DbQry(context, id, 0)
 	if err != nil || count == 0 {
@@ -82,11 +82,11 @@ func ReUpload(context *gin.Context) {
 		return
 	}
 	if histImgs == nil {
-		histImgs = make([]typ.Img, 0, 1)
+		histImgs = make([]typ.Lib, 0, 1)
 	}
 
 	// 将原图片添加到历史记录
-	histImg := typ.Img{
+	histImg := typ.Lib{
 		Abs: typ.Abs{
 			Id:      img.Id,
 			AddTime: img.AddTime,
@@ -147,8 +147,8 @@ func ReUpload(context *gin.Context) {
 		return
 	}
 
-	// new img
-	newImg := typ.Img{
+	// new lib
+	newImg := typ.Lib{
 		Abs: typ.Abs{
 			Id:      id,
 			UpdTime: time.NowUnix(),
@@ -184,7 +184,7 @@ func ReUpload(context *gin.Context) {
 	}
 
 	// update
-	_, err = db.Upd(context, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `hist` = ?, `hist_size` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?",
+	_, err = db.Upd(context, "UPDATE `lib` SET `name` = ?, `type` = ?, `size` = ?, `hist` = ?, `hist_size` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?",
 		newImg.Name, newImg.Type, newImg.Size, newImg.Hist, newImg.HistSize, newImg.UpdTime, newImg.Id)
 
 	// redirect
@@ -194,8 +194,8 @@ func ReUpload(context *gin.Context) {
 // Upload 上传图片
 func Upload(context *gin.Context) {
 	// redirect func
-	redirect := func(img typ.Img, err any) {
-		resp := typ.Resp[typ.Img]{Msg: str.ConvTypeToStr(err), Data: img}
+	redirect := func(img typ.Lib, err any) {
+		resp := typ.Resp[typ.Lib]{Msg: str.ConvTypeToStr(err), Data: img}
 		dataType, _ := api_common_context.PostForm[string](context, "dataType")
 		if dataType == "json" {
 			if err != nil {
@@ -204,14 +204,14 @@ func Upload(context *gin.Context) {
 				api_common_context.JsonOk(context, resp)
 			}
 		} else {
-			api_common_context.Redirect(context, fmt.Sprintf("/img/list"), resp)
+			api_common_context.Redirect(context, fmt.Sprintf("/lib/list"), resp)
 		}
 	}
 
 	// file header
 	fh, err := context.FormFile("file")
 	if err != nil || fh == nil {
-		redirect(typ.Img{}, err)
+		redirect(typ.Lib{}, err)
 		return
 	}
 
@@ -220,7 +220,7 @@ func Upload(context *gin.Context) {
 	// validate name
 	err = validate.FileName(name)
 	if err != nil {
-		redirect(typ.Img{}, err)
+		redirect(typ.Lib{}, err)
 		return
 	}
 
@@ -228,7 +228,7 @@ func Upload(context *gin.Context) {
 	contentType := fh.Header.Get("Content-Type")
 	ft := typ.ContentTypeOf(contentType)
 	if !typ.IsImg(ft) {
-		redirect(typ.Img{}, fmt.Sprintf("%s, %s", i18n.MustGetMessage("i18n.fileTypeUnsupportedUpload"), contentType))
+		redirect(typ.Lib{}, fmt.Sprintf("%s, %s", i18n.MustGetMessage("i18n.fileTypeUnsupportedUpload"), contentType))
 		return
 	}
 	_type := string(ft)
@@ -246,13 +246,13 @@ func Upload(context *gin.Context) {
 	id, count, err := DbQryPermlyDelId(context)
 	// 新id
 	if err != nil || count == 0 {
-		id, err = db.Add(context, "INSERT INTO `img` (`name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?)", name, _type, size, time.NowUnix())
+		id, err = db.Add(context, "INSERT INTO `lib` (`name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?)", name, _type, size, time.NowUnix())
 	} else
 	// 复用id
 	{
-		_, err = db.Upd(context, "UPDATE `img` SET `name` = ?, `type` = ?, `size` = ?, `hist` = '', `hist_size` = 0, `del` = 0, `add_time` = ?, `upd_time` = 0 WHERE `id` = ?", name, _type, size, time.NowUnix(), id)
+		_, err = db.Upd(context, "UPDATE `lib` SET `name` = ?, `type` = ?, `size` = ?, `hist` = '', `hist_size` = 0, `del` = 0, `add_time` = ?, `upd_time` = 0 WHERE `id` = ?", name, _type, size, time.NowUnix(), id)
 	}
-	img := typ.Img{Abs: typ.Abs{Id: id}, Name: name, Type: _type}
+	img := typ.Lib{Abs: typ.Abs{Id: id}, Name: name, Type: _type}
 	if err != nil {
 		redirect(img, err)
 		return
@@ -274,6 +274,6 @@ func Upload(context *gin.Context) {
 
 // DbQryPermlyDelId 查询永久删除的图片记录id，以复用
 func DbQryPermlyDelId(context *gin.Context) (int64, int64, error) {
-	id, count, err := db.Qry[int64](context, "SELECT `id` FROM `img` WHERE `del` = 2 LIMIT 1")
+	id, count, err := db.Qry[int64](context, "SELECT `id` FROM `lib` WHERE `del` = 2 LIMIT 1")
 	return id, count, err
 }

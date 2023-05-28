@@ -494,7 +494,7 @@
                     })
                 }
             }
-            // img
+            // lib
             else {
                 $version.remove()
                 $path.remove()
