@@ -14,41 +14,46 @@ import (
 	"strings"
 )
 
-// List 图片列表页面
+// List 库列表页面
 func List(context *gin.Context) {
 	// lib
-	img := typ.Lib{}
-	err := api_common_context.ShouldBindQuery(context, &img)
+	lib := typ.Lib{}
+	err := api_common_context.ShouldBindQuery(context, &lib)
+
+	// id
+	if lib.Id < 0 {
+		lib.Id = 0
+	}
 
 	// name
-	img.Name = strings.TrimSpace(img.Name)
+	lib.Name = strings.TrimSpace(lib.Name)
 
 	// type
-	img.Type = string(typ.ExtNameOf(strings.TrimSpace(img.Type)))
+	lib.Type = string(typ.ExtNameOf(strings.TrimSpace(lib.Type)))
 
 	// del
-	if img.Del != 0 {
-		img.Del = 1
+	if lib.Del != 0 {
+		lib.Del = 1
 	}
 
 	// types
 	types := DbTypes(context)
 
 	// page
-	page, err := DbPage(context, img)
+	page, err := DbPage(context, lib)
 
 	// resp
 	resp := typ.Resp[map[string]any]{
 		Msg: str.ConvTypeToStr(err),
 		Data: map[string]any{
-			"lib":   img,   // lib query
+			"lib":   lib,   // lib query
 			"types": types, // types
 			"page":  page,  // page
 		},
 	}
 
 	// 记录查询参数
-	session.Set(context, ImgSessionKey, img)
+	session.Set(context, LibSessionKey, lib)
 
 	// html
 	api_common_context.HtmlOk(context, "lib/list.html", resp)
@@ -87,7 +92,7 @@ func DbPage(context *gin.Context, img typ.Lib) (typ.Page[typ.Lib], error) {
 	return db.Page[typ.Lib](context, current, size, sql, args...)
 }
 
-// DbTypes 获取图片类型集合
+// DbTypes 获取库类型集合
 func DbTypes(context *gin.Context) []string {
 	types, count, err := db.Qry[[]string](context, "SELECT DISTINCT(`type`) FROM `lib` WHERE `del` = 0")
 	if err != nil || count == 0 {

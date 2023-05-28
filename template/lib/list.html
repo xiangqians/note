@@ -44,7 +44,7 @@
                                                    type="checkbox"
                                                    {{ if ne $img.Del 0 }}checked{{ end }}/>&nbsp;&nbsp;
             <button search="search">{{ Localize "i18n.search" }}</button>&nbsp;
-            <a href="/img/list?t={{ NowUnix }}"><button>{{ Localize "i18n.reset" }}</button></a>
+            <a href="/lib/list?t={{ NowUnix }}"><button>{{ Localize "i18n.reset" }}</button></a>
         </span>
     </p>
 
@@ -71,7 +71,7 @@
             <td>{{ No_ $page $index }}</td>
             <td>
                 {{ if eq $img.Del 0 }}
-                <a href="/img/{{ $img.Id }}/view?t={{ NowUnix }}" target="_blank">{{ $img.Name }}</a>
+                <a href="/lib/{{ $img.Id }}/view?t={{ NowUnix }}" target="_blank">{{ $img.Name }}</a>
                 {{ else }}
                 <span>{{ $img.Name }}</span>
                 {{ end }}
@@ -117,14 +117,14 @@
                     {{ if le $page.Current 1 }}
                     {{ Localize "i18n.prevPage" }}
                     {{ else }}
-                    <a href="/img/list?id={{ $img.Id }}&name={{ $img.Name }}&type={{ $img.Type }}&del={{ $img.Del }}&current={{ Add $page.Current -1 }}&t={{ NowUnix }}">{{ Localize "i18n.prevPage" }}</a>
+                    <a href="/lib/list?id={{ $img.Id }}&name={{ $img.Name }}&type={{ $img.Type }}&del={{ $img.Del }}&current={{ Add $page.Current -1 }}&t={{ NowUnix }}">{{ Localize "i18n.prevPage" }}</a>
                     {{  end }}
                 </span>
                 <span>
                     {{ if ge $page.Current $page.Pages }}
                     {{ Localize "i18n.nextPage" }}
                     {{ else }}
-                    <a href="/img/list?id={{ $img.Id }}&name={{ $img.Name }}&type={{ $img.Type }}&del={{ $img.Del }}&current={{ Add $page.Current 1 }}&t={{ NowUnix }}">{{ Localize "i18n.nextPage" }}</a>
+                    <a href="/lib/list?id={{ $img.Id }}&name={{ $img.Name }}&type={{ $img.Type }}&del={{ $img.Del }}&current={{ Add $page.Current 1 }}&t={{ NowUnix }}">{{ Localize "i18n.nextPage" }}</a>
                     {{  end }}
                 </span>
             </td>
@@ -136,7 +136,7 @@
     <br>
     <br>
     <div>
-        <form action="/img/upload?t={{ NowUnix }}" method="POST" enctype="multipart/form-data">
+        <form action="/lib/upload?t={{ NowUnix }}" method="POST" enctype="multipart/form-data">
             <input name="file" type="file"/>
             <button type="submit">{{ Localize "i18n.upload" }}</button>
         </form>
@@ -171,7 +171,7 @@
                 let deleted = $deleted.is(":checked") ? 1 : 0
 
                 return {
-                    url: `/img/list?id=${id}&name=${name}&type=${type}&del=${deleted}`,
+                    url: `/lib/list?id=${id}&name=${name}&type=${type}&del=${deleted}`,
                     method: 'GET',
                 }
             })
@@ -204,7 +204,7 @@
                     let $e = $(e)
                     let img = getImg($e)
                     // console.log(lib)
-                    return `![${img.name}](/img/${img.id})`
+                    return `![${img.name}](/lib/${img.id})`
                 },
             });
 
@@ -243,7 +243,7 @@
                     data.append('id', img.id)
                     data.append('name', name)
                     return {
-                        url: '/img/name',
+                        url: '/lib/name',
                         method: 'PUT',
                         data: data
                     }
@@ -263,7 +263,7 @@
                     }
 
                     return {
-                        url: `/img/${img.id}`,
+                        url: `/lib/${img.id}`,
                         method: 'DELETE',
                     }
                 })
@@ -282,7 +282,7 @@
                     }
 
                     return {
-                        url: `/img/${img.id}/restore`,
+                        url: `/lib/${img.id}/restore`,
                         method: 'PUT',
                     }
                 })
@@ -301,7 +301,7 @@
                     }
 
                     return {
-                        url: `/img/${img.id}/permlyDel`,
+                        url: `/lib/${img.id}/permlyDel`,
                         method: 'DELETE',
                     }
                 })

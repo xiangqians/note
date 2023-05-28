@@ -217,7 +217,7 @@
                 data.append('file', file)
                 // 预期服务器返回的数据类型
                 data.append('dataType', 'json')
-                custom.ajax('/img/upload',
+                custom.ajax('/lib/upload',
                     'POST',
                     data,
                     false,
@@ -225,7 +225,7 @@
                     function (resp) {
                         // console.log(resp)
                         let data = resp.data
-                        document.execCommand('insertText', false, `![${data.name}}](/img/${data.id})`);
+                        document.execCommand('insertText', false, `![${data.name}}](/lib/${data.id})`);
                     },
                     function (resp) {
                         alert(JSON.stringify(resp))

@@ -18,7 +18,7 @@ import (
 	"sort"
 )
 
-const ImgSessionKey = "lib"
+const LibSessionKey = "lib"
 
 // DeserializeHist 反序列化历史记录
 func DeserializeHist(hist string) ([]typ.Lib, error) {
@@ -57,7 +57,7 @@ func RedirectToList(context *gin.Context, err any) {
 	}
 
 	// 记录查询参数
-	img, err := session.Get[typ.Lib](context, ImgSessionKey, false)
+	img, err := session.Get[typ.Lib](context, LibSessionKey, false)
 	if err != nil {
 		api_common_context.Redirect(context, "/lib/list", resp)
 		return
