@@ -6,47 +6,9 @@ package str
 import (
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
 	"reflect"
-	"regexp"
 	"strconv"
-	"strings"
 )
-
-// Uuid https://github.com/google/uuid
-func Uuid() string {
-	return uuid.New().String()
-}
-
-// ConvHumpToUnderline 驼峰转下划线
-func ConvHumpToUnderline(name string) string {
-	pRegexp := regexp.MustCompile("([A-Z])")
-	r := pRegexp.FindAllIndex([]byte(name), -1)
-	l := len(r)
-	if l == 0 {
-		return strings.ToLower(name)
-	}
-
-	var res = make([]string, l+1)
-	resIdx := 0
-	index := 0
-	for _, v := range r {
-		s := name[index:v[0]]
-		if s != "" {
-			res[resIdx] = s
-			resIdx++
-		}
-		index = v[0]
-	}
-	res[resIdx] = name[index:]
-	for i, s := range res {
-		if s == "" {
-			res = res[0:i]
-			break
-		}
-	}
-	return strings.ToLower(strings.Join(res, "_"))
-}
 
 // ConvTypeToStr 类型转string
 func ConvTypeToStr(i any) string {
@@ -87,5 +49,5 @@ func ConvStrToType[T any](value string) (T, error) {
 		return any(value).(T), nil
 	}
 
-	return t, errors.New(fmt.Sprintf("Unsupported operation: %v", rflVal.Type().Kind()))
+	return t, errors.New(fmt.Sprintf("This type does not support conversion: %v", rflVal.Type().Kind()))
 }

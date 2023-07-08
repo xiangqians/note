@@ -1,4 +1,4 @@
-// response
+// response type
 // @author xiangqian
 // @date 20:24 2023/03/22
 package typ
@@ -16,7 +16,4 @@ type Resp[T any] struct {
 // 注册模型
 func init() {
 	gob.Register(Resp[any]{})
-	gob.Register(Resp[int64]{})
-	gob.Register(Resp[User]{})
-	gob.Register(Resp[Lib]{})
 }

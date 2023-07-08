@@ -23,8 +23,44 @@ const (
 	Unknown           // Unknown
 )
 
-// NotSupportedError 不支持当前系统错误
-func NotSupportedError() error {
+// _os 操作系统标识
+var _os OS
+
+// fileSeparator 文件分隔符
+var fileSeparator string
+
+func init() {
+	switch runtime.GOOS {
+	// windows
+	case "windows":
+		_os = Windows
+		fileSeparator = "\\"
+
+	// linux
+	case "linux":
+		fallthrough // 执行穿透
+	case "android":
+		_os = Linux
+		fileSeparator = "/"
+
+	// unknown
+	default:
+		_os = Unknown
+	}
+}
+
+// GetOS 获取操作系统标识
+func GetOS() OS {
+	return _os
+}
+
+// FileSeparator 获取文件分隔符
+func FileSeparator() string {
+	return fileSeparator
+}
+
+// notSupportedError 不支持当前系统错误
+func notSupportedError() error {
 	return errors.New(fmt.Sprintf("The current system is not supported, %v", runtime.GOOS))
 }
 
@@ -38,7 +74,7 @@ func Cmd(cmd string) (*exec.Cmd, error) {
 		return exec.Command("bash", "-c", cmd), nil
 
 	default:
-		return nil, NotSupportedError()
+		return nil, notSupportedError()
 	}
 }
 
@@ -52,7 +88,7 @@ func Cd(path string) (*exec.Cmd, error) {
 		return Cmd(fmt.Sprintf("cd %s", path))
 
 	default:
-		return nil, NotSupportedError()
+		return nil, notSupportedError()
 	}
 }
 
@@ -75,7 +111,7 @@ func DelDir(path string) error {
 	return os.RemoveAll(path)
 }
 
-// MkDir make directories, 创建目录
+// MkDir make directories，创建目录
 func MkDir(path string) error {
 	return os.MkdirAll(path, os.ModePerm)
 }
@@ -90,10 +126,11 @@ func CopyDir(dstDir, srcDir string) (*exec.Cmd, error) {
 		return Cmd(fmt.Sprintf("cp -r %s %s", srcDir, dstDir))
 
 	default:
-		return nil, NotSupportedError()
+		return nil, notSupportedError()
 	}
 }
 
+// DecodeBuf 解码buffer
 func DecodeBuf(buf []byte) string {
 	if buf == nil || len(buf) == 0 {
 		return ""
@@ -112,14 +149,7 @@ func DecodeBuf(buf []byte) string {
 }
 
 // CopyFile 拷贝文件
-func CopyFile(dstPath, srcPath string) (int, error) {
-	// src
-	src, err := os.Open(srcPath)
-	if err != nil {
-		return 0, err
-	}
-	defer src.Close()
-
+func CopyFile(dstPath, srcPath string) (int64, error) {
 	// dst
 	dst, err := os.Create(dstPath)
 	if err != nil {
@@ -127,9 +157,15 @@ func CopyFile(dstPath, srcPath string) (int, error) {
 	}
 	defer dst.Close()
 
+	// src
+	src, err := os.Open(srcPath)
+	if err != nil {
+		return 0, err
+	}
+	defer src.Close()
+
 	// copy
-	//return io.Copy(dst, src)
-	return CopyIo(dst, src, 0)
+	return io.Copy(dst, src)
 }
 
 // CopyIo 流拷贝
@@ -227,37 +263,4 @@ func HumanizFileSize(size int64) string {
 
 	// B
 	return fmt.Sprintf("%d B", size)
-}
-
-// FileSeparator 文件分隔符
-func FileSeparator() string {
-	switch GetOS() {
-	case Windows:
-		return "\\"
-
-	case Linux:
-		return "/"
-
-	default:
-		return "/"
-	}
-}
-
-// GetOS 获取操作系统标识
-func GetOS() OS {
-	switch runtime.GOOS {
-	// windows
-	case "windows":
-		return Windows
-
-	// linux
-	case "linux":
-		fallthrough // 执行穿透
-	case "android":
-		return Linux
-
-	// unknown
-	default:
-		return Unknown
-	}
 }

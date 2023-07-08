@@ -1,4 +1,4 @@
-// test
+// bcrypt test
 // @author xiangqian
 // @date 21:21 2023/02/16
 package bcrypt
@@ -19,7 +19,6 @@ func Test(t *testing.T) {
 
 	passwd := "123456"
 	hash := encrypt(passwd)
-	fmt.Println(len([]byte(hash)[:32]))
 	fmt.Println(hash)
 	fmt.Println(CompareHash(hash, passwd))
 	fmt.Println(CompareHash(hash, "passwd"))

@@ -19,7 +19,7 @@ func CompareHash(hash, passwd string) bool {
 	return true
 }
 
-// Generate 加密密码，每次生成的密文都不同
+// Generate 加密密码，每次生成的hash密文都不同
 func Generate(passwd string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
 	if err != nil {
