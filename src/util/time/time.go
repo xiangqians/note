@@ -17,7 +17,7 @@ func HumanizUnix(unix int64) string {
 
 	// time
 	t := ParseUnix(unix)
-	now := Now()
+	nowTime := NowTime()
 
 	// format
 	format := func(i18nKey string, value int64) string {
@@ -25,7 +25,7 @@ func HumanizUnix(unix int64) string {
 	}
 
 	// Duration
-	duration := now.Sub(t)
+	duration := nowTime.Sub(t)
 
 	// hour
 	hour := int64(duration.Hours())
@@ -59,10 +59,10 @@ func FormatTime(time time.Time) string {
 
 // NowUnix 当前日期时间戳（s）
 func NowUnix() int64 {
-	return Now().Unix()
+	return NowTime().Unix()
 }
 
-// Now 当前时间
-func Now() time.Time {
+// NowTime 当前时间
+func NowTime() time.Time {
 	return time.Now()
 }

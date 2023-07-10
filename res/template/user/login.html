@@ -6,9 +6,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ Localize "i18n.login" }}</title>
+    <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/custom/body.css" type="text/css"/>
+    <link rel="stylesheet" href="/static/custom/cbody.css" type="text/css"/>
+    <link rel="stylesheet" href="/static/custom/cfoot1.css" type="text/css"/>
+    <title>{{ Localize "i18n.signin" }}</title>
+    <style>
+        cbody table tbody tr:hover {
+            background-color: white;
+        }
+    </style>
 </head>
 <body>
+
+<cbody>
+    <form action="/user/login0?t={{ NowUnix }}" method="post">
+        <msg>{{ .resp.Msg }}</msg>
+        {{ $data := .resp.Data }}
+        <table>
+            <tbody>
+            <tr>
+                <td>*<label for="name">{{ Localize "i18n.userName" }}</label></td>
+                <td><input id="name" name="name" type="text" value="{{ $data.Name }}"></td>
+            </tr>
+            <tr>
+                <td>*<label for="passwd">{{ Localize "i18n.passwd" }}</label></td>
+                <td><input id="passwd" name="passwd" type="password"></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="submit" value='{{ Localize "i18n.signin" }}'>
+                    <a style="padding-left: 10px" href="/user/signup?t={{ NowUnix }}">{{ Localize "i18n.signup" }}</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
+
+</cbody>
+
+{{ template "common/cfoot1.html" . }}
 
 </body>
 </html>

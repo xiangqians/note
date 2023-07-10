@@ -1,6 +1,6 @@
 // log
 // @author xiangqian
-// @date 21:11 2023/06/12
+// @date 19:45 2023/07/10
 package log
 
 import (
@@ -13,8 +13,8 @@ import (
 	"path/filepath"
 )
 
-// 日志记录器
-func init() {
+// Init 初始化日志记录器
+func Init() {
 	// current directory
 	curDir, err := filepath.Abs("./")
 	if err != nil {
@@ -41,7 +41,6 @@ func init() {
 	writer := io.MultiWriter(logFile, os.Stdout)
 	gin.DefaultWriter = writer
 
-	// log
 	// 设置日志格式
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 

@@ -88,7 +88,7 @@ func permMiddleware(engine *gin.Engine) {
 func staticMiddleware(engine *gin.Engine) {
 	// 静态资源处理
 	// https://github.com/gin-contrib/static
-	engine.Use(static.Serve("/static", static.LocalFile("./static", false)))
+	engine.Use(static.Serve("/static", static.LocalFile("./res/static", false)))
 }
 
 // i18n中间件

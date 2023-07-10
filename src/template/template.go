@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin/render"
 	html_template "html/template"
 	util_os "note/src/util/os"
+	util_time "note/src/util/time"
 	"os"
 	"path/filepath"
 	"strings"
@@ -32,8 +33,13 @@ func customTemplateFunc(engine *gin.Engine) {
 
 	// 自定义模板函数
 	engine.SetFuncMap(html_template.FuncMap{
-		// 为了获取 i18n 文件中 key 对应的 value
+		// 获取i18n文件中key对应的value
 		"Localize": i18n.GetMessage,
+
+		// 当前系统时间戳
+		"NowUnix": func() int64 {
+			return util_time.NowUnix()
+		},
 	})
 }
 

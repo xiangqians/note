@@ -7,25 +7,22 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"note/src/arg"
-	"note/src/loc"
+	"note/src/local"
+	"note/src/log"
 	"note/src/middleware"
 	"note/src/route"
 	"note/src/template"
-	"note/src/trans"
-
-	// init log
-	_ "note/src/log"
 )
 
 func main() {
+	// 初始化日志记录器
+	log.Init()
+
 	// 初始化应用参数
 	arg.Init()
 
 	// 初始化时区
-	loc.Init()
-
-	// 检验器翻译
-	trans.Translator()
+	local.Init()
 
 	// gin模式
 	gin.SetMode(gin.DebugMode)
@@ -43,6 +40,6 @@ func main() {
 	route.Init(engine)
 
 	// run
-	addr := fmt.Sprintf(":%d", arg.Get().Port) // addr
+	addr := fmt.Sprintf(":%d", arg.Arg.Port) // addr
 	engine.Run(addr)
 }

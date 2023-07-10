@@ -1,18 +1,18 @@
 // arg
 // @author xiangqian
-// @date 00:11 2022/12/31
+// @date 19:47 2023/07/10
 package arg
 
 import (
 	"flag"
 	"log"
 	"note/src/typ"
-	"note/src/util/os"
+	util_os "note/src/util/os"
 	"path/filepath"
 	"strings"
 )
 
-var arg typ.Arg
+var Arg typ.Arg
 
 // Init 初始化应用参数
 func Init() {
@@ -35,21 +35,17 @@ func Init() {
 
 	// DataDir
 	dataDir = strings.TrimSpace(dataDir)
-	if !os.IsExist(dataDir) {
-		os.MkDir(dataDir)
+	if !util_os.IsExist(dataDir) {
+		util_os.MkDir(dataDir)
 	}
 	// 获取绝对路径
 	dataDir, _ = filepath.Abs(dataDir)
 
-	arg = typ.Arg{
+	Arg = typ.Arg{
 		Loc:      loc,
 		Port:     port,
 		DataDir:  dataDir,
 		AllowReg: allowReg,
 	}
-	log.Println(arg)
-}
-
-func Get() typ.Arg {
-	return arg
+	log.Println(Arg)
 }

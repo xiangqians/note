@@ -2,6 +2,11 @@
   "i18n.nHoursAgo": "%v小时前",
   "i18n.nMinutesAgo": "%v分钟前",
   "i18n.nSecondsAgo": "%v秒前",
-  "i18n.login": "登录",
+  "i18n.userName": "用户名",
+  "i18n.passwd": "密码",
+  "i18n.signin": "登录",
+  "i18n.signup": "注册",
+  "i18n.signout": "注销",
+  "i18n.about": "关于",
   "i18n.index": "首页"
 }

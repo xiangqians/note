@@ -1,0 +1,19 @@
+/**
+ * body
+ * @author xiangqian
+ * @date 21:14 2023/07/10
+ */
+
+cfoot2 {
+    display: block;
+}
+
+cfoot2 a {
+    padding: 0;
+    margin: 0;
+    text-decoration: none;
+}
+
+cfoot2 li {
+    padding-bottom: 4px;
+}
