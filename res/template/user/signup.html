@@ -20,7 +20,7 @@
 
 <cbody>
     <form action="/user/signup0?t={{ NowUnix }}" method="post">
-        <p style="color: red;">{{ .resp.Msg }}</p>
+        <msg>{{ .resp.Msg }}</msg>
         {{ $data := .resp.Data }}
         <table>
             <tbody>
@@ -38,11 +38,11 @@
             </tr>
             <tr>
                 <td>*<label>{{ Localize "i18n.rePasswd" }}</label></td>
-                <td><input id="rePasswd" name="rePasswd" type="password"></td>
+                <td><input name="rePasswd" type="password"></td>
             </tr>
             <tr>
                 <td><label>{{ Localize "i18n.rem" }}</label></td>
-                <td><textarea id="rem" name="rem" type="text">{{ $data.Rem }}</textarea></td>
+                <td><textarea name="rem" type="text">{{ $data.Rem }}</textarea></td>
             </tr>
             </tbody>
             <tfoot>
@@ -55,10 +55,6 @@
             </tr>
             </tfoot>
         </table>
-        <br>
-        <div>
-
-        </div>
     </form>
 </cbody>
 

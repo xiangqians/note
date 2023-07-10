@@ -9,6 +9,20 @@ cbody {
     padding-bottom: 20px;
 }
 
+cbody msg {
+    display: block;
+    color: red;
+}
+
+cbody textarea[name="rem"] {
+    width: 200px;
+    height: 60px;
+}
+
+cbody form input[type="text"], input[type="password"] {
+    width: 200px;
+}
+
 /* 去除td之间的空格 */
 cbody table {
     border-collapse: collapse;
@@ -16,8 +30,6 @@ cbody table {
 
 cbody table tbody td {
     padding-right: 20px;
-    /*text-align: center;*/
-    /*vertical-align: middle !important;*/
 }
 
 /* operate样式 */
@@ -40,12 +52,6 @@ cbody table tbody tr:hover .op {
     display: block;
 }
 
-cbody a {
-    padding: 0;
-    margin: 0;
-    text-decoration: none;
-}
-
 cbody .index {
     display: block;
     font-size: 2em;
@@ -54,26 +60,4 @@ cbody .index {
     margin-inline-start: 0px;
     margin-inline-end: 0px;
     font-weight: bold;
-}
-
-cbody button {
-    cursor: pointer
-}
-
-cbody [type="submit"] {
-    cursor: pointer
-}
-
-cbody msg {
-    display: block;
-    color: red;
-}
-
-cbody textarea[name="rem"] {
-    width: 200px;
-    height: 60px;
-}
-
-cbody form input[type="text"],input[type="password"] {
-    width: 200px;
 }
