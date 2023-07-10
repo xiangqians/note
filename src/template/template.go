@@ -132,7 +132,7 @@ func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap html_template.Fu
 func formatTemplateName(templateName string) string {
 	templateName = strings.ReplaceAll(templateName, "\\", "/")
 
-	// name: res/template/user/login.html -> user/login.html
+	// name: res/template/user/signin.html -> user/signin.html
 	index := strings.Index(templateName, "template")
 	templateName = templateName[index+len("template")+1:]
 

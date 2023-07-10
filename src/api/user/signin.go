@@ -1,4 +1,4 @@
-// login
+// signin
 // @author xiangqian
 // @date 22:40 2023/06/13
 package user
@@ -10,13 +10,13 @@ import (
 	"note/src/typ"
 )
 
-// Login 登录页面
-func Login(context *gin.Context) {
+// SignIn 登录页面
+func SignIn(context *gin.Context) {
 	resp, _ := session.Get[typ.Resp[typ.User]](context, app_context.RespSessionKey, true)
-	app_context.HtmlOk(context, "user/login", resp)
+	app_context.HtmlOk(context, "user/signin", resp)
 }
 
-// Login0 登录
-func Login0(context *gin.Context) {
+// SignIn0 登录
+func SignIn0(context *gin.Context) {
 
 }

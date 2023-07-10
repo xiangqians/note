@@ -32,11 +32,11 @@ func Init(engine *gin.Engine) {
 func permMiddleware(engine *gin.Engine) {
 	// 未授权拦截
 	engine.Use(func(context *gin.Context) {
-		// request path
+		// 请求路径
 		reqPath := context.Request.URL.Path
 
 		// 静态资源放行
-		if strings.HasPrefix(reqPath, "/static") {
+		if strings.HasPrefix(reqPath, "/static/") {
 			context.Next()
 			return
 		}
@@ -46,7 +46,7 @@ func permMiddleware(engine *gin.Engine) {
 		// request method
 		reqMethod := context.Request.Method
 
-		// is login ?
+		// is signin ?
 		login := false
 		user, err := session.GetUser(context)
 		if err == nil && user.Id > 0 {
@@ -54,9 +54,9 @@ func permMiddleware(engine *gin.Engine) {
 		}
 
 		// 用户注册和登录放行
-		if reqPath == "/user/reg" || // 注册页
-			reqPath == "/user/login" || // 登录页
-			(reqMethod == http.MethodPost && (reqPath == "/user/reg0" || reqPath == "/user/login0")) { // 注册接口和登录接口
+		if reqPath == "/user/signup" || // 注册页
+			reqPath == "/user/signin" || // 登录页
+			(reqMethod == http.MethodPost && (reqPath == "/user/signin0" || reqPath == "/user/signup0")) { // 注册接口和登录接口
 			// 如果已登录则重定向到首页
 			if login {
 				api_common_context.Redirect(context, "/", typ2.Resp[any]{})
@@ -72,10 +72,10 @@ func permMiddleware(engine *gin.Engine) {
 		// 未登录
 		if !login {
 			// 重定向到登录页
-			//context.Request.URL.Path = "/user/login"
+			//context.Request.URL.Path = "/user/signin"
 			//engine.HandleContext(context)
 			// OR
-			api_common_context.Redirect(context, "/user/login", typ2.Resp[any]{})
+			api_common_context.Redirect(context, "/user/signin", typ2.Resp[any]{})
 
 			// 中止调用链
 			context.Abort()
