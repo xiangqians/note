@@ -26,17 +26,17 @@
         <table>
             <tbody>
             <tr>
-                <td>*<label for="name">{{ Localize "i18n.userName" }}</label></td>
-                <td><input id="name" name="name" type="text" value="{{ $data.Name }}"></td>
+                <td>*<label>{{ Localize "i18n.userName" }}</label></td>
+                <td><input name="name" type="text" value="{{ $data.Name }}"></td>
             </tr>
             <tr>
-                <td>*<label for="passwd">{{ Localize "i18n.passwd" }}</label></td>
-                <td><input id="passwd" name="passwd" type="password"></td>
+                <td>*<label>{{ Localize "i18n.passwd" }}</label></td>
+                <td><input name="passwd" type="password"></td>
             </tr>
             <tr>
                 <td colspan="2">
                     <input type="submit" value='{{ Localize "i18n.signin" }}'>
-                    <a style="padding-left: 10px" href="/user/signup?t={{ NowUnix }}">{{ Localize "i18n.signup" }}</a>
+                    <a style="padding-left: 10px" href="/user/signup?t={{ NowUnix }}">{{ Localize "i18n.signup" }} →</a>
                 </td>
             </tr>
             </tbody>

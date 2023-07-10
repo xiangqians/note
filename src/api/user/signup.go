@@ -1,6 +1,6 @@
-// signin
+// signup
 // @author xiangqian
-// @date 22:40 2023/06/13
+// @date 23:33 2023/07/10
 package user
 
 import (
@@ -10,13 +10,13 @@ import (
 	"note/src/typ"
 )
 
-// SignIn 登录页
-func SignIn(context *gin.Context) {
+// Signup 注册页
+func Signup(context *gin.Context) {
 	resp, _ := session.Get[typ.Resp[typ.User]](context, app_context.RespSessionKey, true)
-	app_context.HtmlOk(context, "user/signin", resp)
+	app_context.HtmlOk(context, "user/signup", resp)
 }
 
-// SignIn0 登录
-func SignIn0(context *gin.Context) {
+// Signup0 注册
+func Signup0(context *gin.Context) {
 
 }

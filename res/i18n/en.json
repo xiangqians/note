@@ -2,11 +2,18 @@
   "i18n.nHoursAgo": "%v hours ago",
   "i18n.nMinutesAgo": "%v minutes ago",
   "i18n.nSecondsAgo": "%v seconds ago",
+  "i18n.nickname": "Nickname",
   "i18n.userName": "User Name",
   "i18n.passwd": "Password",
+  "i18n.rePasswd": "Retype Password",
+  "i18n.origPasswd": "Original Password",
+  "i18n.newPasswd": "New Password",
+  "i18n.reNewPasswd": "Retype New Password",
+  "i18n.rem": "Remark",
   "i18n.signin": "Sign in",
   "i18n.signup": "Sign up",
   "i18n.signout": "Sign out",
+  "i18n.alreadyHaveAnAccount": "Already have an account?",
   "i18n.about": "About",
   "i18n.index": "Index"
 }

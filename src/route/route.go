@@ -23,8 +23,8 @@ func Init(engine *gin.Engine) {
 	{
 		userGroup.Any("/signin", user.SignIn)
 		userGroup.POST("/signin0", user.SignIn0)
-		//userGroup.Any("/signup", user.Signup)
-		//userGroup.POST("/signup", user.Signup0)
+		userGroup.Any("/signup", user.Signup)
+		userGroup.POST("/signup0", user.Signup0)
 		//userGroup.Any("/logout", user.Logout)
 		//userGroup.Any("/settings", user.Settings) // page
 		//userGroup.POST("/settings0", user.Settings0)
