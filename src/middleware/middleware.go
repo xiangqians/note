@@ -13,7 +13,8 @@ import (
 	"golang.org/x/text/language"
 	"log"
 	"net/http"
-	api_common_context "note/src/context"
+	"note/src/arg"
+	src_context "note/src/context"
 	"note/src/session"
 	typ2 "note/src/typ"
 	"note/src/util/crypto/bcrypt"
@@ -36,30 +37,29 @@ func permMiddleware(engine *gin.Engine) {
 		reqPath := context.Request.URL.Path
 
 		// 静态资源放行
-		if strings.HasPrefix(reqPath, "/static/") {
+		if strings.HasPrefix(reqPath, arg.Arg.Path+"/static/") {
 			context.Next()
 			return
 		}
 
 		log.Println("--->GlobalCache: ", session.GlobalCache)
 
-		// request method
-		reqMethod := context.Request.Method
-
-		// is signin ?
-		login := false
+		// 是否已登录
+		signIn := false
 		user, err := session.GetUser(context)
 		if err == nil && user.Id > 0 {
-			login = true
+			signIn = true
 		}
 
 		// 用户注册和登录放行
-		if reqPath == "/user/signup" || // 注册页
-			reqPath == "/user/signin" || // 登录页
-			(reqMethod == http.MethodPost && (reqPath == "/user/signin0" || reqPath == "/user/signup0")) { // 注册接口和登录接口
+		if reqPath == arg.Arg.Path+"/user/signin" || // 登录页
+			reqPath == arg.Arg.Path+"/user/signup" || // 注册页
+			(context.Request.Method == http.MethodPost && (reqPath == arg.Arg.Path+"/user/signin0" || reqPath == arg.Arg.Path+"/user/signup0")) { // 登录接口和注册接口
 			// 如果已登录则重定向到首页
-			if login {
-				api_common_context.Redirect(context, "/", typ2.Resp[any]{})
+			if signIn {
+				// 重定向到首页
+				src_context.Redirect(context, "/")
+				// 中止调用链
 				context.Abort()
 			} else
 			// 如果未登录，放行登录或注册
@@ -70,13 +70,12 @@ func permMiddleware(engine *gin.Engine) {
 		}
 
 		// 未登录
-		if !login {
+		if !signIn {
 			// 重定向到登录页
-			//context.Request.URL.Path = "/user/signin"
+			//context.Request.URL.Path = arg.Arg.Path+"/user/signin"
 			//engine.HandleContext(context)
 			// OR
-			api_common_context.Redirect(context, "/user/signin", typ2.Resp[any]{})
-
+			src_context.Redirect(context, arg.Arg.Path+"/user/signin")
 			// 中止调用链
 			context.Abort()
 			return
@@ -88,7 +87,7 @@ func permMiddleware(engine *gin.Engine) {
 func staticMiddleware(engine *gin.Engine) {
 	// 静态资源处理
 	// https://github.com/gin-contrib/static
-	engine.Use(static.Serve("/static", static.LocalFile("./res/static", false)))
+	engine.Use(static.Serve(arg.Arg.Path+"/static", static.LocalFile("./res/static", false)))
 }
 
 // i18n中间件

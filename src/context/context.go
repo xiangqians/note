@@ -16,10 +16,12 @@ import (
 	en_trans "github.com/go-playground/validator/v10/translations/en"
 	zh_trans "github.com/go-playground/validator/v10/translations/zh"
 	"net/http"
+	"note/src/arg"
 	"note/src/session"
 	"note/src/typ"
-	"note/src/util/str"
 	"note/src/util/time"
+	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -27,8 +29,6 @@ var (
 	zhTrans ut.Translator
 	enTrans ut.Translator
 )
-
-const RespSessionKey = "resp"
 
 func init() {
 	translator()
@@ -44,15 +44,16 @@ func HtmlOk[T any](context *gin.Context, name string, resp typ.Resp[T]) {
 
 // Html
 // context: Context
-// code: http code
-// name: templateName
-// resp: response
+// code   : http code
+// name   : templateName
+// resp   : response
 func Html[T any](context *gin.Context, code int, name string, resp typ.Resp[T]) {
 	user, _ := session.GetUser(context)
 	context.HTML(code, name, gin.H{
-		"url":          context.Request.RequestURI, // url
-		"user":         user,                       // user
-		RespSessionKey: resp,                       // resp
+		"resp": resp,                       // 响应数据
+		"url":  context.Request.RequestURI, // 请求url地址
+		"user": user,                       // 登录用户信息
+		"arg":  arg.Arg,                    // 应用参数
 	})
 }
 
@@ -68,7 +69,7 @@ func Json[T any](context *gin.Context, code int, resp typ.Resp[T]) {
 	context.JSON(code, resp)
 }
 
-func Redirect[T any](context *gin.Context, location string, resp typ.Resp[T]) {
+func Redirect(context *gin.Context, location string) {
 	if strings.Contains(location, "?") {
 		location = fmt.Sprintf("%s&t=%d", location, time.NowUnix())
 	} else {
@@ -79,17 +80,46 @@ func Redirect[T any](context *gin.Context, location string, resp typ.Resp[T]) {
 
 func PostForm[T any](context *gin.Context, key string) (T, error) {
 	value := context.PostForm(key)
-	return str.ConvStrToType[T](value)
+	return convStrToType[T](value)
 }
 
 func Param[T any](context *gin.Context, key string) (T, error) {
 	value := context.Param(key)
-	return str.ConvStrToType[T](value)
+	return convStrToType[T](value)
 }
 
 func Query[T any](context *gin.Context, key string) (T, error) {
 	value := context.Query(key)
-	return str.ConvStrToType[T](value)
+	return convStrToType[T](value)
+}
+
+// convStrToType string转类型（基本数据类型）
+func convStrToType[T any](value string) (T, error) {
+	var t T
+	rflVal := reflect.ValueOf(t)
+	//log.Println(rflVal)
+	switch rflVal.Type().Kind() {
+	case reflect.Int:
+		id, err := strconv.ParseInt(value, 10, 64)
+		return any(int(any(id).(int64))).(T), err
+
+	case reflect.Int8:
+		id, err := strconv.ParseInt(value, 10, 64)
+		return any(int8(any(id).(int64))).(T), err
+
+	case reflect.Uint8:
+		id, err := strconv.ParseInt(value, 10, 64)
+		return any(uint8(any(id).(int64))).(T), err
+
+	case reflect.Int64:
+		id, err := strconv.ParseInt(value, 10, 64)
+		return any(id).(T), err
+
+	case reflect.String:
+		return any(value).(T), nil
+	}
+
+	return t, errors.New(fmt.Sprintf("This type does not support conversion: %v", rflVal.Type().Kind()))
 }
 
 func ShouldBindQuery(context *gin.Context, i any) error {
@@ -100,7 +130,6 @@ func ShouldBindQuery(context *gin.Context, i any) error {
 	return err
 }
 
-// ShouldBind 应该绑定参数
 func ShouldBind(context *gin.Context, i any) error {
 	err := context.ShouldBind(i)
 	if err != nil {

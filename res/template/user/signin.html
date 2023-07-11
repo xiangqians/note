@@ -6,10 +6,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="shortcut icon" rel="external nofollow" href="/static/favicon.ico">
-    <link rel="stylesheet" href="/static/custom/body.css" type="text/css"/>
-    <link rel="stylesheet" href="/static/custom/cbody.css" type="text/css"/>
-    <link rel="stylesheet" href="/static/custom/cfoot1.css" type="text/css"/>
+    <link rel="shortcut icon" rel="external nofollow" href="{{ .arg.Path }}/static/favicon.ico">
+    <link rel="stylesheet" href="{{ .arg.Path }}/static/custom/body.css" type="text/css"/>
+    <link rel="stylesheet" href="{{ .arg.Path }}/static/custom/cbody.css" type="text/css"/>
+    <link rel="stylesheet" href="{{ .arg.Path }}/static/custom/cfoot1.css" type="text/css"/>
     <title>{{ Localize "i18n.signin" }}</title>
     <style>
         cbody table tbody tr:hover {
@@ -20,7 +20,7 @@
 <body>
 
 <cbody>
-    <form action="/user/signin0?t={{ NowUnix }}" method="post">
+    <form action="{{ .arg.Path }}/user/signin0?t={{ NowUnix }}" method="post">
         <msg>{{ .resp.Msg }}</msg>
         {{ $data := .resp.Data }}
         <table>
@@ -36,7 +36,7 @@
             <tr>
                 <td colspan="2">
                     <input type="submit" value='{{ Localize "i18n.signin" }}'>
-                    <a style="padding-left: 10px" href="/user/signup?t={{ NowUnix }}">{{ Localize "i18n.signup" }}</a>
+                    <a style="padding-left: 10px" href="{{ .arg.Path }}/user/signup?t={{ NowUnix }}">{{ Localize "i18n.signup" }}</a>
                 </td>
             </tr>
             </tbody>

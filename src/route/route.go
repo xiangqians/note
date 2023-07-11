@@ -5,8 +5,10 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
+	"note/src/api/index"
 	"note/src/api/user"
-	app_context "note/src/context"
+	"note/src/arg"
+	src_context "note/src/context"
 	"note/src/typ"
 )
 
@@ -15,22 +17,22 @@ func Init(engine *gin.Engine) {
 	// 设置默认路由
 	engine.NoRoute(func(context *gin.Context) {
 		resp := typ.Resp[any]{}
-		app_context.HtmlNotFound(context, "404.html", resp)
+		src_context.HtmlNotFound(context, "404", resp)
 	})
 
 	// user
-	userGroup := engine.Group("/user")
+	userGroup := engine.Group(arg.Arg.Path + "/user")
 	{
 		userGroup.Any("/signin", user.SignIn)
 		userGroup.POST("/signin0", user.SignIn0)
-		userGroup.Any("/signup", user.Signup)
-		userGroup.POST("/signup0", user.Signup0)
-		//userGroup.Any("/logout", user.Logout)
+		userGroup.Any("/signup", user.SignUp)
+		userGroup.POST("/signup0", user.SignUp0)
+		userGroup.Any("/signout", user.SignOut)
 		//userGroup.Any("/settings", user.Settings) // page
 		//userGroup.POST("/settings0", user.Settings0)
 	}
 
-	//// index
-	//engine.Any("/", index.Index)
+	// index
+	engine.Any(arg.Arg.Path+"/", index.Index)
 
 }

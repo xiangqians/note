@@ -4,17 +4,18 @@
  |-->
 {{ define "common/cfoot2.html" }}
 <cfoot2>
-    <p>Navigation
+    <p>{{ Localize "i18n.navigation" }}
     <ul>
-        <li><a href="#">Coffee</a></li>
+        <li><a href='{{ .arg.Path }}/?t={{ NowUnix }}'>{{ Localize "i18n.index" }}</a></li>
         <li><a href="#">Tea</a></li>
         <li><a href="#">Milk</a></li>
     </ul>
     </p>
     <p>
-        <span><a href="">User(Nickname)</a></span>
+        <span><a href="">{{ .user.Name }} ( {{ .user.Nickname }} )</a></span>
         <span style="padding-left: 10px">
-            <a href="#" title='{{ Localize "i18n.signout" }}'>{{ Localize "i18n.signout" }}</a>
+            <a href="{{ .arg.Path }}/user/signout?t={{ NowUnix }}"
+               title='{{ Localize "i18n.signout" }}'>{{ Localize "i18n.signout" }}</a>
         </span>
     </p>
 </cfoot2>

@@ -15,5 +15,7 @@
   "i18n.signout": "Sign out",
   "i18n.alreadyHaveAnAccount": "Already have an account?",
   "i18n.about": "About",
-  "i18n.index": "Index"
+  "i18n.index": "Index",
+  "i18n.404": "Page not found",
+  "i18n.navigation": "Navigation"
 }

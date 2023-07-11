@@ -18,22 +18,30 @@ var Arg typ.Arg
 func Init() {
 	var loc string
 	var port int
+	var path string
 	var dataDir string
 	var allowReg int
 
 	// -dataDir "C:\Users\xiangqian\Desktop\tmp\note\data"
 
-	// parse
+	// 解析参数
 	flag.StringVar(&loc, "loc", "Asia/Shanghai", "-loc Asia/Shanghai")
 	flag.IntVar(&port, "port", 8080, "-port 8080")
+	flag.StringVar(&path, "path", "/", "-path /")
 	flag.StringVar(&dataDir, "dataDir", "./data", "-dataDir ./data")
 	flag.IntVar(&allowReg, "allowReg", 1, "-allowReg 1")
 	flag.Parse()
 
-	// loc
+	// 时区
 	loc = strings.TrimSpace(loc)
 
-	// DataDir
+	// 项目根路径
+	path = strings.TrimSpace(path)
+	if path == "/" {
+		path = ""
+	}
+
+	// 数据目录
 	dataDir = strings.TrimSpace(dataDir)
 	if !util_os.IsExist(dataDir) {
 		util_os.MkDir(dataDir)
@@ -44,6 +52,7 @@ func Init() {
 	Arg = typ.Arg{
 		Loc:      loc,
 		Port:     port,
+		Path:     path,
 		DataDir:  dataDir,
 		AllowReg: allowReg,
 	}

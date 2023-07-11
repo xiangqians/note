@@ -53,7 +53,7 @@ func Get[T any](context *gin.Context, key any, del bool) (T, error) {
 
 	// err
 	var t T
-	return t, errors.New(fmt.Sprintf("Unknown %s", key))
+	return t, errors.New(fmt.Sprintf("Type conversion error:  %s", key))
 }
 
 // Clear 清空session

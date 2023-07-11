@@ -5,18 +5,16 @@ package user
 
 import (
 	"github.com/gin-gonic/gin"
-	app_context "note/src/context"
-	"note/src/session"
+	src_context "note/src/context"
 	"note/src/typ"
 )
 
-// Signup 注册页
-func Signup(context *gin.Context) {
-	resp, _ := session.Get[typ.Resp[typ.User]](context, app_context.RespSessionKey, true)
-	app_context.HtmlOk(context, "user/signup", resp)
+// SignUp 注册页
+func SignUp(context *gin.Context) {
+	src_context.HtmlOk(context, "user/signup", typ.Resp[typ.User]{})
 }
 
-// Signup0 注册
-func Signup0(context *gin.Context) {
+// SignUp0 注册
+func SignUp0(context *gin.Context) {
 
 }
