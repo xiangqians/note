@@ -16,7 +16,7 @@ import (
 	"note/src/arg"
 	src_context "note/src/context"
 	"note/src/session"
-	typ2 "note/src/typ"
+	"note/src/typ"
 	"note/src/util/crypto/bcrypt"
 	"strings"
 )
@@ -51,14 +51,14 @@ func permMiddleware(engine *gin.Engine) {
 			signIn = true
 		}
 
-		// 用户注册和登录放行
+		// 用户登录和注册放行
 		if reqPath == arg.Arg.Path+"/user/signin" || // 登录页
 			reqPath == arg.Arg.Path+"/user/signup" || // 注册页
 			(context.Request.Method == http.MethodPost && (reqPath == arg.Arg.Path+"/user/signin0" || reqPath == arg.Arg.Path+"/user/signup0")) { // 登录接口和注册接口
 			// 如果已登录则重定向到首页
 			if signIn {
 				// 重定向到首页
-				src_context.Redirect(context, "/")
+				src_context.Redirect(context, arg.Arg.Path+"/")
 				// 中止调用链
 				context.Abort()
 			} else
@@ -84,16 +84,14 @@ func permMiddleware(engine *gin.Engine) {
 }
 
 // 静态资源处理中间件
+// https://github.com/gin-contrib/static
 func staticMiddleware(engine *gin.Engine) {
-	// 静态资源处理
-	// https://github.com/gin-contrib/static
 	engine.Use(static.Serve(arg.Arg.Path+"/static", static.LocalFile("./res/static", false)))
 }
 
 // i18n中间件
+// https://github.com/gin-contrib/i18n
 func i18nMiddleware(engine *gin.Engine) {
-	// apply i18n middleware
-	// https://github.com/gin-contrib/i18n
 	engine.Use(i18n.Localize(i18n.WithBundle(&i18n.BundleCfg{
 		RootPath:         "./res/i18n",
 		AcceptLanguage:   []language.Tag{language.Chinese, language.English},
@@ -104,39 +102,41 @@ func i18nMiddleware(engine *gin.Engine) {
 		func(context *gin.Context, defaultLang string) string {
 			// 从url中获取lang
 			lang := strings.ToLower(strings.TrimSpace(context.Query("lang")))
-			if lang != "" && !(lang == typ2.Zh || lang == typ2.En) {
+			if lang != "" && !(lang == typ.Zh || lang == typ.En) {
 				lang = ""
 			}
 
 			// 从session中获取lang
-			session := session.Session(context)
-			sessionLang := ""
-			if v, r := session.Get("lang").(string); r {
-				sessionLang = v
+			sessionLang, err := session.Get[string](context, "lang", false)
+			if err != nil {
+				sessionLang = ""
 			}
 			if lang == "" {
 				lang = sessionLang
 			}
 
+			// 从请求头获取 Accept-Language
 			if lang == "" {
 				// 从请求头获取 Accept-Language
 				acceptLanguage := context.GetHeader("Accept-Language")
 				// en,zh-CN;q=0.9,zh;q=0.8
-				if strings.HasPrefix(acceptLanguage, typ2.Zh) {
-					lang = typ2.Zh
-				} else if strings.HasPrefix(acceptLanguage, typ2.En) {
-					lang = typ2.En
+				if strings.HasPrefix(acceptLanguage, typ.Zh) {
+					lang = typ.Zh
+				} else if strings.HasPrefix(acceptLanguage, typ.En) {
+					lang = typ.En
 				}
 			}
 
+			// 如果lang未指定，则使用默认lang
 			if lang == "" {
 				lang = defaultLang
 			}
 
+			// 存储lang到session
 			if sessionLang != lang {
-				session.Set("lang", lang)
-				session.Save()
+				session.Set(context, "lang", lang)
 			}
+
 			return lang
 		},
 	)))
