@@ -11,49 +11,63 @@ import (
 	gin_contrib_sessions "github.com/gin-contrib/sessions"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
+	"github.com/hashicorp/golang-lru/v2"
 	"net/http"
+	"note/src/typ"
 	"strings"
-	"sync"
 )
 
-// copy: mod\github.com\quasoft\memstore@v0.0.0-20191010062613-2bce066d2b0b\cache.go
+// &{
+//map[
+//5TPLBDFIJRIMKVWJXH2QYQR2MRYEGHXQI5NBUYLIIQZX63RZKB5A:map[lang:zh]
+//BBC5EEP6UVOJGRGPY7MZWIQC42TDHTVM6MDV6523VQVKTPT43GOQ:map[lang:zh]
+//BKP72HYUVETZT5TMTAG4AE7WVBBADAAWEHNLB6ACIJ4U66NYYJWQ:map[lang:en]
+//COT32IM245RTYL7YMHEAPGIUOB65ZRAKCMC2NHC7SMUANX5EFAGA:map[lang:en]
+//Q6XNLR3EPYXOEJNUV46PXJGN7ZO3FCEREAIHN76SAAFVVVTPNSYQ:map[lang:zh]
+//RZHLSU2XPRLACVTXHK4TT5QCSG5D3ZMOPQGTYK4WEMIA3R6QX5VQ:map[__user__:{{1  0 0 0} test 测试    0} lang:zh]
+//VUYZXIGRDUG64GNFITW2LCLBFLUNYBPX5BLVBCNPMSM673QZ36HA:map[lang:en]
+//ZH5B6RXRT7VOYAQTZQMMCVIWB74Z5JTOJVKISJ3EPXCNSL2WKEOQ:map[lang:zh]
+//] {{0 0} 0 0 0 0}}
+
+// --------------------------------- copy mod\github.com\quasoft\memstore@v0.0.0-20191010062613-2bce066d2b0b\cache.go ---------------------------------
 
 type cache struct {
-	data  map[string]valueType
-	mutex sync.RWMutex
+	data *lru.Cache[string, value]
 }
 
-func newCache() *cache {
-	return &cache{
-		data: make(map[string]valueType),
-	}
+func (c *cache) value(name string) (value, bool) {
+	return c.data.Get(name)
 }
 
-func (c *cache) value(name string) (valueType, bool) {
-	c.mutex.RLock()
-	defer c.mutex.RUnlock()
-
-	v, ok := c.data[name]
-	return v, ok
-}
-
-func (c *cache) setValue(name string, value valueType) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-
-	c.data[name] = value
+func (c *cache) setValue(name string, value value) {
+	c.data.Add(name, value)
 }
 
 func (c *cache) delete(name string) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
+	c.data.Remove(name)
+}
 
-	if _, ok := c.data[name]; ok {
-		delete(c.data, name)
+// ClearUser 清除指定用户session
+// id 用户id
+func ClearUser(id int64) {
+	keys := data.Keys()
+	if keys == nil || len(keys) == 0 {
+		return
+	}
+
+	for _, key := range keys {
+		if value, r := data.Get(key); r {
+			var v = value[userSessionKey]
+			if user, r := v.(typ.User); r {
+				if user.Id == id {
+					data.Remove(key)
+				}
+			}
+		}
 	}
 }
 
-// copy: mod\github.com\quasoft\memstore@v0.0.0-20191010062613-2bce066d2b0b\memstore.go
+// --------------------------------- copy mod\github.com\quasoft\memstore@v0.0.0-20191010062613-2bce066d2b0b\memstore.go ---------------------------------
 
 // MemStore is an in-memory implementation of gorilla/sessions, suitable
 // for use in tests and development environments. Do not use in production.
@@ -65,9 +79,9 @@ type MemStore struct {
 	cache   *cache
 }
 
-var GlobalCache *cache
+var data *lru.Cache[string, value]
 
-type valueType map[interface{}]interface{}
+type value map[any]any
 
 // NewMemStore returns a new MemStore.
 //
@@ -85,16 +99,15 @@ type valueType map[interface{}]interface{}
 // Use the convenience function securecookie.GenerateRandomKey() to create
 // strong keys.
 func NewMemStore(keyPairs ...[]byte) *MemStore {
+	data, _ = lru.New[string, value](4)
 	store := MemStore{
 		Codecs: securecookie.CodecsFromPairs(keyPairs...),
 		Options: &sessions.Options{
 			Path:   "/",
 			MaxAge: 86400 * 30,
 		},
-		cache: newCache(),
+		cache: &cache{data: data},
 	}
-	GlobalCache = store.cache
-
 	store.MaxAge(store.Options.MaxAge)
 	return &store
 }
@@ -185,7 +198,7 @@ func (m *MemStore) MaxAge(age int) {
 	}
 }
 
-func (m *MemStore) copy(v valueType) valueType {
+func (m *MemStore) copy(v value) value {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 	dec := gob.NewDecoder(&buf)
@@ -193,12 +206,13 @@ func (m *MemStore) copy(v valueType) valueType {
 	if err != nil {
 		panic(fmt.Errorf("could not copy memstore value. Encoding to gob failed: %v", err))
 	}
-	var value valueType
-	err = dec.Decode(&value)
+
+	var val value
+	err = dec.Decode(&val)
 	if err != nil {
 		panic(fmt.Errorf("could not copy memstore value. Decoding from gob failed: %v", err))
 	}
-	return value
+	return val
 }
 
 // copy: mod\github.com\gin-contrib\sessions@v0.0.5\memstore\memstore.go

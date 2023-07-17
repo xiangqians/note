@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/memstore"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/text/language"
@@ -41,8 +40,6 @@ func permMiddleware(engine *gin.Engine) {
 			context.Next()
 			return
 		}
-
-		log.Println("--->GlobalCache: ", session.GlobalCache)
 
 		// 是否已登录
 		signIn := false
@@ -142,6 +139,7 @@ func i18nMiddleware(engine *gin.Engine) {
 	)))
 }
 
+// session中间件
 func sessionMiddleware(engine *gin.Engine) {
 	// 密钥
 	passwd := "$2a$10$NkWzRTyz1ZNnNfjLmxreaeZ31DCiwCEWJlXJAVDkG8fD9Ble2mg4K"
@@ -152,9 +150,11 @@ func sessionMiddleware(engine *gin.Engine) {
 	}
 	keyPairs := []byte(hash)[:32]
 
-	// 创建基于cookie的存储引擎
+	// session存储引擎支持：基于内存、redis、mysql等
+	// 1、创建基于cookie的存储引擎
 	//store := cookie.NewStore(keyPairs)
-	// 创建基于mem（内存）的存储引擎，其实就是一个 map[interface]interface 对象
+	// 2、创建基于mem（内存）的存储引擎，其实就是一个 map[interface]interface 对象
+	//store := memstore.NewStore(keyPairs)
 	store := session.NewStore(keyPairs)
 
 	// store配置
@@ -166,37 +166,6 @@ func sessionMiddleware(engine *gin.Engine) {
 	})
 
 	// 设置session中间件
-	// session中间件基于内存（其他存储引擎支持：redis、mysql等）实现
-	engine.Use(sessions.Sessions("NoteSessionId", // session & cookie 名称
-		store))
-}
-
-// session中间件
-func sessionMiddlewareBak(engine *gin.Engine) {
-	// 密钥
-	passwd := "$2a$10$NkWzRTyz1ZNnNfjLmxreaeZ31DCiwCEWJlXJAVDkG8fD9Ble2mg4K"
-	hash, err := bcrypt.Generate(passwd)
-	if err != nil {
-		log.Println(err)
-		hash = passwd
-	}
-	keyPairs := []byte(hash)[:32]
-
-	// 创建基于cookie的存储引擎
-	//store := cookie.NewStore(keyPairs)
-	// 创建基于mem（内存）的存储引擎，其实就是一个 map[interface]interface 对象
-	store := memstore.NewStore(keyPairs)
-
-	// store配置
-	store.Options(sessions.Options{
-		//Secure: true,
-		//SameSite: http.SameSiteNoneMode,
-		Path:   "/",
-		MaxAge: 60 * 60 * 12, // 12h，设置session过期时间，seconds
-	})
-
-	// 设置session中间件
-	// session中间件基于内存（其他存储引擎支持：redis、mysql等）实现
 	engine.Use(sessions.Sessions("NoteSessionId", // session & cookie 名称
 		store))
 }

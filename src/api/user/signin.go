@@ -18,6 +18,9 @@ func SignIn(context *gin.Context) {
 
 // SignIn0 登录
 func SignIn0(context *gin.Context) {
+
+	session.ClearUser(1)
+
 	// 保存用户信息到session
 	session.SetUser(context, typ.User{Abs: typ.Abs{Id: 1}, Name: "test", Nickname: "测试"})
 
