@@ -38,7 +38,7 @@ func Init(engine *gin.Engine) {
 		//Secure: true,
 		//SameSite: http.SameSiteNoneMode,
 		Path:   "/",
-		MaxAge: 60 * 60 * 12, // 12h，设置session过期时间，seconds
+		MaxAge: 60 * 60 * 12, // 设置session过期时间，单位：s，12h
 	})
 
 	// 设置session中间件
