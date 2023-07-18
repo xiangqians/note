@@ -4,7 +4,6 @@
 package log
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
 	"log"
@@ -22,7 +21,7 @@ func Init() {
 	}
 
 	// 创建日志文件夹，如果不存在的话
-	logDir := fmt.Sprintf("%s%s%s", curDir, util_os.FileSeparator(), "log")
+	logDir := curDir + util_os.FileSeparator() + "log"
 	fileInfo, err := os.Stat(logDir)
 	if err != nil || !fileInfo.IsDir() {
 		err = os.Mkdir(logDir, 0666)
@@ -32,13 +31,15 @@ func Init() {
 	}
 
 	// 创建日志文件（如果存在则覆盖）
-	logFile, err := os.Create(logDir + "/debug.log")
+	logFile, err := os.Create(logDir + util_os.FileSeparator() + "debug.log")
 	if err != nil {
 		panic(err)
 	}
 
-	// 设置gin日志默认输出到：日志文件和控制台
+	// 多重写入器：写到文件 & 写到控制台
 	writer := io.MultiWriter(logFile, os.Stdout)
+
+	// 设置gin日志默认输出到：日志文件和控制台
 	gin.DefaultWriter = writer
 
 	// 设置日志格式
@@ -47,6 +48,5 @@ func Init() {
 	// 设置日志输出
 	log.SetOutput(writer)
 
-	// print log dir
 	log.Printf("logDir: %s\n", logDir)
 }

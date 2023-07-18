@@ -52,6 +52,6 @@ func main() {
 	route.Init(engine)
 
 	// run
-	addr := fmt.Sprintf(":%d", arg.Arg.Port) // addr
+	addr := fmt.Sprintf(":%d", arg.Arg.Port)
 	engine.Run(addr)
 }
