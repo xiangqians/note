@@ -7,10 +7,13 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"note/src/arg"
+	"note/src/auth"
+	"note/src/i18n"
 	"note/src/local"
 	"note/src/log"
-	"note/src/middleware"
 	"note/src/route"
+	"note/src/session"
+	"note/src/static"
 	"note/src/template"
 )
 
@@ -33,10 +36,19 @@ func main() {
 	// 初始化模板
 	template.Init(engine)
 
-	// 初始化中间件
-	middleware.Init(engine)
+	// 初始化session
+	session.Init(engine)
 
-	// route
+	// 初始化i18n
+	i18n.Init(engine)
+
+	// 初始化静态资源
+	static.Init(engine)
+
+	// 初始化授权
+	auth.Init(engine)
+
+	// 初始化路由
 	route.Init(engine)
 
 	// run

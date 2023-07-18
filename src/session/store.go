@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/hashicorp/golang-lru/v2"
+	"log"
 	"net/http"
 	"note/src/typ"
 	"strings"
@@ -55,6 +56,7 @@ func ClearUser(id int64) {
 		return
 	}
 
+	log.Println(data.Values())
 	for _, key := range keys {
 		if value, r := data.Get(key); r {
 			var v = value[userSessionKey]
@@ -65,6 +67,7 @@ func ClearUser(id int64) {
 			}
 		}
 	}
+	log.Println(data.Values())
 }
 
 // --------------------------------- copy mod\github.com\quasoft\memstore@v0.0.0-20191010062613-2bce066d2b0b\memstore.go ---------------------------------
@@ -99,7 +102,7 @@ type value map[any]any
 // Use the convenience function securecookie.GenerateRandomKey() to create
 // strong keys.
 func NewMemStore(keyPairs ...[]byte) *MemStore {
-	data, _ = lru.New[string, value](4)
+	data, _ = lru.New[string, value](16)
 	store := MemStore{
 		Codecs: securecookie.CodecsFromPairs(keyPairs...),
 		Options: &sessions.Options{
