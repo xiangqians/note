@@ -14,16 +14,13 @@ import (
 	"runtime"
 )
 
-// OS 操作系统标识
 type OS int8
 
 const (
-	Windows OS = iota // Windows
-	Linux             // Linux
-	Unknown           // Unknown
+	Windows OS = iota
+	Linux
 )
 
-// _os 操作系统标识
 var _os OS
 
 // fileSeparator 文件分隔符
@@ -42,10 +39,6 @@ func init() {
 	case "android":
 		_os = Linux
 		fileSeparator = "/"
-
-	// unknown
-	default:
-		_os = Unknown
 	}
 }
 
@@ -59,9 +52,9 @@ func FileSeparator() string {
 	return fileSeparator
 }
 
-// notSupportedError 不支持当前系统错误
-func notSupportedError() error {
-	return errors.New(fmt.Sprintf("The current system is not supported, %v", runtime.GOOS))
+// CurrentOSNotSupportedError 当前操作系统不支持错误
+func CurrentOSNotSupportedError() error {
+	return errors.New(fmt.Sprintf("The current os is not supported, %v", runtime.GOOS))
 }
 
 // Cmd 执行命令
@@ -74,7 +67,7 @@ func Cmd(cmd string) (*exec.Cmd, error) {
 		return exec.Command("bash", "-c", cmd), nil
 
 	default:
-		return nil, notSupportedError()
+		return nil, CurrentOSNotSupportedError()
 	}
 }
 
@@ -88,7 +81,7 @@ func Cd(path string) (*exec.Cmd, error) {
 		return Cmd(fmt.Sprintf("cd %s", path))
 
 	default:
-		return nil, notSupportedError()
+		return nil, CurrentOSNotSupportedError()
 	}
 }
 
@@ -111,7 +104,7 @@ func DelDir(path string) error {
 	return os.RemoveAll(path)
 }
 
-// MkDir make directories，创建目录
+// MkDir (make directories) 创建目录
 func MkDir(path string) error {
 	return os.MkdirAll(path, os.ModePerm)
 }
@@ -126,25 +119,7 @@ func CopyDir(dstDir, srcDir string) (*exec.Cmd, error) {
 		return Cmd(fmt.Sprintf("cp -r %s %s", srcDir, dstDir))
 
 	default:
-		return nil, notSupportedError()
-	}
-}
-
-// DecodeBuf 解码buffer
-func DecodeBuf(buf []byte) string {
-	if buf == nil || len(buf) == 0 {
-		return ""
-	}
-
-	switch GetOS() {
-	// 解决windows乱码问题
-	// GB18030编码
-	case Windows:
-		var decodeBytes, _ = simplifiedchinese.GB18030.NewDecoder().Bytes(buf)
-		return string(decodeBytes)
-
-	default:
-		return string(buf)
+		return nil, CurrentOSNotSupportedError()
 	}
 }
 
@@ -263,4 +238,22 @@ func HumanizFileSize(size int64) string {
 
 	// B
 	return fmt.Sprintf("%d B", size)
+}
+
+// DecodeBuf 解码buffer
+func DecodeBuf(buf []byte) string {
+	if buf == nil || len(buf) == 0 {
+		return ""
+	}
+
+	switch GetOS() {
+	// 解决windows乱码问题
+	// GB18030编码
+	case Windows:
+		var decodeBytes, _ = simplifiedchinese.GB18030.NewDecoder().Bytes(buf)
+		return string(decodeBytes)
+
+	default:
+		return string(buf)
+	}
 }
