@@ -1,26 +1,25 @@
 // auth
 // @author xiangqian
 // @date 23:19 2023/07/18
-package auth
+package config
 
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"note/src/arg"
-	src_context "note/src/context"
+	context2 "note/src/context"
 	"note/src/session"
 	"strings"
 )
 
-// Init 初始化授权
-func Init(engine *gin.Engine) {
+// 初始化授权
+func initAuth(engine *gin.Engine) {
 	// 未授权拦截
 	engine.Use(func(context *gin.Context) {
 		// 请求路径
 		reqPath := context.Request.URL.Path
 
 		// 静态资源放行
-		if strings.HasPrefix(reqPath, arg.Arg.Path+"/static/") {
+		if strings.HasPrefix(reqPath, arg.Path+"/static/") {
 			context.Next()
 			return
 		}
@@ -33,13 +32,13 @@ func Init(engine *gin.Engine) {
 		}
 
 		// 用户登录和注册放行
-		if reqPath == arg.Arg.Path+"/user/signin" || // 登录页
-			reqPath == arg.Arg.Path+"/user/signup" || // 注册页
-			(context.Request.Method == http.MethodPost && (reqPath == arg.Arg.Path+"/user/signin0" || reqPath == arg.Arg.Path+"/user/signup0")) { // 登录接口和注册接口
+		if reqPath == arg.Path+"/user/signin" || // 登录页
+			reqPath == arg.Path+"/user/signup" || // 注册页
+			(context.Request.Method == http.MethodPost && (reqPath == arg.Path+"/user/signin0" || reqPath == arg.Path+"/user/signup0")) { // 登录接口和注册接口
 			// 如果已登录则重定向到首页
 			if signIn {
 				// 重定向到首页
-				src_context.Redirect(context, arg.Arg.Path+"/")
+				context2.Redirect(context, arg.Path+"/")
 				// 中止调用链
 				context.Abort()
 			} else
@@ -56,7 +55,7 @@ func Init(engine *gin.Engine) {
 			//context.Request.URL.Path = arg.Arg.Path+"/user/signin"
 			//engine.HandleContext(context)
 			// OR
-			src_context.Redirect(context, arg.Arg.Path+"/user/signin")
+			context2.Redirect(context, arg.Path+"/user/signin")
 			// 中止调用链
 			context.Abort()
 			return

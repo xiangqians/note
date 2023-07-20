@@ -1,7 +1,7 @@
 // store
 // @author xiangqian
 // @date 22:47 2023/05/28
-package session
+package config
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/golang-lru/v2"
 	"log"
 	"net/http"
-	"note/src/typ"
+	"note/src/api/user"
 	"strings"
 )
 
@@ -48,7 +48,7 @@ func ClearUser(id int64) {
 	for _, key := range keys {
 		if value, r := data.Get(key); r {
 			var v = value[userSessionKey]
-			if user, r := v.(typ.User); r {
+			if user, r := v.(user.User); r {
 				if user.Id == id {
 					data.Remove(key)
 				}

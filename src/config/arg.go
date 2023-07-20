@@ -1,7 +1,7 @@
 // arg
 // @author xiangqian
 // @date 19:47 2023/07/10
-package arg
+package config
 
 import (
 	"flag"
@@ -12,10 +12,14 @@ import (
 	"strings"
 )
 
-var Arg typ.Arg
+var arg typ.Arg
 
-// Init 初始化应用参数
-func Init() {
+func GetArg() typ.Arg {
+	return arg
+}
+
+// 初始化应用参数
+func initArg() {
 	var loc string
 	var port int
 	var path string
@@ -49,12 +53,12 @@ func Init() {
 	// 获取绝对路径
 	dataDir, _ = filepath.Abs(dataDir)
 
-	Arg = typ.Arg{
+	arg = typ.Arg{
 		Loc:      loc,
 		Port:     port,
 		Path:     path,
 		DataDir:  dataDir,
 		AllowReg: allowReg,
 	}
-	log.Println(Arg)
+	log.Println(arg)
 }

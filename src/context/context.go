@@ -4,6 +4,7 @@
 package context
 
 import (
+	"encoding/gob"
 	"errors"
 	"fmt"
 	"github.com/gin-contrib/i18n"
@@ -16,7 +17,7 @@ import (
 	en_trans "github.com/go-playground/validator/v10/translations/en"
 	zh_trans "github.com/go-playground/validator/v10/translations/zh"
 	"net/http"
-	"note/src/arg"
+	"note/src/config"
 	"note/src/session"
 	"note/src/typ"
 	"note/src/util/time"
@@ -25,20 +26,30 @@ import (
 	"strings"
 )
 
+// Resp 响应数据
+type Resp[T any] struct {
+	Msg  string `json:"msg"`  // 消息（没有消息就是最好的消息）
+	Data T      `json:"data"` // 数据
+}
+
 var (
 	zhTrans ut.Translator
 	enTrans ut.Translator
 )
 
 func init() {
+	// 初始化翻译器
 	translator()
+
+	// 注册模型
+	gob.Register(Resp[any]{})
 }
 
-func HtmlNotFound[T any](context *gin.Context, name string, resp typ.Resp[T]) {
+func HtmlNotFound[T any](context *gin.Context, name string, resp Resp[T]) {
 	Html[T](context, http.StatusNotFound, name, resp)
 }
 
-func HtmlOk[T any](context *gin.Context, name string, resp typ.Resp[T]) {
+func HtmlOk[T any](context *gin.Context, name string, resp Resp[T]) {
 	Html[T](context, http.StatusOK, name, resp)
 }
 
@@ -47,25 +58,25 @@ func HtmlOk[T any](context *gin.Context, name string, resp typ.Resp[T]) {
 // code   : http code
 // name   : templateName
 // resp   : response
-func Html[T any](context *gin.Context, code int, name string, resp typ.Resp[T]) {
+func Html[T any](context *gin.Context, code int, name string, resp Resp[T]) {
 	user, _ := session.GetUser(context)
 	context.HTML(code, name, gin.H{
 		"resp": resp,                       // 响应数据
 		"url":  context.Request.RequestURI, // 请求url地址
 		"user": user,                       // 登录用户信息
-		"arg":  arg.Arg,                    // 应用参数
+		"arg":  config.GetArg(),            // 应用参数
 	})
 }
 
-func JsonBadRequest[T any](context *gin.Context, resp typ.Resp[T]) {
+func JsonBadRequest[T any](context *gin.Context, resp Resp[T]) {
 	Json(context, http.StatusBadRequest, resp)
 }
 
-func JsonOk[T any](context *gin.Context, resp typ.Resp[T]) {
+func JsonOk[T any](context *gin.Context, resp Resp[T]) {
 	Json(context, http.StatusOK, resp)
 }
 
-func Json[T any](context *gin.Context, code int, resp typ.Resp[T]) {
+func Json[T any](context *gin.Context, code int, resp Resp[T]) {
 	context.JSON(code, resp)
 }
 
@@ -138,7 +149,7 @@ func ShouldBind(context *gin.Context, i any) error {
 	return err
 }
 
-// translator 检验器翻译
+// translator 翻译器
 func translator() {
 	if v, r := binding.Validator.Engine().(*validator.Validate); r {
 		uni := ut.New(zh.New(), // 备用语言

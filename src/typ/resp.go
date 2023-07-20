@@ -1,4 +1,4 @@
-// response type
+// response
 // @author xiangqian
 // @date 20:24 2023/03/22
 package typ

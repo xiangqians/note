@@ -11,7 +11,7 @@ import (
 
 // SignUp 注册页
 func SignUp(context *gin.Context) {
-	src_context.HtmlOk(context, "user/signup", typ.Resp[typ.User]{})
+	src_context.HtmlOk(context, "user/signup", src_context.Resp[typ.User]{})
 }
 
 // SignUp0 注册

@@ -1,4 +1,4 @@
-// user类型
+// user
 // @author xiangqian
 // @date 20:35 2023/06/10
 package typ

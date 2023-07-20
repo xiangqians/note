@@ -1,7 +1,7 @@
 // Template
 // @author xiangqian
 // @date 21:45 2022/12/23
-package template
+package config
 
 import (
 	"fmt"
@@ -17,8 +17,8 @@ import (
 	"strings"
 )
 
-// Init 初始化模板（HTML模板）
-func Init(engine *gin.Engine) {
+// 初始化模板（HTML模板）
+func initTemplate(engine *gin.Engine) {
 	// 自定义模板函数
 	customTemplateFunc(engine)
 

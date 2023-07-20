@@ -1,7 +1,7 @@
 // i18n
 // @author xiangqian
 // @date 23:16 2023/07/18
-package i18n
+package config
 
 import (
 	"encoding/json"
@@ -13,9 +13,9 @@ import (
 	"strings"
 )
 
-// Init 初始化i18n
+// 初始化i18n
 // https://github.com/gin-contrib/i18n
-func Init(engine *gin.Engine) {
+func initI18n(engine *gin.Engine) {
 	engine.Use(i18n.Localize(i18n.WithBundle(&i18n.BundleCfg{
 		RootPath:         "./res/i18n",
 		AcceptLanguage:   []language.Tag{language.Chinese, language.English},
@@ -23,15 +23,15 @@ func Init(engine *gin.Engine) {
 		UnmarshalFunc:    json.Unmarshal,
 		FormatBundleFile: "json",
 	}), i18n.WithGetLngHandle(
-		func(context *gin.Context, defaultLang string) string {
+		func(ctx *gin.Context, defaultLang string) string {
 			// 从url中获取lang
-			lang := strings.ToLower(strings.TrimSpace(context.Query("lang")))
+			lang := strings.ToLower(strings.TrimSpace(ctx.Query("lang")))
 			if lang != "" && !(lang == typ.Zh || lang == typ.En) {
 				lang = ""
 			}
 
 			// 从session中获取lang
-			sessionLang, err := session.Get[string](context, "lang", false)
+			sessionLang, err := session.Get[string](ctx, "lang", false)
 			if err != nil {
 				sessionLang = ""
 			}
@@ -42,7 +42,7 @@ func Init(engine *gin.Engine) {
 			// 从请求头获取 Accept-Language
 			if lang == "" {
 				// 从请求头获取 Accept-Language
-				acceptLanguage := context.GetHeader("Accept-Language")
+				acceptLanguage := ctx.GetHeader("Accept-Language")
 				// en,zh-CN;q=0.9,zh;q=0.8
 				if strings.HasPrefix(acceptLanguage, typ.Zh) {
 					lang = typ.Zh
@@ -58,7 +58,7 @@ func Init(engine *gin.Engine) {
 
 			// 存储lang到session
 			if sessionLang != lang {
-				session.Set(context, "lang", lang)
+				session.Set(ctx, "lang", lang)
 			}
 
 			return lang

@@ -1,7 +1,7 @@
 // log
 // @author xiangqian
 // @date 19:45 2023/07/10
-package log
+package config
 
 import (
 	"github.com/gin-gonic/gin"
@@ -12,8 +12,8 @@ import (
 	"path/filepath"
 )
 
-// Init 初始化日志记录器
-func Init() {
+// 初始化日志记录器
+func initLog() {
 	// current directory
 	curDir, err := filepath.Abs("./")
 	if err != nil {

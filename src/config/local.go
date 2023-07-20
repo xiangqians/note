@@ -1,19 +1,18 @@
-// local
+// config
 // @author xiangqian
 // @date 19:49 2023/07/10
-package local
+package config
 
 import (
 	"log"
-	"note/src/arg"
 	"time"
 )
 
-// Init 初始化时区
-func Init() {
-	loc, err := time.LoadLocation(arg.Arg.Loc)
+// 初始化时区
+func initLocal() {
+	loc, err := time.LoadLocation(arg.Loc)
 	if err != nil {
-		log.Println(arg.Arg.Loc, err)
+		log.Println(arg.Loc, err)
 
 		// GoLang time 包默认是UTC
 		loc = time.UTC

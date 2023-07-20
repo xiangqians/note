@@ -1,4 +1,4 @@
-// abs类型
+// abs
 // @author xiangqian
 // @date 20:34 2023/06/10
 package typ
