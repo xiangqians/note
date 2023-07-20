@@ -14,7 +14,8 @@ import (
 	"github.com/hashicorp/golang-lru/v2"
 	"log"
 	"net/http"
-	"note/src/api/user"
+	"note/src/session"
+	"note/src/typ"
 	"strings"
 )
 
@@ -47,8 +48,8 @@ func ClearUser(id int64) {
 	log.Println(data.Values())
 	for _, key := range keys {
 		if value, r := data.Get(key); r {
-			var v = value[userSessionKey]
-			if user, r := v.(user.User); r {
+			var v = value[session.UserKey]
+			if user, r := v.(typ.User); r {
 				if user.Id == id {
 					data.Remove(key)
 				}

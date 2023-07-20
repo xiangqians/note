@@ -6,6 +6,7 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"note/src/api"
 	"note/src/config"
 )
 
@@ -22,7 +23,8 @@ func main() {
 	// 初始化Engine配置
 	config.InitEngine(engine)
 
-	// 初始化路由
+	// 初始API
+	api.Init(engine)
 
 	// run
 	addr := fmt.Sprintf(":%d", config.GetArg().Port)

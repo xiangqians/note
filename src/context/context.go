@@ -4,7 +4,6 @@
 package context
 
 import (
-	"encoding/gob"
 	"errors"
 	"fmt"
 	"github.com/gin-contrib/i18n"
@@ -26,12 +25,6 @@ import (
 	"strings"
 )
 
-// Resp 响应数据
-type Resp[T any] struct {
-	Msg  string `json:"msg"`  // 消息（没有消息就是最好的消息）
-	Data T      `json:"data"` // 数据
-}
-
 var (
 	zhTrans ut.Translator
 	enTrans ut.Translator
@@ -40,16 +33,13 @@ var (
 func init() {
 	// 初始化翻译器
 	translator()
-
-	// 注册模型
-	gob.Register(Resp[any]{})
 }
 
-func HtmlNotFound[T any](context *gin.Context, name string, resp Resp[T]) {
+func HtmlNotFound[T any](context *gin.Context, name string, resp typ.Resp[T]) {
 	Html[T](context, http.StatusNotFound, name, resp)
 }
 
-func HtmlOk[T any](context *gin.Context, name string, resp Resp[T]) {
+func HtmlOk[T any](context *gin.Context, name string, resp typ.Resp[T]) {
 	Html[T](context, http.StatusOK, name, resp)
 }
 
@@ -58,7 +48,7 @@ func HtmlOk[T any](context *gin.Context, name string, resp Resp[T]) {
 // code   : http code
 // name   : templateName
 // resp   : response
-func Html[T any](context *gin.Context, code int, name string, resp Resp[T]) {
+func Html[T any](context *gin.Context, code int, name string, resp typ.Resp[T]) {
 	user, _ := session.GetUser(context)
 	context.HTML(code, name, gin.H{
 		"resp": resp,                       // 响应数据
@@ -68,15 +58,15 @@ func Html[T any](context *gin.Context, code int, name string, resp Resp[T]) {
 	})
 }
 
-func JsonBadRequest[T any](context *gin.Context, resp Resp[T]) {
+func JsonBadRequest[T any](context *gin.Context, resp typ.Resp[T]) {
 	Json(context, http.StatusBadRequest, resp)
 }
 
-func JsonOk[T any](context *gin.Context, resp Resp[T]) {
+func JsonOk[T any](context *gin.Context, resp typ.Resp[T]) {
 	Json(context, http.StatusOK, resp)
 }
 
-func Json[T any](context *gin.Context, code int, resp Resp[T]) {
+func Json[T any](context *gin.Context, code int, resp typ.Resp[T]) {
 	context.JSON(code, resp)
 }
 
@@ -170,7 +160,7 @@ func translator() {
 // transErr 翻译异常
 func transErr(context *gin.Context, err error) error {
 	if errs, r := err.(validator.ValidationErrors); r {
-		session := session.Session(context)
+		session := session.Default(context)
 		lang := ""
 		if v, r := session.Get("lang").(string); r {
 			lang = v

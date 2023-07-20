@@ -8,18 +8,22 @@ import (
 	"note/src/api/index"
 	"note/src/api/user"
 	"note/src/config"
+	"note/src/context"
+	"note/src/typ"
 )
 
-// Init 初始化路由
+// Init 初始化API
 func Init(engine *gin.Engine) {
 	// 设置默认路由
-	engine.NoRoute(func(context *gin.Context) {
-		resp := context.Resp[any]{}
-		context.HtmlNotFound(context, "404", resp)
+	engine.NoRoute(func(ctx *gin.Context) {
+		resp := typ.Resp[any]{}
+		context.HtmlNotFound(ctx, "404", resp)
 	})
 
+	path := config.GetArg().Path
+
 	// user
-	userGroup := engine.Group(config.Get().Path + "/user")
+	userGroup := engine.Group(path + "/user")
 	{
 		userGroup.Any("/signin", user.SignIn)
 		userGroup.POST("/signin0", user.SignIn0)
@@ -31,6 +35,6 @@ func Init(engine *gin.Engine) {
 	}
 
 	// index
-	engine.Any(Arg.Path+"/", index.Index)
+	engine.Any(path+"/", index.Index)
 
 }

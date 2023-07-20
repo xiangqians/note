@@ -30,7 +30,7 @@ func SetUser(ctx *gin.Context, user typ.User) {
 
 // Set 设置session <k, v>
 func Set(ctx *gin.Context, key string, value any) {
-	session := Session(ctx)
+	session := Default(ctx)
 	session.Set(key, value)
 	session.Save()
 }
@@ -39,7 +39,7 @@ func Set(ctx *gin.Context, key string, value any) {
 // key: key
 // del: 是否删除session中的key
 func Get[T any](ctx *gin.Context, key any, del bool) (T, error) {
-	session := Session(ctx)
+	session := Default(ctx)
 	value := session.Get(key)
 	if del {
 		session.Delete(key)
@@ -59,7 +59,7 @@ func Get[T any](ctx *gin.Context, key any, del bool) (T, error) {
 // Clear 清空session
 func Clear(ctx *gin.Context) {
 	// 解析session
-	session := Session(ctx)
+	session := Default(ctx)
 
 	// 清除session
 	session.Clear()
@@ -68,7 +68,7 @@ func Clear(ctx *gin.Context) {
 	session.Save()
 }
 
-// Session 获取session
-func Session(ctx *gin.Context) sessions.Session {
+// Default 获取session
+func Default(ctx *gin.Context) sessions.Session {
 	return sessions.Default(ctx)
 }
