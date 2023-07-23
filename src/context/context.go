@@ -32,65 +32,78 @@ var (
 
 func init() {
 	// 初始化翻译器
-	translator()
+	if v, r := binding.Validator.Engine().(*validator.Validate); r {
+		uni := ut.New(zh.New(), // 备用语言
+			// 支持的语言
+			zh.New(),
+			en.New())
+		if trans, r := uni.GetTranslator(typ.Zh); r {
+			zh_trans.RegisterDefaultTranslations(v, trans)
+			zhTrans = trans
+		}
+		if trans, r := uni.GetTranslator(typ.En); r {
+			en_trans.RegisterDefaultTranslations(v, trans)
+			enTrans = trans
+		}
+	}
 }
 
-func HtmlNotFound[T any](context *gin.Context, name string, resp typ.Resp[T]) {
-	Html[T](context, http.StatusNotFound, name, resp)
+func HtmlNotFound[T any](ctx *gin.Context, name string, resp typ.Resp[T]) {
+	Html[T](ctx, http.StatusNotFound, name, resp)
 }
 
-func HtmlOk[T any](context *gin.Context, name string, resp typ.Resp[T]) {
-	Html[T](context, http.StatusOK, name, resp)
+func HtmlOk[T any](ctx *gin.Context, name string, resp typ.Resp[T]) {
+	Html[T](ctx, http.StatusOK, name, resp)
 }
 
 // Html
-// context: Context
-// code   : http code
-// name   : templateName
-// resp   : response
-func Html[T any](context *gin.Context, code int, name string, resp typ.Resp[T]) {
-	user, _ := session.GetUser(context)
-	context.HTML(code, name, gin.H{
-		"resp": resp,                       // 响应数据
-		"url":  context.Request.RequestURI, // 请求url地址
-		"user": user,                       // 登录用户信息
-		"arg":  config.GetArg(),            // 应用参数
+// ctx  : Context
+// code : http code
+// name : templateName
+// resp : response
+func Html[T any](ctx *gin.Context, code int, name string, resp typ.Resp[T]) {
+	user, _ := session.GetUser(ctx)
+	ctx.HTML(code, name, gin.H{
+		"resp": resp,                   // 响应数据
+		"url":  ctx.Request.RequestURI, // 请求url地址
+		"user": user,                   // 登录用户信息
+		"arg":  config.GetArg(),        // 应用参数
 	})
 }
 
-func JsonBadRequest[T any](context *gin.Context, resp typ.Resp[T]) {
-	Json(context, http.StatusBadRequest, resp)
+func JsonBadRequest[T any](ctx *gin.Context, resp typ.Resp[T]) {
+	Json(ctx, http.StatusBadRequest, resp)
 }
 
-func JsonOk[T any](context *gin.Context, resp typ.Resp[T]) {
-	Json(context, http.StatusOK, resp)
+func JsonOk[T any](ctx *gin.Context, resp typ.Resp[T]) {
+	Json(ctx, http.StatusOK, resp)
 }
 
-func Json[T any](context *gin.Context, code int, resp typ.Resp[T]) {
-	context.JSON(code, resp)
+func Json[T any](ctx *gin.Context, code int, resp typ.Resp[T]) {
+	ctx.JSON(code, resp)
 }
 
-func Redirect(context *gin.Context, location string) {
+func Redirect(ctx *gin.Context, location string) {
 	if strings.Contains(location, "?") {
 		location = fmt.Sprintf("%s&t=%d", location, time.NowUnix())
 	} else {
 		location = fmt.Sprintf("%s?t=%d", location, time.NowUnix())
 	}
-	context.Redirect(http.StatusMovedPermanently, location)
+	ctx.Redirect(http.StatusMovedPermanently, location)
 }
 
-func PostForm[T any](context *gin.Context, key string) (T, error) {
-	value := context.PostForm(key)
+func PostForm[T any](ctx *gin.Context, key string) (T, error) {
+	value := ctx.PostForm(key)
 	return convStrToType[T](value)
 }
 
-func Param[T any](context *gin.Context, key string) (T, error) {
-	value := context.Param(key)
+func Param[T any](ctx *gin.Context, key string) (T, error) {
+	value := ctx.Param(key)
 	return convStrToType[T](value)
 }
 
-func Query[T any](context *gin.Context, key string) (T, error) {
-	value := context.Query(key)
+func Query[T any](ctx *gin.Context, key string) (T, error) {
+	value := ctx.Query(key)
 	return convStrToType[T](value)
 }
 
@@ -123,44 +136,26 @@ func convStrToType[T any](value string) (T, error) {
 	return t, errors.New(fmt.Sprintf("This type does not support conversion: %v", rflVal.Type().Kind()))
 }
 
-func ShouldBindQuery(context *gin.Context, i any) error {
-	err := context.ShouldBindQuery(i)
+func ShouldBindQuery(ctx *gin.Context, i any) error {
+	err := ctx.ShouldBindQuery(i)
 	if err != nil {
-		err = transErr(context, err)
+		err = transErr(ctx, err)
 	}
 	return err
 }
 
-func ShouldBind(context *gin.Context, i any) error {
-	err := context.ShouldBind(i)
+func ShouldBind(ctx *gin.Context, i any) error {
+	err := ctx.ShouldBind(i)
 	if err != nil {
-		err = transErr(context, err)
+		err = transErr(ctx, err)
 	}
 	return err
-}
-
-// translator 翻译器
-func translator() {
-	if v, r := binding.Validator.Engine().(*validator.Validate); r {
-		uni := ut.New(zh.New(), // 备用语言
-			// 支持的语言
-			zh.New(),
-			en.New())
-		if trans, r := uni.GetTranslator(typ.Zh); r {
-			zh_trans.RegisterDefaultTranslations(v, trans)
-			zhTrans = trans
-		}
-		if trans, r := uni.GetTranslator(typ.En); r {
-			en_trans.RegisterDefaultTranslations(v, trans)
-			enTrans = trans
-		}
-	}
 }
 
 // transErr 翻译异常
-func transErr(context *gin.Context, err error) error {
+func transErr(ctx *gin.Context, err error) error {
 	if errs, r := err.(validator.ValidationErrors); r {
-		session := session.Default(context)
+		session := session.Default(ctx)
 		lang := ""
 		if v, r := session.Get("lang").(string); r {
 			lang = v

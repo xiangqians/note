@@ -15,6 +15,7 @@ import (
 // 初始化授权
 func initAuth(engine *gin.Engine) {
 
+	// 根路径
 	path := arg.Path
 
 	// 未授权拦截
