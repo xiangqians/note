@@ -1,7 +1,7 @@
-// config
+// app
 // @author xiangqian
 // @date 19:49 2023/07/10
-package config
+package app
 
 import (
 	"log"

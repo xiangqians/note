@@ -1,7 +1,7 @@
 // i18n
 // @author xiangqian
 // @date 23:16 2023/07/18
-package config
+package app
 
 import (
 	"encoding/json"

@@ -5,7 +5,7 @@ package user
 
 import (
 	"github.com/gin-gonic/gin"
-	"note/src/config"
+	"note/src/app"
 	"note/src/context"
 	"note/src/session"
 	"note/src/typ"
@@ -19,11 +19,11 @@ func SignIn(ctx *gin.Context) {
 // SignIn0 登录
 func SignIn0(ctx *gin.Context) {
 
-	config.ClearUser(1)
+	app.ClearUser(1)
 
 	// 保存用户信息到session
 	session.SetUser(ctx, typ.User{Abs: typ.Abs{Id: 1}, Name: "test", Nickname: "测试"})
 
 	// 重定向到首页
-	context.Redirect(ctx, config.GetArg().Path+"/")
+	context.Redirect(ctx, app.GetArg().Path+"/")
 }

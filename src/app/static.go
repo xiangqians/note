@@ -1,7 +1,7 @@
 // static
 // @author xiangqian
 // @date 23:17 2023/07/18
-package config
+package app
 
 import (
 	"github.com/gin-contrib/static"

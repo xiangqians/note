@@ -1,7 +1,7 @@
 // store
 // @author xiangqian
 // @date 22:47 2023/05/28
-package config
+package app
 
 import (
 	"bytes"

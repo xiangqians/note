@@ -1,14 +1,14 @@
-// config
+// app
 // @author xiangqian
 // @date 22:39 2023/07/20
-package config
+package app
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
-// Init 初始化配置
-func Init() {
+func New() *gin.Engine {
 	// 初始化日志记录器
 	initLog()
 
@@ -17,10 +17,13 @@ func Init() {
 
 	// 初始化时区
 	initLocal()
-}
 
-// InitEngine 初始化Engine配置
-func InitEngine(engine *gin.Engine) {
+	// 设置gin模式
+	gin.SetMode(gin.DebugMode)
+
+	// 创建默认Engine
+	engine := gin.Default()
+
 	// 初始化模板
 	initTemplate(engine)
 
@@ -35,4 +38,11 @@ func InitEngine(engine *gin.Engine) {
 
 	// 初始化授权
 	initAuth(engine)
+
+	return engine
+}
+
+func Run(engine *gin.Engine) {
+	addr := fmt.Sprintf(":%d", arg.Port)
+	engine.Run(addr)
 }

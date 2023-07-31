@@ -1,7 +1,7 @@
 // Template
 // @author xiangqian
 // @date 21:45 2022/12/23
-package config
+package app
 
 import (
 	"fmt"

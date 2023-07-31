@@ -1,7 +1,7 @@
 // auth
 // @author xiangqian
 // @date 23:19 2023/07/18
-package config
+package app
 
 import (
 	"fmt"

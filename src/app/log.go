@@ -1,7 +1,7 @@
 // log
 // @author xiangqian
 // @date 19:45 2023/07/10
-package config
+package app
 
 import (
 	"github.com/gin-gonic/gin"

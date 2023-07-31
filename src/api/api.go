@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"note/src/api/index"
 	"note/src/api/user"
-	"note/src/config"
+	"note/src/app"
 	"note/src/context"
 	"note/src/typ"
 )
@@ -20,7 +20,7 @@ func Init(engine *gin.Engine) {
 		context.HtmlNotFound(ctx, "404", resp)
 	})
 
-	path := config.GetArg().Path
+	path := app.GetArg().Path
 
 	// user
 	userGroup := engine.Group(path + "/user")

@@ -16,7 +16,7 @@ import (
 	en_trans "github.com/go-playground/validator/v10/translations/en"
 	zh_trans "github.com/go-playground/validator/v10/translations/zh"
 	"net/http"
-	"note/src/config"
+	"note/src/app"
 	"note/src/session"
 	"note/src/typ"
 	"note/src/util/time"
@@ -67,7 +67,7 @@ func Html[T any](ctx *gin.Context, code int, name string, resp typ.Resp[T]) {
 		"resp": resp,                   // 响应数据
 		"url":  ctx.Request.RequestURI, // 请求url地址
 		"user": user,                   // 登录用户信息
-		"arg":  config.GetArg(),        // 应用参数
+		"arg":  app.GetArg(),           // 应用参数
 	})
 }
 

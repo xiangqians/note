@@ -1,7 +1,7 @@
 // arg
 // @author xiangqian
 // @date 19:47 2023/07/10
-package config
+package app
 
 import (
 	"flag"

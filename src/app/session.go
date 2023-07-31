@@ -1,7 +1,7 @@
 // session
 // @author xiangqian
 // @date 20:01 2023/03/22
-package config
+package app
 
 import (
 	"github.com/gin-contrib/sessions"
