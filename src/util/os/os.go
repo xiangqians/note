@@ -12,44 +12,44 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 )
 
-type OS int8
-
-const (
-	Windows OS = iota
-	Linux
-)
-
-var _os OS
-
-// fileSeparator 文件分隔符
-var fileSeparator string
+var isWindows = false
+var isLinux = false
 
 func init() {
 	switch runtime.GOOS {
 	// windows
 	case "windows":
-		_os = Windows
-		fileSeparator = "\\"
+		isWindows = true
 
 	// linux
 	case "linux":
 		fallthrough // 执行穿透
 	case "android":
-		_os = Linux
-		fileSeparator = "/"
+		isLinux = true
 	}
 }
 
-// GetOS 获取操作系统标识
-func GetOS() OS {
-	return _os
+func IsWindows() bool {
+	return isWindows
 }
 
-// FileSeparator 获取文件分隔符
-func FileSeparator() string {
-	return fileSeparator
+func IsLinux() bool {
+	return isLinux
+}
+
+func Path(more ...string) string {
+	//if isWindows {
+	//	return strings.Join(more, "\\")
+	//}
+
+	if isLinux {
+		return strings.Join(more, "/")
+	}
+
+	panic(CurrentOSNotSupportedError())
 }
 
 // CurrentOSNotSupportedError 当前操作系统不支持错误
@@ -59,30 +59,28 @@ func CurrentOSNotSupportedError() error {
 
 // Cmd 执行命令
 func Cmd(cmd string) (*exec.Cmd, error) {
-	switch GetOS() {
-	case Windows:
+	if isWindows {
 		return exec.Command("cmd", "/C", cmd), nil
-
-	case Linux:
-		return exec.Command("bash", "-c", cmd), nil
-
-	default:
-		return nil, CurrentOSNotSupportedError()
 	}
+
+	if isLinux {
+		return exec.Command("bash", "-c", cmd), nil
+	}
+
+	return nil, CurrentOSNotSupportedError()
 }
 
 // Cd 执行cd命令
 func Cd(path string) (*exec.Cmd, error) {
-	switch GetOS() {
-	case Windows:
+	if isWindows {
 		return Cmd(fmt.Sprintf("cd /d %s", path))
-
-	case Linux:
-		return Cmd(fmt.Sprintf("cd %s", path))
-
-	default:
-		return nil, CurrentOSNotSupportedError()
 	}
+
+	if isLinux {
+		return Cmd(fmt.Sprintf("cd %s", path))
+	}
+
+	return nil, CurrentOSNotSupportedError()
 }
 
 // IsExist 判断所给路径（文件/文件夹）是否存在
@@ -94,50 +92,60 @@ func IsExist(path string) bool {
 	return true
 }
 
-// DelFile 删除文件
-func DelFile(path string) error {
+// Rm 删除普通文件或者目录文件
+func Rm(path string) error {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+
+	// 删除目录文件
+	if fileInfo.IsDir() {
+		return os.RemoveAll(path)
+	}
+
+	// 删除普通文件
 	return os.Remove(path)
 }
 
-// DelDir 删除文件夹
-func DelDir(path string) error {
-	return os.RemoveAll(path)
+// MkDir (make directories) 创建目录文件
+func MkDir(path string) error {
+	return os.MkdirAll(path, os.ModePerm) // 0777
 }
 
-// MkDir (make directories) 创建目录
-func MkDir(path string) error {
-	return os.MkdirAll(path, os.ModePerm)
+// Cp 拷贝
+func Cp(srcPath, dstPath string) (*exec.Cmd, error) {
+
 }
 
 // CopyDir 拷贝目录
-func CopyDir(dstDir, srcDir string) (*exec.Cmd, error) {
-	switch GetOS() {
-	case Windows:
-		return Cmd(fmt.Sprintf("xcopy %s %s /s /e /h /i /y", srcDir, dstDir))
-
-	case Linux:
-		return Cmd(fmt.Sprintf("cp -r %s %s", srcDir, dstDir))
-
-	default:
-		return nil, CurrentOSNotSupportedError()
+func CopyDir(srcPath, dstPath string) (*exec.Cmd, error) {
+	if isWindows {
+		return Cmd(fmt.Sprintf("xcopy %s %s /s /e /h /i /y", srcPath, dstPath))
 	}
+
+	if isLinux {
+		return Cmd(fmt.Sprintf("cp -r %s %s", srcPath, dstPath))
+	}
+
+	return nil, CurrentOSNotSupportedError()
 }
 
 // CopyFile 拷贝文件
-func CopyFile(dstPath, srcPath string) (int64, error) {
-	// dst
-	dst, err := os.Create(dstPath)
-	if err != nil {
-		return 0, err
-	}
-	defer dst.Close()
-
+func CopyFile(srcPath, dstPath string) (int64, error) {
 	// src
 	src, err := os.Open(srcPath)
 	if err != nil {
 		return 0, err
 	}
 	defer src.Close()
+
+	// dst
+	dst, err := os.Create(dstPath)
+	if err != nil {
+		return 0, err
+	}
+	defer dst.Close()
 
 	// copy
 	return io.Copy(dst, src)
