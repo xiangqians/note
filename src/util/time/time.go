@@ -29,10 +29,10 @@ func HumanizUnix(unix int64) string {
 
 	// hour
 	hour := int64(duration.Hours())
+	if hour >= 24 {
+		return FormatTime(t)
+	}
 	if hour >= 1 {
-		if hour >= 24 {
-			return FormatTime(t)
-		}
 		return format("i18n.nHoursAgo", hour)
 	}
 
