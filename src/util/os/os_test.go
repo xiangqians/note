@@ -37,3 +37,19 @@ func TestStat(t *testing.T) {
 		fmt.Println()
 	}
 }
+
+func TestMkDir(t *testing.T) {
+	path := Path("C:\\Users\\xiangqian\\Desktop\\tmp", "note2023")
+	err := MkDir(path)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func TestRm(t *testing.T) {
+	path := Path("C:\\Users\\xiangqian\\Desktop\\tmp", "note2023")
+	err := Rm(path)
+	if err != nil {
+		fmt.Println(err)
+	}
+}

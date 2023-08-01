@@ -115,23 +115,24 @@ func Stat(path string) File {
 }
 
 // MkDir (make directories) 创建目录文件
-//func MkDir(path string) error {
-//	if IsExist(path) {
-//		return nil
-//	}
-//
-//	return os.MkdirAll(path, os.ModePerm) // 0777
-//}
+func MkDir(path string) error {
+	file := Stat(path)
+	if file.IsExist() {
+		return errors.New(fmt.Sprintf("File exists, %s", path))
+	}
 
-// Rm 删除普通文件或者目录文件
+	return os.MkdirAll(path, os.ModePerm) // 0777
+}
+
+// Rm 删除文件（普通文件或者目录文件）
 func Rm(path string) error {
-	fileInfo, err := os.Stat(path)
-	if err != nil {
-		return err
+	file := Stat(path)
+	if !file.IsExist() {
+		return errors.New(fmt.Sprintf("File not found, %s", path))
 	}
 
 	// 删除目录文件
-	if fileInfo.IsDir() {
+	if file.IsDir() {
 		return os.RemoveAll(path)
 	}
 
