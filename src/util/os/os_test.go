@@ -9,8 +9,8 @@ import (
 )
 
 func TestOSType(t *testing.T) {
-	fmt.Println("IsWindows:", IsWindows())
-	fmt.Println("IsLinux:", IsLinux())
+	fmt.Println("IsWindows:\t", IsWindows())
+	fmt.Println("IsLinux:\t", IsLinux())
 }
 
 func TestPath(t *testing.T) {
@@ -21,15 +21,19 @@ func TestPath(t *testing.T) {
 func TestStat(t *testing.T) {
 	paths := []string{
 		"C:\\Users\\xiangqian\\Desktop\\tmp",
-		"C:\\Users\\xiangqian\\Desktop\\tmp\\apache-maven-3.0.5-bin.tar.gz",
+		Path("C:\\Users\\xiangqian\\Desktop\\tmp", "apache-maven-3.0.5-bin.tar.gz"),
+		Path("C:\\Users\\xiangqian\\Desktop\\tmp", "apache-maven-3.0.5-bin.tar.gz1"),
 	}
 
 	for _, path := range paths {
 		file := Stat(path)
-		fmt.Println("path:", path)
+		fmt.Println("---------", path, "---------")
 		fmt.Println("IsExist:", file.IsExist())
-		fmt.Println("IsDir:", file.IsDir())
-		fmt.Println("Size:", file.Size())
+		if file.IsExist() {
+			fmt.Println("Name:", file.Name())
+			fmt.Println("Size:", file.Size())
+			fmt.Println("IsDir:", file.IsDir())
+		}
 		fmt.Println()
 	}
 }

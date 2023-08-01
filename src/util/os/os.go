@@ -12,22 +12,27 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+	"time"
 )
 
 type File interface {
-	// IsExist 判断文件（普通文件、目录文件）是否存在
-	IsExist() bool
-
-	// IsDir 判断是否是目录文件
-	IsDir() bool
-
-	// Size 文件大小
-	Size() int64
+	Err() error         // 文件错误
+	IsExist() bool      // 判断文件（普通文件、目录文件）是否存在
+	Name() string       // base name of the file
+	Size() int64        // length in bytes for regular files; system-dependent for others
+	Mode() os.FileMode  // file mode bits
+	ModTime() time.Time // modification time
+	IsDir() bool        // abbreviation for Mode().IsDir()
+	Sys() any           // underlying data source (can return nil)
 }
 
 type fileImpl struct {
 	fileInfo os.FileInfo
 	err      error
+}
+
+func (file *fileImpl) Err() error {
+	return file.err
 }
 
 func (file *fileImpl) IsExist() bool {
@@ -37,15 +42,28 @@ func (file *fileImpl) IsExist() bool {
 	return true
 }
 
-func (file *fileImpl) IsDir() bool {
-	return file.err == nil && file.fileInfo.IsDir()
+func (file *fileImpl) Name() string {
+	return file.fileInfo.Name()
 }
 
 func (file *fileImpl) Size() int64 {
-	if file.IsExist() {
-		return file.fileInfo.Size()
-	}
-	return 0
+	return file.fileInfo.Size()
+}
+
+func (file *fileImpl) Mode() os.FileMode {
+	return file.fileInfo.Mode()
+}
+
+func (file *fileImpl) ModTime() time.Time {
+	return file.fileInfo.ModTime()
+}
+
+func (file *fileImpl) IsDir() bool {
+	return file.fileInfo.IsDir()
+}
+
+func (file *fileImpl) Sys() any {
+	return file.fileInfo.Sys()
 }
 
 var isWindows = false
@@ -73,6 +91,11 @@ func IsLinux() bool {
 	return isLinux
 }
 
+// CurrentOSNotSupportedError 不支持当前操作系统错误
+func CurrentOSNotSupportedError() error {
+	return errors.New(fmt.Sprintf("The current os is not supported, %s", runtime.GOOS))
+}
+
 func Path(more ...string) string {
 	if isWindows {
 		return strings.Join(more, "\\")
@@ -82,7 +105,7 @@ func Path(more ...string) string {
 		return strings.Join(more, "/")
 	}
 
-	panic(currentOSNotSupportedError())
+	panic(CurrentOSNotSupportedError())
 }
 
 // Stat 文件信息
@@ -131,7 +154,7 @@ func CopyDir(srcPath, dstPath string) (*exec.Cmd, error) {
 		return Cmd(fmt.Sprintf("cp -r %s %s", srcPath, dstPath))
 	}
 
-	return nil, currentOSNotSupportedError()
+	return nil, CurrentOSNotSupportedError()
 }
 
 // CopyFile 拷贝文件
@@ -279,7 +302,7 @@ func Cmd(cmd string) (*exec.Cmd, error) {
 		return exec.Command("bash", "-c", cmd), nil
 	}
 
-	return nil, currentOSNotSupportedError()
+	return nil, CurrentOSNotSupportedError()
 }
 
 // Cd 执行cd命令
@@ -292,10 +315,5 @@ func Cd(path string) (*exec.Cmd, error) {
 		return Cmd(fmt.Sprintf("cd %s", path))
 	}
 
-	return nil, currentOSNotSupportedError()
-}
-
-// currentOSNotSupportedError 当前操作系统不支持错误
-func currentOSNotSupportedError() error {
-	return errors.New(fmt.Sprintf("The current os is not supported, %v", runtime.GOOS))
+	return nil, CurrentOSNotSupportedError()
 }
