@@ -7,13 +7,46 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"golang.org/x/text/encoding/simplifiedchinese"
 	"io"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
 )
+
+type File interface {
+	// IsExist 判断文件（普通文件、目录文件）是否存在
+	IsExist() bool
+
+	// IsDir 判断是否是目录文件
+	IsDir() bool
+
+	// Size 文件大小
+	Size() int64
+}
+
+type fileImpl struct {
+	fileInfo os.FileInfo
+	err      error
+}
+
+func (file *fileImpl) IsExist() bool {
+	if file.err != nil {
+		return os.IsExist(file.err)
+	}
+	return true
+}
+
+func (file *fileImpl) IsDir() bool {
+	return file.err == nil && file.fileInfo.IsDir()
+}
+
+func (file *fileImpl) Size() int64 {
+	if file.IsExist() {
+		return file.fileInfo.Size()
+	}
+	return 0
+}
 
 var isWindows = false
 var isLinux = false
@@ -41,56 +74,31 @@ func IsLinux() bool {
 }
 
 func Path(more ...string) string {
-	//if isWindows {
-	//	return strings.Join(more, "\\")
-	//}
+	if isWindows {
+		return strings.Join(more, "\\")
+	}
 
 	if isLinux {
 		return strings.Join(more, "/")
 	}
 
-	panic(CurrentOSNotSupportedError())
+	panic(currentOSNotSupportedError())
 }
 
-// CurrentOSNotSupportedError 当前操作系统不支持错误
-func CurrentOSNotSupportedError() error {
-	return errors.New(fmt.Sprintf("The current os is not supported, %v", runtime.GOOS))
+// Stat 文件信息
+func Stat(path string) File {
+	fileInfo, err := os.Stat(path)
+	return &fileImpl{fileInfo, err}
 }
 
-// Cmd 执行命令
-func Cmd(cmd string) (*exec.Cmd, error) {
-	if isWindows {
-		return exec.Command("cmd", "/C", cmd), nil
-	}
-
-	if isLinux {
-		return exec.Command("bash", "-c", cmd), nil
-	}
-
-	return nil, CurrentOSNotSupportedError()
-}
-
-// Cd 执行cd命令
-func Cd(path string) (*exec.Cmd, error) {
-	if isWindows {
-		return Cmd(fmt.Sprintf("cd /d %s", path))
-	}
-
-	if isLinux {
-		return Cmd(fmt.Sprintf("cd %s", path))
-	}
-
-	return nil, CurrentOSNotSupportedError()
-}
-
-// IsExist 判断所给路径（文件/文件夹）是否存在
-func IsExist(path string) bool {
-	_, err := os.Stat(path)
-	if err != nil {
-		return os.IsExist(err)
-	}
-	return true
-}
+// MkDir (make directories) 创建目录文件
+//func MkDir(path string) error {
+//	if IsExist(path) {
+//		return nil
+//	}
+//
+//	return os.MkdirAll(path, os.ModePerm) // 0777
+//}
 
 // Rm 删除普通文件或者目录文件
 func Rm(path string) error {
@@ -108,15 +116,10 @@ func Rm(path string) error {
 	return os.Remove(path)
 }
 
-// MkDir (make directories) 创建目录文件
-func MkDir(path string) error {
-	return os.MkdirAll(path, os.ModePerm) // 0777
-}
-
 // Cp 拷贝
-func Cp(srcPath, dstPath string) (*exec.Cmd, error) {
-
-}
+//func Cp(srcPath, dstPath string) (*exec.Cmd, error) {
+//
+//}
 
 // CopyDir 拷贝目录
 func CopyDir(srcPath, dstPath string) (*exec.Cmd, error) {
@@ -128,7 +131,7 @@ func CopyDir(srcPath, dstPath string) (*exec.Cmd, error) {
 		return Cmd(fmt.Sprintf("cp -r %s %s", srcPath, dstPath))
 	}
 
-	return nil, CurrentOSNotSupportedError()
+	return nil, currentOSNotSupportedError()
 }
 
 // CopyFile 拷贝文件
@@ -249,19 +252,50 @@ func HumanizFileSize(size int64) string {
 }
 
 // DecodeBuf 解码buffer
-func DecodeBuf(buf []byte) string {
-	if buf == nil || len(buf) == 0 {
-		return ""
+//func DecodeBuf(buf []byte) string {
+//	if buf == nil || len(buf) == 0 {
+//		return ""
+//	}
+//
+//	switch GetOS() {
+//	// 解决windows乱码问题
+//	// GB18030编码
+//	case Windows:
+//		var decodeBytes, _ = simplifiedchinese.GB18030.NewDecoder().Bytes(buf)
+//		return string(decodeBytes)
+//
+//	default:
+//		return string(buf)
+//	}
+//}
+
+// Cmd 执行命令
+func Cmd(cmd string) (*exec.Cmd, error) {
+	if isWindows {
+		return exec.Command("cmd", "/C", cmd), nil
 	}
 
-	switch GetOS() {
-	// 解决windows乱码问题
-	// GB18030编码
-	case Windows:
-		var decodeBytes, _ = simplifiedchinese.GB18030.NewDecoder().Bytes(buf)
-		return string(decodeBytes)
-
-	default:
-		return string(buf)
+	if isLinux {
+		return exec.Command("bash", "-c", cmd), nil
 	}
+
+	return nil, currentOSNotSupportedError()
+}
+
+// Cd 执行cd命令
+func Cd(path string) (*exec.Cmd, error) {
+	if isWindows {
+		return Cmd(fmt.Sprintf("cd /d %s", path))
+	}
+
+	if isLinux {
+		return Cmd(fmt.Sprintf("cd %s", path))
+	}
+
+	return nil, currentOSNotSupportedError()
+}
+
+// currentOSNotSupportedError 当前操作系统不支持错误
+func currentOSNotSupportedError() error {
+	return errors.New(fmt.Sprintf("The current os is not supported, %v", runtime.GOOS))
 }
