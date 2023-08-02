@@ -21,7 +21,7 @@ func initLog() {
 	}
 
 	// 创建日志文件夹，如果不存在的话
-	logDir := curDir + util_os.FileSeparator() + "log"
+	logDir := util_os.Path(curDir, "log")
 	fileInfo, err := os.Stat(logDir)
 	if err != nil || !fileInfo.IsDir() {
 		err = os.Mkdir(logDir, 0666)
@@ -31,7 +31,7 @@ func initLog() {
 	}
 
 	// 创建日志文件（如果存在则覆盖）
-	logFile, err := os.Create(logDir + util_os.FileSeparator() + "debug.log")
+	logFile, err := os.Create(util_os.Path(logDir, "debug.log"))
 	if err != nil {
 		panic(err)
 	}

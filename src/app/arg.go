@@ -47,7 +47,7 @@ func initArg() {
 
 	// 数据目录
 	dataDir = strings.TrimSpace(dataDir)
-	if !util_os.IsExist(dataDir) {
+	if !util_os.Stat(dataDir).IsExist() {
 		util_os.MkDir(dataDir)
 	}
 	// 获取绝对路径

@@ -99,17 +99,17 @@ func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap html_template.Fu
 
 				// 目录
 				if sfInfo.IsDir() {
-					addFromFilesFuncs(renderer, funcMap, commons, fmt.Sprintf("%s%s%s", name, util_os.FileSeparator(), sfName))
+					addFromFilesFuncs(renderer, funcMap, commons, util_os.Path(name, sfName))
 				} else
 				// 文件
 				{
 					var files []string
 					if fName == "common" {
-						files = []string{fmt.Sprintf("%s%s%s", name, util_os.FileSeparator(), sfName)}
+						files = []string{util_os.Path(name, sfName)}
 					} else {
 						// len 0, cap ?
 						files = make([]string, 0, len(commons)+1)
-						files = append(files, fmt.Sprintf("%s%s%s", name, util_os.FileSeparator(), sfName))
+						files = append(files, util_os.Path(name, sfName))
 						files = append(files, commons...)
 					}
 
