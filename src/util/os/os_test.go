@@ -53,3 +53,13 @@ func TestRm(t *testing.T) {
 		fmt.Println(err)
 	}
 }
+
+func TestCopyFile(t *testing.T) {
+	srcPath := Path("C:\\Users\\xiangqian\\Desktop\\tmp", "apache-skywalking-apm-9.0.0.tar.gz")
+	dstPath := Path("C:\\Users\\xiangqian\\Desktop\\tmp", "apache-skywalking-apm-9.0.0.tar.gz1")
+	written, err := CopyFile(srcPath, dstPath)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(written)
+}

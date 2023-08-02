@@ -1,4 +1,4 @@
-// os util
+// os
 // @author xiangqian
 // @date 11:08 2023/02/04
 package os
@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"golang.org/x/text/encoding/simplifiedchinese"
 	"io"
 	"os"
 	"os/exec"
@@ -91,8 +92,8 @@ func IsLinux() bool {
 	return isLinux
 }
 
-// CurrentOSNotSupportedError 不支持当前操作系统错误
-func CurrentOSNotSupportedError() error {
+// CurrentOsIsNotSupportedError 不支持当前操作系统错误
+func CurrentOsIsNotSupportedError() error {
 	return errors.New(fmt.Sprintf("The current os is not supported, %s", runtime.GOOS))
 }
 
@@ -105,7 +106,7 @@ func Path(more ...string) string {
 		return strings.Join(more, "/")
 	}
 
-	panic(CurrentOSNotSupportedError())
+	panic(CurrentOsIsNotSupportedError())
 }
 
 // Stat 文件信息
@@ -140,26 +141,8 @@ func Rm(path string) error {
 	return os.Remove(path)
 }
 
-// Cp 拷贝
-//func Cp(srcPath, dstPath string) (*exec.Cmd, error) {
-//
-//}
-
-// CopyDir 拷贝目录
-func CopyDir(srcPath, dstPath string) (*exec.Cmd, error) {
-	if isWindows {
-		return Cmd(fmt.Sprintf("xcopy %s %s /s /e /h /i /y", srcPath, dstPath))
-	}
-
-	if isLinux {
-		return Cmd(fmt.Sprintf("cp -r %s %s", srcPath, dstPath))
-	}
-
-	return nil, CurrentOSNotSupportedError()
-}
-
 // CopyFile 拷贝文件
-func CopyFile(srcPath, dstPath string) (int64, error) {
+func CopyFile(srcPath, dstPath string) (written int64, err error) {
 	// src
 	src, err := os.Open(srcPath)
 	if err != nil {
@@ -175,24 +158,26 @@ func CopyFile(srcPath, dstPath string) (int64, error) {
 	defer dst.Close()
 
 	// copy
-	return io.Copy(dst, src)
+	written, err = io.Copy(dst, src)
+	return
 }
 
-// CopyIo 流拷贝
+// Deprecated: use io.Copy
+// CopyIo 拷贝数据流
 // src: io.Reader
 // dst: io.Writer
 // bufSize: 缓存大小，byte。默认 bufio.defaultBufSize = 4KB
-func CopyIo(dst io.Writer, src io.Reader, bufSize int) (int, error) {
+func CopyIo(src io.Reader, dst io.Writer, bufSize int) (int, error) {
 	// buf size
 	if bufSize <= 0 {
 		bufSize = 1024 * 4 // 4KB
 	}
 
-	// w & r
-	writer := bufio.NewWriterSize(dst, bufSize)
+	// r & w
 	reader := bufio.NewReaderSize(src, bufSize)
+	writer := bufio.NewWriterSize(dst, bufSize)
 
-	// write func
+	// 已写入的字节数
 	var written int
 
 	// 块缓存大小
@@ -238,6 +223,45 @@ func CopyIo(dst io.Writer, src io.Reader, bufSize int) (int, error) {
 	return written, nil
 }
 
+// Cmd 执行命令
+func Cmd(cmd string) (*exec.Cmd, error) {
+	if isWindows {
+		return exec.Command("cmd", "/C", cmd), nil
+	}
+
+	if isLinux {
+		return exec.Command("bash", "-c", cmd), nil
+	}
+
+	return nil, CurrentOsIsNotSupportedError()
+}
+
+// Cd 执行cd命令
+func Cd(path string) (*exec.Cmd, error) {
+	if isWindows {
+		return Cmd(fmt.Sprintf("cd /d %s", path))
+	}
+
+	if isLinux {
+		return Cmd(fmt.Sprintf("cd %s", path))
+	}
+
+	return nil, CurrentOsIsNotSupportedError()
+}
+
+// CopyDir 拷贝目录
+func CopyDir(srcPath, dstPath string) (*exec.Cmd, error) {
+	if isWindows {
+		return Cmd(fmt.Sprintf("xcopy %s %s /s /e /h /i /y", srcPath, dstPath))
+	}
+
+	if isLinux {
+		return Cmd(fmt.Sprintf("cp -r %s %s", srcPath, dstPath))
+	}
+
+	return nil, CurrentOsIsNotSupportedError()
+}
+
 // HumanizFileSize 人性化文件大小
 // size: 文件大小，单位：byte
 func HumanizFileSize(size int64) string {
@@ -276,45 +300,17 @@ func HumanizFileSize(size int64) string {
 }
 
 // DecodeBuf 解码buffer
-//func DecodeBuf(buf []byte) string {
-//	if buf == nil || len(buf) == 0 {
-//		return ""
-//	}
-//
-//	switch GetOS() {
-//	// 解决windows乱码问题
-//	// GB18030编码
-//	case Windows:
-//		var decodeBytes, _ = simplifiedchinese.GB18030.NewDecoder().Bytes(buf)
-//		return string(decodeBytes)
-//
-//	default:
-//		return string(buf)
-//	}
-//}
+func DecodeBuf(buf []byte) string {
+	if buf == nil || len(buf) == 0 {
+		return ""
+	}
 
-// Cmd 执行命令
-func Cmd(cmd string) (*exec.Cmd, error) {
+	// 解决windows乱码问题
+	// GB18030编码
 	if isWindows {
-		return exec.Command("cmd", "/C", cmd), nil
+		var decodeBytes, _ = simplifiedchinese.GB18030.NewDecoder().Bytes(buf)
+		return string(decodeBytes)
 	}
 
-	if isLinux {
-		return exec.Command("bash", "-c", cmd), nil
-	}
-
-	return nil, CurrentOSNotSupportedError()
-}
-
-// Cd 执行cd命令
-func Cd(path string) (*exec.Cmd, error) {
-	if isWindows {
-		return Cmd(fmt.Sprintf("cd /d %s", path))
-	}
-
-	if isLinux {
-		return Cmd(fmt.Sprintf("cd %s", path))
-	}
-
-	return nil, CurrentOSNotSupportedError()
+	return string(buf)
 }
