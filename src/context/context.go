@@ -130,7 +130,7 @@ func convStrToType[T any](value string) (T, error) {
 		return any(id).(T), err
 
 	case reflect.String:
-		return any(value).(T), nil
+		return any(strings.TrimSpace(value)).(T), nil
 	}
 
 	return t, errors.New(fmt.Sprintf("This type does not support conversion: %v", rflVal.Type().Kind()))

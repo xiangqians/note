@@ -20,6 +20,8 @@ go get github.com/mattn/go-sqlite3@v1.14.16
 package db
 
 import (
+	"log"
+	util_crypto_md5 "note/src/util/crypto/md5"
 	"time"
 
 	// https://pkg.go.dev/gorm.io/gorm
@@ -30,28 +32,56 @@ import (
 	"gorm.io/driver/sqlite"
 )
 
-// db
-var db *gorm.DB
+// db map
+var dbMap map[string]*gorm.DB
+
+func init() {
+	dbMap = make(map[string]*gorm.DB, 16)
+}
+
+// Db Database
+// https://gorm.io/zh_CN/docs
+//
+// 使用gorm框架执行原生sql：（两种方式）
+// 1、gorm.DB.Exec("sql语句") 执行插入、删除等操作使用
+// 2、gorm.DB.Raw("sql语句")  执行查询操作时使用
+// gorm中exec和raw方法的区别是：Raw用来查询，执行其他操作用Exec。
+// (*gorm.DB).Exec does not return an error, if you want to see if your query failed or not read up on error handling with gorm. Use Exec when you don’t care about output, use Raw when you do care about the output.
+func Db(dsn string) (*gorm.DB, error) {
+	key := util_crypto_md5.Encrypt([]byte(dsn), nil)
+	if db, r := dbMap[key]; r {
+		return db, nil
+	}
+
+	db, err := open(dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	dbMap[key] = db
+	return db, nil
+}
 
 // init 初始化连接
 // https://gorm.io/zh_CN/docs/connecting_to_the_database.html#SQLite
-func init() {
+func open(dsn string) (db *gorm.DB, err error) {
+	log.Println("open db:", dsn)
+
 	// open
-	dialector := sqlite.Open("C:\\Users\\xiangqian\\Desktop\\tmp\\note\\data\\database.db")
-	var err error
+	dialector := sqlite.Open(dsn)
 	db, err = gorm.Open(dialector, &gorm.Config{
 		// 全局模式：执行任何 SQL 时都创建并缓存预编译语句，可以提高后续的调用速度
 		PrepareStmt: true,
 	})
 	if err != nil {
-		panic(err)
+		return
 	}
 
 	// 配置连接池
 	// 通过数据库连接池，我们可以避免频繁创建和销数据库连接所带来的开销，GROM的数据连接池底层是通过database/sql来实现的，所以其设置方法与database/sql是一样的。
 	sqlDb, err := db.DB()
 	if err != nil {
-		panic(err)
+		return
 	}
 	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
 	sqlDb.SetMaxIdleConns(10)
@@ -59,16 +89,5 @@ func init() {
 	sqlDb.SetMaxOpenConns(100)
 	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
 	sqlDb.SetConnMaxLifetime(time.Minute * 10)
-}
-
-// DB Database
-// https://gorm.io/zh_CN/docs
-//
-// 使用gorm框架执行原生sql：（两种方式）
-// 1、gorm.DB.Exec("sql语句") // 执行插入删除等操作使用
-// 2、gorm.DB.Raw("sql语句") // 执行查询操作时使用
-// gorm中exec和raw方法的区别是：Raw用来查询，执行其他操作用Exec。
-// (*gorm.DB).Exec does not return an error, if you want to see if your query failed or not read up on error handling with gorm. Use Exec when you don’t care about output, use Raw when you do care about the output.
-func DB() *gorm.DB {
-	return db
+	return
 }

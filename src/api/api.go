@@ -4,12 +4,17 @@
 package api
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"note/src/api/index"
 	"note/src/api/user"
 	"note/src/app"
 	"note/src/context"
+	"note/src/db"
+	"note/src/session"
 	"note/src/typ"
+	util_os "note/src/util/os"
 )
 
 // Init 初始化API
@@ -36,5 +41,34 @@ func Init(engine *gin.Engine) {
 
 	// index
 	engine.Any(path+"/", index.Index)
+}
 
+func Db(ctx *gin.Context) (*gorm.DB, error) {
+	dataDir := app.GetArg().DataDir
+	if ctx == nil {
+		return db.Db(util_os.Path(dataDir, "database.db"))
+	}
+
+	user, err := session.GetUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return db.Db(util_os.Path(dataDir, fmt.Sprintf("%d", user.Id), "database.db"))
+}
+
+func Resp[T any](data T, anyMsg any) typ.Resp[T] {
+	msg := ""
+	if anyMsg != nil {
+		if err, r := anyMsg.(error); r {
+			msg = err.Error()
+		} else {
+			msg = fmt.Sprintf("%v", anyMsg)
+		}
+	}
+
+	return typ.Resp[T]{
+		Data: data,
+		Msg:  msg,
+	}
 }
