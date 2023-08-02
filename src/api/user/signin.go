@@ -4,14 +4,18 @@
 package user
 
 import (
-	"fmt"
+	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"note/src/api"
 	"note/src/app"
 	"note/src/context"
 	"note/src/session"
 	"note/src/typ"
+	util_crypto_bcrypt "note/src/util/crypto/bcrypt"
+	util_time "note/src/util/time"
 	util_validate "note/src/util/validate"
+	"time"
 )
 
 const signInNameKey = "signInNameKey"
@@ -59,80 +63,63 @@ func SignIn0(ctx *gin.Context) {
 		return
 	}
 
-	fmt.Println(db)
+	// 查询用户信息
+	var user typ.User
+	db.Raw("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `add_time`, `upd_time` FROM `user` WHERE `del` = 0 AND `name` = ? LIMIT 1", name).Scan(&user)
+	// 用户不存在
+	if user.Id == 0 {
+		errRedirect(i18n.MustGetMessage("i18n.userNameOrPasswdIncorrect"))
+		return
+	}
 
-	//var typ.User user
-	//db.Raw("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `add_time`, `upd_time` FROM `user` WHERE `del` = 0 AND `name` = ? LIMIT 1")
-	//
-	//// query
-	//user, count, err := db.Qry[](nil,
-	//	, name)
-	//if err != nil {
-	//	redirect(err)
-	//	return
-	//}
-	//
-	//// 校验用户信息是否存在
-	//if count == 0 {
-	//	redirect(i18n.MustGetMessage("i18n.userOrPasswdIncorrect"))
-	//	return
-	//}
-	//
-	//// 重置try
-	//resetTry := func() {
-	//	db.Upd(nil, "UPDATE `user` SET `try` = 0, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", time.NowUnix(), user.Id)
-	//	user.Try = 0
-	//}
-	//
-	//// lock ?
-	//if user.Try >= 3 {
-	//	// lock time
-	//	lockTime := time.ParseUnix(user.UpdTime)
-	//	// Duration
-	//	duration := time.Now().Sub(lockTime)
-	//	// hour
-	//	hour := int64(duration.Hours())
-	//	// 如果超过24h则自动解除锁定
-	//	if hour > 24 {
-	//		resetTry()
-	//	} else {
-	//		redirect(i18n.MustGetMessage("i18n.accountHasBeenLocked"))
-	//		return
-	//	}
-	//}
-	//
-	//// 密码是否正确
-	//if !bcrypt.CompareHash(user.Passwd, passwd) {
-	//	if user.Try == 1 {
-	//		redirect(i18n.MustGetMessage("i18n.accountWillBeLocked"))
-	//	} else {
-	//		redirect(i18n.MustGetMessage("i18n.userOrPasswdIncorrect"))
-	//	}
-	//	db.Upd(nil, "UPDATE `user` SET `try` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", user.Try+1, time.NowUnix(), user.Id)
-	//	return
-	//}
-	//
-	//// 重置 try 状态
-	//if user.Try != 0 {
-	//	resetTry()
-	//}
-	//
-	//// 密码不存于session
-	//user.Passwd = ""
-	//
-	//// 保存用户信息到session
-	//session.SetUser(context, user)
-	//
-	//// 重定向到首页
-	//api_common_context.Redirect(context, "/", typ.Resp[any]{})
+	// 判断账号是否被锁定
+	if user.Try >= 3 {
+		// 获取账号锁定时间
+		lockTime := util_time.ParseUnix(user.UpdTime)
+		// 账号锁定持续时间
+		duration := time.Now().Sub(lockTime)
+		hour := int64(duration.Hours())
+		// 如果账号锁定超过24h，则自动解除锁定
+		if hour > 24 {
+			resetTry(db, user.Id)
+		} else
+		// 账号已锁定
+		{
+			errRedirect(i18n.MustGetMessage("i18n.accountHasBeenLocked"))
+			return
+		}
+	}
 
-	////////////////
+	// 密码错误
+	if util_crypto_bcrypt.CompareHash(user.Passwd, passwd) != nil {
+		if user.Try == 1 {
+			errRedirect(i18n.MustGetMessage("i18n.accountWillBeLocked"))
+		} else {
+			errRedirect(i18n.MustGetMessage("i18n.userOrPasswdIncorrect"))
+		}
+		db.Exec("UPDATE `user` SET `try` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", user.Try+1, util_time.NowUnix(), user.Id)
+		return
+	}
 
-	app.ClearUser(1)
+	// 重置 try 状态
+	if user.Try != 0 {
+		resetTry(db, user.Id)
+	}
+
+	// 清理已登录用户
+	app.ClearUser(user.Id)
+
+	// 密码不存于session
+	user.Passwd = ""
 
 	// 保存用户信息到session
-	session.SetUser(ctx, typ.User{Abs: typ.Abs{Id: 1}, Name: "test", Nickname: "测试"})
+	session.SetUser(ctx, user)
 
 	// 重定向到首页
 	context.Redirect(ctx, app.GetArg().Path+"/")
+}
+
+// 重置try值
+func resetTry(db *gorm.DB, id int64) {
+	db.Exec("UPDATE `user` SET `try` = 0, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", util_time.NowUnix(), id)
 }
