@@ -16,7 +16,6 @@ import (
 	en_trans "github.com/go-playground/validator/v10/translations/en"
 	zh_trans "github.com/go-playground/validator/v10/translations/zh"
 	"net/http"
-	"note/src/app"
 	"note/src/session"
 	"note/src/typ"
 	"note/src/util/time"
@@ -29,6 +28,8 @@ var (
 	zhTrans ut.Translator
 	enTrans ut.Translator
 )
+
+var Arg typ.Arg
 
 func init() {
 	// 初始化翻译器
@@ -67,7 +68,7 @@ func Html[T any](ctx *gin.Context, code int, name string, resp typ.Resp[T]) {
 		"resp": resp,                   // 响应数据
 		"url":  ctx.Request.RequestURI, // 请求url地址
 		"user": user,                   // 登录用户信息
-		"arg":  app.GetArg(),           // 应用参数
+		"arg":  Arg,                    // 应用参数
 	})
 }
 
@@ -155,7 +156,7 @@ func ShouldBind(ctx *gin.Context, i any) error {
 // transErr 翻译异常
 func transErr(ctx *gin.Context, err error) error {
 	if errs, r := err.(validator.ValidationErrors); r {
-		session := session.Default(ctx)
+		session := session.Session(ctx)
 		lang := ""
 		if v, r := session.Get("lang").(string); r {
 			lang = v

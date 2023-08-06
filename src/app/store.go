@@ -8,55 +8,30 @@ import (
 	"encoding/base32"
 	"encoding/gob"
 	"fmt"
-	gin_contrib_sessions "github.com/gin-contrib/sessions"
+	gincontrib_sessions "github.com/gin-contrib/sessions"
 	"github.com/gorilla/securecookie"
-	"github.com/gorilla/sessions"
+	gorilla_sessions "github.com/gorilla/sessions"
 	"github.com/hashicorp/golang-lru/v2"
-	"log"
 	"net/http"
-	"note/src/session"
-	"note/src/typ"
 	"strings"
 )
 
 // --------------------------------- copy mod\github.com\quasoft\memstore@v0.0.0-20191010062613-2bce066d2b0b\cache.go ---------------------------------
 
 type cache struct {
-	data *lru.Cache[string, value]
+	data *lru.Cache[string, map[any]any]
 }
 
-func (c *cache) value(name string) (value, bool) {
+func (c *cache) value(name string) (map[any]any, bool) {
 	return c.data.Get(name)
 }
 
-func (c *cache) setValue(name string, value value) {
+func (c *cache) setValue(name string, value map[any]any) {
 	c.data.Add(name, value)
 }
 
 func (c *cache) delete(name string) {
 	c.data.Remove(name)
-}
-
-// ClearUser 清除指定用户session
-// id 用户id
-func ClearUser(id int64) {
-	keys := data.Keys()
-	if keys == nil || len(keys) == 0 {
-		return
-	}
-
-	log.Println(data.Values())
-	for _, key := range keys {
-		if value, r := data.Get(key); r {
-			var v = value[session.UserKey]
-			if user, r := v.(typ.User); r {
-				if user.Id == id {
-					data.Remove(key)
-				}
-			}
-		}
-	}
-	log.Println(data.Values())
 }
 
 // --------------------------------- copy mod\github.com\quasoft\memstore@v0.0.0-20191010062613-2bce066d2b0b\memstore.go ---------------------------------
@@ -67,13 +42,11 @@ func ClearUser(id int64) {
 // multiple goroutines.
 type MemStore struct {
 	Codecs  []securecookie.Codec
-	Options *sessions.Options
+	Options *gorilla_sessions.Options
 	cache   *cache
 }
 
-var data *lru.Cache[string, value]
-
-type value map[any]any
+var data *lru.Cache[string, map[any]any]
 
 // NewMemStore returns a new MemStore.
 //
@@ -91,10 +64,10 @@ type value map[any]any
 // Use the convenience function securecookie.GenerateRandomKey() to create
 // strong keys.
 func NewMemStore(keyPairs ...[]byte) *MemStore {
-	data, _ = lru.New[string, value](16)
+	data, _ = lru.New[string, map[any]any](16)
 	store := MemStore{
 		Codecs: securecookie.CodecsFromPairs(keyPairs...),
-		Options: &sessions.Options{
+		Options: &gorilla_sessions.Options{
 			Path:   "/",
 			MaxAge: 86400 * 30,
 		},
@@ -111,8 +84,8 @@ func NewMemStore(keyPairs ...[]byte) *MemStore {
 //
 // It returns a new session and an error if the session exists but could
 // not be decoded.
-func (m *MemStore) Get(r *http.Request, name string) (*sessions.Session, error) {
-	return sessions.GetRegistry(r).Get(m, name)
+func (m *MemStore) Get(r *http.Request, name string) (*gorilla_sessions.Session, error) {
+	return gorilla_sessions.GetRegistry(r).Get(m, name)
 }
 
 // New returns a session for the given name without adding it to the registry.
@@ -120,8 +93,8 @@ func (m *MemStore) Get(r *http.Request, name string) (*sessions.Session, error) 
 // The difference between New() and Get() is that calling New() twice will
 // decode the session data twice, while Get() registers and reuses the same
 // decoded session after the first call.
-func (m *MemStore) New(r *http.Request, name string) (*sessions.Session, error) {
-	session := sessions.NewSession(m, name)
+func (m *MemStore) New(r *http.Request, name string) (*gorilla_sessions.Session, error) {
+	session := gorilla_sessions.NewSession(m, name)
 	options := *m.Options
 	session.Options = &options
 	session.IsNew = true
@@ -153,7 +126,7 @@ func (m *MemStore) New(r *http.Request, name string) (*sessions.Session, error) 
 
 // Save adds a single session to the response.
 // Set Options.MaxAge to -1 or call MaxAge(-1) before saving the session to delete all values in it.
-func (m *MemStore) Save(r *http.Request, w http.ResponseWriter, s *sessions.Session) error {
+func (m *MemStore) Save(r *http.Request, w http.ResponseWriter, s *gorilla_sessions.Session) error {
 	var cookieValue string
 	if s.Options.MaxAge < 0 {
 		cookieValue = ""
@@ -172,7 +145,7 @@ func (m *MemStore) Save(r *http.Request, w http.ResponseWriter, s *sessions.Sess
 		cookieValue = encrypted
 		m.cache.setValue(s.ID, m.copy(s.Values))
 	}
-	http.SetCookie(w, sessions.NewCookie(s.Name(), cookieValue, s.Options))
+	http.SetCookie(w, gorilla_sessions.NewCookie(s.Name(), cookieValue, s.Options))
 	return nil
 }
 
@@ -190,7 +163,7 @@ func (m *MemStore) MaxAge(age int) {
 	}
 }
 
-func (m *MemStore) copy(v value) value {
+func (m *MemStore) copy(v map[any]any) map[any]any {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 	dec := gob.NewDecoder(&buf)
@@ -199,7 +172,7 @@ func (m *MemStore) copy(v value) value {
 		panic(fmt.Errorf("could not copy memstore value. Encoding to gob failed: %v", err))
 	}
 
-	var val value
+	var val map[any]any
 	err = dec.Decode(&val)
 	if err != nil {
 		panic(fmt.Errorf("could not copy memstore value. Decoding from gob failed: %v", err))
@@ -210,7 +183,7 @@ func (m *MemStore) copy(v value) value {
 // copy: mod\github.com\gin-contrib\sessions@v0.0.5\memstore\memstore.go
 
 type Store interface {
-	gin_contrib_sessions.Store
+	gincontrib_sessions.Store
 }
 
 // Keys are defined in pairs to allow key rotation, but the common case is to set a single
@@ -230,6 +203,6 @@ type store struct {
 	*MemStore
 }
 
-func (c *store) Options(options gin_contrib_sessions.Options) {
+func (c *store) Options(options gincontrib_sessions.Options) {
 	c.MemStore.Options = options.ToGorillaOptions()
 }

@@ -6,9 +6,12 @@ package app
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"note/src/api/common"
+	"note/src/context"
+	"note/src/session"
 )
 
-func New() *gin.Engine {
+func Run() {
 	// 初始化日志记录器
 	initLog()
 
@@ -39,10 +42,15 @@ func New() *gin.Engine {
 	// 初始化授权
 	initAuth(engine)
 
-	return engine
-}
+	// 变量赋值
+	common.Arg = arg
+	context.Arg = arg
+	session.Data = data
 
-func Run(engine *gin.Engine) {
+	// 初始化路由
+	initRoute(engine)
+
+	// run
 	addr := fmt.Sprintf(":%d", arg.Port)
 	engine.Run(addr)
 }

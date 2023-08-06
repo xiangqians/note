@@ -8,14 +8,18 @@ import (
 	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	lru "github.com/hashicorp/golang-lru/v2"
+	"log"
 	"note/src/typ"
 )
 
-const UserKey = "__user__"
+const userKey = "__user__"
+
+var Data *lru.Cache[string, map[any]any]
 
 // GetUser 获取session用户信息
 func GetUser(ctx *gin.Context) (typ.User, error) {
-	user, err := Get[typ.User](ctx, UserKey, false)
+	user, err := Get[typ.User](ctx, userKey, false)
 
 	// 如果返回指针值，有可能会发生逃逸
 	//return &user
@@ -25,12 +29,30 @@ func GetUser(ctx *gin.Context) (typ.User, error) {
 
 // SetUser 保存用户信息到session
 func SetUser(ctx *gin.Context, user typ.User) {
-	Set(ctx, UserKey, user)
+	// 单用户多端登录限制
+	data := Data
+	keys := data.Keys()
+	if keys != nil && len(keys) > 0 {
+		log.Println(len(data.Values()), data.Values())
+		for _, key := range keys {
+			if value, r := data.Get(key); r {
+				var v = value[userKey]
+				if sessionUser, r := v.(typ.User); r {
+					if sessionUser.Id == user.Id {
+						data.Remove(key)
+					}
+				}
+			}
+		}
+		log.Println(len(data.Values()), data.Values())
+	}
+
+	Set(ctx, userKey, user)
 }
 
 // Set 设置session <k, v>
 func Set(ctx *gin.Context, key string, value any) {
-	session := Default(ctx)
+	session := Session(ctx)
 	session.Set(key, value)
 	session.Save()
 }
@@ -39,7 +61,7 @@ func Set(ctx *gin.Context, key string, value any) {
 // key: key
 // del: 是否删除session中的key
 func Get[T any](ctx *gin.Context, key any, del bool) (T, error) {
-	session := Default(ctx)
+	session := Session(ctx)
 	value := session.Get(key)
 	if del {
 		session.Delete(key)
@@ -59,7 +81,7 @@ func Get[T any](ctx *gin.Context, key any, del bool) (T, error) {
 // Clear 清空session
 func Clear(ctx *gin.Context) {
 	// 解析session
-	session := Default(ctx)
+	session := Session(ctx)
 
 	// 清除session
 	session.Clear()
@@ -68,7 +90,7 @@ func Clear(ctx *gin.Context) {
 	session.Save()
 }
 
-// Default 获取session
-func Default(ctx *gin.Context) sessions.Session {
+// Session 获取session
+func Session(ctx *gin.Context) sessions.Session {
 	return sessions.Default(ctx)
 }

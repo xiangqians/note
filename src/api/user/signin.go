@@ -7,8 +7,7 @@ import (
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"note/src/api"
-	"note/src/app"
+	"note/src/api/common"
 	"note/src/context"
 	"note/src/session"
 	"note/src/typ"
@@ -25,11 +24,18 @@ const signInErrKey = "signInErrKey"
 func SignIn(ctx *gin.Context) {
 	name, _ := session.Get[string](ctx, signInNameKey, true)
 	err, _ := session.Get[any](ctx, signInErrKey, true)
-	context.HtmlOk(ctx, "user/signin", api.Resp[typ.User](typ.User{Name: name}, err))
+	context.HtmlOk(ctx, "user/signin", common.Resp[typ.User](typ.User{Name: name}, err))
 }
 
 // SignIn0 登录
 func SignIn0(ctx *gin.Context) {
+	// 保存用户信息到session
+	session.SetUser(ctx, typ.User{
+		Abs:  typ.Abs{Id: 1},
+		Name: "test"})
+
+	return
+
 	// 用户名
 	name, _ := context.PostForm[string](ctx, "name")
 
@@ -37,7 +43,7 @@ func SignIn0(ctx *gin.Context) {
 	errRedirect := func(err any) {
 		session.Set(ctx, signInNameKey, name)
 		session.Set(ctx, signInErrKey, err)
-		context.Redirect(ctx, app.GetArg().Path+"/user/signin")
+		context.Redirect(ctx, common.Arg.Path+"/user/signin")
 	}
 
 	// 校验用户名
@@ -57,7 +63,7 @@ func SignIn0(ctx *gin.Context) {
 	}
 
 	// 获取数据库
-	db, err := api.Db(nil)
+	db, err := common.Db(nil)
 	if err != nil {
 		errRedirect(err)
 		return
@@ -107,7 +113,7 @@ func SignIn0(ctx *gin.Context) {
 	}
 
 	// 清理已登录用户
-	app.ClearUser(user.Id)
+	//app.ClearUser(user.Id)
 
 	// 密码不存于session
 	user.Passwd = ""
@@ -116,7 +122,7 @@ func SignIn0(ctx *gin.Context) {
 	session.SetUser(ctx, user)
 
 	// 重定向到首页
-	context.Redirect(ctx, app.GetArg().Path+"/")
+	context.Redirect(ctx, common.Arg.Path+"/")
 }
 
 // 重置try值

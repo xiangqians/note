@@ -14,10 +14,6 @@ import (
 
 var arg typ.Arg
 
-func GetArg() typ.Arg {
-	return arg
-}
-
 // 初始化应用参数
 func initArg() {
 	var loc string
