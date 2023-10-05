@@ -146,21 +146,21 @@ func Rm(path string) error {
 
 // CopyFile 拷贝文件
 func CopyFile(srcPath, dstPath string) (written int64, err error) {
-	// src
+	// 源文件
 	src, err := os.Open(srcPath)
 	if err != nil {
 		return 0, err
 	}
 	defer src.Close()
 
-	// dst
+	// 目标文件
 	dst, err := os.Create(dstPath)
 	if err != nil {
 		return 0, err
 	}
 	defer dst.Close()
 
-	// copy
+	// 拷贝
 	written, err = io.Copy(dst, src)
 	return
 }

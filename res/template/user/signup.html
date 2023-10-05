@@ -16,9 +16,9 @@
     </style>
 </head>
 <body>
-<form action="{{ .path }}/user/signup0?t={{ NowUnix }}" method="post">
-    <input name="_method" type="hidden" value="post123">
-    <msg>{{ .resp.Msg }}</msg>
+<msg>{{ .resp.Msg }}</msg>
+<form action="{{ .path }}/user/signup?t={{ NowUnix }}" method="post">
+    <input name="_method" type="hidden" value="POST">
     {{ $user := .resp.Data }}
     <table>
         <tbody>
@@ -48,7 +48,7 @@
             <td colspan="2">
                 <input type="submit" value='{{ Localize "i18n.signUp" }}'>
                 <span style="padding-left: 10px">{{ Localize "i18n.alreadyHaveAnAccount" }}</span>
-                <a href="{{ .path }}/user/signIn?t={{ NowUnix }}" style="padding-left: 5px">{{ Localize "i18n.signIn" }}</a>
+                <a href="{{ .path }}/user/signin?t={{ NowUnix }}" style="padding-left: 5px">{{ Localize "i18n.signIn" }}</a>
             </td>
         </tr>
         </tfoot>

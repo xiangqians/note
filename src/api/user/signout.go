@@ -1,4 +1,4 @@
-// sign out
+// 用户注销
 // @author xiangqian
 // @date 21:41 2023/07/11
 package user
@@ -7,17 +7,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"note/src/context"
 	"note/src/session"
-	"note/src/typ"
 )
 
 // SignOut 注销
 func SignOut(ctx *gin.Context) {
-	// user
-	//user, _ := session.GetUser(context)
+	// 获取当前用户
+	user, _ := session.GetUser(ctx)
 
 	// 清除session
 	session.Clear(ctx)
 
 	// 重定向
-	context.Redirect(ctx, typ.GetArg().Path+"/user/signIn")
+	session.Set(ctx, signInNameKey, user.Name)
+	context.Redirect(ctx, "/user/signin")
 }

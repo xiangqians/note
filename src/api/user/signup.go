@@ -1,10 +1,9 @@
-// signup
+// 用户注册
 // @author xiangqian
 // @date 23:33 2023/07/10
 package user
 
 import (
-	"errors"
 	"fmt"
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
@@ -18,6 +17,7 @@ import (
 	util_string "note/src/util/string"
 	"note/src/util/time"
 	"note/src/util/validate"
+	"os"
 	"strings"
 )
 
@@ -27,12 +27,12 @@ const signUpErrKey = "signUpErr"
 // SignUp 注册
 func SignUp(ctx *gin.Context) {
 	method, _ := context.PostForm[string](ctx, "_method")
-	if method == "PUT" {
+	if method == "POST" {
 		signUp(ctx)
 	} else {
 		user, _ := session.Get[typ.User](ctx, signUpUserKey, true)
-		err, _ := session.Get[any](ctx, signUpErrKey, true)
-		context.HtmlOk(ctx, "user/sign_up", typ.Resp[typ.User]{Data: user, Msg: util_string.String(err)})
+		err, _ := session.Get[string](ctx, signUpErrKey, true)
+		context.HtmlOk(ctx, "user/signup", typ.Resp[typ.User]{Data: user, Msg: err})
 	}
 }
 
@@ -43,14 +43,15 @@ func signUp(ctx *gin.Context) {
 		user.Passwd = ""
 		user.RePasswd = ""
 		session.Set(ctx, signUpUserKey, user)
-		session.Set(ctx, signUpErrKey, err)
-		context.Redirect(ctx, "/user/sign_up")
+		session.Set(ctx, signUpErrKey, util_string.String(err))
+		context.Redirect(ctx, "/user/signup")
 	}
 
 	user := typ.User{}
 
 	// 是否允许用户注册
-	if !typ.GetArg().AllowReg {
+	arg := typ.GetArg()
+	if !arg.AllowReg {
 		errRedirect(user, i18n.MustGetMessage("i18n.signUpNotOpen"))
 		return
 	}
@@ -62,32 +63,33 @@ func signUp(ctx *gin.Context) {
 		return
 	}
 
-	// 用户名
-	name := strings.TrimSpace(user.Name)
+	user.Name = strings.TrimSpace(user.Name)
+	user.Nickname = strings.TrimSpace(user.Nickname)
+	user.Passwd = strings.TrimSpace(user.Passwd)
+	user.Rem = strings.TrimSpace(user.Rem)
+
 	// 校验用户名
-	err = validate.UserName(name)
+	err = validate.UserName(user.Name)
 	if err != nil {
 		errRedirect(user, err)
 		return
 	}
 
-	// 密码
-	passwd := strings.TrimSpace(user.Passwd)
 	// 校验密码
-	err = validate.Passwd(passwd)
+	err = validate.Passwd(user.Passwd)
 	if err != nil {
 		errRedirect(user, err)
 		return
 	}
 
 	// 密码加密
-	passwdHash, err := util_crypto_bcrypt.Generate(passwd)
+	passwdHash, err := util_crypto_bcrypt.Generate(user.Passwd)
 	if err != nil {
 		errRedirect(user, err)
 		return
 	}
 
-	// 获取数据库
+	// 获取数据库操作实例
 	db, err := api.Db(nil)
 	if err != nil {
 		errRedirect(user, err)
@@ -95,45 +97,48 @@ func signUp(ctx *gin.Context) {
 	}
 
 	// 根据用户名查询用户信息
-	dbUser := getByName(db, name)
+	dbUser := getByName(db, user.Name)
 	// 校验数据库用户名
 	if dbUser.Id != 0 {
-		errRedirect(user, errors.New(i18n.MustGetMessage("i18n.userNameAlreadyExists")))
+		errRedirect(user, i18n.MustGetMessage("i18n.userNameAlreadyExists"))
 		return
 	}
-
-	nickname := strings.TrimSpace(user.Nickname)
-	rem := strings.TrimSpace(user.Rem)
 
 	// ------事务操作------
 
 	// 开始事务
 	tx := db.Begin()
 
-	// add
-	id, err := tx.Exec("INSERT INTO `user` (`name`, `nickname`, `passwd`, `rem`, `add_time`) VALUES (?, ?, ?, ?, ?)",
-		name, user.Nickname, passwdHash, user.Rem, time.NowUnix())
-	if err != nil {
-		tx.Rollback()
-		redirect(user, err)
-		return
-	}
-
-	// 创建用户数据目录
-	dataDir := common.DataDirOnUserId(id)
-	if !util_os.IsExist(dataDir) {
-		util_os.MkDir(dataDir)
-	}
-	log.Printf("dataDir: %v\n", dataDir)
-
-	// 复制文件
-	dstPath := fmt.Sprintf("%s%s%s", dataDir, util_os.FileSeparator(), "database.db")
-	srcPath := fmt.Sprintf("%s%s%s%s%s", common.AppArg.DataDir, util_os.FileSeparator(), "{id}", util_os.FileSeparator(), "database.db")
-	_, err = util_os.CopyFile(dstPath, srcPath)
+	// 新增用户
+	err = tx.Exec("INSERT INTO `user` (`name`, `nickname`, `passwd`, `rem`, `add_time`) VALUES (?, ?, ?, ?, ?)",
+		user.Name, user.Nickname, passwdHash, user.Rem, time.NowUnix()).Error
 	if err != nil {
 		// 回滚事务
 		tx.Rollback()
-		redirect(user, err)
+		errRedirect(user, err)
+		return
+	}
+
+	// 获取用户id
+	dbUser = getByName(tx, user.Name)
+	id := dbUser.Id
+
+	// 创建用户数据目录
+	dataDir := arg.DataDir
+	userDataDir := util_os.Path(dataDir, fmt.Sprintf("%d", id))
+	if !util_os.Stat(userDataDir).IsExist() {
+		util_os.MkDir(userDataDir, os.ModePerm)
+	}
+	log.Printf("User DataDir %v\n", userDataDir)
+
+	// 复制文件
+	srcPath := util_os.Path(dataDir, "id", "database.db")
+	dstPath := util_os.Path(userDataDir, "database.db")
+	_, err = util_os.CopyFile(srcPath, dstPath)
+	if err != nil {
+		// 回滚事务
+		tx.Rollback()
+		errRedirect(user, err)
 		return
 	}
 
@@ -141,7 +146,6 @@ func signUp(ctx *gin.Context) {
 	tx.Commit()
 
 	// 用户注册成功后，重定向到登录页
-	api_common_context.Redirect(context, "/user/login", typ.Resp[typ.User]{
-		Data: user,
-	})
+	session.Set(ctx, signInNameKey, user.Name)
+	context.Redirect(ctx, "/user/signin")
 }

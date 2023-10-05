@@ -36,8 +36,8 @@ func initAuth(engine *gin.Engine) {
 		}
 
 		// 用户登录和注册放行
-		if reqPath == path+"/user/signIn" || // 登录页、登录接口
-			reqPath == path+"/user/signUp" { // 注册页、注册接口
+		if reqPath == path+"/user/signin" || // 登录页、登录接口
+			reqPath == path+"/user/signup" { // 注册页、注册接口
 			// 如果已登录则重定向到首页
 			if isSignIn {
 				// 重定向到首页
@@ -55,10 +55,10 @@ func initAuth(engine *gin.Engine) {
 		// 未登录
 		if !isSignIn {
 			// 重定向到登录页
-			//ctx.Request.URL.Path = path + "/user/signIn"
+			//ctx.Request.URL.Path = path + "/user/signin"
 			//engine.HandleContext(ctx)
 			// OR
-			redirect(ctx, path+"/user/signIn")
+			redirect(ctx, path+"/user/signin")
 			// 中止调用链
 			ctx.Abort()
 			return

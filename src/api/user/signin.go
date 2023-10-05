@@ -24,12 +24,12 @@ const signInErrKey = "signInErr"
 // SignIn 登录
 func SignIn(ctx *gin.Context) {
 	method, _ := context.PostForm[string](ctx, "_method")
-	if "POST" == method {
+	if method == "POST" {
 		signIn(ctx)
 	} else {
 		name, _ := session.Get[string](ctx, signInNameKey, true)
-		err, _ := session.Get[any](ctx, signInErrKey, true)
-		context.HtmlOk(ctx, "user/sign_in", typ.Resp[typ.User]{Data: typ.User{Name: name}, Msg: util_string.String(err)})
+		err, _ := session.Get[string](ctx, signInErrKey, true)
+		context.HtmlOk(ctx, "user/signin", typ.Resp[typ.User]{Data: typ.User{Name: name}, Msg: err})
 	}
 }
 
@@ -40,8 +40,8 @@ func signIn(ctx *gin.Context) {
 	// 错误重定向到登录页
 	errRedirect := func(err any) {
 		session.Set(ctx, signInNameKey, name)
-		session.Set(ctx, signInErrKey, err)
-		context.Redirect(ctx, "/user/signIn")
+		session.Set(ctx, signInErrKey, util_string.String(err))
+		context.Redirect(ctx, "/user/signin")
 	}
 
 	// 校验用户名
@@ -60,7 +60,7 @@ func signIn(ctx *gin.Context) {
 		return
 	}
 
-	// 获取数据库
+	// 获取数据库操作实例
 	db, err := api.Db(nil)
 	if err != nil {
 		errRedirect(err)
@@ -85,7 +85,8 @@ func signIn(ctx *gin.Context) {
 		hour := int64(duration.Hours())
 		// 如果账号锁定超过24h，则自动解除锁定
 		if hour > 24 {
-			updTryById(db, user.Id, 0)
+			try = 0
+			updTryById(db, user.Id, try)
 		} else
 		// 账号已锁定
 		{

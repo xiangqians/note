@@ -17,9 +17,9 @@
     </style>
 </head>
 <body>
-<form action="{{ .path }}/user/signIn?t={{ NowUnix }}" method="post">
+<msg>{{ .resp.Msg }}</msg>
+<form action="{{ .path }}/user/signin?t={{ NowUnix }}" method="post">
     <input name="_method" type="hidden" value="POST">
-    <msg>{{ .resp.Msg }}</msg>
     {{ $data := .resp.Data }}
     <table>
         <tbody>

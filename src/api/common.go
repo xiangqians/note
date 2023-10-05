@@ -13,6 +13,7 @@ import (
 	util_os "note/src/util/os"
 )
 
+// Db 获取数据库操作实例
 func Db(ctx *gin.Context) (*gorm.DB, error) {
 	dataDir := typ.GetArg().DataDir
 	if ctx == nil {

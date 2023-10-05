@@ -25,9 +25,9 @@ func initRoute(engine *gin.Engine) {
 	// user
 	userGroup := engine.Group(path + "/user")
 	{
-		userGroup.Any("/signIn", user.SignIn)
-		userGroup.Any("/signUp", user.SignUp)
-		userGroup.Any("/signOut", user.SignOut)
+		userGroup.Any("/signin", user.SignIn)
+		userGroup.Any("/signup", user.SignUp)
+		userGroup.Any("/signout", user.SignOut)
 		//userGroup.Any("/settings", user.Settings) // page
 		//userGroup.POST("/settings0", user.Settings0)
 	}

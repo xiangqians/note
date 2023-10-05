@@ -9,7 +9,6 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	lru "github.com/hashicorp/golang-lru/v2"
-	"log"
 	"note/src/typ"
 )
 
@@ -30,23 +29,22 @@ func GetUser(ctx *gin.Context) (typ.User, error) {
 // SetUser 保存用户信息到session
 func SetUser(ctx *gin.Context, user typ.User) {
 	// 单用户多端登录限制
-	data := Data
-	keys := data.Keys()
-	if keys != nil && len(keys) > 0 {
-		log.Println(len(data.Values()), data.Values())
-		for _, key := range keys {
-			if value, r := data.Get(key); r {
-				var v = value[userKey]
-				if sessionUser, r := v.(typ.User); r {
-					if sessionUser.Id == user.Id {
-						data.Remove(key)
-					}
-				}
-			}
-		}
-		log.Println(len(data.Values()), data.Values())
-	}
-
+	//data := Data
+	//keys := data.Keys()
+	//if keys != nil && len(keys) > 0 {
+	//	log.Println(len(data.Values()), data.Values())
+	//	for _, key := range keys {
+	//		if value, r := data.Get(key); r {
+	//			var v = value[userKey]
+	//			if sessionUser, r := v.(typ.User); r {
+	//				if sessionUser.Id == user.Id {
+	//					data.Remove(key)
+	//				}
+	//			}
+	//		}
+	//	}
+	//	log.Println(len(data.Values()), data.Values())
+	//}
 	Set(ctx, userKey, user)
 }
 
