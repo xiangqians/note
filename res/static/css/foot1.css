@@ -1,10 +1,16 @@
 /**
- * cfoot1
+ * foot1
  * @author xiangqian
  * @date 20:05 2023/07/10
  */
 
-cfoot1 {
+foot1 {
+    padding-top: 5px;
     display: block;
     font-style: italic;
 }
+
+foot1 a {
+    padding-left: 10px;
+}
+

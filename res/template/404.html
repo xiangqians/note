@@ -6,21 +6,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="shortcut icon" rel="external nofollow" href="{{ .arg.Path }}/static/favicon.ico">
-    <link rel="stylesheet" href="{{ .arg.Path }}/static/css/body.css" type="text/css"/>
-    <link rel="stylesheet" href="{{ .arg.Path }}/static/css/cbody.css" type="text/css"/>
-    <link rel="stylesheet" href="{{ .arg.Path }}/static/css/cfoot1.css" type="text/css"/>
-    <link rel="stylesheet" href="{{ .arg.Path }}/static/css/cfoot2.css" type="text/css"/>
-    <title>{{ Localize "i18n.404" }}</title>
+    <link rel="shortcut icon" rel="external nofollow" href="{{ .path }}/static/favicon.ico">
+    <link rel="stylesheet" href="{{ .path }}/static/css/body.css" type="text/css"/>
+    <link rel="stylesheet" href="{{ .path }}/static/css/foot1.css" type="text/css"/>
+    <link rel="stylesheet" href="{{ .path }}/static/css/foot2.css" type="text/css"/>
+    <title>{{ Localize "i18n.pageNotFound" }}</title>
 </head>
 <body>
 
-<cbody>
-    <h3>{{ Localize "i18n.404" }}</h3>
-</cbody>
+<h3>{{ Localize "i18n.pageNotFound" }}</h3>
 
-{{ template "common/cfoot2.html" . }}
-{{ template "common/cfoot1.html" . }}
+{{ template "common/foot2.html" . }}
+{{ template "common/foot1.html" . }}
 
 </body>
 </html>

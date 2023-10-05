@@ -1,4 +1,4 @@
-// signin
+// 用户登录
 // @author xiangqian
 // @date 22:40 2023/06/13
 package user
@@ -7,35 +7,33 @@ import (
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"note/src/api/common"
+	"note/src/api"
 	"note/src/context"
 	"note/src/session"
 	"note/src/typ"
 	util_crypto_bcrypt "note/src/util/crypto/bcrypt"
+	util_string "note/src/util/string"
 	util_time "note/src/util/time"
 	util_validate "note/src/util/validate"
 	"time"
 )
 
-const signInNameKey = "signInNameKey"
-const signInErrKey = "signInErrKey"
+const signInNameKey = "signInName"
+const signInErrKey = "signInErr"
 
-// SignIn 登录页
+// SignIn 登录
 func SignIn(ctx *gin.Context) {
-	name, _ := session.Get[string](ctx, signInNameKey, true)
-	err, _ := session.Get[any](ctx, signInErrKey, true)
-	context.HtmlOk(ctx, "user/signin", common.Resp[typ.User](typ.User{Name: name}, err))
+	method, _ := context.PostForm[string](ctx, "_method")
+	if "POST" == method {
+		signIn(ctx)
+	} else {
+		name, _ := session.Get[string](ctx, signInNameKey, true)
+		err, _ := session.Get[any](ctx, signInErrKey, true)
+		context.HtmlOk(ctx, "user/sign_in", typ.Resp[typ.User]{Data: typ.User{Name: name}, Msg: util_string.String(err)})
+	}
 }
 
-// SignIn0 登录
-func SignIn0(ctx *gin.Context) {
-	// 保存用户信息到session
-	session.SetUser(ctx, typ.User{
-		Abs:  typ.Abs{Id: 1},
-		Name: "test"})
-
-	return
-
+func signIn(ctx *gin.Context) {
 	// 用户名
 	name, _ := context.PostForm[string](ctx, "name")
 
@@ -43,7 +41,7 @@ func SignIn0(ctx *gin.Context) {
 	errRedirect := func(err any) {
 		session.Set(ctx, signInNameKey, name)
 		session.Set(ctx, signInErrKey, err)
-		context.Redirect(ctx, common.Arg.Path+"/user/signin")
+		context.Redirect(ctx, "/user/signIn")
 	}
 
 	// 校验用户名
@@ -63,15 +61,14 @@ func SignIn0(ctx *gin.Context) {
 	}
 
 	// 获取数据库
-	db, err := common.Db(nil)
+	db, err := api.Db(nil)
 	if err != nil {
 		errRedirect(err)
 		return
 	}
 
-	// 查询用户信息
-	var user typ.User
-	db.Raw("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `add_time`, `upd_time` FROM `user` WHERE `del` = 0 AND `name` = ? LIMIT 1", name).Scan(&user)
+	// 根据用户名查询用户信息
+	user := getByName(db, name)
 	// 用户不存在
 	if user.Id == 0 {
 		errRedirect(i18n.MustGetMessage("i18n.userNameOrPasswdIncorrect"))
@@ -79,7 +76,8 @@ func SignIn0(ctx *gin.Context) {
 	}
 
 	// 判断账号是否被锁定
-	if user.Try >= 3 {
+	try := user.Try
+	if try >= 3 {
 		// 获取账号锁定时间
 		lockTime := util_time.ParseUnix(user.UpdTime)
 		// 账号锁定持续时间
@@ -87,7 +85,7 @@ func SignIn0(ctx *gin.Context) {
 		hour := int64(duration.Hours())
 		// 如果账号锁定超过24h，则自动解除锁定
 		if hour > 24 {
-			resetTry(db, user.Id)
+			updTryById(db, user.Id, 0)
 		} else
 		// 账号已锁定
 		{
@@ -98,22 +96,19 @@ func SignIn0(ctx *gin.Context) {
 
 	// 密码错误
 	if util_crypto_bcrypt.CompareHash(user.Passwd, passwd) != nil {
-		if user.Try == 1 {
+		updTryById(db, user.Id, try+1)
+		if try == 1 {
 			errRedirect(i18n.MustGetMessage("i18n.accountWillBeLocked"))
 		} else {
-			errRedirect(i18n.MustGetMessage("i18n.userOrPasswdIncorrect"))
+			errRedirect(i18n.MustGetMessage("i18n.userNameOrPasswdIncorrect"))
 		}
-		db.Exec("UPDATE `user` SET `try` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", user.Try+1, util_time.NowUnix(), user.Id)
 		return
 	}
 
-	// 重置 try 状态
-	if user.Try != 0 {
-		resetTry(db, user.Id)
+	// 重置try值
+	if try != 0 {
+		updTryById(db, user.Id, 0)
 	}
-
-	// 清理已登录用户
-	//app.ClearUser(user.Id)
 
 	// 密码不存于session
 	user.Passwd = ""
@@ -122,10 +117,17 @@ func SignIn0(ctx *gin.Context) {
 	session.SetUser(ctx, user)
 
 	// 重定向到首页
-	context.Redirect(ctx, common.Arg.Path+"/")
+	context.Redirect(ctx, "/")
 }
 
-// 重置try值
-func resetTry(db *gorm.DB, id int64) {
-	db.Exec("UPDATE `user` SET `try` = 0, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", util_time.NowUnix(), id)
+// 根据用户id更新try值
+func updTryById(db *gorm.DB, id int64, try byte) {
+	db.Exec("UPDATE `user` SET `try` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", try, util_time.NowUnix(), id)
+}
+
+// 根据用户名查询用户信息
+func getByName(db *gorm.DB, name string) typ.User {
+	var user typ.User
+	db.Raw("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `add_time`, `upd_time` FROM `user` WHERE `del` = 0 AND `name` = ? LIMIT 1", name).Scan(&user)
+	return user
 }

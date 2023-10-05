@@ -81,22 +81,24 @@ func init() {
 		fallthrough // 执行穿透
 	case "android":
 		isLinux = true
+
+	// 不支持当前操作系统错误
+	default:
+		panic(errors.New(fmt.Sprintf("The current os is not supported, %s", runtime.GOOS)))
 	}
 }
 
+// IsWindows 是否是windows系统
 func IsWindows() bool {
 	return isWindows
 }
 
+// IsLinux 是否是linux系统
 func IsLinux() bool {
 	return isLinux
 }
 
-// CurrentOsIsNotSupportedError 不支持当前操作系统错误
-func CurrentOsIsNotSupportedError() error {
-	return errors.New(fmt.Sprintf("The current os is not supported, %s", runtime.GOOS))
-}
-
+// Path 拼接路径
 func Path(more ...string) string {
 	if isWindows {
 		return strings.Join(more, "\\")
@@ -106,7 +108,7 @@ func Path(more ...string) string {
 		return strings.Join(more, "/")
 	}
 
-	panic(CurrentOsIsNotSupportedError())
+	panic(errors.New(fmt.Sprintf("Not Implemented, %s", runtime.GOOS)))
 }
 
 // Stat 文件信息
@@ -116,20 +118,21 @@ func Stat(path string) File {
 }
 
 // MkDir (make directories) 创建目录文件
-func MkDir(path string) error {
+// perm
+//   - os.ModePerm: 0777
+func MkDir(path string, perm os.FileMode) error {
 	file := Stat(path)
-	if file.IsExist() {
-		return errors.New(fmt.Sprintf("File exists, %s", path))
+	if !file.IsExist() {
+		return os.MkdirAll(path, perm)
 	}
-
-	return os.MkdirAll(path, os.ModePerm) // 0777
+	return nil
 }
 
 // Rm 删除文件（普通文件或者目录文件）
 func Rm(path string) error {
 	file := Stat(path)
 	if !file.IsExist() {
-		return errors.New(fmt.Sprintf("File not found, %s", path))
+		return errors.New(fmt.Sprintf("File Not Found, %s", path))
 	}
 
 	// 删除目录文件
@@ -233,7 +236,7 @@ func Cmd(cmd string) (*exec.Cmd, error) {
 		return exec.Command("bash", "-c", cmd), nil
 	}
 
-	return nil, CurrentOsIsNotSupportedError()
+	panic(errors.New(fmt.Sprintf("Not Implemented, %s", runtime.GOOS)))
 }
 
 // Cd 执行cd命令
@@ -246,7 +249,7 @@ func Cd(path string) (*exec.Cmd, error) {
 		return Cmd(fmt.Sprintf("cd %s", path))
 	}
 
-	return nil, CurrentOsIsNotSupportedError()
+	panic(errors.New(fmt.Sprintf("Not Implemented, %s", runtime.GOOS)))
 }
 
 // CopyDir 拷贝目录
@@ -259,7 +262,7 @@ func CopyDir(srcPath, dstPath string) (*exec.Cmd, error) {
 		return Cmd(fmt.Sprintf("cp -r %s %s", srcPath, dstPath))
 	}
 
-	return nil, CurrentOsIsNotSupportedError()
+	panic(errors.New(fmt.Sprintf("Not Implemented, %s", runtime.GOOS)))
 }
 
 // HumanizFileSize 人性化文件大小

@@ -1,4 +1,4 @@
-// app
+// 时区
 // @author xiangqian
 // @date 19:49 2023/07/10
 package app
@@ -9,17 +9,18 @@ import (
 )
 
 // 初始化时区
-func initLocal() {
-	loc, err := time.LoadLocation(arg.Loc)
+func initTimeZone() {
+	timeZone := arg.TimeZone
+	loc, err := time.LoadLocation(timeZone)
 	if err != nil {
-		log.Println(arg.Loc, err)
+		log.Println(timeZone, err)
 
 		// GoLang time 包默认是UTC
 		loc = time.UTC
 	}
 
-	// set loc
+	// 设置时区
 	time.Local = loc
 
-	log.Printf("loc: %s\n", loc)
+	log.Printf("TimeZone: %s\n", loc)
 }

@@ -29,8 +29,6 @@ var (
 	enTrans ut.Translator
 )
 
-var Arg typ.Arg
-
 func init() {
 	// 初始化翻译器
 	if v, r := binding.Validator.Engine().(*validator.Validate); r {
@@ -65,10 +63,10 @@ func HtmlOk[T any](ctx *gin.Context, name string, resp typ.Resp[T]) {
 func Html[T any](ctx *gin.Context, code int, name string, resp typ.Resp[T]) {
 	user, _ := session.GetUser(ctx)
 	ctx.HTML(code, name, gin.H{
-		"resp": resp,                   // 响应数据
-		"url":  ctx.Request.RequestURI, // 请求url地址
-		"user": user,                   // 登录用户信息
-		"arg":  Arg,                    // 应用参数
+		"resp": resp, // 响应数据
+		//"url":  ctx.Request.RequestURI, // 请求url地址
+		"user": user,              // 登录用户信息
+		"path": typ.GetArg().Path, // 服务根路径
 	})
 }
 
@@ -90,7 +88,7 @@ func Redirect(ctx *gin.Context, location string) {
 	} else {
 		location = fmt.Sprintf("%s?t=%d", location, time.NowUnix())
 	}
-	ctx.Redirect(http.StatusMovedPermanently, location)
+	ctx.Redirect(http.StatusMovedPermanently, fmt.Sprintf("%s%s", typ.GetArg().Path, location))
 }
 
 func PostForm[T any](ctx *gin.Context, key string) (T, error) {

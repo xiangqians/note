@@ -1,4 +1,4 @@
-// route
+// 路由
 // @author xiangqian
 // @date 18:11 2023/08/06
 package app
@@ -19,16 +19,15 @@ func initRoute(engine *gin.Engine) {
 		context.HtmlNotFound(ctx, "404", resp)
 	})
 
+	// 服务根路径
 	path := arg.Path
 
 	// user
 	userGroup := engine.Group(path + "/user")
 	{
-		userGroup.Any("/signin", user.SignIn)
-		userGroup.POST("/signin0", user.SignIn0)
-		userGroup.Any("/signup", user.SignUp)
-		userGroup.POST("/signup0", user.SignUp0)
-		userGroup.Any("/signout", user.SignOut)
+		userGroup.Any("/signIn", user.SignIn)
+		userGroup.Any("/signUp", user.SignUp)
+		userGroup.Any("/signOut", user.SignOut)
 		//userGroup.Any("/settings", user.Settings) // page
 		//userGroup.POST("/settings0", user.Settings0)
 	}

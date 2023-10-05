@@ -1,13 +1,13 @@
 /**
- * cfoot2
+ * foot2
  * @author xiangqian
  * @date 21:14 2023/07/10
  */
 
-cfoot2 {
+foot2 {
     display: block;
 }
 
-cfoot2 li {
+foot2 li {
     padding-bottom: 4px;
 }

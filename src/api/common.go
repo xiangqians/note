@@ -1,7 +1,7 @@
 // Route
 // @author xiangqian
 // @date 21:47 2022/12/23
-package common
+package api
 
 import (
 	"fmt"
@@ -13,10 +13,8 @@ import (
 	util_os "note/src/util/os"
 )
 
-var Arg typ.Arg
-
 func Db(ctx *gin.Context) (*gorm.DB, error) {
-	dataDir := Arg.DataDir
+	dataDir := typ.GetArg().DataDir
 	if ctx == nil {
 		return db.Db(util_os.Path(dataDir, "database.db"))
 	}
@@ -27,20 +25,4 @@ func Db(ctx *gin.Context) (*gorm.DB, error) {
 	}
 
 	return db.Db(util_os.Path(dataDir, fmt.Sprintf("%d", user.Id), "database.db"))
-}
-
-func Resp[T any](data T, anyMsg any) typ.Resp[T] {
-	msg := ""
-	if anyMsg != nil {
-		if err, r := anyMsg.(error); r {
-			msg = err.Error()
-		} else {
-			msg = fmt.Sprintf("%v", anyMsg)
-		}
-	}
-
-	return typ.Resp[T]{
-		Data: data,
-		Msg:  msg,
-	}
 }

@@ -18,7 +18,7 @@ func UserName(userName string) error {
 	}
 
 	if !matched {
-		return errors.New(i18n.MustGetMessage("i18n.userNameMastNBitsLong"))
+		return errors.New(i18n.MustGetMessage("i18n.userNameMastNBitsLength"))
 	}
 
 	return nil
@@ -33,7 +33,7 @@ func Passwd(passwd string) error {
 	}
 
 	if !matched {
-		return errors.New(i18n.MustGetMessage("i18n.passwdMastNBitsLong"))
+		return errors.New(i18n.MustGetMessage("i18n.passwdMastNBitsLength"))
 	}
 
 	return nil

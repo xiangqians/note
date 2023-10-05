@@ -1,4 +1,4 @@
-// Template
+// 模板
 // @author xiangqian
 // @date 21:45 2022/12/23
 package app
@@ -44,6 +44,7 @@ func customTemplateFunc(engine *gin.Engine) {
 }
 
 // loadHtmlTemplate 加载html模板
+// engine: 引擎
 // templateDir: 模板路径
 func loadHtmlTemplate(engine *gin.Engine, templateDir string) {
 	// HTML模板
@@ -132,7 +133,7 @@ func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap html_template.Fu
 func formatTemplateName(templateName string) string {
 	templateName = strings.ReplaceAll(templateName, "\\", "/")
 
-	// name: res/template/user/signin.html -> user/signin.html
+	// name: res/template/user/signIn.html -> user/signIn.html
 	index := strings.Index(templateName, "template")
 	templateName = templateName[index+len("template")+1:]
 

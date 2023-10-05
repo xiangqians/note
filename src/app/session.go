@@ -1,4 +1,4 @@
-// session
+// 会话
 // @author xiangqian
 // @date 20:01 2023/03/22
 package app
@@ -7,11 +7,15 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"log"
+	"note/src/session"
 	util_crypto_bcrypt "note/src/util/crypto/bcrypt"
 )
 
-// 初始化session
+// 初始化会话
 func initSession(engine *gin.Engine) {
+	// 重写缓存存储实例
+	session.Data = data
+
 	// 密钥
 	passwd := "$2a$10$NkWzRTyz1ZNnNfjLmxreaeZ31DCiwCEWJlXJAVDkG8fD9Ble2mg4K"
 	hash, err := util_crypto_bcrypt.Generate(passwd)
@@ -32,8 +36,11 @@ func initSession(engine *gin.Engine) {
 	store.Options(sessions.Options{
 		//Secure: true,
 		//SameSite: http.SameSiteNoneMode,
-		Path:   "/",
-		MaxAge: 60 * 60 * 12, // 设置session过期时间，单位：s，12h
+		Path: "/",
+
+		// 设置session过期时间，单位：s
+		// 12h
+		MaxAge: 60 * 60 * 12,
 	})
 
 	// 设置session中间件

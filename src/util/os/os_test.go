@@ -5,6 +5,7 @@ package os
 
 import (
 	"fmt"
+	"os"
 	"testing"
 )
 
@@ -40,7 +41,7 @@ func TestStat(t *testing.T) {
 
 func TestMkDir(t *testing.T) {
 	path := Path("C:\\Users\\xiangqian\\Desktop\\tmp", "note2023")
-	err := MkDir(path)
+	err := MkDir(path, os.ModePerm)
 	if err != nil {
 		fmt.Println(err)
 	}

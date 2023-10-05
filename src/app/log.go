@@ -1,4 +1,4 @@
-// log
+// 日志
 // @author xiangqian
 // @date 19:45 2023/07/10
 package app
@@ -14,17 +14,17 @@ import (
 
 // 初始化日志记录器
 func initLog() {
-	// current directory
+	// 当前目录
 	curDir, err := filepath.Abs("./")
 	if err != nil {
 		panic(err)
 	}
 
-	// 创建日志文件夹，如果不存在的话
+	// 创建日志目录（如果文件不存在或者不是目录文件的话）
 	logDir := util_os.Path(curDir, "log")
-	fileInfo, err := os.Stat(logDir)
-	if err != nil || !fileInfo.IsDir() {
-		err = os.Mkdir(logDir, 0666)
+	file := util_os.Stat(logDir)
+	if !file.IsExist() || !file.IsDir() {
+		err = util_os.MkDir(logDir, os.ModePerm)
 		if err != nil {
 			panic(err)
 		}
@@ -48,5 +48,6 @@ func initLog() {
 	// 设置日志输出
 	log.SetOutput(writer)
 
-	log.Printf("logDir: %s\n", logDir)
+	log.Printf("logDir  %s\n", logDir)
+	log.Printf("logFile %s\n", logFile.Name())
 }

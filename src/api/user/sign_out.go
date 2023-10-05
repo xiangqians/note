@@ -5,9 +5,9 @@ package user
 
 import (
 	"github.com/gin-gonic/gin"
-	"note/src/api/common"
 	"note/src/context"
 	"note/src/session"
+	"note/src/typ"
 )
 
 // SignOut 注销
@@ -19,5 +19,5 @@ func SignOut(ctx *gin.Context) {
 	session.Clear(ctx)
 
 	// 重定向
-	context.Redirect(ctx, common.Arg.Path+"/user/signin")
+	context.Redirect(ctx, typ.GetArg().Path+"/user/signIn")
 }
