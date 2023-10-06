@@ -5,6 +5,7 @@ package app
 
 import (
 	"github.com/gin-gonic/gin"
+	"note/src/api/image"
 	"note/src/api/index"
 	"note/src/api/user"
 	"note/src/context"
@@ -27,6 +28,12 @@ func initRoute(engine *gin.Engine) {
 		userGroup.Any("/signup", user.SignUp)
 		userGroup.Any("/signout", user.SignOut)
 		userGroup.Any("/settings", user.Settings)
+	}
+
+	// image
+	imageGroup := engine.Group(contextPath + "/image")
+	{
+		imageGroup.Any("", image.List)
 	}
 
 	// index

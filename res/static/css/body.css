@@ -12,60 +12,93 @@ body {
     display: block;
 }
 
-/* 去除td之间的空格 */
-body table {
-    border-collapse: collapse;
-}
-
-body table tbody td {
-    padding-right: 20px;
-}
-
-/*
-鼠标移动tr样式
-onmouseover: "this.style.backgroundColor='#D3D3D3'";
-onmouseout: "this.style.backgroundColor='#FFFFFF'";
-*/
-body table tbody tr:hover {
-    background-color: #D3D3D3;
-}
-
-/* 鼠标移动tr显示operate */
-body table tbody tr:hover .op {
-    display: block;
-}
-
 body a {
     padding: 0;
     margin: 0;
+    /* 去掉<a>标签文本下划线 */
     text-decoration: none;
 }
 
 body button {
+    /* 鼠标经过或点击显示小手样式 */
     cursor: pointer
 }
 
-body form input[type="submit"] {
-    cursor: pointer
-}
-
-body form input[type="text"], input[type="password"] {
-    width: 200px;
-}
-
-body textarea[name="rem"] {
-    width: 200px;
-    height: 60px;
-}
-
-body msg {
+body > msg {
     padding-bottom: 10px;
     display: block;
     color: red;
 }
 
-body msg:empty {
+body > msg:empty {
     padding-bottom: 0px;
+}
+
+body > form table {
+    border-collapse: collapse;
+}
+
+body > form table tbody tr td {
+    padding-right: 20px;
+}
+
+body > form input[type="submit"] {
+    cursor: pointer
+}
+
+body > form input[type="text"] {
+    width: 200px;
+}
+
+body > form input[type="password"] {
+    width: 200px;
+}
+
+body > form textarea {
+    width: 200px;
+    height: 60px;
+}
+
+body > table {
+    border-collapse: collapse;
+}
+
+body > table thead td {
+    font-weight: bold;
+    height: 50px;
+    border-bottom: 2px solid #CCCCCC;
+}
+
+body > table thead th:last-child {
+    border-right: none;
+}
+
+body > table tbody tr td {
+    padding-right: 20px;
+    height: 40px;
+    border-bottom: 1px solid #CCCCCC;
+}
+
+body > table tbody tr td:last-child {
+    border-right: none;
+}
+
+/* 鼠标经过显示背景颜色 */
+body > table tbody tr:hover {
+    background-color: #CCCCCC;
+}
+
+/* 鼠标经过显示operate */
+body > table tbody tr:hover .op {
+    display: block;
+}
+
+body > table tfoot tr td {
+    padding: 20px;
+}
+
+body > table tfoot tr td span {
+    margin-right: 10px;
 }
 
 /* operate样式 */

@@ -32,5 +32,16 @@
   "i18n.video": "Video",
   "i18n.settings": "Settings",
   "i18n.save": "Save",
-  "i18n.origPasswdIncorrect": " The original password is incorrect"
+  "i18n.origPasswdIncorrect": " The original password is incorrect",
+  "i18n.name": "Name",
+  "i18n.type": "Type",
+  "i18n.size": "Size",
+  "i18n.addTime": "Create time",
+  "i18n.updTime": "Last modified time",
+  "i18n.page.current": "Current",
+  "i18n.page.size": "Size",
+  "i18n.pages": "Pages",
+  "i18n.total": "Total",
+  "i18n.prevPage": "Previous page",
+  "i18n.nextPage": "Next page"
 }

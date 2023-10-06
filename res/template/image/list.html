@@ -1,0 +1,128 @@
+<!--
+ | @author xiangqian
+ | @date 11:49 2023/02/12
+ |-->
+<!DOCTYPE html>
+<html lang="en" url="{{ .url }}">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" rel="external nofollow" href="{{ .contextPath }}/static/favicon.ico">
+    <link rel="stylesheet" href="{{ .contextPath }}/static/css/body.css" type="text/css"/>
+    <link rel="stylesheet" href="{{ .contextPath }}/static/css/foot1.css" type="text/css"/>
+    <link rel="stylesheet" href="{{ .contextPath }}/static/css/foot2.css" type="text/css"/>
+    <title>{{ Localize "i18n.image" }}</title>
+    <style>
+    </style>
+</head>
+<body>
+<msg>{{ .resp.Msg }}</msg>
+<p>
+        <span>
+            ID: <input search="id" type="text" size="5" value=""
+                       oninput="this.value = this.value.replace(/^(0+)|[^0-9]+/g, '');">&nbsp;&nbsp;
+            {{ Localize "i18n.name" }}: <input search="name" type="text" size="15" value="">&nbsp;&nbsp;
+            {{ Localize "i18n.type" }}: <select search="type">
+                <option value=""></option>
+            </select>&nbsp;&nbsp;
+             { Localize "i18n.deleted" }: <input search="deleted"
+                                                   type="checkbox"/>&nbsp;&nbsp;
+            <button search="search">{ Localize "i18n.search" }</button>&nbsp;
+            <a href="/lib/list?t={{ NowUnix }}"><button>{ Localize "i18n.reset" }</button></a>
+        </span>
+</p>
+<table>
+    <thead>
+    <tr>
+        <td></td>
+        <td>{{ Localize "i18n.name" }}</td>
+        <td>{{ Localize "i18n.type" }}</td>
+        <td>{{ Localize "i18n.size" }}</td>
+        <td>{{ Localize "i18n.addTime" }}</td>
+        <td>{{ Localize "i18n.updTime" }}</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td><img src="{{ .contextPath }}/static/icon/unknown.png" alt="[TXT]"></td>
+        <td>名称1</td>
+        <td>类型100000</td>
+        <td>100</td>
+        <td>2023/10/06 19:08</td>
+        <td>2023/10/06 19:08</td>
+    </tr>
+    <tr>
+        <td><img src="{{ .contextPath }}/static/icon/back.png" alt="[TXT]"></td>
+        <td>名称2</td>
+        <td>类型2</td>
+        <td>200</td>
+        <td>2023/10/06 19:08</td>
+        <td>2023/10/06 19:08</td>
+    </tr>
+    <tr>
+        <td><img src="{{ .contextPath }}/static/icon/back.png" alt="[BACK]"></td>
+        <td>名称2</td>
+        <td>类型2</td>
+        <td>200</td>
+        <td>2023/10/06 19:08</td>
+        <td>2023/10/06 19:08</td>
+    </tr>
+    <tr>
+        <td><img src="{{ .contextPath }}/static/icon/folder.png" alt="[BACK]"></td>
+        <td>名称2</td>
+        <td>类型2</td>
+        <td>200</td>
+        <td>2023/10/06 19:08</td>
+        <td>2023/10/06 19:08</td>
+    </tr>
+    <tr>
+        <td><img src="{{ .contextPath }}/static/icon/pdf.png" alt="[TXT]"></td>
+        <td>名称2</td>
+        <td>类型2</td>
+        <td>200</td>
+        <td>2023/10/06 19:08</td>
+        <td>2023/10/06 19:08</td>
+    </tr>
+    <tr>
+        <td><img src="{{ .contextPath }}/static/icon/unknown.png" alt="[UNKNOWN]"></td>
+        <td>名称2</td>
+        <td>类型2</td>
+        <td>200</td>
+        <td>2023/10/06 19:08</td>
+        <td>2023/10/06 19:08</td>
+    </tr>
+    <tr>
+        <td><img src="{{ .contextPath }}/static/icon/folder.png" alt="[DIR]"></td>
+        <td>名称234534563464</td>
+        <td>类型20000000000000000000000000</td>
+        <td>200</td>
+        <td>2023/10/06 19:08</td>
+        <td>2023/10/06 19:08</td>
+    </tr>
+    <tr>
+        <td><img src="{{ .contextPath }}/static/icon/md.png" alt="[MD]"></td>
+        <td>名称2</td>
+        <td>类型2</td>
+        <td>20000000000000000</td>
+        <td>2023/10/06 19:08</td>
+        <td>2023/10/06 19:08</td>
+    </tr>
+    </tbody>
+    <tfoot>
+    <tr>
+        <td colspan="6">
+            <span>{{ Localize "i18n.page.current" }}: 1</span>
+            <span>{{ Localize "i18n.page.size" }}: 10</span>
+            <span>{{ Localize "i18n.pages" }}: 1</span>
+            <span>{{ Localize "i18n.total" }}: 1</span>
+            <span>{{ Localize "i18n.prevPage" }}</span>
+            <span>{{ Localize "i18n.nextPage" }}</span>
+        </td>
+    </tr>
+    </tfoot>
+</table>
+</body>
+{{ template "common/foot2.html" . }}
+{{ template "common/foot1.html" . }}
+</html>
+<script type="text/javascript">
+</script>

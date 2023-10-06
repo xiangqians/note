@@ -32,5 +32,16 @@
   "i18n.video": "视频",
   "i18n.settings": "设置",
   "i18n.save": "保存",
-  "i18n.origPasswdIncorrect": "原密码不正确"
+  "i18n.origPasswdIncorrect": "原密码不正确",
+  "i18n.name": "名称",
+  "i18n.type": "类型",
+  "i18n.size": "大小",
+  "i18n.addTime": "创建时间",
+  "i18n.updTime": "最近修改时间",
+  "i18n.page.current": "当前页",
+  "i18n.page.size": "页数量",
+  "i18n.pages": "总页数",
+  "i18n.total": "总数",
+  "i18n.prevPage": "上一页",
+  "i18n.nextPage": "下一页"
 }
