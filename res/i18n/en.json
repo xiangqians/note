@@ -25,5 +25,9 @@
   "i18n.accountWillBeLocked": "You have entered the wrong login password twice in a row. If you enter the wrong password three times in a row, your account will be locked.",
   "i18n.accountHasBeenLocked": "Account has been locked",
   "i18n.signUpNotOpen": "Registration not open",
-  "i18n.userNameAlreadyExists": "User Name already exists."
+  "i18n.userNameAlreadyExists": "User Name already exists.",
+  "i18n.note": "Note",
+  "i18n.image": "Image",
+  "i18n.audio": "Audio",
+  "i18n.video": "Video"
 }

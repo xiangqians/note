@@ -18,11 +18,10 @@ func initRoute(engine *gin.Engine) {
 		context.HtmlNotFound(ctx, "404", typ.Resp[any]{})
 	})
 
-	// 服务根路径
-	path := arg.Path
+	contextPath := arg.ContextPath
 
 	// user
-	userGroup := engine.Group(path + "/user")
+	userGroup := engine.Group(contextPath + "/user")
 	{
 		userGroup.Any("/signin", user.SignIn)
 		userGroup.Any("/signup", user.SignUp)
@@ -32,5 +31,5 @@ func initRoute(engine *gin.Engine) {
 	}
 
 	// index
-	engine.Any(path+"/", index.Index)
+	engine.Any(contextPath+"/", index.Index)
 }

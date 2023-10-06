@@ -15,7 +15,7 @@ import (
 // 初始化授权
 func initAuth(engine *gin.Engine) {
 	// 根路径
-	path := arg.Path
+	contextPath := arg.ContextPath
 
 	// 未授权拦截
 	engine.Use(func(ctx *gin.Context) {
@@ -23,7 +23,7 @@ func initAuth(engine *gin.Engine) {
 		reqPath := ctx.Request.URL.Path
 
 		// 静态资源放行
-		if strings.HasPrefix(reqPath, path+"/static/") {
+		if strings.HasPrefix(reqPath, contextPath+"/static/") {
 			ctx.Next()
 			return
 		}
@@ -36,12 +36,12 @@ func initAuth(engine *gin.Engine) {
 		}
 
 		// 用户登录和注册放行
-		if reqPath == path+"/user/signin" || // 登录页、登录接口
-			reqPath == path+"/user/signup" { // 注册页、注册接口
+		if reqPath == contextPath+"/user/signin" || // 登录页、登录接口
+			reqPath == contextPath+"/user/signup" { // 注册页、注册接口
 			// 如果已登录则重定向到首页
 			if isSignIn {
 				// 重定向到首页
-				redirect(ctx, path+"/")
+				redirect(ctx, contextPath+"/")
 				// 中止调用链
 				ctx.Abort()
 			} else
@@ -58,7 +58,7 @@ func initAuth(engine *gin.Engine) {
 			//ctx.Request.URL.Path = path + "/user/signin"
 			//engine.HandleContext(ctx)
 			// OR
-			redirect(ctx, path+"/user/signin")
+			redirect(ctx, contextPath+"/user/signin")
 			// 中止调用链
 			ctx.Abort()
 			return

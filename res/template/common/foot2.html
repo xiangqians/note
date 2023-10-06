@@ -6,15 +6,17 @@
 <foot2>
     <p>{{ Localize "i18n.navigation" }}
     <ul>
-        <li><a href='{{ .path }}/?t={{ NowUnix }}'>{{ Localize "i18n.index" }}</a></li>
-        <li><a href="">Tea</a></li>
-        <li><a href="">Milk</a></li>
+        <li><a href='{{ .contextPath }}/?t={{ NowUnix }}' class='{{ if eq .path "/" }}disabled{{ end }}'>{{ Localize "i18n.index" }}</a></li>
+        <li><a href='{{ .contextPath }}/note?t={{ NowUnix }}' class='{{ if eq .path "/note" }}disabled{{ end }}'>{{ Localize "i18n.note" }}</a></li>
+        <li><a href='{{ .contextPath }}/image?t={{ NowUnix }}' class='{{ if eq .path "/image" }}disabled{{ end }}'>{{ Localize "i18n.image" }}</a></li>
+        <li><a href='{{ .contextPath }}/audio?t={{ NowUnix }}' class='{{ if eq .path "/audio" }}disabled{{ end }}'>{{ Localize "i18n.audio" }}</a></li>
+        <li><a href='{{ .contextPath }}/video?t={{ NowUnix }}' class='{{ if eq .path "/video" }}disabled{{ end }}'>{{ Localize "i18n.video" }}</a></li>
     </ul>
     </p>
     <p>
         <span><a href="">{{ .user.Name }} ( {{ .user.Nickname }} )</a></span>
         <span style="padding-left: 15px">
-            <a href="{{ .path }}/user/signout?t={{ NowUnix }}">{{ Localize "i18n.signOut" }}</a>
+            <a href="{{ .contextPath }}/user/signout?t={{ NowUnix }}">{{ Localize "i18n.signOut" }}</a>
         </span>
     </p>
 </foot2>

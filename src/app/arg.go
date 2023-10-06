@@ -19,7 +19,7 @@ var arg typ.Arg
 func initArg() {
 	var timeZone string
 	var port int
-	var path string
+	var contextPath string
 	var dataDir string
 	var allowSignUp string
 
@@ -29,7 +29,7 @@ func initArg() {
 	// 解析参数
 	flag.StringVar(&timeZone, "timeZone", "Asia/Shanghai", "-timeZone Asia/Shanghai")
 	flag.IntVar(&port, "port", 8080, "-port 8080")
-	flag.StringVar(&path, "path", "/", "-path /")
+	flag.StringVar(&contextPath, "contextPath", "/", "-contextPath /")
 	flag.StringVar(&dataDir, "dataDir", "./data", "-dataDir ./data")
 	flag.StringVar(&allowSignUp, "allowSignUp", "true", "-allowSignUp true")
 	flag.Parse()
@@ -38,9 +38,9 @@ func initArg() {
 	timeZone = strings.TrimSpace(timeZone)
 
 	// 服务根路径
-	path = strings.TrimSpace(path)
-	if path == "/" {
-		path = ""
+	contextPath = strings.TrimSpace(contextPath)
+	if contextPath == "/" {
+		contextPath = ""
 	}
 
 	// 数据目录
@@ -54,7 +54,7 @@ func initArg() {
 	arg = typ.Arg{
 		TimeZone:    timeZone,
 		Port:        port,
-		Path:        path,
+		ContextPath: contextPath,
 		DataDir:     dataDir,
 		AllowSignUp: strings.TrimSpace(allowSignUp) == "true",
 	}

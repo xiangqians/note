@@ -5,9 +5,16 @@
  */
 
 foot2 {
+    padding-top: 5px;
     display: block;
 }
 
 foot2 li {
     padding-bottom: 4px;
+}
+
+foot2 a.disabled {
+    pointer-events: none;
+    cursor: default;
+    color: gray;
 }

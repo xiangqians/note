@@ -62,11 +62,13 @@ func HtmlOk[T any](ctx *gin.Context, name string, resp typ.Resp[T]) {
 // resp : response
 func Html[T any](ctx *gin.Context, code int, name string, resp typ.Resp[T]) {
 	user, _ := session.GetUser(ctx)
+	request := ctx.Request
 	ctx.HTML(code, name, gin.H{
-		"resp": resp, // 响应数据
-		//"url":  ctx.Request.RequestURI, // 请求url地址
-		"user": user,              // 登录用户信息
-		"path": typ.GetArg().Path, // 服务根路径
+		"resp":        resp,                     // 响应数据
+		"user":        user,                     // 登录用户信息
+		"contextPath": typ.GetArg().ContextPath, // 服务根路径
+		"uri":         request.RequestURI,       // 请求uri地址
+		"path":        request.URL.Path,         // 请求路径
 	})
 }
 
@@ -88,7 +90,7 @@ func Redirect(ctx *gin.Context, location string) {
 	} else {
 		location = fmt.Sprintf("%s?t=%d", location, time.NowUnix())
 	}
-	ctx.Redirect(http.StatusMovedPermanently, fmt.Sprintf("%s%s", typ.GetArg().Path, location))
+	ctx.Redirect(http.StatusMovedPermanently, fmt.Sprintf("%s%s", typ.GetArg().ContextPath, location))
 }
 
 func PostForm[T any](ctx *gin.Context, key string) (T, error) {
