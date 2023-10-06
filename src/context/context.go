@@ -31,16 +31,16 @@ var (
 
 func init() {
 	// 初始化翻译器
-	if v, r := binding.Validator.Engine().(*validator.Validate); r {
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		uni := ut.New(zh.New(), // 备用语言
 			// 支持的语言
 			zh.New(),
 			en.New())
-		if trans, r := uni.GetTranslator(typ.Zh); r {
+		if trans, ok := uni.GetTranslator(typ.Zh); ok {
 			zh_trans.RegisterDefaultTranslations(v, trans)
 			zhTrans = trans
 		}
-		if trans, r := uni.GetTranslator(typ.En); r {
+		if trans, ok := uni.GetTranslator(typ.En); ok {
 			en_trans.RegisterDefaultTranslations(v, trans)
 			enTrans = trans
 		}
@@ -155,10 +155,10 @@ func ShouldBind(ctx *gin.Context, i any) error {
 
 // transErr 翻译异常
 func transErr(ctx *gin.Context, err error) error {
-	if errs, r := err.(validator.ValidationErrors); r {
+	if errs, ok := err.(validator.ValidationErrors); ok {
 		session := session.Session(ctx)
 		lang := ""
-		if v, r := session.Get("lang").(string); r {
+		if v, ok := session.Get("lang").(string); ok {
 			lang = v
 		}
 		var validationErrTrans validator.ValidationErrorsTranslations

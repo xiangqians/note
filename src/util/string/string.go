@@ -10,7 +10,7 @@ func String(i any) string {
 		return ""
 	}
 
-	if err, r := i.(error); r {
+	if err, ok := i.(error); ok {
 		return err.Error()
 	}
 

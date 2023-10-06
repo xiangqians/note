@@ -7,15 +7,11 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"log"
-	"note/src/session"
 	util_crypto_bcrypt "note/src/util/crypto/bcrypt"
 )
 
 // 初始化会话
 func initSession(engine *gin.Engine) {
-	// 重写缓存存储实例
-	session.Data = data
-
 	// 密钥
 	passwd := "$2a$10$NkWzRTyz1ZNnNfjLmxreaeZ31DCiwCEWJlXJAVDkG8fD9Ble2mg4K"
 	hash, err := util_crypto_bcrypt.Generate(passwd)

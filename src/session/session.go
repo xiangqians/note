@@ -1,4 +1,4 @@
-// session
+// 会话
 // @author xiangqian
 // @date 23:05 2023/07/20
 package session
@@ -8,17 +8,14 @@ import (
 	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	lru "github.com/hashicorp/golang-lru/v2"
 	"note/src/typ"
 )
 
-const userKey = "__user__"
-
-var Data *lru.Cache[string, map[any]any]
+const UserKey = "__user__"
 
 // GetUser 获取session用户信息
 func GetUser(ctx *gin.Context) (typ.User, error) {
-	user, err := Get[typ.User](ctx, userKey, false)
+	user, err := Get[typ.User](ctx, UserKey, false)
 
 	// 如果返回指针值，有可能会发生逃逸
 	//return &user
@@ -28,24 +25,7 @@ func GetUser(ctx *gin.Context) (typ.User, error) {
 
 // SetUser 保存用户信息到session
 func SetUser(ctx *gin.Context, user typ.User) {
-	// 单用户多端登录限制
-	//data := Data
-	//keys := data.Keys()
-	//if keys != nil && len(keys) > 0 {
-	//	log.Println(len(data.Values()), data.Values())
-	//	for _, key := range keys {
-	//		if value, r := data.Get(key); r {
-	//			var v = value[userKey]
-	//			if sessionUser, r := v.(typ.User); r {
-	//				if sessionUser.Id == user.Id {
-	//					data.Remove(key)
-	//				}
-	//			}
-	//		}
-	//	}
-	//	log.Println(len(data.Values()), data.Values())
-	//}
-	Set(ctx, userKey, user)
+	Set(ctx, UserKey, user)
 }
 
 // Set 设置session <k, v>
@@ -67,7 +47,7 @@ func Get[T any](ctx *gin.Context, key any, del bool) (T, error) {
 	}
 
 	// t
-	if t, r := value.(T); r {
+	if t, ok := value.(T); ok {
 		return t, nil
 	}
 

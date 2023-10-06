@@ -184,6 +184,8 @@ func CopyIo(src io.Reader, dst io.Writer, bufSize int) (int, error) {
 	var written int
 
 	// 块缓存大小
+	// len 0, cap ?
+	// cap ?
 	buf := make([]byte, bufSize)
 
 	// write

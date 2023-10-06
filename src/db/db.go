@@ -36,6 +36,8 @@ import (
 var dbMap map[string]*gorm.DB
 
 func init() {
+	// len 0, cap ?
+	// cap ?
 	dbMap = make(map[string]*gorm.DB, 16)
 }
 
@@ -49,7 +51,7 @@ func init() {
 // (*gorm.DB).Exec does not return an error, if you want to see if your query failed or not read up on error handling with gorm. Use Exec when you don’t care about output, use Raw when you do care about the output.
 func Db(dsn string) (*gorm.DB, error) {
 	key := util_crypto_md5.Encrypt([]byte(dsn), nil)
-	if db, r := dbMap[key]; r {
+	if db, ok := dbMap[key]; ok {
 		return db, nil
 	}
 

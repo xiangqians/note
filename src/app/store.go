@@ -13,6 +13,8 @@ import (
 	gorilla_sessions "github.com/gorilla/sessions"
 	"github.com/hashicorp/golang-lru/v2"
 	"net/http"
+	"note/src/session"
+	"note/src/typ"
 	"strings"
 )
 
@@ -23,11 +25,60 @@ type cache struct {
 }
 
 func (c *cache) value(name string) (map[any]any, bool) {
+	//log.Println(c.String())
 	return c.data.Get(name)
 }
 
+func (c *cache) String() string {
+	var arr []string = nil
+	keys := c.data.Keys()
+	if keys != nil && len(keys) > 0 {
+		// len 0, cap ?
+		cap := len(keys)
+		arr = make([]string, 0, cap)
+		arr = append(arr, fmt.Sprintf("cap %d", cap))
+		for _, key := range keys {
+			if v, ok := c.data.Get(key); ok {
+				arr = append(arr, fmt.Sprintf("%s %v", key, v))
+			}
+		}
+	}
+
+	if arr != nil {
+		return fmt.Sprintf("%s", strings.Join(arr, "\n\t"))
+	}
+
+	return ""
+}
+
 func (c *cache) setValue(name string, value map[any]any) {
+	// 用户多终端登录限制
+	if v, ok := value[session.UserKey]; ok {
+		if user, ok := v.(typ.User); ok {
+			id := user.Id
+			keys := c.data.Keys()
+			if keys != nil && len(keys) > 0 {
+				//log.Println("before", c.String())
+				for _, key := range keys {
+					if v, ok = c.data.Get(key); ok {
+						if m, ok := v.(map[any]any); ok {
+							if v, ok = m[session.UserKey]; ok {
+								if user, ok = v.(typ.User); ok {
+									if id == user.Id {
+										c.data.Remove(key)
+									}
+								}
+							}
+						}
+					}
+				}
+				//log.Println("after", c.String())
+			}
+		}
+	}
+
 	c.data.Add(name, value)
+	//log.Println(c.String())
 }
 
 func (c *cache) delete(name string) {
