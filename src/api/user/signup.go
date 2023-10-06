@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"log"
 	"note/src/api"
 	"note/src/context"
@@ -27,18 +28,33 @@ const signUpErrKey = "signUpErr"
 // SignUp 注册
 func SignUp(ctx *gin.Context) {
 	method, _ := context.PostForm[string](ctx, "_method")
+	// 注册
 	if method == "POST" {
 		signUp(ctx)
-	} else {
+	} else
+	// 注册页
+	{
 		user, _ := session.Get[typ.User](ctx, signUpUserKey, true)
 		err, _ := session.Get[string](ctx, signUpErrKey, true)
+		if err == "" {
+			arg := typ.GetArg()
+			if !arg.AllowSignUp {
+				err = i18n.MustGetMessage("i18n.signUpNotOpen")
+			}
+		}
 		context.HtmlOk(ctx, "user/signup", typ.Resp[typ.User]{Data: user, Msg: err})
 	}
 }
 
+// 注册
 func signUp(ctx *gin.Context) {
 	// 错误重定向到注册页
-	errRedirect := func(user typ.User, err any) {
+	errRedirect := func(tx *gorm.DB, user typ.User, err any) {
+		if tx != nil {
+			// 回滚事务
+			tx.Rollback()
+		}
+
 		user.OrigPasswd = ""
 		user.Passwd = ""
 		user.RePasswd = ""
@@ -51,15 +67,15 @@ func signUp(ctx *gin.Context) {
 
 	// 是否允许用户注册
 	arg := typ.GetArg()
-	if !arg.AllowReg {
-		errRedirect(user, i18n.MustGetMessage("i18n.signUpNotOpen"))
+	if !arg.AllowSignUp {
+		errRedirect(nil, user, i18n.MustGetMessage("i18n.signUpNotOpen"))
 		return
 	}
 
 	// 绑定
 	err := context.ShouldBind(ctx, &user)
 	if err != nil {
-		errRedirect(user, err)
+		errRedirect(nil, user, err)
 		return
 	}
 
@@ -71,28 +87,28 @@ func signUp(ctx *gin.Context) {
 	// 校验用户名
 	err = validate.UserName(user.Name)
 	if err != nil {
-		errRedirect(user, err)
+		errRedirect(nil, user, err)
 		return
 	}
 
 	// 校验密码
 	err = validate.Passwd(user.Passwd)
 	if err != nil {
-		errRedirect(user, err)
+		errRedirect(nil, user, err)
 		return
 	}
 
 	// 密码加密
 	passwdHash, err := util_crypto_bcrypt.Generate(user.Passwd)
 	if err != nil {
-		errRedirect(user, err)
+		errRedirect(nil, user, err)
 		return
 	}
 
 	// 获取数据库操作实例
 	db, err := api.Db(nil)
 	if err != nil {
-		errRedirect(user, err)
+		errRedirect(nil, user, err)
 		return
 	}
 
@@ -100,7 +116,7 @@ func signUp(ctx *gin.Context) {
 	dbUser := getByName(db, user.Name)
 	// 校验数据库用户名
 	if dbUser.Id != 0 {
-		errRedirect(user, i18n.MustGetMessage("i18n.userNameAlreadyExists"))
+		errRedirect(nil, user, i18n.MustGetMessage("i18n.userNameAlreadyExists"))
 		return
 	}
 
@@ -113,9 +129,7 @@ func signUp(ctx *gin.Context) {
 	err = tx.Exec("INSERT INTO `user` (`name`, `nickname`, `passwd`, `rem`, `add_time`) VALUES (?, ?, ?, ?, ?)",
 		user.Name, user.Nickname, passwdHash, user.Rem, time.NowUnix()).Error
 	if err != nil {
-		// 回滚事务
-		tx.Rollback()
-		errRedirect(user, err)
+		errRedirect(tx, user, err)
 		return
 	}
 
@@ -127,7 +141,11 @@ func signUp(ctx *gin.Context) {
 	dataDir := arg.DataDir
 	userDataDir := util_os.Path(dataDir, fmt.Sprintf("%d", id))
 	if !util_os.Stat(userDataDir).IsExist() {
-		util_os.MkDir(userDataDir, os.ModePerm)
+		err = util_os.MkDir(userDataDir, os.ModePerm)
+		if err != nil {
+			errRedirect(tx, user, err)
+			return
+		}
 	}
 	log.Printf("User DataDir %v\n", userDataDir)
 
@@ -136,9 +154,7 @@ func signUp(ctx *gin.Context) {
 	dstPath := util_os.Path(userDataDir, "database.db")
 	_, err = util_os.CopyFile(srcPath, dstPath)
 	if err != nil {
-		// 回滚事务
-		tx.Rollback()
-		errRedirect(user, err)
+		errRedirect(tx, user, err)
 		return
 	}
 
@@ -147,5 +163,6 @@ func signUp(ctx *gin.Context) {
 
 	// 用户注册成功后，重定向到登录页
 	session.Set(ctx, signInNameKey, user.Name)
+	session.Set(ctx, signInErrKey, "")
 	context.Redirect(ctx, "/user/signin")
 }

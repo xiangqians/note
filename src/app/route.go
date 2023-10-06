@@ -15,8 +15,7 @@ import (
 func initRoute(engine *gin.Engine) {
 	// 设置默认路由
 	engine.NoRoute(func(ctx *gin.Context) {
-		resp := typ.Resp[any]{}
-		context.HtmlNotFound(ctx, "404", resp)
+		context.HtmlNotFound(ctx, "404", typ.Resp[any]{})
 	})
 
 	// 服务根路径

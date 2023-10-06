@@ -59,8 +59,13 @@ body textarea[name="rem"] {
 }
 
 body msg {
+    padding-bottom: 10px;
     display: block;
     color: red;
+}
+
+body msg:empty {
+    padding-bottom: 0px;
 }
 
 /* operate样式 */

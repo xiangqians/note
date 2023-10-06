@@ -19,7 +19,7 @@
   "i18n.alreadyHaveAnAccount": "Already have an account?",
   "i18n.about": "About",
   "i18n.index": "Index",
-  "i18n.pageNotFound": "Page not found",
+  "i18n.404": "Page not found",
   "i18n.navigation": "Navigation",
   "i18n.userNameOrPasswdIncorrect": "The username or password is incorrect",
   "i18n.accountWillBeLocked": "You have entered the wrong login password twice in a row. If you enter the wrong password three times in a row, your account will be locked.",

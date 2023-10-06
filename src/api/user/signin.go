@@ -23,16 +23,21 @@ const signInErrKey = "signInErr"
 
 // SignIn 登录
 func SignIn(ctx *gin.Context) {
+	// 请求方法
 	method, _ := context.PostForm[string](ctx, "_method")
+	// 登录
 	if method == "POST" {
 		signIn(ctx)
-	} else {
+	} else
+	// 登录页
+	{
 		name, _ := session.Get[string](ctx, signInNameKey, true)
 		err, _ := session.Get[string](ctx, signInErrKey, true)
 		context.HtmlOk(ctx, "user/signin", typ.Resp[typ.User]{Data: typ.User{Name: name}, Msg: err})
 	}
 }
 
+// 登录
 func signIn(ctx *gin.Context) {
 	// 用户名
 	name, _ := context.PostForm[string](ctx, "name")

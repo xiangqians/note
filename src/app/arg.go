@@ -21,7 +21,7 @@ func initArg() {
 	var port int
 	var path string
 	var dataDir string
-	var allowReg string
+	var allowSignUp string
 
 	// eg:
 	// -dataDir "C:\Users\xiangqian\Desktop\tmp\note\data"
@@ -31,7 +31,7 @@ func initArg() {
 	flag.IntVar(&port, "port", 8080, "-port 8080")
 	flag.StringVar(&path, "path", "/", "-path /")
 	flag.StringVar(&dataDir, "dataDir", "./data", "-dataDir ./data")
-	flag.StringVar(&allowReg, "allowReg", "true", "-allowReg true")
+	flag.StringVar(&allowSignUp, "allowSignUp", "true", "-allowSignUp true")
 	flag.Parse()
 
 	// 时区
@@ -52,11 +52,11 @@ func initArg() {
 	dataDir, _ = filepath.Abs(dataDir)
 
 	arg = typ.Arg{
-		TimeZone: timeZone,
-		Port:     port,
-		Path:     path,
-		DataDir:  dataDir,
-		AllowReg: strings.TrimSpace(allowReg) == "true",
+		TimeZone:    timeZone,
+		Port:        port,
+		Path:        path,
+		DataDir:     dataDir,
+		AllowSignUp: strings.TrimSpace(allowSignUp) == "true",
 	}
 	typ.SetArg(arg)
 	log.Println(arg)
