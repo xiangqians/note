@@ -2,8 +2,8 @@
   "i18n.nHoursAgo": "%v hours ago",
   "i18n.nMinutesAgo": "%v minutes ago",
   "i18n.nSecondsAgo": "%v seconds ago",
-  "i18n.userNameMastNBitsLength": "UserName must be 1-32 bits in length(letters, numbers, underscores, minus signs)",
-  "i18n.passwdMastNBitsLength": "Password must be 1-32 bits in length(letters, numbers, special characters)",
+  "i18n.userNameMastNBitsLength": "UserName must be 1-60 bits in length(letters, numbers, underscores, minus signs)",
+  "i18n.passwdMastNBitsLength": "Password must be 1-120 bits in length(letters, numbers, special characters)",
   "i18n.fileNameCannotContainCharacters": "The file name cannot contain characters: \\ / : * ? \" < > |",
   "i18n.nickname": "Nickname",
   "i18n.userName": "User Name",
@@ -29,5 +29,8 @@
   "i18n.note": "Note",
   "i18n.image": "Image",
   "i18n.audio": "Audio",
-  "i18n.video": "Video"
+  "i18n.video": "Video",
+  "i18n.settings": "Settings",
+  "i18n.save": "Save",
+  "i18n.origPasswdIncorrect": " The original password is incorrect"
 }

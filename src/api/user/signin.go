@@ -101,7 +101,7 @@ func signIn(ctx *gin.Context) {
 	}
 
 	// 密码错误
-	if util_crypto_bcrypt.CompareHash(user.Passwd, passwd) != nil {
+	if util_crypto_bcrypt.CompareHash(passwd, user.Passwd) != nil {
 		updTryById(db, user.Id, try+1)
 		if try == 1 {
 			errRedirect(i18n.MustGetMessage("i18n.accountWillBeLocked"))
@@ -115,9 +115,6 @@ func signIn(ctx *gin.Context) {
 	if try != 0 {
 		updTryById(db, user.Id, 0)
 	}
-
-	// 密码不存于session
-	user.Passwd = ""
 
 	// 保存用户信息到session
 	session.SetUser(ctx, user)
@@ -135,5 +132,12 @@ func updTryById(db *gorm.DB, id int64, try byte) {
 func getByName(db *gorm.DB, name string) typ.User {
 	var user typ.User
 	db.Raw("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `add_time`, `upd_time` FROM `user` WHERE `del` = 0 AND `name` = ? LIMIT 1", name).Scan(&user)
+	return user
+}
+
+// 根据用户id询用户信息
+func getById(db *gorm.DB, id int64) typ.User {
+	var user typ.User
+	db.Raw("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `add_time`, `upd_time` FROM `user` WHERE `del` = 0 AND `id` = ? LIMIT 1", id).Scan(&user)
 	return user
 }

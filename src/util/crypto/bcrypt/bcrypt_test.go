@@ -20,13 +20,13 @@ func Test(t *testing.T) {
 	passwd := "123456"
 	hash := encrypt(passwd)
 	fmt.Println(hash)
-	fmt.Println(CompareHash(hash, passwd))
-	fmt.Println(CompareHash(hash, "passwd"))
+	fmt.Println(CompareHash(passwd, hash))
+	fmt.Println(CompareHash("passwd", hash))
 	fmt.Println()
 
 	hash = encrypt(passwd)
 	fmt.Println(hash)
-	fmt.Println(CompareHash(hash, passwd))
+	fmt.Println(CompareHash(passwd, hash))
 	fmt.Println()
 
 }

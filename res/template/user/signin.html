@@ -20,12 +20,12 @@
 <msg>{{ .resp.Msg }}</msg>
 <form action="{{ .contextPath }}/user/signin?t={{ NowUnix }}" method="post">
     <input name="_method" type="hidden" value="POST">
-    {{ $data := .resp.Data }}
+    {{ $user := .resp.Data }}
     <table>
         <tbody>
         <tr>
             <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.userName" }}</label></td>
-            <td><input name="name" type="text" value="{{ $data.Name }}"></td>
+            <td><input name="name" type="text" value="{{ $user.Name }}"></td>
         </tr>
         <tr>
             <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.passwd" }}</label></td>

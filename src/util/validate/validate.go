@@ -11,8 +11,8 @@ import (
 
 // UserName 校验用户名
 func UserName(userName string) error {
-	// 1-32位长度（字母，数字，下划线，减号）
-	matched, err := regexp.MatchString("^[a-zA-Z0-9_-]{1,32}$", userName)
+	// 1-60位长度（字母，数字，下划线，减号）
+	matched, err := regexp.MatchString("^[a-zA-Z0-9_-]{1,60}$", userName)
 	if err != nil {
 		return err
 	}
@@ -26,8 +26,8 @@ func UserName(userName string) error {
 
 // Passwd 校验密码
 func Passwd(passwd string) error {
-	// 1-32位长度（字母，数字，特殊字符）
-	matched, err := regexp.MatchString("^[a-zA-Z0-9!@#$%^&*()-_=+]{1,32}$", passwd)
+	// 1-120位长度（字母，数字，特殊字符）
+	matched, err := regexp.MatchString("^[a-zA-Z0-9!@#$%^&*()-_=+]{1,120}$", passwd)
 	if err != nil {
 		return err
 	}

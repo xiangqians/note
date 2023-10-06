@@ -1,0 +1,65 @@
+<!--
+ | @author xiangqian
+ | @date 15:41 2023/02/04
+ |-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" rel="external nofollow" href="{{ .contextPath }}/static/favicon.ico">
+    <link rel="stylesheet" href="{{ .contextPath }}/static/css/body.css" type="text/css"/>
+    <link rel="stylesheet" href="{{ .contextPath }}/static/css/foot1.css" type="text/css"/>
+    <link rel="stylesheet" href="{{ .contextPath }}/static/css/foot2.css" type="text/css"/>
+    <title>{{ Localize "i18n.settings" }}</title>
+    <style>
+        body table tbody tr:hover {
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+<msg>{{ .resp.Msg }}</msg>
+<form action='/user/settings?t={{ NowUnix }}' method="post">
+    <input name="_method" type="hidden" value="PUT">
+    <input name="passwd" type="hidden" value="passwd">
+    {{ $user := .resp.Data }}
+    <table>
+        <tbody>
+        <tr>
+            <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.userName" }}</label></td>
+            <td><input name="name" type="text" value="{{ $user.Name }}"></td>
+        </tr>
+        <tr>
+            <td><label>{{ Localize "i18n.nickname" }}</label></td>
+            <td><input name="nickname" type="text" value="{{ $user.Nickname }}"></td>
+        </tr>
+        <tr>
+            <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.origPasswd" }}</label></td>
+            <td><input name="origPasswd" type="password"></td>
+        </tr>
+        <tr>
+            <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.newPasswd" }}</label></td>
+            <td><input name="newPasswd" type="password"></td>
+        </tr>
+        <tr>
+            <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.reNewPasswd" }}</label></td>
+            <td><input name="reNewPasswd" type="password"></td>
+        </tr>
+        <tr>
+            <td><label>{{ Localize "i18n.rem" }}</label></td>
+            <td><textarea name="rem" type="text">{{ $user.Rem }}</textarea></td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr>
+            <td colspan="2">
+                <input type="submit" value='{{ Localize "i18n.save" }}'>
+            </td>
+        </tr>
+        </tfoot>
+    </table>
+</form>
+</body>
+{{ template "common/foot2.html" . }}
+{{ template "common/foot1.html" . }}
+</html>

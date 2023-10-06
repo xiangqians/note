@@ -26,8 +26,7 @@ func initRoute(engine *gin.Engine) {
 		userGroup.Any("/signin", user.SignIn)
 		userGroup.Any("/signup", user.SignUp)
 		userGroup.Any("/signout", user.SignOut)
-		//userGroup.Any("/settings", user.Settings) // page
-		//userGroup.POST("/settings0", user.Settings0)
+		userGroup.Any("/settings", user.Settings)
 	}
 
 	// index

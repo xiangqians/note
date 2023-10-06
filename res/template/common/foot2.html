@@ -14,7 +14,7 @@
     </ul>
     </p>
     <p>
-        <span><a href="">{{ .user.Name }} ( {{ .user.Nickname }} )</a></span>
+        <span><a href="{{ .contextPath }}/user/settings?t={{ NowUnix }}">{{ .user.Name }} ( {{ .user.Nickname }} )</a></span>
         <span style="padding-left: 15px">
             <a href="{{ .contextPath }}/user/signout?t={{ NowUnix }}">{{ Localize "i18n.signOut" }}</a>
         </span>

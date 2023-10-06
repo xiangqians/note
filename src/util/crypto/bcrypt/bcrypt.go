@@ -8,9 +8,9 @@ import (
 )
 
 // CompareHash 对比密码
-// hash: 密码密文
 // passwd: 密码原文
-func CompareHash(hash, passwd string) error {
+// hash  : 密码密文
+func CompareHash(passwd, hash string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(passwd))
 }
 

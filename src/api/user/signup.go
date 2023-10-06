@@ -34,7 +34,7 @@ func SignUp(ctx *gin.Context) {
 	} else
 	// 注册页
 	{
-		user, _ := session.Get[typ.User](ctx, signUpUserKey, true)
+		user, _ := session.Get[typ.AddUser](ctx, signUpUserKey, true)
 		err, _ := session.Get[string](ctx, signUpErrKey, true)
 		if err == "" {
 			arg := typ.GetArg()
@@ -42,20 +42,19 @@ func SignUp(ctx *gin.Context) {
 				err = i18n.MustGetMessage("i18n.signUpNotOpen")
 			}
 		}
-		context.HtmlOk(ctx, "user/signup", typ.Resp[typ.User]{Data: user, Msg: err})
+		context.HtmlOk(ctx, "user/signup", typ.Resp[typ.AddUser]{Data: user, Msg: err})
 	}
 }
 
 // 注册
 func signUp(ctx *gin.Context) {
 	// 错误重定向到注册页
-	errRedirect := func(tx *gorm.DB, user typ.User, err any) {
+	errRedirect := func(tx *gorm.DB, user typ.AddUser, err any) {
 		if tx != nil {
 			// 回滚事务
 			tx.Rollback()
 		}
 
-		user.OrigPasswd = ""
 		user.Passwd = ""
 		user.RePasswd = ""
 		session.Set(ctx, signUpUserKey, user)
@@ -63,7 +62,7 @@ func signUp(ctx *gin.Context) {
 		context.Redirect(ctx, "/user/signup")
 	}
 
-	user := typ.User{}
+	user := typ.AddUser{}
 
 	// 是否允许用户注册
 	arg := typ.GetArg()
@@ -98,7 +97,7 @@ func signUp(ctx *gin.Context) {
 		return
 	}
 
-	// 密码加密
+	// 加密密码
 	passwdHash, err := util_crypto_bcrypt.Generate(user.Passwd)
 	if err != nil {
 		errRedirect(nil, user, err)
