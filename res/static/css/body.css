@@ -79,10 +79,6 @@ body > form textarea[name="rem"] {
     height: 60px;
 }
 
-body > form input[name="search"] {
-    width: 500px;
-}
-
 body > table {
     border-collapse: collapse;
 }
@@ -118,7 +114,11 @@ body > table tbody tr:hover .op {
 }
 
 body > table tfoot tr td {
-    padding: 20px;
+    padding: 10px;
+}
+
+body > table tfoot tr:first-child td {
+    padding-top: 20px;
 }
 
 body > table tfoot tr td span {
