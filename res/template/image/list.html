@@ -12,23 +12,22 @@
     <link rel="stylesheet" href="{{ .contextPath }}/static/css/foot2.css" type="text/css"/>
     <title>{{ Localize "i18n.image" }}</title>
     <style>
+        .searchBox {
+
+        }
+
+        form {
+            display: inline;
+        }
     </style>
 </head>
 <body>
 <msg>{{ .resp.Msg }}</msg>
 <p>
-        <span>
-            ID: <input search="id" type="text" size="5" value=""
-                       oninput="this.value = this.value.replace(/^(0+)|[^0-9]+/g, '');">&nbsp;&nbsp;
-            {{ Localize "i18n.name" }}: <input search="name" type="text" size="15" value="">&nbsp;&nbsp;
-            {{ Localize "i18n.type" }}: <select search="type">
-                <option value=""></option>
-            </select>&nbsp;&nbsp;
-             { Localize "i18n.deleted" }: <input search="deleted"
-                                                 type="checkbox"/>&nbsp;&nbsp;
-            <button search="search">{ Localize "i18n.search" }</button>&nbsp;
-            <a href="/lib/list?t={{ NowUnix }}"><button>{ Localize "i18n.reset" }</button></a>
-        </span>
+<form action="{{ .contextPath }}/image" method="get">
+    <input name="search" type="text"
+           placeholder='{{ Localize "i18n.search" }}   id:{id}&name:{name}&type:{type}'>
+</form>
 </p>
 <table>
     <thead>
