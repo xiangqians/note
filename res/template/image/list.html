@@ -25,7 +25,7 @@
                 <option value=""></option>
             </select>&nbsp;&nbsp;
              { Localize "i18n.deleted" }: <input search="deleted"
-                                                   type="checkbox"/>&nbsp;&nbsp;
+                                                 type="checkbox"/>&nbsp;&nbsp;
             <button search="search">{ Localize "i18n.search" }</button>&nbsp;
             <a href="/lib/list?t={{ NowUnix }}"><button>{ Localize "i18n.reset" }</button></a>
         </span>
@@ -51,7 +51,7 @@
         <td>2023/10/06 19:08</td>
     </tr>
     <tr>
-        <td><img src="{{ .contextPath }}/static/icon/back.png" alt="[TXT]"></td>
+        <td><img src="{{ .contextPath }}/static/icon/png.png" alt="[TXT]"></td>
         <td>名称2</td>
         <td>类型2</td>
         <td>200</td>
@@ -106,16 +106,25 @@
         <td>2023/10/06 19:08</td>
         <td>2023/10/06 19:08</td>
     </tr>
+
+    <tr>
+        <td><img src="{{ .contextPath }}/static/icon/md.png1"
+                 onerror="this.onerror=''; this.src='{{ .contextPath }}/static/icon/unknown.png'"
+                 alt="[MD]"></td>
+        <td>名称2</td>
+        <td>类型2</td>
+        <td>20000000000000000</td>
+        <td>2023/10/06 19:08</td>
+        <td>2023/10/06 19:08</td>
+    </tr>
+
     </tbody>
     <tfoot>
     <tr>
         <td colspan="6">
-            <span>{{ Localize "i18n.page.current" }}: 1</span>
-            <span>{{ Localize "i18n.page.size" }}: 10</span>
-            <span>{{ Localize "i18n.pages" }}: 1</span>
-            <span>{{ Localize "i18n.total" }}: 1</span>
-            <span>{{ Localize "i18n.prevPage" }}</span>
-            <span>{{ Localize "i18n.nextPage" }}</span>
+            <a next href="#">{{ Localize "i18n.prev" }}</a>
+            1 ... 6 7 8 9 10 ... 100
+            <a next href="Previous">{{ Localize "i18n.next" }}</a>
         </td>
     </tr>
     </tfoot>
