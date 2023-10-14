@@ -13,15 +13,18 @@ go get github.com/mattn/go-sqlite3@v1.14.16
 
 解决方法2：在不同系统构建不同可执行包
 */
-
 // db
 // @author xiangqian
 // @date 20:47 2023/06/10
 package db
 
 import (
+	"fmt"
 	"log"
+	"note/src/typ"
 	util_crypto_md5 "note/src/util/crypto/md5"
+	"reflect"
+	"strings"
 	"time"
 
 	// https://pkg.go.dev/gorm.io/gorm
@@ -42,13 +45,6 @@ func init() {
 }
 
 // Db Database
-// https://gorm.io/zh_CN/docs
-//
-// 使用gorm框架执行原生sql：（两种方式）
-// 1、gorm.DB.Exec("sql语句") 执行插入、删除等操作使用
-// 2、gorm.DB.Raw("sql语句")  执行查询操作时使用
-// gorm中exec和raw方法的区别是：Raw用来查询，执行其他操作用Exec。
-// (*gorm.DB).Exec does not return an error, if you want to see if your query failed or not read up on error handling with gorm. Use Exec when you don’t care about output, use Raw when you do care about the output.
 func Db(dsn string) (*gorm.DB, error) {
 	key := util_crypto_md5.Encrypt([]byte(dsn), nil)
 	if db, ok := dbMap[key]; ok {
@@ -64,10 +60,11 @@ func Db(dsn string) (*gorm.DB, error) {
 	return db, nil
 }
 
-// init 初始化连接
+// 打开数据库连接
+// https://gorm.io/zh_CN/docs
 // https://gorm.io/zh_CN/docs/connecting_to_the_database.html#SQLite
 func open(dsn string) (db *gorm.DB, err error) {
-	log.Println("open db:", dsn)
+	log.Println("open db", dsn)
 
 	// open
 	dialector := sqlite.Open(dsn)
@@ -92,4 +89,87 @@ func open(dsn string) (db *gorm.DB, err error) {
 	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
 	sqlDb.SetConnMaxLifetime(time.Minute * 10)
 	return
+}
+
+// Exec 执行插入、删除等
+// 使用gorm框架执行原生sql：（两种方式）
+// 1、gorm.DB.Exec("sql语句") 执行插入、删除等操作
+// 2、gorm.DB.Raw("sql语句")  执行查询
+// gorm中exec和raw方法的区别是：Raw用来查询，执行其他操作用Exec。
+// (*gorm.DB).Exec does not return an error, if you want to see if your query failed or not read up on error handling with gorm. Use Exec when you don’t care about output, use Raw when you do care about the output.
+func Exec(db *gorm.DB, sql string, values ...any) (rowsAffected int64, err error) {
+	if values != nil {
+		db = db.Exec(sql, values)
+	} else {
+		db = db.Exec(sql)
+	}
+	rowsAffected = db.RowsAffected
+	err = db.Error
+	return
+}
+
+// Raw 执行查询
+func Raw[T any](db *gorm.DB, sql string, values ...any) (T, error) {
+	var data T
+	rflTyp := reflect.ValueOf(&data).Elem().Type()
+	switch rflTyp.Kind() {
+	// int类型
+	case reflect.Int, reflect.Int8, reflect.Int16 | reflect.Int32 | reflect.Int64 |
+		reflect.Uint | reflect.Uint8 | reflect.Uint16 | reflect.Uint32 | reflect.Uint64:
+
+	// float类型
+	case reflect.Float32, reflect.Float64:
+
+	// string类型
+	case reflect.String:
+
+	// 结构体类型
+	case reflect.Struct:
+
+	// 切片类型
+	case reflect.Slice:
+
+	default:
+		panic("不支持此类型查询：" + rflTyp.Name())
+	}
+
+	if values != nil {
+		// Scan? Take?
+		db = db.Raw(sql, values).Scan(&data)
+	} else {
+		db = db.Raw(sql).Scan(&data)
+	}
+
+	return data, db.Error
+}
+
+// Page 分页查询
+// db 数据库
+// sql SQL语句
+// current 当前页
+// size 页数量
+func Page[T any](db *gorm.DB, sql string, current int64, size uint8) (typ.Page[T], error) {
+	page := typ.Page[T]{
+		Current: current,
+		Size:    size,
+	}
+
+	var total int64
+	index := strings.Index(sql, "FROM")
+	db.Raw(fmt.Sprintf("SELECT COUNT(1) %s", sql[index:])).Count(&total)
+	page.Total = total
+	if total == 0 {
+		return page, nil
+	}
+
+	var data []T
+	rflTyp := reflect.ValueOf(&data).Elem().Type()
+	// 创建切片：len 0, cap ?
+	i := reflect.MakeSlice(rflTyp, 0, int(size)).Interface()
+	data = i.([]T)
+	offset := (current - 1) * int64(size)
+	limit := size
+	err := db.Raw(fmt.Sprintf("%s LIMIT %d,%d", sql, offset, limit)).Scan(&data).Error
+	page.Data = data
+	return page, err
 }

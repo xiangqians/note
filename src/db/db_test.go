@@ -4,28 +4,59 @@
 package db
 
 import (
+	"gorm.io/gorm"
 	"log"
 	"note/src/typ"
 	"testing"
 )
 
-func TestDb(t *testing.T) {
+var db *gorm.DB
+
+func init() {
 	dsn := "C:\\Users\\xiangqian\\Desktop\\tmp\\note\\data\\database.db"
-	db, err := Db(dsn)
+	log.Println("db_test init", dsn)
+	var err error
+	db, err = Db(dsn)
 	if err != nil {
 		panic(err)
 	}
+}
 
-	var result int64
-	db.Raw("select 1+10").Take(&result)
+func TestDb(t *testing.T) {
+	log.Println(db)
+}
+
+func TestRaw1(t *testing.T) {
+	result, err := Raw[int](db, "select 10+10")
+	if err != nil {
+		panic(err)
+	}
 	log.Println(result)
+}
 
-	var user typ.User
-	db.Raw("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `add_time`, `upd_time` FROM `user` LIMIT 1").Scan(&user)
+func TestRaw2(t *testing.T) {
+	user, err := Raw[typ.User](db, "SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user` LIMIT 1")
+	if err != nil {
+		panic(err)
+	}
 	log.Println(user)
+}
 
-	// len 0, cap ?
-	users := make([]typ.User, 0, 1)
-	db.Raw("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `add_time`, `upd_time` FROM `user`").Scan(&users)
-	log.Println(len(users), users)
+func TestRaw3(t *testing.T) {
+	users, err := Raw[[]typ.User](db, "SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user` LIMIT 10")
+	if err != nil {
+		panic(err)
+	}
+	log.Println(users)
+}
+
+func TestPage(t *testing.T) {
+	page, err := Page[typ.User](db, "SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user`", 1, 10)
+	if err != nil {
+		panic(err)
+	}
+	log.Println(page)
+	if page.Total > 0 {
+		log.Println(len(page.Data))
+	}
 }

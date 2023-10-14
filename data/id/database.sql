@@ -69,4 +69,6 @@ CREATE TABLE `note` -- 笔记信息表
     `add_time`     INTEGER     DEFAULT 0,             -- 创建时间（时间戳，s）
     `upd_time`     INTEGER     DEFAULT 0              -- 修改时间（时间戳，s）
 );
--- 存储dir、md、doc、pdf、html、zip等
+/*
+存储dir、md、doc、pdf、html、zip等
+*/

@@ -5,11 +5,23 @@ package image
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
+	"note/src/api"
 	"note/src/context"
 	"note/src/typ"
 )
 
 func List(ctx *gin.Context) {
+	// 获取数据库操作实例
+	db, err := api.Db(nil)
+	if err != nil {
+		return
+	}
+
+	var user typ.User
+	db.Raw("SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `image` LIMIT 1").Scan(&user)
+	log.Println(user)
+
 	context.HtmlOk(ctx, "image/list", typ.Resp[any]{})
 }
 
