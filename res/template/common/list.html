@@ -1,31 +1,8 @@
 <!--
  | @author xiangqian
- | @date 11:49 2023/02/12
+ | @date 18:50 2023/10/14
  |-->
-<!DOCTYPE html>
-<html lang="en" url="{{ .url }}">
-<head>
-    <meta charset="UTF-8">
-    <link rel="shortcut icon" rel="external nofollow" href="{{ .contextPath }}/static/favicon.ico">
-    <link rel="stylesheet" href="{{ .contextPath }}/static/css/body.css" type="text/css"/>
-    <link rel="stylesheet" href="{{ .contextPath }}/static/css/foot1.css" type="text/css"/>
-    <link rel="stylesheet" href="{{ .contextPath }}/static/css/foot2.css" type="text/css"/>
-    <title>{{ Localize "i18n.image" }}</title>
-    <style>
-        form {
-            display: inline;
-        }
-    </style>
-</head>
-<body>
-<div class="overlay1" id="overlay">
-</div>
-<ul id="list" class="menu">
-    <li class="aaa">111</li>
-    <li>222</li>
-    <li>333</li>
-</ul>
-
+{{ define "common/list" }}
 <msg>{{ .resp.Msg }}</msg>
 <table>
     <thead>
@@ -133,17 +110,4 @@
     </tr>
     </tfoot>
 </table>
-</body>
-{{ template "common/foot2" . }}
-{{ template "common/foot1" . }}
-</html>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/jquery.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/body.js"></script>
-<script type="text/javascript">
-    bodyMenu()
-    // <ul id="list">
-    //     <li className="aaa">111</li>
-    //     <li>222</li>
-    //     <li>333</li>
-    // </ul>
-</script>
+{{ end }}

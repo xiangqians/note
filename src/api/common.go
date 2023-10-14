@@ -28,7 +28,7 @@ func Db(ctx *gin.Context) (*gorm.DB, error) {
 	return _db.Db(util_os.Path(dataDir, fmt.Sprintf("%d", user.Id), "database.db"))
 }
 
-func Exec(ctx *gin.Context, sql string, values ...any) (rowsAffected int64, err error) {
+func DbExec(ctx *gin.Context, sql string, values ...any) (rowsAffected int64, err error) {
 	db, err := Db(ctx)
 	if err != nil {
 		return
@@ -36,7 +36,7 @@ func Exec(ctx *gin.Context, sql string, values ...any) (rowsAffected int64, err 
 	return _db.Exec(db, sql, values)
 }
 
-func Raw[T any](ctx *gin.Context, sql string, values ...any) (T, error) {
+func DbRaw[T any](ctx *gin.Context, sql string, values ...any) (T, error) {
 	db, err := Db(ctx)
 	if err != nil {
 		var t T
@@ -45,7 +45,7 @@ func Raw[T any](ctx *gin.Context, sql string, values ...any) (T, error) {
 	return _db.Raw[T](db, sql, values)
 }
 
-func Page[T any](ctx *gin.Context, current int64, size uint8, sql string, values ...any) (typ.Page[T], error) {
+func DbPage[T any](ctx *gin.Context, current int64, size uint8, sql string, values ...any) (typ.Page[T], error) {
 	db, err := Db(ctx)
 	if err != nil {
 		return typ.Page[T]{

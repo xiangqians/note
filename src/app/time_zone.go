@@ -22,5 +22,5 @@ func initTimeZone() {
 	// 设置时区
 	time.Local = loc
 
-	log.Printf("TimeZone: %s\n", loc)
+	log.Printf("TimeZone %s\n", loc)
 }

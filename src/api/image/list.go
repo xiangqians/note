@@ -12,7 +12,7 @@ import (
 )
 
 func List(ctx *gin.Context) {
-	page, err := api.Page[typ.Image](ctx, 1, 10, "SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `image` LIMIT 1")
+	page, err := api.DbPage[typ.Image](ctx, 1, 10, "SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `image` LIMIT 1")
 	context.HtmlOk(ctx, "image/list", typ.Resp[typ.Page[typ.Image]]{
 		Msg:  util_string.String(err),
 		Data: page,
@@ -63,7 +63,7 @@ func List(ctx *gin.Context) {
 //	session.Set(context, LibSessionKey, lib)
 //
 //	// html
-//	api_common_context.HtmlOk(context, "lib/list.html", resp)
+//	api_common_context.HtmlOk(context, "lib/list.html ", resp)
 //}
 
 //// DbPage 分页查询图片

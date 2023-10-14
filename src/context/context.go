@@ -66,7 +66,7 @@ func Html[T any](ctx *gin.Context, code int, name string, resp typ.Resp[T]) {
 	ctx.HTML(code, name, gin.H{
 		"resp":        resp,                     // 响应数据
 		"user":        user,                     // 登录用户信息
-		"contextPath": typ.GetArg().ContextPath, // 服务根路径
+		"contextPath": typ.GetArg().ContextPath, // 上下文路径
 		"uri":         request.RequestURI,       // 请求uri地址
 		"path":        request.URL.Path,         // 请求路径
 	})

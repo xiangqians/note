@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/render"
 	html_template "html/template"
+	"log"
 	util_os "note/src/util/os"
 	util_time "note/src/util/time"
 	"os"
@@ -52,7 +53,6 @@ func loadHtmlTemplate(engine *gin.Engine, templateDir string) {
 	//engine.LoadHTMLGlob("template/**/*")
 	// https://github.com/gin-contrib/multitemplate
 	engine.HTMLRender = func(templateDir string) render.HTMLRender {
-		// if gin.DebugMode -> NewDynamic()
 		renderer := multitemplate.NewRenderer()
 
 		// 获取所有匹配的html模板
@@ -113,7 +113,6 @@ func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap html_template.Fu
 						files = append(files, util_os.Path(name, sfName))
 						files = append(files, commons...)
 					}
-
 					renderer.AddFromFilesFuncs(formatTemplateName(fmt.Sprintf("%s/%s", name, sfName)), funcMap, files...)
 				}
 			}
@@ -125,7 +124,6 @@ func addFromFilesFuncs(renderer multitemplate.Renderer, funcMap html_template.Fu
 		files := make([]string, 0, len(commons)+1)
 		files = append(files, name)
 		files = append(files, commons...)
-		//renderer.AddFromFilesFuncs(filepath.Base(name), funcMap, files...)
 		renderer.AddFromFilesFuncs(formatTemplateName(strings.ReplaceAll(name, "\\", "/")), funcMap, files...)
 	}
 }
@@ -138,5 +136,7 @@ func formatTemplateName(templateName string) string {
 	templateName = templateName[index+len("template")+1:]
 
 	// 去除后缀名
-	return templateName[:len(templateName)-len(".html")]
+	templateName = templateName[:len(templateName)-len(".html")]
+	log.Println("模板名", templateName)
+	return templateName
 }
