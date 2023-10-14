@@ -51,7 +51,7 @@ func TestRaw3(t *testing.T) {
 }
 
 func TestPage(t *testing.T) {
-	page, err := Page[typ.User](db, "SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user`", 1, 10)
+	page, err := Page[typ.User](db, 1, 10, "SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user`")
 	if err != nil {
 		panic(err)
 	}

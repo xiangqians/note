@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"note/src/db"
+	_db "note/src/db"
 	"note/src/session"
 	"note/src/typ"
 	util_os "note/src/util/os"
@@ -17,7 +17,7 @@ import (
 func Db(ctx *gin.Context) (*gorm.DB, error) {
 	dataDir := typ.GetArg().DataDir
 	if ctx == nil {
-		return db.Db(util_os.Path(dataDir, "database.db"))
+		return _db.Db(util_os.Path(dataDir, "database.db"))
 	}
 
 	user, err := session.GetUser(ctx)
@@ -25,5 +25,34 @@ func Db(ctx *gin.Context) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	return db.Db(util_os.Path(dataDir, fmt.Sprintf("%d", user.Id), "database.db"))
+	return _db.Db(util_os.Path(dataDir, fmt.Sprintf("%d", user.Id), "database.db"))
+}
+
+func Exec(ctx *gin.Context, sql string, values ...any) (rowsAffected int64, err error) {
+	db, err := Db(ctx)
+	if err != nil {
+		return
+	}
+	return _db.Exec(db, sql, values)
+}
+
+func Raw[T any](ctx *gin.Context, sql string, values ...any) (T, error) {
+	db, err := Db(ctx)
+	if err != nil {
+		var t T
+		return t, err
+	}
+	return _db.Raw[T](db, sql, values)
+}
+
+func Page[T any](ctx *gin.Context, current int64, size uint8, sql string, values ...any) (typ.Page[T], error) {
+	db, err := Db(ctx)
+	if err != nil {
+		return typ.Page[T]{
+			Current: current,
+			Size:    size,
+			Total:   0,
+		}, err
+	}
+	return _db.Page[T](db, current, size, sql, values)
 }

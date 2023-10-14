@@ -148,7 +148,7 @@ func Raw[T any](db *gorm.DB, sql string, values ...any) (T, error) {
 // sql SQL语句
 // current 当前页
 // size 页数量
-func Page[T any](db *gorm.DB, sql string, current int64, size uint8) (typ.Page[T], error) {
+func Page[T any](db *gorm.DB, current int64, size uint8, sql string, values ...any) (typ.Page[T], error) {
 	page := typ.Page[T]{
 		Current: current,
 		Size:    size,
@@ -169,7 +169,12 @@ func Page[T any](db *gorm.DB, sql string, current int64, size uint8) (typ.Page[T
 	data = i.([]T)
 	offset := (current - 1) * int64(size)
 	limit := size
-	err := db.Raw(fmt.Sprintf("%s LIMIT %d,%d", sql, offset, limit)).Scan(&data).Error
+	if values != nil {
+		db = db.Raw(fmt.Sprintf("%s LIMIT %d,%d", sql, offset, limit), values)
+	} else {
+		db = db.Raw(fmt.Sprintf("%s LIMIT %d,%d", sql, offset, limit))
+	}
+	err := db.Scan(&data).Error
 	page.Data = data
 	return page, err
 }

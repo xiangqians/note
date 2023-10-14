@@ -5,24 +5,18 @@ package image
 
 import (
 	"github.com/gin-gonic/gin"
-	"log"
 	"note/src/api"
 	"note/src/context"
 	"note/src/typ"
+	util_string "note/src/util/string"
 )
 
 func List(ctx *gin.Context) {
-	// 获取数据库操作实例
-	db, err := api.Db(nil)
-	if err != nil {
-		return
-	}
-
-	var user typ.User
-	db.Raw("SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `image` LIMIT 1").Scan(&user)
-	log.Println(user)
-
-	context.HtmlOk(ctx, "image/list", typ.Resp[any]{})
+	page, err := api.Page[typ.Image](ctx, 1, 10, "SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `image` LIMIT 1")
+	context.HtmlOk(ctx, "image/list", typ.Resp[typ.Page[typ.Image]]{
+		Msg:  util_string.String(err),
+		Data: page,
+	})
 }
 
 //// List 库列表页面
