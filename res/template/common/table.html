@@ -55,6 +55,7 @@
                        placeholder='{{ Localize "i18n.search" }}'
                        title="id:{id}&#10;name:{name}&#10;type:{type}"
                        value="{{ $page.Search }}">
+                <input name="t" value="{{ NowUnix }}" type="hidden">
             </form>
             {{ if le $page.Current 1 }}
             <span>{{ Localize "i18n.prev" }}</span>

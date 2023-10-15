@@ -3,46 +3,122 @@
  * @date 22:37 2023/10/15
  */
 
-body > table {
+body table {
     border-collapse: collapse;
 }
 
-body > table thead td {
+body table thead td {
     font-weight: bold;
     height: 50px;
     border-bottom: 2px solid #CCCCCC;
 }
 
-body > table thead th:last-child {
+body table thead th:last-child {
     border-right: none;
 }
 
-body > table tbody {
+body table tbody {
 }
 
-body > table tbody tr td {
+body table tbody tr td {
     padding-right: 20px;
     height: 40px;
     border-bottom: 1px solid #CCCCCC;
 }
 
-body > table tbody tr td:last-child {
+body table tbody tr td:last-child {
     border-right: none;
 }
 
 /* 鼠标经过显示背景颜色 */
-body > table tbody tr:not([name='noData']):hover {
+body table tbody tr:not([name='noData']):hover {
     background-color: #CCCCCC;
 }
 
-body > table tfoot tr td {
+body table tfoot tr td {
     padding: 20px;
 }
 
-body > table tfoot tr td span {
+body table tfoot tr td span {
     padding-left: 10px;
 }
 
-body > table tfoot tr td form input[name="search"] {
+body table tfoot tr td form input[name="search"] {
     width: 200px;
+}
+
+body table form {
+    /* 设置为行内元素显示 */
+    display: inline;
+}
+
+body ul.menu {
+    list-style: none;
+    /*width: 10%;*/
+    padding: 10px;
+    border: 1px solid black;
+    background-color: white;
+    display: none;
+    position: absolute;
+}
+
+body ul.menu li:hover {
+    background: #CCCCCC;
+}
+
+/*************************************************************/
+
+
+.table-overlay {
+    position: relative;
+}
+
+.table-overlay::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.5);
+    z-index: 1;
+}
+
+.table-overlay.loading::after {
+    content: "数据加载中...";
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: #888;
+}
+
+.overlay {
+    /* rgba函数中的最后一个浮点数值为透明度，0为完全透明，1为完全不透明 */
+    background-color: rgba(0, 0, 0, 0);
+    /* 让遮罩层始终固定在页面的最上方 */
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 9999;
+}
+
+
+/* operate样式 */
+body .op {
+    display: none;
+    text-decoration: none;
+}
+
+body .index {
+    display: block;
+    font-size: 2em;
+    margin-block-start: 0.67em;
+    margin-block-end: 0.67em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    font-weight: bold;
 }
