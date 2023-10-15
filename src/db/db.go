@@ -24,6 +24,7 @@ import (
 	"note/src/typ"
 	util_crypto_md5 "note/src/util/crypto/md5"
 	"reflect"
+	"sort"
 	"strings"
 	"time"
 
@@ -98,11 +99,7 @@ func open(dsn string) (db *gorm.DB, err error) {
 // gorm中exec和raw方法的区别是：Raw用来查询，执行其他操作用Exec。
 // (*gorm.DB).Exec does not return an error, if you want to see if your query failed or not read up on error handling with gorm. Use Exec when you don’t care about output, use Raw when you do care about the output.
 func Exec(db *gorm.DB, sql string, values ...any) (rowsAffected int64, err error) {
-	if values != nil {
-		db = db.Exec(sql, values)
-	} else {
-		db = db.Exec(sql)
-	}
+	db = db.Exec(sql, values...)
 	rowsAffected = db.RowsAffected
 	err = db.Error
 	return
@@ -133,13 +130,8 @@ func Raw[T any](db *gorm.DB, sql string, values ...any) (T, error) {
 		panic("不支持此类型查询：" + rflTyp.Name())
 	}
 
-	if values != nil {
-		// Scan? Take?
-		db = db.Raw(sql, values).Scan(&data)
-	} else {
-		db = db.Raw(sql).Scan(&data)
-	}
-
+	// Scan? Take?
+	db = db.Raw(sql, values...).Scan(&data)
 	return data, db.Error
 }
 
@@ -157,40 +149,112 @@ func Page[T any](db *gorm.DB, current int64, size uint8, sql string, values ...a
 	// 总数
 	var total int64
 	index := strings.Index(sql, "FROM")
-	db.Raw(fmt.Sprintf("SELECT COUNT(1) %s", sql[index:])).Count(&total)
+	db.Raw(fmt.Sprintf("SELECT COUNT(1) %s", sql[index:]), values...).Count(&total)
 	page.Total = total
 	if total == 0 {
 		return page, nil
 	}
 
 	// 总页数
-	pages := total / int64(size)
+	pageCount := total / int64(size)
 	if total%int64(size) != 0 {
-		pages += 1
+		pageCount += 1
 	}
-	page.Pages = pages
+	page.PageCount = pageCount
 
-	// 页数索引
-	if current == 1 {
-		indexes := make([]int64, 0, 8)
-		indexes = append(indexes, current)
-		index := current + 1
-		count := cap(indexes) - 1
+	// 页数索引集
+	if current == 1 || current > pageCount {
+		pageIndexes := make([]int64, 0, 8)
+		var pageIndex int64 = 1
+		count := cap(pageIndexes)
 		for {
 			count--
-			if count < 0 || index > pages {
+			if count < 0 || pageIndex > pageCount {
 				break
 			}
-			indexes = append(indexes, index)
-			index++
+			pageIndexes = append(pageIndexes, pageIndex)
+			pageIndex++
 		}
 
-		length := len(indexes)
-		if indexes[length-1] != pages {
-			indexes[length-2] = 0
-			indexes[length-1] = pages
+		length := len(pageIndexes)
+		if pageIndexes[length-1] != pageCount {
+			pageIndexes[length-2] = 0
+			pageIndexes[length-1] = pageCount
 		}
-		page.Indexes = indexes
+		page.PageIndexes = pageIndexes
+
+	} else if current == pageCount {
+		pageIndexes := make([]int64, 0, 8)
+		var pageIndex int64 = pageCount
+		count := cap(pageIndexes)
+		for {
+			count--
+			if count < 0 || pageIndex <= 0 {
+				break
+			}
+			pageIndexes = append(pageIndexes, pageIndex)
+			pageIndex--
+		}
+
+		// 排序：升序
+		sort.Slice(pageIndexes, func(i, j int) bool {
+			return i > j
+		})
+
+		if pageIndexes[0] != 1 {
+			pageIndexes[0] = 1
+			pageIndexes[1] = 0
+		}
+		page.PageIndexes = pageIndexes
+
+	} else {
+		pageIndexes := make([]int64, 0, 6+1+6)
+		var pageIndex int64 = current - 6
+		if pageIndex <= 0 {
+			pageIndex = 1
+		}
+		index := 0 // 当前页索引在数组中位置
+		count := cap(pageIndexes)
+		for {
+			count--
+			if count < 0 || pageIndex > pageCount {
+				break
+			}
+			pageIndexes = append(pageIndexes, pageIndex)
+			if current == pageIndex {
+				index = len(pageIndexes) - 1
+			}
+			pageIndex++
+		}
+
+		length := len(pageIndexes)
+		// ... 在右侧
+		if pageIndexes[0] == 1 && index < 4 {
+			if length >= 8 && pageIndexes[8-1] != pageCount {
+				pageIndexes[8-2] = 0
+				pageIndexes[8-1] = pageCount
+				pageIndexes = pageIndexes[0:8]
+			}
+
+		} else
+		// ... 在左侧
+		if length >= 8 && pageIndexes[length-1] == pageCount && index >= length-4 {
+			if pageIndexes[length-8] != 1 {
+				pageIndexes[length-8] = 1
+				pageIndexes[length-8+1] = 0
+				pageIndexes = pageIndexes[length-8:]
+			}
+		} else
+		// ... 在左右两侧
+		if length > 8 {
+			pageIndexes = pageIndexes[index-4 : index+4+1]
+			length = len(pageIndexes)
+			pageIndexes[0] = 1
+			pageIndexes[1] = 0
+			pageIndexes[length-2] = 0
+			pageIndexes[length-1] = pageCount
+		}
+		page.PageIndexes = pageIndexes
 	}
 
 	// 数据
@@ -201,12 +265,7 @@ func Page[T any](db *gorm.DB, current int64, size uint8, sql string, values ...a
 	data = i.([]T)
 	offset := (current - 1) * int64(size)
 	limit := size
-	sql = fmt.Sprintf("%s LIMIT %d,%d", sql, offset, limit)
-	if values != nil {
-		db = db.Raw(sql, values)
-	} else {
-		db = db.Raw(sql)
-	}
+	db = db.Raw(fmt.Sprintf("%s LIMIT %d,%d", sql, offset, limit), values...)
 	err := db.Scan(&data).Error
 	page.Data = data
 	return page, err

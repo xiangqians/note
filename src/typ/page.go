@@ -5,10 +5,11 @@ package typ
 
 // Page 分页数据
 type Page[T any] struct {
-	Current int64   `json:"current"` // 当前页
-	Size    uint8   `json:"size"`    // 页数量
-	Total   int64   `json:"total"`   // 总数
-	Pages   int64   `json:"pages"`   // 总页数
-	Indexes []int64 `json:"indexes"` // 页数索引
-	Data    []T     `json:"data"`    // 数据
+	Current     int64   `json:"current"`     // 当前页
+	Size        uint8   `json:"size"`        // 页数量
+	Total       int64   `json:"total"`       // 总数
+	PageCount   int64   `json:"pageCount"`   // 总页数
+	PageIndexes []int64 `json:"pageIndexes"` // 页数索引集
+	Data        []T     `json:"data"`        // 数据
+	Search      string  `json:"search"`      // 检索条件
 }

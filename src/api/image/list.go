@@ -4,32 +4,65 @@
 package image
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"note/src/api"
 	"note/src/context"
 	"note/src/typ"
 	util_string "note/src/util/string"
+	"strings"
 )
 
 func List(ctx *gin.Context) {
+	html := func(page typ.Page[typ.Image], err any) {
+		context.HtmlOk(ctx, "image/list", typ.Resp[typ.Page[typ.Image]]{
+			Msg:  util_string.String(err),
+			Data: page,
+		})
+	}
+
 	// 当前页
 	current, _ := context.Query[int64](ctx, "current")
 	if current <= 0 {
-		current = 2 // 1
+		current = 1
 	}
 
 	// 页数量
 	size, _ := context.Query[uint8](ctx, "size")
 	if size <= 0 || size > 100 {
-		size = 2 // 10
+		size = 10
+	}
+
+	search, _ := context.Query[string](ctx, "search")
+	sql := "SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `image` WHERE `del` = 0"
+	var values []any
+	if search != "" {
+		arr := strings.Split(search, "&")
+		for _, str := range arr {
+			str = strings.TrimSpace(str)
+			index := strings.Index(str, ":")
+			if index > 0 && index != len(str)-1 {
+				k := strings.TrimSpace(str[0:index])
+				v := strings.TrimSpace(str[index+1:])
+				if k == "id" {
+					sql += " AND `id` = ?"
+					values = append(values, v)
+
+				} else if k == "name" {
+					sql += " AND `name` LIKE ?"
+					values = append(values, fmt.Sprintf("%%%s%%", v))
+
+				} else if k == "type" {
+					sql += " AND `type` = ?"
+					values = append(values, v)
+				}
+			}
+		}
 	}
 
 	// 查询
-	page, err := api.DbPage[typ.Image](ctx, current, size, "SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `image` WHERE `del` = 0")
-	context.HtmlOk(ctx, "image/list", typ.Resp[typ.Page[typ.Image]]{
-		Msg:  util_string.String(err),
-		Data: page,
-	})
+	page, err := api.DbPage[typ.Image](ctx, current, size, sql, values...)
+	html(page, err)
 }
 
 //// List 库列表页面
