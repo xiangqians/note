@@ -48,10 +48,10 @@
     <tr>
         <td colspan="5">
             <form action="{{ .contextPath }}/image" method="get">
+                <input name="current" value="1" type="hidden">
                 <input name="size" value="{{ $page.Size }}" type="hidden">
                 <input name="search"
                        type="text"
-                       style="width: 30%;"
                        placeholder='{{ Localize "i18n.search" }}'
                        title="id:{id}&#10;name:{name}&#10;type:{type}"
                        value="{{ $page.Search }}">

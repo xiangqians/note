@@ -119,6 +119,10 @@ body > table tfoot tr td span {
     padding-left: 10px;
 }
 
+body > table tfoot tr td form input[name="search"] {
+    width: 200px;
+}
+
 /****/
 
 body ul.menu {
