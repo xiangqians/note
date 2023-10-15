@@ -43,82 +43,48 @@ body table tfoot tr td span {
     padding-left: 10px;
 }
 
-body table tfoot tr td form input[name="search"] {
-    width: 200px;
-}
-
 body table form {
     /* 设置为行内元素显示 */
     display: inline;
 }
 
-body ul.menu {
-    list-style: none;
-    /*width: 10%;*/
-    padding: 10px;
-    border: 1px solid black;
-    background-color: white;
+body table form input {
+    width: 200px;
+}
+
+body > div {
     display: none;
     position: absolute;
 }
 
-body ul.menu li:hover {
-    background: #CCCCCC;
-}
-
-/*************************************************************/
-
-
-.table-overlay {
-    position: relative;
-}
-
-.table-overlay::after {
+/* 遮罩层 */
+body > div::before {
     content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.5);
-    z-index: 1;
-}
-
-.table-overlay.loading::after {
-    content: "数据加载中...";
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 16px;
-    font-weight: bold;
-    color: #888;
-}
-
-.overlay {
-    /* rgba函数中的最后一个浮点数值为透明度，0为完全透明，1为完全不透明 */
-    background-color: rgba(0, 0, 0, 0);
     /* 让遮罩层始终固定在页面的最上方 */
     position: fixed;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 9999;
+    z-index: 2;
+    background-color: #000;
+    /* rgba函数中的最后一个浮点数值为透明度，0为完全透明，1为完全不透明 */
+    background-color: rgba(0, 0, 0, 0.2);
+    opacity: .3;
 }
 
-
-/* operate样式 */
-body .op {
+body > div > ul {
+    list-style: none;
+    padding: 10px;
+    border: 1px solid black;
+    background-color: white;
     display: none;
-    text-decoration: none;
+    /* 让遮罩层始终固定在页面的最上方 */
+    position: fixed;
+    z-index: 2;
+    border-radius: 5px;
 }
 
-body .index {
-    display: block;
-    font-size: 2em;
-    margin-block-start: 0.67em;
-    margin-block-end: 0.67em;
-    margin-inline-start: 0px;
-    margin-inline-end: 0px;
-    font-weight: bold;
+body > div > ul li:hover {
+    background: #CCCCCC;
 }

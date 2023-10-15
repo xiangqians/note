@@ -9,10 +9,15 @@
 
     // 右键菜单列表
     let $ul = $('<ul class="menu"></ul>')
-    $ul.append($('<li>111</li>'))
-    $ul.append($('<li>222</li>'))
-    $ul.append($('<li>333</li>'))
-    $body.prepend($ul)
+    $ul.append($('<li><a href="#">111</a></li>'))
+    $ul.append($('<li><a href="#">222</a></li>'))
+    $ul.append($('<li><a>333</a></li>'))
+
+    let $div = $('<div></div>')
+    $div.append($ul)
+    $body.prepend($div)
+
+    let $targetTr = null
 
     // 为tr添加右键菜单事件
     let $trs = $('table tbody tr[name!="noData"]')
@@ -21,6 +26,13 @@
         $tr.contextmenu(function (e) {
             // 阻止默认行为
             e.preventDefault()
+
+            // 设置选中的tr背景颜色
+            let $target = $(e.target)
+            if (e.target.tagName.toLowerCase() !== 'tr') {
+                $targetTr = $target.parent('tr')
+            }
+            $targetTr.css('background-color', '#CCCCCC')
 
             // 设置菜单位置
             let x = e.clientX
@@ -35,25 +47,33 @@
             $ul.css('top', `${y}px`)
 
             // 显示菜单
+            $div.css('display', 'block')
             $ul.css('display', 'block')
-
         });
     }
 
     // 监听 html->body 鼠标点击事件
     $body.click(function (e) {
+        // 重置已设置选中的tr背景颜色
+        if ($targetTr != null) {
+            $targetTr.css('background-color', '')
+        }
+
         // 隐藏菜单
         $ul.css('display', 'none')
+        $div.css('display', 'none')
     })
 
+    // 菜单点击事件
     $ul.click(function (e) {
         let tagName = e.target.tagName.toLowerCase()
+        console.log(e.target)
         if (tagName !== 'li') {
             return
         }
-        
+
         let $li = $(e.target)
-        console.log($li)
+        console.log($li[0])
     })
 
     return
