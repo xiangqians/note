@@ -34,6 +34,9 @@
             }
             $targetTr.css('background-color', '#CCCCCC')
 
+            // 禁止页面滚动
+            $body.css('overflow', 'hidden')
+
             // 设置菜单位置
             let x = e.clientX
             let y = e.clientY
@@ -58,6 +61,9 @@
         if ($targetTr != null) {
             $targetTr.css('background-color', '')
         }
+
+        // 允许页面滚动
+        $body.css('overflow', '')
 
         // 隐藏菜单
         $ul.css('display', 'none')
