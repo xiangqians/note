@@ -12,7 +12,20 @@ import (
 )
 
 func List(ctx *gin.Context) {
-	page, err := api.DbPage[typ.Image](ctx, 1, 10, "SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `image` LIMIT 1")
+	// 当前页
+	current, _ := context.Query[int64](ctx, "current")
+	if current <= 0 {
+		current = 2 // 1
+	}
+
+	// 页数量
+	size, _ := context.Query[uint8](ctx, "size")
+	if size <= 0 || size > 100 {
+		size = 2 // 10
+	}
+
+	// 查询
+	page, err := api.DbPage[typ.Image](ctx, current, size, "SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `image` WHERE `del` = 0")
 	context.HtmlOk(ctx, "image/list", typ.Resp[typ.Page[typ.Image]]{
 		Msg:  util_string.String(err),
 		Data: page,

@@ -33,7 +33,7 @@ func DbExec(ctx *gin.Context, sql string, values ...any) (rowsAffected int64, er
 	if err != nil {
 		return
 	}
-	return _db.Exec(db, sql, values)
+	return _db.Exec(db, sql, values...)
 }
 
 func DbRaw[T any](ctx *gin.Context, sql string, values ...any) (T, error) {
@@ -42,7 +42,7 @@ func DbRaw[T any](ctx *gin.Context, sql string, values ...any) (T, error) {
 		var t T
 		return t, err
 	}
-	return _db.Raw[T](db, sql, values)
+	return _db.Raw[T](db, sql, values...)
 }
 
 func DbPage[T any](ctx *gin.Context, current int64, size uint8, sql string, values ...any) (typ.Page[T], error) {
@@ -54,5 +54,5 @@ func DbPage[T any](ctx *gin.Context, current int64, size uint8, sql string, valu
 			Total:   0,
 		}, err
 	}
-	return _db.Page[T](db, current, size, sql, values)
+	return _db.Page[T](db, current, size, sql, values...)
 }

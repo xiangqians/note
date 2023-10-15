@@ -15,6 +15,7 @@ import (
 	util_time "note/src/util/time"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -37,9 +38,21 @@ func customTemplateFunc(engine *gin.Engine) {
 		// 获取i18n文件中key对应的value
 		"Localize": i18n.GetMessage,
 
-		// 当前系统时间戳
+		// 两数相加
+		"Add": func(arg1 any, arg2 any) int64 {
+			i1, _ := strconv.ParseInt(fmt.Sprintf("%v", arg1), 10, 64)
+			i2, _ := strconv.ParseInt(fmt.Sprintf("%v", arg2), 10, 64)
+			return i1 + i2
+		},
+
 		"NowUnix": func() int64 {
 			return util_time.NowUnix()
+		},
+		"HumanizUnix": func(unix int64) string {
+			return util_time.HumanizUnix(unix)
+		},
+		"HumanizFileSize": func(size int64) string {
+			return util_os.HumanizFileSize(size)
 		},
 	})
 }

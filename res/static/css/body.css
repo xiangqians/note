@@ -107,26 +107,19 @@ body > table tbody tr td:last-child {
 }
 
 /* 鼠标经过显示背景颜色 */
-body > table tbody tr:hover {
+body > table tbody tr:not([name='noData']):hover {
     background-color: #CCCCCC;
 }
 
-/* 鼠标经过显示operate */
-body > table tbody tr:hover .op {
-    display: block;
-}
-
 body > table tfoot tr td {
-    padding: 10px;
-}
-
-body > table tfoot tr:first-child td {
-    padding-top: 20px;
+    padding: 20px;
 }
 
 body > table tfoot tr td span {
-    margin-right: 10px;
+    padding-left: 10px;
 }
+
+/****/
 
 body ul.menu {
     list-style: none;

@@ -154,6 +154,7 @@ func Page[T any](db *gorm.DB, current int64, size uint8, sql string, values ...a
 		Size:    size,
 	}
 
+	// 总数
 	var total int64
 	index := strings.Index(sql, "FROM")
 	db.Raw(fmt.Sprintf("SELECT COUNT(1) %s", sql[index:])).Count(&total)
@@ -162,6 +163,37 @@ func Page[T any](db *gorm.DB, current int64, size uint8, sql string, values ...a
 		return page, nil
 	}
 
+	// 总页数
+	pages := total / int64(size)
+	if total%int64(size) != 0 {
+		pages += 1
+	}
+	page.Pages = pages
+
+	// 页数索引
+	if current == 1 {
+		indexes := make([]int64, 0, 8)
+		indexes = append(indexes, current)
+		index := current + 1
+		count := cap(indexes) - 1
+		for {
+			count--
+			if count < 0 || index > pages {
+				break
+			}
+			indexes = append(indexes, index)
+			index++
+		}
+
+		length := len(indexes)
+		if indexes[length-1] != pages {
+			indexes[length-2] = 0
+			indexes[length-1] = pages
+		}
+		page.Indexes = indexes
+	}
+
+	// 数据
 	var data []T
 	rflTyp := reflect.ValueOf(&data).Elem().Type()
 	// 创建切片：len 0, cap ?
@@ -169,10 +201,11 @@ func Page[T any](db *gorm.DB, current int64, size uint8, sql string, values ...a
 	data = i.([]T)
 	offset := (current - 1) * int64(size)
 	limit := size
+	sql = fmt.Sprintf("%s LIMIT %d,%d", sql, offset, limit)
 	if values != nil {
-		db = db.Raw(fmt.Sprintf("%s LIMIT %d,%d", sql, offset, limit), values)
+		db = db.Raw(sql, values)
 	} else {
-		db = db.Raw(fmt.Sprintf("%s LIMIT %d,%d", sql, offset, limit))
+		db = db.Raw(sql)
 	}
 	err := db.Scan(&data).Error
 	page.Data = data

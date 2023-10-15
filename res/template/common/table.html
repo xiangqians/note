@@ -1,0 +1,95 @@
+<!--
+ | @author xiangqian
+ | @date 18:50 2023/10/14
+ |-->
+{{ define "common/table" }}
+<msg>{{ .resp.Msg }}</msg>
+
+<!-- 变量赋值 -->
+{{ $page := .resp.Data }}
+{{ $data := $page.Data }}
+
+<table>
+    <thead>
+    <tr>
+        <td></td>
+        <td>{{ Localize "i18n.name" }}</td>
+        <td>{{ Localize "i18n.size" }}</td>
+        <td>{{ Localize "i18n.addTime" }}</td>
+        <td>{{ Localize "i18n.updTime" }}</td>
+    </tr>
+    </thead>
+    <tbody>
+    {{ $len := len $data }}
+    {{ if gt $len 0 }}
+    {{ range $index,$value := $data }}
+    <tr>
+        <!--
+         | . 访问当前位置的上下文
+         | $ 引用当前模板根级的上下文
+         | $. 引用模板中的根级上下文
+         |-->
+        <td><img src="{{ $.contextPath }}/static/icon/{{ $value.Type }}.png"
+                 title="{{ $value.Type }}"
+                 onerror="this.onerror=''; this.src='{{ $.contextPath }}/static/icon/unknown.png'"></td>
+        <td>{{ $value.Name }}</td>
+        <td>{{ HumanizFileSize $value.Size }}</td>
+        <td>{{ HumanizUnix $value.AddTime }}</td>
+        <td>{{ HumanizUnix $value.UpdTime }}</td>
+    </tr>
+    {{ end }}
+    {{ else }}
+    <tr name="noData">
+        <td colspan="5">{{ Localize "i18n.noData" }}</td>
+    </tr>
+    {{ end }}
+    </tbody>
+    <tfoot>
+    <tr>
+        <td colspan="5">
+            <form action="{{ .contextPath }}/image" method="get">
+                <input name="search"
+                       type="text"
+                       style="width: 30%;"
+                       placeholder='{{ Localize "i18n.search" }}'
+                       title="id:{id}&#10;name:{name}&#10;type:{type}">
+            </form>
+            {{ if le $page.Current 1 }}
+            <span>{{ Localize "i18n.prev" }}</span>
+            {{ else }}
+            <span><a href="{{ $.contextPath }}/image?current={{ Add $page.Current -1 }}&t={{ NowUnix }}">{{ Localize "i18n.prev" }}</a></span>
+            {{ end }}
+
+            {{ $indexes := $page.Indexes }}
+            {{ $len := len $indexes }}
+            {{ if gt $len 0 }}
+            {{ range $index,$value := $indexes }}
+            {{ if eq $value 0 }}
+            <span>...</span>
+            {{ else if eq $value $page.Current }}
+            <span>{{ $value }}</span>
+            {{ else }}
+            <span> <a href="{{ $.contextPath }}/image?current={{ $value }}&t={{ NowUnix }}">{{ $value }}</a></span>
+            {{ end }}
+            {{ end }}
+            {{ end }}
+
+            {{ if ge $page.Current $page.Pages }}
+            <span>{{ Localize "i18n.next" }}</span>
+            {{ else }}
+            <span> <a href="{{ $.contextPath }}/image?current={{ Add $page.Current 1 }}&t={{ NowUnix }}">{{ Localize "i18n.next" }}</a></span>
+            {{ end }}
+        </td>
+    </tr>
+    </tfoot>
+</table>
+
+<!--
+<form action="{{ .contextPath }}/image/upload?t={{ NowUnix }}"
+      method="post"
+      enctype="multipart/form-data">
+    <input name="file" type="file"/>
+    <button type="submit">{{ Localize "i18n.upload" }}</button>
+</form>
+-->
+{{ end }}
