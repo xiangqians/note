@@ -1,0 +1,49 @@
+/**
+ * @author xiangqian
+ * @date 22:39 2023/10/15
+ */
+
+body form table {
+    border-collapse: collapse;
+}
+
+body form table tbody tr td {
+    padding-right: 20px;
+}
+
+body form input[type="submit"] {
+    cursor: pointer
+}
+
+body form input[name="name"] {
+    width: 200px;
+}
+
+body form input[name="nickname"] {
+    width: 200px;
+}
+
+body form input[name="passwd"] {
+    width: 200px;
+}
+
+body form input[name="rePasswd"] {
+    width: 200px;
+}
+
+body form input[name="origPasswd"] {
+    width: 200px;
+}
+
+body form input[name="newPasswd"] {
+    width: 200px;
+}
+
+body form input[name="reNewPasswd"] {
+    width: 200px;
+}
+
+body form textarea[name="rem"] {
+    width: 200px;
+    height: 60px;
+}

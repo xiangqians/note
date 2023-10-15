@@ -1,0 +1,48 @@
+/**
+ * @author xiangqian
+ * @date 22:37 2023/10/15
+ */
+
+body > table {
+    border-collapse: collapse;
+}
+
+body > table thead td {
+    font-weight: bold;
+    height: 50px;
+    border-bottom: 2px solid #CCCCCC;
+}
+
+body > table thead th:last-child {
+    border-right: none;
+}
+
+body > table tbody {
+}
+
+body > table tbody tr td {
+    padding-right: 20px;
+    height: 40px;
+    border-bottom: 1px solid #CCCCCC;
+}
+
+body > table tbody tr td:last-child {
+    border-right: none;
+}
+
+/* 鼠标经过显示背景颜色 */
+body > table tbody tr:not([name='noData']):hover {
+    background-color: #CCCCCC;
+}
+
+body > table tfoot tr td {
+    padding: 20px;
+}
+
+body > table tfoot tr td span {
+    padding-left: 10px;
+}
+
+body > table tfoot tr td form input[name="search"] {
+    width: 200px;
+}
