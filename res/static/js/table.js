@@ -10,6 +10,7 @@ $(function () {
     let $ul = $('<ul></ul>')
     $ul.append($(`<a name="addFolder" href="#"><li>${i18n.addFolder}</li></a>`))
     $ul.append($(`<a name="addMdFile" href="#"><li>${i18n.addMdFile}</li></a>`))
+    $ul.append($(`<a name="uploadFile" href="#"><li>${i18n.uploadFile}</li></a>`))
     $ul.append($(`<a name="rename" href="#"><li>${i18n.rename}</li></a>`))
     $ul.append($(`<a name="cut" href="#"><li>${i18n.cut}</li></a>`))
     $ul.append($(`<a name="paste" href="#"><li>${i18n.paste}</li></a>`))
@@ -24,6 +25,7 @@ $(function () {
 
     let $addFolder = $($ul.find('a[name="addFolder"]')[0])
     let $addMdFile = $($ul.find('a[name="addMdFile"]')[0])
+    let $uploadFile = $($ul.find('a[name="uploadFile"]')[0])
     let $rename = $($ul.find('a[name="rename"]')[0])
     let $cut = $($ul.find('a[name="cut"]')[0])
     let $paste = $($ul.find('a[name="paste"]')[0])
@@ -49,6 +51,7 @@ $(function () {
             // 根据删除状态显示右键菜单列表
             $addFolder.addClass('hide')
             $addMdFile.addClass('hide')
+            $uploadFile.addClass('hide')
             $paste.addClass('hide')
             let del = $targetTr.attr('del')
             if (del === "0") {
@@ -72,6 +75,7 @@ $(function () {
             $permlyDel.addClass('hide')
             $addFolder.removeClass('hide')
             $addMdFile.removeClass('hide')
+            $uploadFile.removeClass('hide')
             $paste.removeClass('hide')
         } else {
             throw new Error('未知类型 ' + type)

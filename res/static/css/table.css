@@ -6,30 +6,29 @@
 body table {
     /* 设置为行内元素 */
     display: inline-table;
-}
 
-body table:first-child {
     border-collapse: collapse;
 }
 
-body table:last-child {
+body table:last-child, body table:last-child td {
     /*border: 1px solid black;*/
 }
 
 body table thead td {
     height: 50px;
+    font-weight: bold;
 }
 
 body table:first-child thead td {
-    font-weight: bold;
     border-bottom: 2px solid #CCCCCC;
 }
 
 body table:last-child thead td {
     width: 200px;
+    border-bottom: 2px solid white;
 }
 
-body table:first-child thead th:last-child {
+body table thead th:last-child {
     border-right: none;
 }
 
@@ -45,7 +44,11 @@ body table:first-child tbody tr td {
     border-bottom: 1px solid #CCCCCC;
 }
 
-body table:first-child tbody tr td:last-child {
+body table:last-child tbody tr td {
+    border-bottom: 1px solid white;
+}
+
+body table tbody tr td:last-child {
     border-right: none;
 }
 
@@ -58,26 +61,26 @@ body table tfoot tr td {
     padding: 20px;
 }
 
-body table:first-child tfoot tr td span {
+body table tfoot tr td span {
     padding-left: 10px;
 }
 
-body table:first-child tfoot tr td form {
+body table tfoot tr td form {
     /* 设置为行内元素 */
     display: inline;
 }
 
-body table:first-child tfoot tr td form input {
+body table tfoot tr td form input {
     width: 200px;
 }
 
-body .menu {
+body div.menu {
     display: none;
     position: absolute;
 }
 
 /* 遮罩层 */
-body .menu::before {
+body div.menu::before {
     content: "";
     /* 让遮罩层始终固定在页面的最上方 */
     position: fixed;
@@ -92,7 +95,7 @@ body .menu::before {
     opacity: .3;
 }
 
-body .menu ul {
+body div.menu ul {
     list-style: none;
     padding: 10px;
     border: 1px solid black;
@@ -104,10 +107,10 @@ body .menu ul {
     border-radius: 5px;
 }
 
-body .menu ul li {
-    padding: 2px;
+body div.menu ul li {
+    padding: 3px;
 }
 
-body .menu ul li:hover {
+body div.menu ul li:hover {
     background: #CCCCCC;
 }
