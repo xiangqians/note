@@ -11,6 +11,7 @@ $(function () {
     $ul.append($(`<a name="addFolder" href="#"><li>${i18n.addFolder}</li></a>`))
     $ul.append($(`<a name="addMdFile" href="#"><li>${i18n.addMdFile}</li></a>`))
     $ul.append($(`<a name="uploadFile" href="#"><li>${i18n.uploadFile}</li></a>`))
+    $ul.append(`<li name="upload"><form action="#" method="post" enctype="multipart/form-data"><input name="file" type="file"/><button type="submit">${i18n.upload}</button></form></li>`)
     $ul.append($(`<a name="rename" href="#"><li>${i18n.rename}</li></a>`))
     $ul.append($(`<a name="cut" href="#"><li>${i18n.cut}</li></a>`))
     $ul.append($(`<a name="paste" href="#"><li>${i18n.paste}</li></a>`))
@@ -23,9 +24,38 @@ $(function () {
 
     let $targetTr = null
 
+    let isUploadFile = false
+
+    // 显示菜单
+    function displayMenu() {
+        // 禁止页面滚动
+        $body.css('overflow', 'hidden')
+
+        // 显示菜单
+        $div.css('display', 'block')
+        $ul.css('display', 'block')
+    }
+
+    // 隐藏菜单
+    function hideMenu() {
+        // 重置已设置选中的tr背景颜色
+        if ($targetTr != null) {
+            $targetTr.css('background-color', '')
+            $targetTr = null
+        }
+
+        // 允许页面滚动
+        $body.css('overflow', '')
+
+        // 隐藏菜单
+        $ul.css('display', 'none')
+        $div.css('display', 'none')
+    }
+
     let $addFolder = $($ul.find('a[name="addFolder"]')[0])
     let $addMdFile = $($ul.find('a[name="addMdFile"]')[0])
     let $uploadFile = $($ul.find('a[name="uploadFile"]')[0])
+    let $upload = $($ul.find('li[name="upload"]')[0])
     let $rename = $($ul.find('a[name="rename"]')[0])
     let $cut = $($ul.find('a[name="cut"]')[0])
     let $paste = $($ul.find('a[name="paste"]')[0])
@@ -36,9 +66,6 @@ $(function () {
     function contextmenu(event, type) {
         // 阻止默认行为
         event.preventDefault()
-
-        // 禁止页面滚动
-        $body.css('overflow', 'hidden')
 
         if (type === 'tr') {
             // 设置选中的tr背景颜色
@@ -52,6 +79,7 @@ $(function () {
             $addFolder.addClass('hide')
             $addMdFile.addClass('hide')
             $uploadFile.addClass('hide')
+            $upload.addClass('hide')
             $paste.addClass('hide')
             let del = $targetTr.attr('del')
             if (del === "0") {
@@ -68,6 +96,7 @@ $(function () {
                 $permlyDel.removeClass('hide')
             }
         } else if (type === 'table') {
+            $upload.addClass('hide')
             $rename.addClass('hide')
             $cut.addClass('hide')
             $del.addClass('hide')
@@ -94,8 +123,7 @@ $(function () {
         $ul.css('top', `${y}px`)
 
         // 显示菜单
-        $div.css('display', 'block')
-        $ul.css('display', 'block')
+        displayMenu()
     }
 
     // 为 table:first-child tr 添加右键菜单事件
@@ -115,24 +143,20 @@ $(function () {
 
     // 监听 html->body 鼠标点击事件
     $body.click(function (event) {
-        // 重置已设置选中的tr背景颜色
-        if ($targetTr != null) {
-            $targetTr.css('background-color', '')
-            $targetTr = null
+        if (isUploadFile) {
+            return
         }
 
-        // 允许页面滚动
-        $body.css('overflow', '')
-
         // 隐藏菜单
-        $ul.css('display', 'none')
-        $div.css('display', 'none')
+        hideMenu()
     })
 
     // 新增文件夹
     $addFolder.click(function () {
         let name = prompt(`${i18n.name}`, '')
         if (!name || (name = name.trim()) === '') {
+            // 隐藏菜单
+            hideMenu();
             // 取消 <a></a> 默认行为
             return false
         }
@@ -143,10 +167,40 @@ $(function () {
     $addMdFile.click(function () {
         let name = prompt(`${i18n.name}`, '')
         if (!name || (name = name.trim()) === '') {
+            // 隐藏菜单
+            hideMenu();
             // 取消 <a></a> 默认行为
             return false
         }
         console.log(name)
+    })
+
+    // 上传文件
+    $uploadFile.click(function () {
+        $addFolder.addClass('hide')
+        $addMdFile.addClass('hide')
+        $uploadFile.addClass('hide')
+        $rename.addClass('hide')
+        $cut.addClass('hide')
+        $paste.addClass('hide')
+        $del.addClass('hide')
+        $restore.addClass('hide')
+        $permlyDel.addClass('hide')
+        $upload.removeClass('hide')
+        isUploadFile = true
+        return false
+    })
+
+    // 上传
+    $($ul.find('button[type="submit"]')[0]).click(function () {
+        console.log('--1-')
+        return false
+    })
+
+    // 上传
+    $($ul.find('from')[0]).click(function () {
+        console.log('--2-')
+        return false
     })
 
     // 重命名
@@ -154,6 +208,8 @@ $(function () {
         let name = $targetTr.attr('name')
         name = prompt(`${i18n.name}`, name)
         if (!name || (name = name.trim()) === '') {
+            // 隐藏菜单
+            hideMenu();
             // 取消 <a></a> 默认行为
             return false
         }
@@ -175,17 +231,35 @@ $(function () {
 
     // 删除
     $del.click(function () {
-
+        let name = $targetTr.attr('name')
+        if (!confirm(`${i18n.del} ${name} ?`)) {
+            // 隐藏菜单
+            hideMenu();
+            // 取消 <a></a> 默认行为
+            return false
+        }
     })
 
     // 恢复
     $restore.click(function () {
-
+        let name = $targetTr.attr('name')
+        if (!confirm(`${i18n.restore} ${name} ?`)) {
+            // 隐藏菜单
+            hideMenu();
+            // 取消 <a></a> 默认行为
+            return false
+        }
     })
 
     // 永久删除
     $permlyDel.click(function () {
-
+        let name = $targetTr.attr('name')
+        if (!confirm(`${i18n.permlyDel} ${name} ?`)) {
+            // 隐藏菜单
+            hideMenu();
+            // 取消 <a></a> 默认行为
+            return false
+        }
     })
 
 });
