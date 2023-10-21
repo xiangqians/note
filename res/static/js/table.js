@@ -9,10 +9,11 @@
 
     // 右键菜单列表
     let $ul = $('<ul></ul>')
-    $ul.append($('<a href="#"><li>重命名</li></a>'))
-    $ul.append($('<a href="#"><li>删除</li></a>'))
-    $ul.append($('<a href="#"><li>恢复</li></a>'))
-    $ul.append($('<a href="#"><li>永久删除</li></a>'))
+    $ul.append($(`<a name="rename" href="#"><li>${i18n.rename}</li></a>`))
+    $ul.append($(`<a name="cut" href="#"><li>${i18n.cut}</li></a>`))
+    $ul.append($(`<a name="del" href="#"><li>${i18n.del}</li></a>`))
+    $ul.append($(`<a name="restore" href="#"><li>${i18n.restore}</li></a>`))
+    $ul.append($(`<a name="permlyDel" href="#"><li>${i18n.permlyDel}</li></a>`))
 
     let $div = $('<div></div>')
     $div.append($ul)
@@ -37,6 +38,27 @@
 
             // 禁止页面滚动
             $body.css('overflow', 'hidden')
+
+            // 根据删除状态显示右键菜单列表
+            let $rename = $($ul.find('a[name="rename"]')[0])
+            let $cut = $($ul.find('a[name="cut"]')[0])
+            let $del = $($ul.find('a[name="del"]')[0])
+            let $restore = $($ul.find('a[name="restore"]')[0])
+            let $permlyDel = $($ul.find('a[name="permlyDel"]')[0])
+            let del = $targetTr.attr('del')
+            if (del === "0") {
+                $rename.removeClass('hide')
+                $cut.removeClass('hide')
+                $del.removeClass('hide')
+                $restore.addClass('hide')
+                $permlyDel.addClass('hide')
+            } else if (del === "1") {
+                $rename.addClass('hide')
+                $cut.addClass('hide')
+                $del.addClass('hide')
+                $restore.removeClass('hide')
+                $permlyDel.removeClass('hide')
+            }
 
             // 设置菜单位置
             let x = e.clientX
@@ -80,33 +102,24 @@
         }
 
         let $li = $(e.target)
-        console.log($li[0])
+        console.log($targetTr[0], $li[0])
     })
 
-    return
-
-    document.addEventListener("contextmenu", function (evt) {
-        evt.preventDefault()
-        list.style.display = "block"
-        var x = evt.clientX
-        var y = evt.clientY
-        if (x >= document.documentElement.clientWidth - list.offsetWidth)
-            x = document.documentElement.clientWidth - list.offsetWidth
-        if (y >= document.documentElement.clientHeight - list.offsetHeight)
-            y = document.documentElement.clientHeight - list.offsetHeight
-        list.style.left = x + "px"
-        list.style.top = y + "px"
-    })
-    document.addEventListener("click", (e) => {
-        list.style.display = "none"
-    })
-    list.onclick = function (evt) {
-        console.log(evt.target)
-        if (evt.target.className === "aaa") {
-            console.log(111)
+    // 重命名
+    let $rename = $($ul.find('a[name="rename"]')[0])
+    $rename.click(function (e) {
+        let name = $targetTr.attr('name')
+        name = prompt('{{ Localize "i18n.name" }}', name)
+        if (!name || (name = name.trim()) === '') {
+            // 取消 <a></a> 默认行为
+            return false
         }
 
-    }
+        let href = $rename.attr('href')
+        // href = `?_method=PUT&name=${name}`
+        // $rename.attr('href', href)
+    })
+
 })();
 
 

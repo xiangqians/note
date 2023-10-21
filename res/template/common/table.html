@@ -23,7 +23,7 @@
     {{ $len := len $data }}
     {{ if gt $len 0 }}
     {{ range $index,$value := $data }}
-    <tr>
+    <tr name="{{ $value.Name }}" del="{{ $value.Del }}">
         <!--
          | . 访问当前位置的上下文
          | $ 引用当前模板根级的上下文
@@ -97,7 +97,6 @@
     </tr>
     </tfoot>
 </table>
-
 <!--
 <form action="{{ .contextPath }}/image/upload?t={{ NowUnix }}"
       method="post"

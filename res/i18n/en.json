@@ -42,5 +42,12 @@
   "i18n.next": "Next",
   "i18n.search": "Search",
   "i18n.upload": "Upload",
-  "i18n.noData": "No data"
+  "i18n.noData": "No data",
+  "i18n.add": "Add",
+  "i18n.upd": "Update",
+  "i18n.rename": "Rename",
+  "i18n.cut": "Cut",
+  "i18n.del": "Delete",
+  "i18n.restore": "Restore",
+  "i18n.permlyDel": "Permanently Delete"
 }

@@ -92,3 +92,7 @@ body div ul li {
 body div ul li:hover {
     background: #CCCCCC;
 }
+
+body div .hide {
+    display: none;
+}
