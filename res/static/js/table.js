@@ -157,12 +157,10 @@ $(function () {
 
     // 监听 html->body 鼠标点击事件
     $body.click(function (event) {
-        if (isUploadFile) {
-            return
+        if (!isUploadFile) {
+            // 隐藏菜单
+            hideMenu()
         }
-
-        // 隐藏菜单
-        hideMenu()
     })
 
     // 新增文件夹
@@ -170,7 +168,7 @@ $(function () {
         let name = prompt(`${i18n.name}`, '')
         if (!name || (name = name.trim()) === '') {
             // 隐藏菜单
-            hideMenu();
+            hideMenu()
             // 取消 <a></a> 默认行为
             return false
         }
@@ -182,7 +180,7 @@ $(function () {
         let name = prompt(`${i18n.name}`, '')
         if (!name || (name = name.trim()) === '') {
             // 隐藏菜单
-            hideMenu();
+            hideMenu()
             // 取消 <a></a> 默认行为
             return false
         }
@@ -224,7 +222,7 @@ $(function () {
         name = prompt(`${i18n.name}`, name)
         if (!name || (name = name.trim()) === '') {
             // 隐藏菜单
-            hideMenu();
+            hideMenu()
             // 取消 <a></a> 默认行为
             return false
         }
@@ -249,7 +247,7 @@ $(function () {
         let name = $targetTr.attr('name')
         if (!confirm(`${i18n.del} ${name} ?`)) {
             // 隐藏菜单
-            hideMenu();
+            hideMenu()
             // 取消 <a></a> 默认行为
             return false
         }
@@ -260,7 +258,7 @@ $(function () {
         let name = $targetTr.attr('name')
         if (!confirm(`${i18n.restore} ${name} ?`)) {
             // 隐藏菜单
-            hideMenu();
+            hideMenu()
             // 取消 <a></a> 默认行为
             return false
         }
@@ -271,7 +269,7 @@ $(function () {
         let name = $targetTr.attr('name')
         if (!confirm(`${i18n.permlyDel} ${name} ?`)) {
             // 隐藏菜单
-            hideMenu();
+            hideMenu()
             // 取消 <a></a> 默认行为
             return false
         }
@@ -280,8 +278,17 @@ $(function () {
     // 关闭
     $close.click(function () {
         // 隐藏菜单
-        hideMenu();
+        hideMenu()
     })
 
-});
+    $(document).keydown(function (event) {
+        // Esc按键
+        if (event.keyCode === 27 // Esc按键
+            && !isUploadFile) {
+            // 隐藏菜单
+            hideMenu()
+        }
+    })
 
+})
+;
