@@ -8,95 +8,122 @@
 <!-- 变量赋值 -->
 {{ $page := .resp.Data }}
 {{ $data := $page.Data }}
+<div class="nowrap">
+    <table>
+        <thead>
+        <tr>
+            <td></td>
+            <td>{{ Localize "i18n.name" }}</td>
+            <td>{{ Localize "i18n.size" }}</td>
+            <td>{{ Localize "i18n.addTime" }}</td>
+            <td>{{ Localize "i18n.updTime" }}</td>
+        </tr>
+        </thead>
+        <tbody>
+        {{ $len := len $data }}
+        {{ if gt $len 0 }}
+        {{ range $index,$value := $data }}
+        <tr name="{{ $value.Name }}" del="{{ $value.Del }}">
+            <!--
+             | . 访问当前位置的上下文
+             | $ 引用当前模板根级的上下文
+             | $. 引用模板中的根级上下文
+             |-->
+            <td><img src="{{ $.contextPath }}/static/icon/{{ $value.Type }}.png"
+                     title="{{ $value.Type }}"
+                     onerror="this.onerror=''; this.src='{{ $.contextPath }}/static/icon/unknown.png'"></td>
+            <td><a href="#">{{ $value.Name }}</a></td>
+            <td>{{ HumanizFileSize $value.Size }}</td>
+            <td>{{ HumanizUnix $value.AddTime }}</td>
+            <td>{{ HumanizUnix $value.UpdTime }}</td>
+        </tr>
+        {{ end }}
+        {{ else }}
+        <tr class="no-data">
+            <td colspan="5">{{ Localize "i18n.noData" }}</td>
+        </tr>
+        {{ end }}
+        </tbody>
+        <tfoot>
+        <tr>
+            <td colspan="5">
+                <form action="{{ .contextPath }}/image" method="get">
+                    <input name="current" value="1" type="hidden">
+                    <input name="size" value="{{ $page.Size }}" type="hidden">
+                    <input name="search"
+                           type="text"
+                           placeholder='{{ Localize "i18n.search" }}'
+                           title="id:{id}&#10;name:{name}&#10;type:{type}"
+                           value="{{ $page.Search }}">
+                    <input name="t" value="{{ NowUnix }}" type="hidden">
+                </form>
+                {{ if le $page.Current 1 }}
+                <span>{{ Localize "i18n.prev" }}</span>
+                {{ else }}
+                {{ $prev := Add $page.Current -1 }}
+                {{ if gt $prev $page.PageCount }}
+                {{ $prev = $page.PageCount }}
+                {{ end }}
+                <span>
+                    <a href="{{ $.contextPath }}/image?current={{ $prev }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.prev" }}</a>
+                </span>
+                {{ end }}
 
-<table>
-    <thead>
-    <tr>
-        <td></td>
-        <td>{{ Localize "i18n.name" }}</td>
-        <td>{{ Localize "i18n.size" }}</td>
-        <td>{{ Localize "i18n.addTime" }}</td>
-        <td>{{ Localize "i18n.updTime" }}</td>
-    </tr>
-    </thead>
-    <tbody>
-    {{ $len := len $data }}
-    {{ if gt $len 0 }}
-    {{ range $index,$value := $data }}
-    <tr name="{{ $value.Name }}" del="{{ $value.Del }}">
-        <!--
-         | . 访问当前位置的上下文
-         | $ 引用当前模板根级的上下文
-         | $. 引用模板中的根级上下文
-         |-->
-        <td><img src="{{ $.contextPath }}/static/icon/{{ $value.Type }}.png"
-                 title="{{ $value.Type }}"
-                 onerror="this.onerror=''; this.src='{{ $.contextPath }}/static/icon/unknown.png'"></td>
-        <td>{{ $value.Name }}</td>
-        <td>{{ HumanizFileSize $value.Size }}</td>
-        <td>{{ HumanizUnix $value.AddTime }}</td>
-        <td>{{ HumanizUnix $value.UpdTime }}</td>
-    </tr>
-    {{ end }}
-    {{ else }}
-    <tr class="noData">
-        <td colspan="5">{{ Localize "i18n.noData" }}</td>
-    </tr>
-    {{ end }}
-    </tbody>
-    <tfoot>
-    <tr>
-        <td colspan="5">
-            <form action="{{ .contextPath }}/image" method="get">
-                <input name="current" value="1" type="hidden">
-                <input name="size" value="{{ $page.Size }}" type="hidden">
-                <input name="search"
-                       type="text"
-                       placeholder='{{ Localize "i18n.search" }}'
-                       title="id:{id}&#10;name:{name}&#10;type:{type}"
-                       value="{{ $page.Search }}">
-                <input name="t" value="{{ NowUnix }}" type="hidden">
-            </form>
-            {{ if le $page.Current 1 }}
-            <span>{{ Localize "i18n.prev" }}</span>
-            {{ else }}
-            {{ $prev := Add $page.Current -1 }}
-            {{ if gt $prev $page.PageCount }}
-            {{ $prev = $page.PageCount }}
-            {{ end }}
-            <span>
-                <a href="{{ $.contextPath }}/image?current={{ $prev }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.prev" }}</a>
-            </span>
-            {{ end }}
+                {{ $pageIndexes := $page.PageIndexes }}
+                {{ $len := len $pageIndexes }}
+                {{ if gt $len 0 }}
+                {{ range $index,$pageIndex := $pageIndexes }}
+                {{ if eq $pageIndex 0 }}
+                <span>...</span>
+                {{ else if eq $pageIndex $page.Current }}
+                <span>{{ $pageIndex }}</span>
+                {{ else }}
+                <span>
+                    <a href="{{ $.contextPath }}/image?current={{ $pageIndex }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ $pageIndex }}</a>
+                </span>
+                {{ end }}
+                {{ end }}
+                {{ end }}
 
-            {{ $pageIndexes := $page.PageIndexes }}
-            {{ $len := len $pageIndexes }}
-            {{ if gt $len 0 }}
-            {{ range $index,$pageIndex := $pageIndexes }}
-            {{ if eq $pageIndex 0 }}
-            <span>...</span>
-            {{ else if eq $pageIndex $page.Current }}
-            <span>{{ $pageIndex }}</span>
-            {{ else }}
-            <span>
-                <a href="{{ $.contextPath }}/image?current={{ $pageIndex }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ $pageIndex }}</a>
-            </span>
-            {{ end }}
-            {{ end }}
-            {{ end }}
-
-            {{ if ge $page.Current $page.PageCount }}
-            <span>{{ Localize "i18n.next" }}</span>
-            {{ else }}
-            <span>
-                {{ $next := Add $page.Current 1 }}
-                <a href="{{ $.contextPath }}/image?current={{ $next }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.next" }}</a>
-            </span>
-            {{ end }}
-        </td>
-    </tr>
-    </tfoot>
-</table>
+                {{ if ge $page.Current $page.PageCount }}
+                <span>{{ Localize "i18n.next" }}</span>
+                {{ else }}
+                <span>
+                    {{ $next := Add $page.Current 1 }}
+                    <a href="{{ $.contextPath }}/image?current={{ $next }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.next" }}</a>
+                </span>
+                {{ end }}
+            </td>
+        </tr>
+        </tfoot>
+    </table>
+    <table>
+        <thead>
+        <tr>
+            <td></td>
+        </tr>
+        </thead>
+        <tbody>
+        {{ $len := len $data }}
+        {{ if gt $len 0 }}
+        {{ range $index,$value := $data }}
+        <tr>
+            <td></td>
+        </tr>
+        {{ end }}
+        {{ else }}
+        <tr>
+            <td></td>
+        </tr>
+        {{ end }}
+        </tbody>
+        <tfoot>
+        <tr>
+            <td></td>
+        </tr>
+        </tfoot>
+    </table>
+</div>
 <!--
 <form action="{{ .contextPath }}/image/upload?t={{ NowUnix }}"
       method="post"

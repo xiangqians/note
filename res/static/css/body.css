@@ -32,3 +32,13 @@ body msg {
 body msg:empty {
     padding-bottom: 0px;
 }
+
+/* 不换行 */
+body .nowrap {
+    white-space: nowrap;
+}
+
+/* 隐藏 */
+body .hide {
+    display: none;
+}

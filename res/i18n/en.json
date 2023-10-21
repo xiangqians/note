@@ -44,9 +44,12 @@
   "i18n.upload": "Upload",
   "i18n.noData": "No data",
   "i18n.add": "Add",
+  "i18n.addFolder": "Add a new folder",
+  "i18n.addMdFile": "Add MD file",
   "i18n.upd": "Update",
   "i18n.rename": "Rename",
   "i18n.cut": "Cut",
+  "i18n.paste": "Paste",
   "i18n.del": "Delete",
   "i18n.restore": "Restore",
   "i18n.permlyDel": "Permanently Delete"
