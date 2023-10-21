@@ -53,5 +53,6 @@
   "i18n.paste": "粘贴",
   "i18n.del": "删除",
   "i18n.restore": "恢复",
-  "i18n.permlyDel": "永久删除"
+  "i18n.permlyDel": "永久删除",
+  "i18n.close": "关闭"
 }

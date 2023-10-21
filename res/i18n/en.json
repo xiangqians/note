@@ -53,5 +53,6 @@
   "i18n.paste": "Paste",
   "i18n.del": "Delete",
   "i18n.restore": "Restore",
-  "i18n.permlyDel": "Permanently Delete"
+  "i18n.permlyDel": "Permanently Delete",
+  "i18n.close": "Close"
 }
