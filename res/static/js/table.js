@@ -8,10 +8,11 @@
     let $body = $($('body')[0])
 
     // 右键菜单列表
-    let $ul = $('<ul class="menu"></ul>')
-    $ul.append($('<li><a href="#">111</a></li>'))
-    $ul.append($('<li><a href="#">222</a></li>'))
-    $ul.append($('<li><a>333</a></li>'))
+    let $ul = $('<ul></ul>')
+    $ul.append($('<a href="#"><li>重命名</li></a>'))
+    $ul.append($('<a href="#"><li>删除</li></a>'))
+    $ul.append($('<a href="#"><li>恢复</li></a>'))
+    $ul.append($('<a href="#"><li>永久删除</li></a>'))
 
     let $div = $('<div></div>')
     $div.append($ul)
@@ -20,7 +21,7 @@
     let $targetTr = null
 
     // 为tr添加右键菜单事件
-    let $trs = $('table tbody tr[name!="noData"]')
+    let $trs = $('table tbody tr[class!="noData"]')
     for (let i = 0, len = $trs.length; i < len; i++) {
         let $tr = $($trs[i])
         $tr.contextmenu(function (e) {
@@ -73,7 +74,7 @@
     // 菜单点击事件
     $ul.click(function (e) {
         let tagName = e.target.tagName.toLowerCase()
-        console.log(e.target)
+        // console.log(e.target)
         if (tagName !== 'li') {
             return
         }

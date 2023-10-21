@@ -31,7 +31,7 @@ body table tbody tr td:last-child {
 }
 
 /* 鼠标经过显示背景颜色 */
-body table tbody tr:not([name='noData']):hover {
+body table tbody tr:not([class='noData']):hover {
     background-color: #CCCCCC;
 }
 
@@ -58,7 +58,7 @@ body > div {
 }
 
 /* 遮罩层 */
-body > div::before {
+body div::before {
     content: "";
     /* 让遮罩层始终固定在页面的最上方 */
     position: fixed;
@@ -73,7 +73,7 @@ body > div::before {
     opacity: .3;
 }
 
-body > div > ul {
+body div ul {
     list-style: none;
     padding: 10px;
     border: 1px solid black;
@@ -85,6 +85,10 @@ body > div > ul {
     border-radius: 5px;
 }
 
-body > div > ul li:hover {
+body div ul li {
+    padding: 2px;
+}
+
+body div ul li:hover {
     background: #CCCCCC;
 }

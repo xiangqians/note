@@ -38,8 +38,11 @@ func List(ctx *gin.Context) {
 	var values []any
 	if search != "" {
 		arr := strings.Split(search, "&")
+		// 不再以 & 标识，要以 空格+str: 标识
 		for _, str := range arr {
 			str = strings.TrimSpace(str)
+			// id:
+			// name:
 			index := strings.Index(str, ":")
 			if index > 0 && index != len(str)-1 {
 				k := strings.TrimSpace(str[0:index])
