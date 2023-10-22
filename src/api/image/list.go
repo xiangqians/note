@@ -44,7 +44,7 @@ func List(ctx *gin.Context) {
 	}
 
 	search, _ := context.Query[string](ctx, "search")
-	sql := "SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `image` " //WHERE `del` = 0
+	sql := "SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `image` WHERE 1 = 1" //WHERE `del` = 0
 	var values []any
 	if search != "" {
 		arr := strings.Split(search, "&")
