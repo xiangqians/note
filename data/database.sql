@@ -9,7 +9,7 @@ CREATE TABLE `user` -- 用户信息表
     `nickname` VARCHAR(64)  DEFAULT '',           -- 昵称
     `passwd`   VARCHAR(128) NOT NULL,             -- 密码
     `rem`      VARCHAR(256) DEFAULT '',           -- 备注
-    `try`      TINYINT      DEFAULT 0,            -- 尝试输入密码次数，超过指定次数账号将会被锁定
+    `try`      TINYINT      DEFAULT 0,            -- 尝试输入密码次数，超过3次账号将会被锁定
     `del`      TINYINT      DEFAULT 0,            -- 删除标识，0-正常，1-删除
     `add_time` INTEGER      DEFAULT 0,            -- 创建时间（时间戳，s）
     `upd_time` INTEGER      DEFAULT 0             -- 修改时间（时间戳，s），也可作锁定时间

@@ -11,10 +11,6 @@ body form table tbody tr td {
     padding-right: 20px;
 }
 
-body form input[type="submit"] {
-    cursor: pointer
-}
-
 body form input[name="name"] {
     width: 200px;
 }
