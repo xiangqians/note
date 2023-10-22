@@ -32,7 +32,7 @@
             <td><img src="{{ $.contextPath }}/static/icon/{{ $value.Type }}.png"
                      title="{{ $value.Type }}"
                      onerror="this.onerror=''; this.src='{{ $.contextPath }}/static/icon/unknown.png'"></td>
-            <td><a href="#">{{ $value.Name }}.{{ $value.Type }}</a></td>
+            <td><a href="#">{{ $value.Name }}{{ if ne $value.Type "folder" }}.{{ $value.Type }}{{ end }}</a></td>
             <td>{{ HumanizFileSize $value.Size }}</td>
             <td>{{ HumanizUnix $value.AddTime }}</td>
             <td>{{ HumanizUnix $value.UpdTime }}</td>
