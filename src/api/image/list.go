@@ -78,6 +78,20 @@ func List(ctx *gin.Context) {
 	html(page, err)
 }
 
+// redirectToList 重定向到图片列表
+func redirectToList(ctx *gin.Context, msg any) {
+	current, _ := context.Query[int64](ctx, "current")
+	size, _ := context.Query[uint8](ctx, "size")
+	search, _ := context.Query[string](ctx, "search")
+
+	// 重定向到图片首页
+	context.Redirect(ctx, "/image", map[string]any{
+		"current": current,
+		"size":    size,
+		"search":  search,
+	}, msg)
+}
+
 //// List 库列表页面
 //func List(context *gin.Context) {
 //	// lib

@@ -35,6 +35,7 @@ func initRoute(engine *gin.Engine) {
 	{
 		imageGroup.Any("", image.List)
 		imageGroup.Any("/rename", image.Rename)
+		imageGroup.Any("/:id", image.Del)
 	}
 
 	// index

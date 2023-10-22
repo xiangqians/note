@@ -18,6 +18,7 @@ import (
 	"net/http"
 	"note/src/session"
 	"note/src/typ"
+	util_string "note/src/util/string"
 	util_time "note/src/util/time"
 	"reflect"
 	"strconv"
@@ -28,6 +29,8 @@ var (
 	zhTrans ut.Translator
 	enTrans ut.Translator
 )
+
+const redirectMsgKey = "redirectMsg"
 
 func init() {
 	// 初始化翻译器
@@ -55,14 +58,25 @@ func HtmlOk[T any](ctx *gin.Context, name string, resp typ.Resp[T]) {
 	Html[T](ctx, http.StatusOK, name, resp)
 }
 
-// Html
-// ctx  : Context
-// code : http code
-// name : templateName
-// resp : response
+// Html html模板
+// ctx  : *gin.Context
+// code : http状态码
+// name : html模板名称
+// resp : 响应数据
 func Html[T any](ctx *gin.Context, code int, name string, resp typ.Resp[T]) {
+	// 从session中获取重定向消息
+	redirectMsg, _ := session.Get[string](ctx, redirectMsgKey, true)
+	if redirectMsg != "" {
+		resp.Msg = redirectMsg + " " + resp.Msg
+	}
+
+	// 当前登录用户信息
 	user, _ := session.GetUser(ctx)
+
+	// 请求信息
 	request := ctx.Request
+
+	// html模板
 	ctx.HTML(code, name, gin.H{
 		"contextPath": typ.GetArg().ContextPath, // 上下文路径
 		"path":        request.URL.Path,         // 请求路径
@@ -85,10 +99,15 @@ func Json[T any](ctx *gin.Context, code int, resp typ.Resp[T]) {
 }
 
 // Redirect 重定向
-// ctx *gin.Context
-// location 重定向地址
-// paramMap 重定向参数映射
-func Redirect(ctx *gin.Context, location string, paramMap map[string]any) {
+// ctx 		: *gin.Context
+// location : 重定向地址
+// paramMap : 重定向参数映射
+// msg		: 重定向消息（没有消息就是最好的消息）
+func Redirect(ctx *gin.Context, location string, paramMap map[string]any, msg any) {
+	// 存储重定向消息到session中
+	session.Set(ctx, redirectMsgKey, util_string.String(msg))
+
+	// 数组容量
 	var cap int = 1
 	if paramMap != nil {
 		cap += len(paramMap)
@@ -97,12 +116,16 @@ func Redirect(ctx *gin.Context, location string, paramMap map[string]any) {
 	// len 0, cap ?
 	arr := make([]string, 0, cap)
 
+	// 【请求参数】more
 	if paramMap != nil && len(paramMap) > 0 {
 		for k, v := range paramMap {
 			arr = append(arr, fmt.Sprintf("%v=%v", k, v))
 		}
 	}
+	// 【请求参数】时间戳
 	arr = append(arr, fmt.Sprintf("t=%v", util_time.NowUnix()))
+
+	// 重定向
 	ctx.Redirect(http.StatusMovedPermanently, fmt.Sprintf("%s%s?%s", typ.GetArg().ContextPath, location, strings.Join(arr, "&")))
 }
 
