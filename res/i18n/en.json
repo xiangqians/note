@@ -54,5 +54,7 @@
   "i18n.del": "Delete",
   "i18n.restore": "Restore",
   "i18n.permlyDel": "Permanently Delete",
-  "i18n.close": "Close"
+  "i18n.close": "Close",
+  "i18n.copyAddress": "Copy address",
+  "i18n.copied": "Copied"
 }

@@ -13,6 +13,7 @@ $(function () {
     $ul.append($(`<a name="uploadFile" href="#"><li>${i18n.uploadFile}</li></a>`))
     $ul.append(`<li name="upload"><form action="#" method="post" enctype="multipart/form-data"><input name="file" type="file"/><button type="submit">${i18n.upload}</button></form></li>`)
     $ul.append($(`<a name="rename" href="#"><li>${i18n.rename}</li></a>`))
+    $ul.append($(`<a name="copyAddress" href="#"><li>${i18n.copyAddress}</li></a>`))
     $ul.append($(`<a name="cut" href="#"><li>${i18n.cut}</li></a>`))
     $ul.append($(`<a name="paste" href="#"><li>${i18n.paste}</li></a>`))
     $ul.append($(`<a name="del" href="#"><li>${i18n.del}</li></a>`))
@@ -60,6 +61,7 @@ $(function () {
     let $uploadFile = $($ul.find('a[name="uploadFile"]')[0])
     let $upload = $($ul.find('li[name="upload"]')[0])
     let $rename = $($ul.find('a[name="rename"]')[0])
+    let $copyAddress = $($ul.find('a[name="copyAddress"]')[0])
     let $cut = $($ul.find('a[name="cut"]')[0])
     let $paste = $($ul.find('a[name="paste"]')[0])
     let $del = $($ul.find('a[name="del"]')[0])
@@ -89,12 +91,14 @@ $(function () {
             let del = $targetTr.attr('del')
             if (del === "0") {
                 $rename.removeClass('hide')
+                $copyAddress.removeClass('hide')
                 $cut.removeClass('hide')
                 $del.removeClass('hide')
                 $restore.addClass('hide')
                 $permlyDel.addClass('hide')
             } else if (del === "1") {
                 $rename.addClass('hide')
+                $copyAddress.addClass('hide')
                 $cut.addClass('hide')
                 $del.addClass('hide')
                 $restore.removeClass('hide')
@@ -104,6 +108,7 @@ $(function () {
         } else if (type === 'table') {
             $upload.addClass('hide')
             $rename.addClass('hide')
+            $copyAddress.addClass('hide')
             $cut.addClass('hide')
             $del.addClass('hide')
             $restore.addClass('hide')
@@ -193,6 +198,7 @@ $(function () {
         $addMdFile.addClass('hide')
         $uploadFile.addClass('hide')
         $rename.addClass('hide')
+        $copyAddress.addClass('hide')
         $cut.addClass('hide')
         $paste.addClass('hide')
         $del.addClass('hide')
@@ -230,6 +236,11 @@ $(function () {
         let href = $rename.attr('href')
         // href = `?_method=PUT&name=${name}`
         // $rename.attr('href', href)
+    })
+
+    // 复制地址
+    $copyAddress.click(function () {
+        alert(i18n.copied)
     })
 
     // 剪切
