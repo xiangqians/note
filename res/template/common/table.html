@@ -23,7 +23,7 @@
         {{ $len := len $data }}
         {{ if gt $len 0 }}
         {{ range $index,$value := $data }}
-        <tr name="{{ $value.Name }}" del="{{ $value.Del }}">
+        <tr id="{{ $value.Id }}" name="{{ $value.Name }}" del="{{ $value.Del }}">
             <!--
              | . 访问当前位置的上下文
              | $ 引用当前模板根级的上下文

@@ -34,6 +34,7 @@ func initRoute(engine *gin.Engine) {
 	imageGroup := engine.Group(contextPath + "/image")
 	{
 		imageGroup.Any("", image.List)
+		imageGroup.Any("/rename", image.Rename)
 	}
 
 	// index

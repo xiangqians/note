@@ -8,15 +8,25 @@ import (
 	"github.com/gin-gonic/gin"
 	"note/src/api"
 	"note/src/context"
+	"note/src/session"
 	"note/src/typ"
 	util_string "note/src/util/string"
 	"strings"
 )
 
+const imageErrKey = "imageErr"
+
 func List(ctx *gin.Context) {
 	html := func(page typ.Page[typ.Image], err any) {
+		msg := util_string.String(err)
+
+		redirectErr, _ := session.Get[string](ctx, imageErrKey, true)
+		if redirectErr != "" {
+			msg = redirectErr + " " + msg
+		}
+
 		context.HtmlOk(ctx, "image/list", typ.Resp[typ.Page[typ.Image]]{
-			Msg:  util_string.String(err),
+			Msg:  msg,
 			Data: page,
 		})
 	}

@@ -59,7 +59,7 @@ func signUp(ctx *gin.Context) {
 		user.RePasswd = ""
 		session.Set(ctx, signUpUserKey, user)
 		session.Set(ctx, signUpErrKey, util_string.String(err))
-		context.Redirect(ctx, "/user/signup")
+		context.Redirect(ctx, "/user/signup", nil)
 	}
 
 	user := typ.AddUser{}
@@ -163,5 +163,5 @@ func signUp(ctx *gin.Context) {
 	// 用户注册成功后，重定向到登录页
 	session.Set(ctx, signInNameKey, user.Name)
 	session.Set(ctx, signInErrKey, "")
-	context.Redirect(ctx, "/user/signin")
+	context.Redirect(ctx, "/user/signin", nil)
 }

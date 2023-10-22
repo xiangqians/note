@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"note/src/session"
 	"note/src/typ"
-	"note/src/util/time"
+	util_time "note/src/util/time"
 	"reflect"
 	"strconv"
 	"strings"
@@ -64,11 +64,11 @@ func Html[T any](ctx *gin.Context, code int, name string, resp typ.Resp[T]) {
 	user, _ := session.GetUser(ctx)
 	request := ctx.Request
 	ctx.HTML(code, name, gin.H{
-		"resp":        resp,                     // 响应数据
-		"user":        user,                     // 登录用户信息
 		"contextPath": typ.GetArg().ContextPath, // 上下文路径
-		"uri":         request.RequestURI,       // 请求uri地址
 		"path":        request.URL.Path,         // 请求路径
+		"uri":         request.RequestURI,       // 请求uri地址
+		"user":        user,                     // 登录用户信息
+		"resp":        resp,                     // 响应数据
 	})
 }
 
@@ -84,13 +84,26 @@ func Json[T any](ctx *gin.Context, code int, resp typ.Resp[T]) {
 	ctx.JSON(code, resp)
 }
 
-func Redirect(ctx *gin.Context, location string) {
-	if strings.Contains(location, "?") {
-		location = fmt.Sprintf("%s&t=%d", location, time.NowUnix())
-	} else {
-		location = fmt.Sprintf("%s?t=%d", location, time.NowUnix())
+// Redirect 重定向
+// ctx *gin.Context
+// location 重定向地址
+// paramMap 重定向参数映射
+func Redirect(ctx *gin.Context, location string, paramMap map[string]any) {
+	var cap int = 1
+	if paramMap != nil {
+		cap += len(paramMap)
 	}
-	ctx.Redirect(http.StatusMovedPermanently, fmt.Sprintf("%s%s", typ.GetArg().ContextPath, location))
+
+	// len 0, cap ?
+	arr := make([]string, 0, cap)
+
+	if paramMap != nil && len(paramMap) > 0 {
+		for k, v := range paramMap {
+			arr = append(arr, fmt.Sprintf("%v=%v", k, v))
+		}
+	}
+	arr = append(arr, fmt.Sprintf("t=%v", util_time.NowUnix()))
+	ctx.Redirect(http.StatusMovedPermanently, fmt.Sprintf("%s%s?%s", typ.GetArg().ContextPath, location, strings.Join(arr, "&")))
 }
 
 func PostForm[T any](ctx *gin.Context, key string) (T, error) {

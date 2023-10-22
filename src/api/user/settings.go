@@ -56,7 +56,7 @@ func settings(ctx *gin.Context) {
 		user.ReNewPasswd = ""
 		session.Set(ctx, settingsUserKey, user)
 		session.Set(ctx, settingsErrKey, util_string.String(err))
-		context.Redirect(ctx, "/user/settings")
+		context.Redirect(ctx, "/user/settings", nil)
 	}
 
 	user := typ.UpdUser{}
@@ -136,5 +136,5 @@ func settings(ctx *gin.Context) {
 	session.SetUser(ctx, sessionUser)
 
 	// 重定向到首页
-	context.Redirect(ctx, "/user/settings")
+	context.Redirect(ctx, "/user/settings", nil)
 }

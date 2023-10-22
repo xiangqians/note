@@ -14,11 +14,12 @@
     <title>{{ Localize "i18n.image" }}</title>
 </head>
 <body>
-{{ template "common/var" . }}
+{{ template "common/variable" . }}
 {{ template "common/table" . }}
 </body>
 {{ template "common/foot2" . }}
 {{ template "common/foot1" . }}
 </html>
 <script type="text/javascript" src="{{ .contextPath }}/static/js/jquery.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/body.js"></script>
 <script type="text/javascript" src="{{ .contextPath }}/static/js/table.js"></script>

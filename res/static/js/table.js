@@ -4,28 +4,56 @@
  */
 ;
 $(function () {
+    // let
+
     let $body = $($('body')[0])
 
     // 右键菜单列表
     let $ul = $('<ul></ul>')
-    $ul.append($(`<a name="addFolder" href="#"><li>${i18n.addFolder}</li></a>`))
-    $ul.append($(`<a name="addMdFile" href="#"><li>${i18n.addMdFile}</li></a>`))
-    $ul.append($(`<a name="uploadFile" href="#"><li>${i18n.uploadFile}</li></a>`))
-    $ul.append(`<li name="upload"><form action="#" method="post" enctype="multipart/form-data"><input name="file" type="file"/><button type="submit">${i18n.upload}</button></form></li>`)
-    $ul.append($(`<a name="rename" href="#"><li>${i18n.rename}</li></a>`))
-    $ul.append($(`<a name="copyAddress" href="#"><li>${i18n.copyAddress}</li></a>`))
-    $ul.append($(`<a name="cut" href="#"><li>${i18n.cut}</li></a>`))
-    $ul.append($(`<a name="paste" href="#"><li>${i18n.paste}</li></a>`))
-    $ul.append($(`<a name="del" href="#"><li>${i18n.del}</li></a>`))
-    $ul.append($(`<a name="restore" href="#"><li>${i18n.restore}</li></a>`))
-    $ul.append($(`<a name="permlyDel" href="#"><li>${i18n.permlyDel}</li></a>`))
-    $ul.append($(`<a name="close" href="#"><li>${i18n.close}</li></a>`))
+    // 新增文件夹
+    let $addFolder = $(`<a name="addFolder" href="#"><li>${variable.i18n.addFolder}</li></a>`)
+    $ul.append($addFolder)
+    // 新增MD文件
+    let $addMdFile = $(`<a name="addMdFile" href="#"><li>${variable.i18n.addMdFile}</li></a>`)
+    $ul.append($addMdFile)
+    // 上传文件
+    let $uploadFile = $(`<a name="uploadFile" href="#"><li>${variable.i18n.uploadFile}</li></a>`)
+    $ul.append($uploadFile)
+    // 上传
+    let $upload = $(`<li name="upload"><form action="#" method="post" enctype="multipart/form-data"><input name="file" type="file"/><button type="submit">${variable.i18n.upload}</button></form></li>`)
+    $ul.append($upload)
+    // 重命名
+    let $rename = $(`<a name="rename" href="#"><li>${variable.i18n.rename}</li></a>`)
+    $ul.append($rename)
+    // 复制地址
+    let $copyAddress = $(`<a name="copyAddress" href="#"><li>${variable.i18n.copyAddress}</li></a>`)
+    $ul.append($copyAddress)
+    // 剪切
+    let $cut = $(`<a name="cut" href="#"><li>${variable.i18n.cut}</li></a>`)
+    $ul.append($cut)
+    // 粘贴
+    let $paste = $(`<a name="paste" href="#"><li>${variable.i18n.paste}</li></a>`)
+    $ul.append($paste)
+    // 删除
+    let $del = $(`<a name="del" href="#"><li>${variable.i18n.del}</li></a>`)
+    $ul.append($del)
+    // 恢复
+    let $restore = $(`<a name="restore" href="#"><li>${variable.i18n.restore}</li></a>`)
+    $ul.append($restore)
+    // 永久删除
+    let $permlyDel = $(`<a name="permlyDel" href="#"><li>${variable.i18n.permlyDel}</li></a>`)
+    $ul.append($permlyDel)
+    // 关闭
+    let $close = $(`<a name="close" href="#"><li>${variable.i18n.close}</li></a>`)
+    $ul.append($close)
+    // 遮罩层
     let $div = $('<div class="menu"></div>')
     $div.append($ul)
     $body.prepend($div)
 
     let $targetTr = null
 
+    // 是否是点击了上传文件
     let isUploadFile = false
 
     // 显示菜单
@@ -56,19 +84,6 @@ $(function () {
         $div.css('display', 'none')
     }
 
-    let $addFolder = $($ul.find('a[name="addFolder"]')[0])
-    let $addMdFile = $($ul.find('a[name="addMdFile"]')[0])
-    let $uploadFile = $($ul.find('a[name="uploadFile"]')[0])
-    let $upload = $($ul.find('li[name="upload"]')[0])
-    let $rename = $($ul.find('a[name="rename"]')[0])
-    let $copyAddress = $($ul.find('a[name="copyAddress"]')[0])
-    let $cut = $($ul.find('a[name="cut"]')[0])
-    let $paste = $($ul.find('a[name="paste"]')[0])
-    let $del = $($ul.find('a[name="del"]')[0])
-    let $restore = $($ul.find('a[name="restore"]')[0])
-    let $permlyDel = $($ul.find('a[name="permlyDel"]')[0])
-    let $close = $($ul.find('a[name="close"]')[0])
-
     function contextmenu(event, type) {
         // 阻止默认行为
         event.preventDefault()
@@ -82,42 +97,20 @@ $(function () {
             $targetTr.css('background-color', '#CCCCCC')
 
             // 根据删除状态显示右键菜单列表
-            $addFolder.addClass('hide')
-            $addMdFile.addClass('hide')
-            $uploadFile.addClass('hide')
-            $upload.addClass('hide')
-            $paste.addClass('hide')
-            $close.addClass('hide')
+            hideElements($addFolder, $addMdFile, $uploadFile, $upload, $paste, $close)
             let del = $targetTr.attr('del')
             if (del === "0") {
-                $rename.removeClass('hide')
-                $copyAddress.removeClass('hide')
-                $cut.removeClass('hide')
-                $del.removeClass('hide')
-                $restore.addClass('hide')
-                $permlyDel.addClass('hide')
+                hideElements($restore, $permlyDel)
+                displayElements($rename, $copyAddress, $cut, $del)
+
             } else if (del === "1") {
-                $rename.addClass('hide')
-                $copyAddress.addClass('hide')
-                $cut.addClass('hide')
-                $del.addClass('hide')
-                $restore.removeClass('hide')
-                $permlyDel.removeClass('hide')
+                hideElements($rename, $copyAddress, $cut, $del)
+                displayElements($restore, $permlyDel)
             }
 
         } else if (type === 'table') {
-            $upload.addClass('hide')
-            $rename.addClass('hide')
-            $copyAddress.addClass('hide')
-            $cut.addClass('hide')
-            $del.addClass('hide')
-            $restore.addClass('hide')
-            $permlyDel.addClass('hide')
-            $close.addClass('hide')
-            $addFolder.removeClass('hide')
-            $addMdFile.removeClass('hide')
-            $uploadFile.removeClass('hide')
-            $paste.removeClass('hide')
+            hideElements($upload, $rename, $copyAddress, $cut, $del, $restore, $permlyDel, $close)
+            displayElements($addFolder, $addMdFile, $uploadFile, $paste)
 
         } else {
             throw new Error('未知类型 ' + type)
@@ -170,7 +163,7 @@ $(function () {
 
     // 新增文件夹
     $addFolder.click(function () {
-        let name = prompt(`${i18n.name}`, '')
+        let name = prompt(`${variable.i18n.name}`, '')
         if (!name || (name = name.trim()) === '') {
             // 隐藏菜单
             hideMenu()
@@ -182,7 +175,7 @@ $(function () {
 
     // 新增md文件
     $addMdFile.click(function () {
-        let name = prompt(`${i18n.name}`, '')
+        let name = prompt(`${variable.i18n.name}`, '')
         if (!name || (name = name.trim()) === '') {
             // 隐藏菜单
             hideMenu()
@@ -194,18 +187,8 @@ $(function () {
 
     // 上传文件
     $uploadFile.click(function () {
-        $addFolder.addClass('hide')
-        $addMdFile.addClass('hide')
-        $uploadFile.addClass('hide')
-        $rename.addClass('hide')
-        $copyAddress.addClass('hide')
-        $cut.addClass('hide')
-        $paste.addClass('hide')
-        $del.addClass('hide')
-        $restore.addClass('hide')
-        $permlyDel.addClass('hide')
-        $upload.removeClass('hide')
-        $close.removeClass('hide')
+        hideElements($addFolder, $addMdFile, $uploadFile, $rename, $copyAddress, $cut, $paste, $del, $restore, $permlyDel)
+        displayElements($upload, $close)
         isUploadFile = true
         return false
     })
@@ -216,16 +199,11 @@ $(function () {
         return false
     })
 
-    // 上传
-    $($ul.find('from')[0]).click(function () {
-        console.log('--2-')
-        return false
-    })
-
     // 重命名
     $rename.click(function (event) {
+        let id = $targetTr.attr('id')
         let name = $targetTr.attr('name')
-        name = prompt(`${i18n.name}`, name)
+        name = prompt(`${variable.i18n.name}`, name)
         if (!name || (name = name.trim()) === '') {
             // 隐藏菜单
             hideMenu()
@@ -233,9 +211,8 @@ $(function () {
             return false
         }
 
-        let href = $rename.attr('href')
-        // href = `?_method=PUT&name=${name}`
-        // $rename.attr('href', href)
+        let href = `${variable.contextPath}/image/rename?id=${id}&name=${name}&current=${variable.current}&size=${variable.size}&search=${variable.search}&t=${new Date().getTime()}`
+        $rename.attr('href', href)
     })
 
     // 复制地址
@@ -256,7 +233,7 @@ $(function () {
     // 删除
     $del.click(function () {
         let name = $targetTr.attr('name')
-        if (!confirm(`${i18n.del} ${name} ?`)) {
+        if (!confirm(`${variable.i18n.del} ${name} ?`)) {
             // 隐藏菜单
             hideMenu()
             // 取消 <a></a> 默认行为
@@ -267,7 +244,7 @@ $(function () {
     // 恢复
     $restore.click(function () {
         let name = $targetTr.attr('name')
-        if (!confirm(`${i18n.restore} ${name} ?`)) {
+        if (!confirm(`${variable.i18n.restore} ${name} ?`)) {
             // 隐藏菜单
             hideMenu()
             // 取消 <a></a> 默认行为
@@ -278,7 +255,7 @@ $(function () {
     // 永久删除
     $permlyDel.click(function () {
         let name = $targetTr.attr('name')
-        if (!confirm(`${i18n.permlyDel} ${name} ?`)) {
+        if (!confirm(`${variable.i18n.permlyDel} ${name} ?`)) {
             // 隐藏菜单
             hideMenu()
             // 取消 <a></a> 默认行为
@@ -293,7 +270,6 @@ $(function () {
     })
 
     $(document).keydown(function (event) {
-        // Esc按键
         if (event.keyCode === 27 // Esc按键
             && !isUploadFile) {
             // 隐藏菜单

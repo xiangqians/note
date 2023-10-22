@@ -46,7 +46,7 @@ func signIn(ctx *gin.Context) {
 	errRedirect := func(err any) {
 		session.Set(ctx, signInNameKey, name)
 		session.Set(ctx, signInErrKey, util_string.String(err))
-		context.Redirect(ctx, "/user/signin")
+		context.Redirect(ctx, "/user/signin", nil)
 	}
 
 	// 校验用户名
@@ -120,7 +120,7 @@ func signIn(ctx *gin.Context) {
 	session.SetUser(ctx, user)
 
 	// 重定向到首页
-	context.Redirect(ctx, "/")
+	context.Redirect(ctx, "/", nil)
 }
 
 // 根据用户id更新try值
