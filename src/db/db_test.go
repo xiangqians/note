@@ -6,7 +6,7 @@ package db
 import (
 	"gorm.io/gorm"
 	"log"
-	"note/src/typ"
+	"note/src/model"
 	"testing"
 )
 
@@ -35,7 +35,7 @@ func TestRaw1(t *testing.T) {
 }
 
 func TestRaw2(t *testing.T) {
-	user, err := Raw[typ.User](db, "SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user` LIMIT 1")
+	user, err := Raw[model.User](db, "SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user` LIMIT 1")
 	if err != nil {
 		panic(err)
 	}
@@ -43,7 +43,7 @@ func TestRaw2(t *testing.T) {
 }
 
 func TestRaw3(t *testing.T) {
-	users, err := Raw[[]typ.User](db, "SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user` LIMIT 10")
+	users, err := Raw[[]model.User](db, "SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user` LIMIT 10")
 	if err != nil {
 		panic(err)
 	}
@@ -51,7 +51,7 @@ func TestRaw3(t *testing.T) {
 }
 
 func TestPage(t *testing.T) {
-	page, err := Page[typ.User](db, 1, 10, "SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user`")
+	page, err := Page[model.User](db, 1, 10, "SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user`")
 	if err != nil {
 		panic(err)
 	}

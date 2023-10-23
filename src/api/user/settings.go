@@ -8,17 +8,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"note/src/api"
 	"note/src/context"
+	"note/src/model"
 	"note/src/session"
-	"note/src/typ"
 	util_crypto_bcrypt "note/src/util/crypto/bcrypt"
-	util_string "note/src/util/string"
 	"note/src/util/time"
 	"note/src/util/validate"
 	"strings"
 )
 
 const settingsUserKey = "settingsUser"
-const settingsErrKey = "settingsErr"
 
 // Settings 用户设置
 func Settings(ctx *gin.Context) {
@@ -30,7 +28,7 @@ func Settings(ctx *gin.Context) {
 	} else
 	// 设置页
 	{
-		user, _ := session.Get[typ.UpdUser](ctx, settingsUserKey, true)
+		user, _ := session.Get[model.UpdUser](ctx, settingsUserKey, true)
 		sessionUser, _ := session.GetUser(ctx)
 		if user.Name == "" {
 			user.Name = sessionUser.Name
@@ -41,25 +39,23 @@ func Settings(ctx *gin.Context) {
 		if user.Rem == "" {
 			user.Rem = sessionUser.Rem
 		}
-		err, _ := session.Get[string](ctx, settingsErrKey, true)
-		context.HtmlOk(ctx, "user/settings", typ.Resp[typ.UpdUser]{Data: user, Msg: err})
+		context.HtmlOk(ctx, "user/settings", model.Resp[model.UpdUser]{Data: user})
 	}
 }
 
 // 用户设置
 func settings(ctx *gin.Context) {
 	// 错误重定向到设置页
-	errRedirect := func(user typ.UpdUser, err any) {
+	errRedirect := func(user model.UpdUser, err any) {
 		user.OrigPasswd = ""
 		user.Passwd = ""
 		user.NewPasswd = ""
 		user.ReNewPasswd = ""
 		session.Set(ctx, settingsUserKey, user)
-		session.Set(ctx, settingsErrKey, util_string.String(err))
-		context.Redirect(ctx, "/user/settings", nil)
+		context.Redirect(ctx, "/user/settings", nil, err)
 	}
 
-	user := typ.UpdUser{}
+	user := model.UpdUser{}
 
 	// 绑定
 	err := context.ShouldBind(ctx, &user)
@@ -136,5 +132,5 @@ func settings(ctx *gin.Context) {
 	session.SetUser(ctx, sessionUser)
 
 	// 重定向到首页
-	context.Redirect(ctx, "/user/settings", nil)
+	context.Redirect(ctx, "/user/settings", nil, nil)
 }

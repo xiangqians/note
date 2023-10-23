@@ -1,7 +1,7 @@
 // abs
 // @author xiangqian
 // @date 20:34 2023/06/10
-package typ
+package model
 
 // Abs 抽象类型定义
 type Abs struct {

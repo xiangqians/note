@@ -6,10 +6,10 @@ package index
 import (
 	"github.com/gin-gonic/gin"
 	"note/src/context"
-	"note/src/typ"
+	"note/src/model"
 )
 
 // Index index页面
 func Index(ctx *gin.Context) {
-	context.HtmlOk(ctx, "index", typ.Resp[any]{})
+	context.HtmlOk(ctx, "index", model.Resp[any]{})
 }

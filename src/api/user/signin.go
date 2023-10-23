@@ -9,17 +9,15 @@ import (
 	"gorm.io/gorm"
 	"note/src/api"
 	"note/src/context"
+	"note/src/model"
 	"note/src/session"
-	"note/src/typ"
 	util_crypto_bcrypt "note/src/util/crypto/bcrypt"
-	util_string "note/src/util/string"
 	util_time "note/src/util/time"
 	util_validate "note/src/util/validate"
 	"time"
 )
 
 const signInNameKey = "signInName"
-const signInErrKey = "signInErr"
 
 // SignIn 登录
 func SignIn(ctx *gin.Context) {
@@ -32,8 +30,7 @@ func SignIn(ctx *gin.Context) {
 	// 登录页
 	{
 		name, _ := session.Get[string](ctx, signInNameKey, true)
-		err, _ := session.Get[string](ctx, signInErrKey, true)
-		context.HtmlOk(ctx, "user/signin", typ.Resp[typ.User]{Data: typ.User{Name: name}, Msg: err})
+		context.HtmlOk(ctx, "user/signin", model.Resp[model.User]{Data: model.User{Name: name}})
 	}
 }
 
@@ -45,8 +42,7 @@ func signIn(ctx *gin.Context) {
 	// 错误重定向到登录页
 	errRedirect := func(err any) {
 		session.Set(ctx, signInNameKey, name)
-		session.Set(ctx, signInErrKey, util_string.String(err))
-		context.Redirect(ctx, "/user/signin", nil)
+		context.Redirect(ctx, "/user/signin", nil, err)
 	}
 
 	// 校验用户名
@@ -120,7 +116,7 @@ func signIn(ctx *gin.Context) {
 	session.SetUser(ctx, user)
 
 	// 重定向到首页
-	context.Redirect(ctx, "/", nil)
+	context.Redirect(ctx, "/", nil, nil)
 }
 
 // 根据用户id更新try值
@@ -129,15 +125,15 @@ func updTryById(db *gorm.DB, id int64, try byte) {
 }
 
 // 根据用户名查询用户信息
-func getByName(db *gorm.DB, name string) typ.User {
-	var user typ.User
+func getByName(db *gorm.DB, name string) model.User {
+	var user model.User
 	db.Raw("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `add_time`, `upd_time` FROM `user` WHERE `del` = 0 AND `name` = ? LIMIT 1", name).Scan(&user)
 	return user
 }
 
 // 根据用户id询用户信息
-func getById(db *gorm.DB, id int64) typ.User {
-	var user typ.User
+func getById(db *gorm.DB, id int64) model.User {
+	var user model.User
 	db.Raw("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `add_time`, `upd_time` FROM `user` WHERE `del` = 0 AND `id` = ? LIMIT 1", id).Scan(&user)
 	return user
 }

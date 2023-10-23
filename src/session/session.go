@@ -8,14 +8,14 @@ import (
 	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"note/src/typ"
+	"note/src/model"
 )
 
 const UserKey = "__user__"
 
 // GetUser 获取session用户信息
-func GetUser(ctx *gin.Context) (typ.User, error) {
-	user, err := Get[typ.User](ctx, UserKey, false)
+func GetUser(ctx *gin.Context) (model.User, error) {
+	user, err := Get[model.User](ctx, UserKey, false)
 
 	// 如果返回指针值，有可能会发生逃逸
 	//return &user
@@ -24,7 +24,7 @@ func GetUser(ctx *gin.Context) (typ.User, error) {
 }
 
 // SetUser 保存用户信息到session
-func SetUser(ctx *gin.Context, user typ.User) {
+func SetUser(ctx *gin.Context, user model.User) {
 	Set(ctx, UserKey, user)
 }
 

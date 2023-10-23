@@ -16,8 +16,8 @@ import (
 	en_trans "github.com/go-playground/validator/v10/translations/en"
 	zh_trans "github.com/go-playground/validator/v10/translations/zh"
 	"net/http"
+	"note/src/model"
 	"note/src/session"
-	"note/src/typ"
 	util_string "note/src/util/string"
 	util_time "note/src/util/time"
 	"reflect"
@@ -36,25 +36,25 @@ func init() {
 	// 初始化翻译器
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		uni := ut.New(zh.New(), // 备用语言
-			// 支持的语言
+			// 支持语言
 			zh.New(),
 			en.New())
-		if trans, ok := uni.GetTranslator(typ.Zh); ok {
+		if trans, ok := uni.GetTranslator(model.Zh); ok {
 			zh_trans.RegisterDefaultTranslations(v, trans)
 			zhTrans = trans
 		}
-		if trans, ok := uni.GetTranslator(typ.En); ok {
+		if trans, ok := uni.GetTranslator(model.En); ok {
 			en_trans.RegisterDefaultTranslations(v, trans)
 			enTrans = trans
 		}
 	}
 }
 
-func HtmlNotFound[T any](ctx *gin.Context, name string, resp typ.Resp[T]) {
+func HtmlNotFound[T any](ctx *gin.Context, name string, resp model.Resp[T]) {
 	Html[T](ctx, http.StatusNotFound, name, resp)
 }
 
-func HtmlOk[T any](ctx *gin.Context, name string, resp typ.Resp[T]) {
+func HtmlOk[T any](ctx *gin.Context, name string, resp model.Resp[T]) {
 	Html[T](ctx, http.StatusOK, name, resp)
 }
 
@@ -63,7 +63,7 @@ func HtmlOk[T any](ctx *gin.Context, name string, resp typ.Resp[T]) {
 // code : http状态码
 // name : html模板名称
 // resp : 响应数据
-func Html[T any](ctx *gin.Context, code int, name string, resp typ.Resp[T]) {
+func Html[T any](ctx *gin.Context, code int, name string, resp model.Resp[T]) {
 	// 从session中获取重定向消息
 	redirectMsg, _ := session.Get[string](ctx, redirectMsgKey, true)
 	if redirectMsg != "" {
@@ -78,23 +78,23 @@ func Html[T any](ctx *gin.Context, code int, name string, resp typ.Resp[T]) {
 
 	// html模板
 	ctx.HTML(code, name, gin.H{
-		"contextPath": typ.GetArg().ContextPath, // 上下文路径
-		"path":        request.URL.Path,         // 请求路径
-		"uri":         request.RequestURI,       // 请求uri地址
-		"user":        user,                     // 登录用户信息
-		"resp":        resp,                     // 响应数据
+		"contextPath": model.GetArg().ContextPath, // 上下文路径
+		"path":        request.URL.Path,           // 请求路径
+		"uri":         request.RequestURI,         // 请求uri地址
+		"user":        user,                       // 登录用户信息
+		"resp":        resp,                       // 响应数据
 	})
 }
 
-func JsonBadRequest[T any](ctx *gin.Context, resp typ.Resp[T]) {
+func JsonBadRequest[T any](ctx *gin.Context, resp model.Resp[T]) {
 	Json(ctx, http.StatusBadRequest, resp)
 }
 
-func JsonOk[T any](ctx *gin.Context, resp typ.Resp[T]) {
+func JsonOk[T any](ctx *gin.Context, resp model.Resp[T]) {
 	Json(ctx, http.StatusOK, resp)
 }
 
-func Json[T any](ctx *gin.Context, code int, resp typ.Resp[T]) {
+func Json[T any](ctx *gin.Context, code int, resp model.Resp[T]) {
 	ctx.JSON(code, resp)
 }
 
@@ -126,7 +126,7 @@ func Redirect(ctx *gin.Context, location string, paramMap map[string]any, msg an
 	arr = append(arr, fmt.Sprintf("t=%v", util_time.NowUnix()))
 
 	// 重定向
-	ctx.Redirect(http.StatusMovedPermanently, fmt.Sprintf("%s%s?%s", typ.GetArg().ContextPath, location, strings.Join(arr, "&")))
+	ctx.Redirect(http.StatusMovedPermanently, fmt.Sprintf("%s%s?%s", model.GetArg().ContextPath, location, strings.Join(arr, "&")))
 }
 
 func PostForm[T any](ctx *gin.Context, key string) (T, error) {
@@ -199,7 +199,7 @@ func transErr(ctx *gin.Context, err error) error {
 		}
 		var validationErrTrans validator.ValidationErrorsTranslations
 		switch lang {
-		case typ.En:
+		case model.En:
 			validationErrTrans = errs.Translate(enTrans)
 		default:
 			validationErrTrans = errs.Translate(zhTrans)
@@ -214,7 +214,7 @@ func transErr(ctx *gin.Context, err error) error {
 			}
 			if errMsg != "" {
 				switch lang {
-				case typ.En:
+				case model.En:
 					errMsg += ", "
 				default:
 					errMsg += "、"

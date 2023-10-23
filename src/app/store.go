@@ -13,8 +13,8 @@ import (
 	gorilla_sessions "github.com/gorilla/sessions"
 	"github.com/hashicorp/golang-lru/v2"
 	"net/http"
+	"note/src/model"
 	"note/src/session"
-	"note/src/typ"
 	"strings"
 )
 
@@ -54,7 +54,7 @@ func (c *cache) String() string {
 func (c *cache) setValue(name string, value map[any]any) {
 	// 用户多终端登录限制
 	if v, ok := value[session.UserKey]; ok {
-		if user, ok := v.(typ.User); ok {
+		if user, ok := v.(model.User); ok {
 			id := user.Id
 			keys := c.data.Keys()
 			if keys != nil && len(keys) > 0 {
@@ -63,7 +63,7 @@ func (c *cache) setValue(name string, value map[any]any) {
 					if v, ok = c.data.Get(key); ok {
 						if m, ok := v.(map[any]any); ok {
 							if v, ok = m[session.UserKey]; ok {
-								if user, ok = v.(typ.User); ok {
+								if user, ok = v.(model.User); ok {
 									if id == user.Id {
 										c.data.Remove(key)
 									}

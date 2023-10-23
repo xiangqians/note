@@ -19,5 +19,5 @@ func SignOut(ctx *gin.Context) {
 
 	// 重定向
 	session.Set(ctx, signInNameKey, user.Name)
-	context.Redirect(ctx, "/user/signin", nil)
+	context.Redirect(ctx, "/user/signin", nil, nil)
 }

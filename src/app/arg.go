@@ -6,14 +6,14 @@ package app
 import (
 	"flag"
 	"log"
-	"note/src/typ"
+	"note/src/model"
 	util_os "note/src/util/os"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-var arg typ.Arg
+var arg model.Arg
 
 // 初始化应用参数
 func initArg() {
@@ -51,13 +51,13 @@ func initArg() {
 	// 获取绝对路径
 	dataDir, _ = filepath.Abs(dataDir)
 
-	arg = typ.Arg{
+	arg = model.Arg{
 		TimeZone:    timeZone,
 		Port:        port,
 		ContextPath: contextPath,
 		DataDir:     dataDir,
 		AllowSignUp: strings.TrimSpace(allowSignUp) == "true",
 	}
-	typ.SetArg(arg)
+	model.SetArg(arg)
 	log.Println(arg)
 }

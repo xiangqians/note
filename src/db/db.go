@@ -21,7 +21,7 @@ package db
 import (
 	"fmt"
 	"log"
-	"note/src/typ"
+	"note/src/model"
 	util_crypto_md5 "note/src/util/crypto/md5"
 	"reflect"
 	"sort"
@@ -140,8 +140,8 @@ func Raw[T any](db *gorm.DB, sql string, values ...any) (T, error) {
 // sql SQL语句
 // current 当前页
 // size 页数量
-func Page[T any](db *gorm.DB, current int64, size uint8, sql string, values ...any) (typ.Page[T], error) {
-	page := typ.Page[T]{
+func Page[T any](db *gorm.DB, current int64, size uint8, sql string, values ...any) (model.Page[T], error) {
+	page := model.Page[T]{
 		Current: current,
 		Size:    size,
 	}

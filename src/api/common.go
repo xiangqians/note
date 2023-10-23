@@ -9,14 +9,14 @@ import (
 	"gorm.io/gorm"
 	"note/src/context"
 	_db "note/src/db"
+	"note/src/model"
 	"note/src/session"
-	"note/src/typ"
 	util_os "note/src/util/os"
 )
 
 // Db 获取数据库操作实例
 func Db(ctx *gin.Context) (*gorm.DB, error) {
-	dataDir := typ.GetArg().DataDir
+	dataDir := model.GetArg().DataDir
 	if ctx == nil {
 		return _db.Db(util_os.Path(dataDir, "database.db"))
 	}
@@ -46,10 +46,10 @@ func DbRaw[T any](ctx *gin.Context, sql string, values ...any) (T, error) {
 	return _db.Raw[T](db, sql, values...)
 }
 
-func DbPage[T any](ctx *gin.Context, current int64, size uint8, sql string, values ...any) (typ.Page[T], error) {
+func DbPage[T any](ctx *gin.Context, current int64, size uint8, sql string, values ...any) (model.Page[T], error) {
 	db, err := Db(ctx)
 	if err != nil {
-		return typ.Page[T]{
+		return model.Page[T]{
 			Current: current,
 			Size:    size,
 			Total:   0,

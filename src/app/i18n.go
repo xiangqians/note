@@ -8,8 +8,8 @@ import (
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/text/language"
+	"note/src/model"
 	"note/src/session"
-	"note/src/typ"
 	"strings"
 )
 
@@ -26,7 +26,7 @@ func initI18n(engine *gin.Engine) {
 		func(ctx *gin.Context, defaultLang string) string {
 			// 从url中获取lang
 			lang := strings.ToLower(strings.TrimSpace(ctx.Query("lang")))
-			if lang != "" && !(lang == typ.Zh || lang == typ.En) {
+			if lang != "" && !(lang == model.Zh || lang == model.En) {
 				lang = ""
 			}
 
@@ -44,10 +44,10 @@ func initI18n(engine *gin.Engine) {
 				// 从请求头获取 Accept-Language
 				acceptLanguage := ctx.GetHeader("Accept-Language")
 				// en,zh-CN;q=0.9,zh;q=0.8
-				if strings.HasPrefix(acceptLanguage, typ.Zh) {
-					lang = typ.Zh
-				} else if strings.HasPrefix(acceptLanguage, typ.En) {
-					lang = typ.En
+				if strings.HasPrefix(acceptLanguage, model.Zh) {
+					lang = model.Zh
+				} else if strings.HasPrefix(acceptLanguage, model.En) {
+					lang = model.En
 				}
 			}
 

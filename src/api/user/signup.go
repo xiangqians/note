@@ -11,11 +11,10 @@ import (
 	"log"
 	"note/src/api"
 	"note/src/context"
+	"note/src/model"
 	"note/src/session"
-	"note/src/typ"
 	util_crypto_bcrypt "note/src/util/crypto/bcrypt"
 	util_os "note/src/util/os"
-	util_string "note/src/util/string"
 	"note/src/util/time"
 	"note/src/util/validate"
 	"os"
@@ -23,7 +22,6 @@ import (
 )
 
 const signUpUserKey = "signUpUser"
-const signUpErrKey = "signUpErr"
 
 // SignUp 注册
 func SignUp(ctx *gin.Context) {
@@ -34,22 +32,21 @@ func SignUp(ctx *gin.Context) {
 	} else
 	// 注册页
 	{
-		user, _ := session.Get[typ.AddUser](ctx, signUpUserKey, true)
-		err, _ := session.Get[string](ctx, signUpErrKey, true)
-		if err == "" {
-			arg := typ.GetArg()
-			if !arg.AllowSignUp {
-				err = i18n.MustGetMessage("i18n.signUpNotOpen")
-			}
+		user, _ := session.Get[model.AddUser](ctx, signUpUserKey, true)
+
+		msg := ""
+		arg := model.GetArg()
+		if !arg.AllowSignUp {
+			msg = i18n.MustGetMessage("i18n.signUpNotOpen")
 		}
-		context.HtmlOk(ctx, "user/signup", typ.Resp[typ.AddUser]{Data: user, Msg: err})
+		context.HtmlOk(ctx, "user/signup", model.Resp[model.AddUser]{Data: user, Msg: msg})
 	}
 }
 
 // 注册
 func signUp(ctx *gin.Context) {
 	// 错误重定向到注册页
-	errRedirect := func(tx *gorm.DB, user typ.AddUser, err any) {
+	errRedirect := func(tx *gorm.DB, user model.AddUser, err any) {
 		if tx != nil {
 			// 回滚事务
 			tx.Rollback()
@@ -58,14 +55,13 @@ func signUp(ctx *gin.Context) {
 		user.Passwd = ""
 		user.RePasswd = ""
 		session.Set(ctx, signUpUserKey, user)
-		session.Set(ctx, signUpErrKey, util_string.String(err))
-		context.Redirect(ctx, "/user/signup", nil)
+		context.Redirect(ctx, "/user/signup", nil, err)
 	}
 
-	user := typ.AddUser{}
+	user := model.AddUser{}
 
 	// 是否允许用户注册
-	arg := typ.GetArg()
+	arg := model.GetArg()
 	if !arg.AllowSignUp {
 		errRedirect(nil, user, i18n.MustGetMessage("i18n.signUpNotOpen"))
 		return
@@ -162,6 +158,5 @@ func signUp(ctx *gin.Context) {
 
 	// 用户注册成功后，重定向到登录页
 	session.Set(ctx, signInNameKey, user.Name)
-	session.Set(ctx, signInErrKey, "")
-	context.Redirect(ctx, "/user/signin", nil)
+	context.Redirect(ctx, "/user/signin", nil, nil)
 }

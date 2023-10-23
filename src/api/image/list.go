@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"note/src/api"
 	"note/src/context"
+	"note/src/model"
 	"note/src/session"
-	"note/src/typ"
 	util_string "note/src/util/string"
 	"strings"
 )
@@ -17,7 +17,7 @@ import (
 const imageErrKey = "imageErr"
 
 func List(ctx *gin.Context) {
-	html := func(page typ.Page[typ.Image], err any) {
+	html := func(page model.Page[model.Image], err any) {
 		msg := util_string.String(err)
 
 		redirectErr, _ := session.Get[string](ctx, imageErrKey, true)
@@ -25,7 +25,7 @@ func List(ctx *gin.Context) {
 			msg = redirectErr + " " + msg
 		}
 
-		context.HtmlOk(ctx, "image/list", typ.Resp[typ.Page[typ.Image]]{
+		context.HtmlOk(ctx, "image/list", model.Resp[model.Page[model.Image]]{
 			Msg:  msg,
 			Data: page,
 		})
@@ -74,7 +74,7 @@ func List(ctx *gin.Context) {
 	}
 
 	// 查询
-	page, err := api.DbPage[typ.Image](ctx, current, size, sql, values...)
+	page, err := api.DbPage[model.Image](ctx, current, size, sql, values...)
 	html(page, err)
 }
 
@@ -95,7 +95,7 @@ func redirectToList(ctx *gin.Context, msg any) {
 //// List 库列表页面
 //func List(context *gin.Context) {
 //	// lib
-//	lib := typ.Lib{}
+//	lib := model.Lib{}
 //	err := api_common_context.ShouldBindQuery(context, &lib)
 //
 //	var History []History
@@ -109,7 +109,7 @@ func redirectToList(ctx *gin.Context, msg any) {
 //	lib.Name = strings.TrimSpace(lib.Name)
 //
 //	// type
-//	lib.Type = string(typ.ExtNameOf(strings.TrimSpace(lib.Type)))
+//	lib.Type = string(model.ExtNameOf(strings.TrimSpace(lib.Type)))
 //
 //	// del
 //	if lib.Del != 0 {
@@ -123,7 +123,7 @@ func redirectToList(ctx *gin.Context, msg any) {
 //	page, err := DbPage(context, lib)
 //
 //	// resp
-//	resp := typ.Resp[map[string]any]{
+//	resp := model.Resp[map[string]any]{
 //		Msg: str.ConvTypeToStr(err),
 //		Data: map[string]any{
 //			"lib":   lib,   // lib query
@@ -140,7 +140,7 @@ func redirectToList(ctx *gin.Context, msg any) {
 //}
 
 //// DbPage 分页查询图片
-//func DbPage(context *gin.Context, img typ.Lib) (typ.Page[typ.Lib], error) {
+//func DbPage(context *gin.Context, img model.Lib) (model.Page[model.Lib], error) {
 //	// page request
 //	current, size := common.PageReq(context)
 //
@@ -169,7 +169,7 @@ func redirectToList(ctx *gin.Context, msg any) {
 //
 //	sql += "ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC"
 //
-//	return db.Page[typ.Lib](context, current, size, sql, args...)
+//	return db.Page[model.Lib](context, current, size, sql, args...)
 //}
 //
 //// DbTypes 获取库类型集合
