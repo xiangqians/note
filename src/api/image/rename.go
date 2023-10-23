@@ -4,8 +4,8 @@ package image
 
 import (
 	"github.com/gin-gonic/gin"
-	"note/src/api"
 	"note/src/context"
+	"note/src/dbctx"
 	util_time "note/src/util/time"
 	util_validate "note/src/util/validate"
 )
@@ -29,7 +29,7 @@ func Rename(ctx *gin.Context) {
 
 	// 文件重命名
 	if err == nil && id > 0 {
-		_, err = api.DbExec(ctx, "UPDATE `image` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", name, util_time.NowUnix(), id)
+		_, err = dbctx.Exec(ctx, "UPDATE `image` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", name, util_time.NowUnix(), id)
 	}
 
 	// 重定向到图片列表

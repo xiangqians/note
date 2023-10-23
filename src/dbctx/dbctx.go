@@ -1,7 +1,6 @@
-// Route
 // @author xiangqian
-// @date 21:47 2022/12/23
-package api
+// @date 23:11 2023/10/23
+package dbctx
 
 import (
 	"fmt"
@@ -29,7 +28,7 @@ func Db(ctx *gin.Context) (*gorm.DB, error) {
 	return _db.Db(util_os.Path(dataDir, fmt.Sprintf("%d", user.Id), "database.db"))
 }
 
-func DbExec(ctx *gin.Context, sql string, values ...any) (rowsAffected int64, err error) {
+func Exec(ctx *gin.Context, sql string, values ...any) (rowsAffected int64, err error) {
 	db, err := Db(ctx)
 	if err != nil {
 		return
@@ -37,7 +36,7 @@ func DbExec(ctx *gin.Context, sql string, values ...any) (rowsAffected int64, er
 	return _db.Exec(db, sql, values...)
 }
 
-func DbRaw[T any](ctx *gin.Context, sql string, values ...any) (T, error) {
+func Raw[T any](ctx *gin.Context, sql string, values ...any) (T, error) {
 	db, err := Db(ctx)
 	if err != nil {
 		var t T
@@ -46,7 +45,7 @@ func DbRaw[T any](ctx *gin.Context, sql string, values ...any) (T, error) {
 	return _db.Raw[T](db, sql, values...)
 }
 
-func DbPage[T any](ctx *gin.Context, current int64, size uint8, sql string, values ...any) (model.Page[T], error) {
+func Page[T any](ctx *gin.Context, current int64, size uint8, sql string, values ...any) (model.Page[T], error) {
 	db, err := Db(ctx)
 	if err != nil {
 		return model.Page[T]{

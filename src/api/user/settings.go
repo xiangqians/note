@@ -6,8 +6,8 @@ package user
 import (
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
-	"note/src/api"
 	"note/src/context"
+	"note/src/dbctx"
 	"note/src/model"
 	"note/src/session"
 	util_crypto_bcrypt "note/src/util/crypto/bcrypt"
@@ -99,7 +99,7 @@ func settings(ctx *gin.Context) {
 	}
 
 	// 获取数据库操作实例
-	db, err := api.Db(nil)
+	db, err := dbctx.Db(nil)
 	if err != nil {
 		errRedirect(user, err)
 		return

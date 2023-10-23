@@ -4,8 +4,8 @@ package image
 
 import (
 	"github.com/gin-gonic/gin"
-	"note/src/api"
 	"note/src/context"
+	"note/src/dbctx"
 	"note/src/util/time"
 )
 
@@ -28,7 +28,7 @@ func Del(ctx *gin.Context) {
 	}
 
 	// delete
-	_, err = api.DbExec(ctx, "UPDATE `image` SET `del` = 1, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", time.NowUnix(), id)
+	_, err = dbctx.Exec(ctx, "UPDATE `image` SET `del` = 1, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", time.NowUnix(), id)
 
 	// 重定向到图片列表
 	redirectToList(ctx, err)

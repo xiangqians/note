@@ -6,8 +6,8 @@ package image
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"note/src/api"
 	"note/src/context"
+	"note/src/dbctx"
 	"note/src/model"
 	"note/src/session"
 	util_string "note/src/util/string"
@@ -74,7 +74,7 @@ func List(ctx *gin.Context) {
 	}
 
 	// 查询
-	page, err := api.DbPage[model.Image](ctx, current, size, sql, values...)
+	page, err := dbctx.Page[model.Image](ctx, current, size, sql, values...)
 	html(page, err)
 }
 

@@ -9,8 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"log"
-	"note/src/api"
 	"note/src/context"
+	"note/src/dbctx"
 	"note/src/model"
 	"note/src/session"
 	util_crypto_bcrypt "note/src/util/crypto/bcrypt"
@@ -101,7 +101,7 @@ func signUp(ctx *gin.Context) {
 	}
 
 	// 获取数据库操作实例
-	db, err := api.Db(nil)
+	db, err := dbctx.Db(nil)
 	if err != nil {
 		errRedirect(nil, user, err)
 		return
