@@ -6,27 +6,21 @@ package image
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"note/src/api/common"
 	"note/src/context"
 	"note/src/dbctx"
 	"note/src/model"
-	"note/src/session"
 	util_string "note/src/util/string"
 	"strings"
 )
 
-const imageErrKey = "imageErr"
-
 func List(ctx *gin.Context) {
+	common.List[model.Image](ctx, "image")
+	return
+
 	html := func(page model.Page[model.Image], err any) {
-		msg := util_string.String(err)
-
-		redirectErr, _ := session.Get[string](ctx, imageErrKey, true)
-		if redirectErr != "" {
-			msg = redirectErr + " " + msg
-		}
-
 		context.HtmlOk(ctx, "image/list", model.Resp[model.Page[model.Image]]{
-			Msg:  msg,
+			Msg:  util_string.String(err),
 			Data: page,
 		})
 	}

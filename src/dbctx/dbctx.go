@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"note/src/context"
 	_db "note/src/db"
 	"note/src/model"
 	"note/src/session"
@@ -54,7 +53,5 @@ func Page[T any](ctx *gin.Context, current int64, size uint8, sql string, values
 			Total:   0,
 		}, err
 	}
-	page, err := _db.Page[T](db, current, size, sql, values...)
-	page.Search, _ = context.Query[string](ctx, "search")
-	return page, err
+	return _db.Page[T](db, current, size, sql, values...)
 }
