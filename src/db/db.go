@@ -20,6 +20,7 @@ package db
 
 import (
 	"fmt"
+	"gorm.io/gorm/logger"
 	"log"
 	"note/src/model"
 	util_crypto_md5 "note/src/util/crypto/md5"
@@ -73,6 +74,19 @@ func open(dsn string) (db *gorm.DB, err error) {
 	db, err = gorm.Open(dialector, &gorm.Config{
 		// 全局模式：执行任何 SQL 时都创建并缓存预编译语句，可以提高后续的调用速度
 		PrepareStmt: true,
+
+		// 日志记录器
+		// Gorm有一个默认logger实现，默认情况下，它会打印慢SQL（默认200ms）和错误
+		Logger: logger.New(log.New(log.Writer(), "\r\n", log.LstdFlags|log.LstdFlags), logger.Config{
+			// 设定慢查询时间阈值为1ns
+			SlowThreshold: 1 * time.Nanosecond,
+			// 设置日志级别，只有Info和Warn级别会输出慢查询日志
+			LogLevel: logger.Info,
+			// 忽略找不到记录错误
+			IgnoreRecordNotFoundError: false,
+			// 彩色日志输出
+			Colorful: false,
+		}),
 	})
 	if err != nil {
 		return

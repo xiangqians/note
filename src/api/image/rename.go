@@ -4,8 +4,10 @@ package image
 
 import (
 	"github.com/gin-gonic/gin"
+	"note/src/api/common"
 	"note/src/context"
 	"note/src/dbctx"
+	"note/src/model"
 	util_time "note/src/util/time"
 	util_validate "note/src/util/validate"
 )
@@ -16,7 +18,7 @@ func Rename(ctx *gin.Context) {
 	method, _ := context.Query[string](ctx, "_method")
 	if method != "PUT" {
 		// 重定向到图片列表
-		redirectToList(ctx, "Only support request method 'PUT'")
+		common.RedirectToList[model.Image](ctx, "Only support request method 'PUT'")
 		return
 	}
 
@@ -29,9 +31,9 @@ func Rename(ctx *gin.Context) {
 
 	// 文件重命名
 	if err == nil && id > 0 {
-		_, err = dbctx.Exec(ctx, "UPDATE `image` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", name, util_time.NowUnix(), id)
+		_, err = dbctx.Upd(ctx, "UPDATE `image` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", name, util_time.NowUnix(), id)
 	}
 
 	// 重定向到图片列表
-	redirectToList(ctx, err)
+	common.RedirectToList[model.Image](ctx, err)
 }

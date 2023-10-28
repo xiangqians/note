@@ -10,11 +10,9 @@ import (
 	"note/src/model"
 	"note/src/session"
 	util_os "note/src/util/os"
-	"reflect"
-	"strings"
 )
 
-func Page[T any](ctx *gin.Context, current int64, size uint8, sql string, values ...any) (model.Page[T], error) {
+func Page[T any](ctx *gin.Context, current int64, size uint8, sql string, args ...any) (model.Page[T], error) {
 	db, err := Db(ctx)
 	if err != nil {
 		return model.Page[T]{
@@ -23,49 +21,45 @@ func Page[T any](ctx *gin.Context, current int64, size uint8, sql string, values
 			Total:   0,
 		}, err
 	}
-	return _db.Page[T](db, current, size, sql, values...)
+	return _db.Page[T](db, current, size, sql, args...)
 }
 
-// GetPermlyDelId 查询永久删除的数据表id，以复用
-func GetPermlyDelId[T any](ctx *gin.Context) (int64, error) {
-	// 获取泛型类型
-	var t T
-	reflectType := reflect.TypeOf(t)
-
-	// 结构体名称（此处即数据表名）
-	name := strings.ToLower(reflectType.Name())
-
-	// 查询
-	return Get[int64](ctx, fmt.Sprintf("SELECT `id` FROM `%s` WHERE `del` = 2 LIMIT 1", name))
+// GetPermlyDelId 获取永久删除的数据表id，以复用
+// table : 数据表名
+func GetPermlyDelId(ctx *gin.Context, table string) (int64, error) {
+	return Get[int64](ctx, fmt.Sprintf("SELECT `id` FROM `%s` WHERE `del` = 2 LIMIT 1", table))
 }
 
-func Get[T any](ctx *gin.Context, sql string, values ...any) (T, error) {
+func Get[T any](ctx *gin.Context, sql string, args ...any) (T, error) {
 	db, err := Db(ctx)
 	if err != nil {
 		var t T
 		return t, err
 	}
-	return _db.Raw[T](db, sql, values...)
+	return _db.Raw[T](db, sql, args...)
 }
 
-//func Upd(ctx *gin.Context, sql string, values ...any) (rowsAffected int64, err error) {
-//	return Exec(ctx, sql, values...)
-//}
-//
-//func Del(ctx *gin.Context, sql string, values ...any) (rowsAffected int64, err error) {
-//	return Exec(ctx, sql, values...)
-//}
-//
-//func Add(ctx *gin.Context, sql string, values ...any) (rowsAffected int64, err error) {
-//	return Exec(ctx, sql, values...)
-//}
+func Upd(ctx *gin.Context, sql string, args ...any) (rowsAffected int64, err error) {
+	rowsAffected, _, err = exec(ctx, sql, args...)
+	return
+}
 
-func Exec(ctx *gin.Context, sql string, values ...any) (rowsAffected int64, lastInsertId int64, err error) {
+func Del(ctx *gin.Context, sql string, args ...any) (rowsAffected int64, err error) {
+	rowsAffected, _, err = exec(ctx, sql, args...)
+	return
+}
+
+func Add(ctx *gin.Context, sql string, args ...any) (lastInsertId int64, err error) {
+	_, lastInsertId, err = exec(ctx, sql, args...)
+	return
+}
+
+func exec(ctx *gin.Context, sql string, args ...any) (rowsAffected int64, lastInsertId int64, err error) {
 	db, err := Db(ctx)
 	if err != nil {
 		return
 	}
-	return _db.Exec(db, sql, values...)
+	return _db.Exec(db, sql, args...)
 }
 
 // Db 获取数据库操作实例

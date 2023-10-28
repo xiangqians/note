@@ -1,3 +1,4 @@
+// 列表
 // @author xiangqian
 // @date 23:21 2023/10/23
 package common
@@ -9,13 +10,17 @@ import (
 	"note/src/dbctx"
 	"note/src/model"
 	util_string "note/src/util/string"
-	"reflect"
 	"sort"
 	"strconv"
 	"strings"
 )
 
-func List[T any](ctx *gin.Context, table string) {
+// List 列表
+func List[T any](ctx *gin.Context) {
+	// 数据表名
+	table := Table[T]()
+
+	// html模板
 	html := func(page model.Page[T], err any) {
 		context.HtmlOk(ctx, fmt.Sprintf("%s/list", table), model.Resp[model.Page[T]]{
 			Msg:  util_string.String(err),
@@ -153,20 +158,16 @@ func List[T any](ctx *gin.Context, table string) {
 // table: 数据表名
 // msg  : 重定向消息（没有消息就是最好的消息）
 func RedirectToList[T any](ctx *gin.Context, msg any) {
+	// 数据表名
+	table := Table[T]()
+
 	// 获取分页参数
 	current, _ := context.Query[int64](ctx, "current")
 	size, _ := context.Query[uint8](ctx, "size")
 	search, _ := context.Query[string](ctx, "search")
 
-	// 获取泛型类型
-	var t T
-	reflectType := reflect.TypeOf(t)
-
-	// 结构体名称
-	name := strings.ToLower(reflectType.Name())
-
 	// 重定向到图片首页
-	context.Redirect(ctx, fmt.Sprintf("/%s", name), map[string]any{
+	context.Redirect(ctx, fmt.Sprintf("/%s", table), map[string]any{
 		"current": current,
 		"size":    size,
 		"search":  search,
