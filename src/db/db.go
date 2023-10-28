@@ -77,7 +77,7 @@ func open(dsn string) (db *gorm.DB, err error) {
 
 		// 日志记录器
 		// Gorm有一个默认logger实现，默认情况下，它会打印慢SQL（默认200ms）和错误
-		Logger: logger.New(log.New(log.Writer(), "\r\n", log.LstdFlags|log.LstdFlags), logger.Config{
+		Logger: logger.New(log.New(log.Writer(), "", log.LstdFlags|log.LstdFlags), logger.Config{
 			// 设定慢查询时间阈值为1ns
 			//SlowThreshold: 1 * time.Nanosecond,
 			// 设置日志级别，只有Info和Warn级别会输出慢查询日志
