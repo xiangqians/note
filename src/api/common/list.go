@@ -9,6 +9,7 @@ import (
 	"note/src/dbctx"
 	"note/src/model"
 	util_string "note/src/util/string"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -147,14 +148,25 @@ func List[T any](ctx *gin.Context, table string) {
 	html(page, err)
 }
 
-// redirectToList 重定向到图片列表
-func RedirectToList(ctx *gin.Context, msg any) {
+// RedirectToList 重定向到列表
+// ctx  : *gin.Context
+// table: 数据表名
+// msg  : 重定向消息（没有消息就是最好的消息）
+func RedirectToList[T any](ctx *gin.Context, msg any) {
+	// 获取分页参数
 	current, _ := context.Query[int64](ctx, "current")
 	size, _ := context.Query[uint8](ctx, "size")
 	search, _ := context.Query[string](ctx, "search")
 
+	// 获取泛型类型
+	var t T
+	reflectType := reflect.TypeOf(t)
+
+	// 结构体名称
+	name := strings.ToLower(reflectType.Name())
+
 	// 重定向到图片首页
-	context.Redirect(ctx, "/image", map[string]any{
+	context.Redirect(ctx, fmt.Sprintf("/%s", name), map[string]any{
 		"current": current,
 		"size":    size,
 		"search":  search,

@@ -46,6 +46,7 @@ func init() {
 }
 
 // Db Database
+// dsn : DataSourceName
 func Db(dsn string) (*gorm.DB, error) {
 	key := util_crypto_md5.Encrypt([]byte(dsn), nil)
 	if db, ok := dbMap[key]; ok {
@@ -64,10 +65,10 @@ func Db(dsn string) (*gorm.DB, error) {
 // 打开数据库连接
 // https://gorm.io/zh_CN/docs
 // https://gorm.io/zh_CN/docs/connecting_to_the_database.html#SQLite
+// dsn : DataSourceName
 func open(dsn string) (db *gorm.DB, err error) {
 	log.Println("open db", dsn)
 
-	// open
 	dialector := sqlite.Open(dsn)
 	db, err = gorm.Open(dialector, &gorm.Config{
 		// 全局模式：执行任何 SQL 时都创建并缓存预编译语句，可以提高后续的调用速度
@@ -98,61 +99,71 @@ func open(dsn string) (db *gorm.DB, err error) {
 // 2、gorm.DB.Raw("sql语句")  执行查询
 // gorm中exec和raw方法的区别是：Raw用来查询，执行其他操作用Exec。
 // (*gorm.DB).Exec does not return an error, if you want to see if your query failed or not read up on error handling with gorm. Use Exec when you don’t care about output, use Raw when you do care about the output.
-func Exec(db *gorm.DB, sql string, values ...any) (rowsAffected int64, err error) {
-	db = db.Exec(sql, values...)
-	rowsAffected = db.RowsAffected
-	err = db.Error
+// db     : *gorm.DB
+// sql    : sql语句
+// args   : 占位符值
+func Exec(db *gorm.DB, sql string, args ...any) (rowsAffected int64, lastInsertId int64, err error) {
+	// UPDATE / DELETE
+	if !strings.HasPrefix(sql, "INSERT") {
+		tx := db.Exec(sql, args...)
+		rowsAffected = tx.RowsAffected
+		err = tx.Error
+		return
+	}
+
+	// INSERT
+	// gorm Exec INSERT不支持获取自增id
+	// 但是gorm orm是对底层database/sql的封装，所以进行降级执行
+
+	sqlDb, err := db.DB()
+	if err != nil {
+		return
+	}
+
+	result, err := sqlDb.Exec(sql, args...)
+	if err != nil {
+		return
+	}
+
+	rowsAffected, _ = result.RowsAffected()
+	lastInsertId, _ = result.LastInsertId()
 	return
 }
 
 // Raw 执行查询
-func Raw[T any](db *gorm.DB, sql string, values ...any) (T, error) {
-	var data T
-	rflTyp := reflect.ValueOf(&data).Elem().Type()
-	switch rflTyp.Kind() {
-	// int类型
-	case reflect.Int, reflect.Int8, reflect.Int16 | reflect.Int32 | reflect.Int64 |
-		reflect.Uint | reflect.Uint8 | reflect.Uint16 | reflect.Uint32 | reflect.Uint64:
-
-	// float类型
-	case reflect.Float32, reflect.Float64:
-
-	// string类型
-	case reflect.String:
-
-	// 结构体类型
-	case reflect.Struct:
-
-	// 切片类型
-	case reflect.Slice:
-
-	default:
-		panic("不支持此类型查询：" + rflTyp.Name())
-	}
+// db     : *gorm.DB
+// sql    : sql语句
+// args   : 占位符值
+func Raw[T any](db *gorm.DB, sql string, args ...any) (T, error) {
+	var t T
 
 	// Scan? Take?
-	db = db.Raw(sql, values...).Scan(&data)
-	return data, db.Error
+	tx := db.Raw(sql, args...).Scan(&t)
+	return t, tx.Error
 }
 
 // Page 分页查询
-// db 数据库
-// sql SQL语句
-// current 当前页
-// size 页数量
-func Page[T any](db *gorm.DB, current int64, size uint8, sql string, values ...any) (model.Page[T], error) {
-	page := model.Page[T]{
-		Current: current,
-		Size:    size,
-	}
+// db      : *gorm.DB
+// current : 当前页
+// size    : 页数量
+// sql     : SQL语句
+// args    : 占位符值
+func Page[T any](db *gorm.DB, current int64, size uint8, sql string, args ...any) (page model.Page[T], err error) {
+	// 当前页
+	page.Current = current
+
+	// 页数量
+	page.Size = size
 
 	// 总数
-	var total int64
 	index := strings.Index(sql, "FROM")
-	db.Raw(fmt.Sprintf("SELECT COUNT(1) %s", sql[index:]), values...).Count(&total)
+	total, err := Raw[int64](db, fmt.Sprintf("SELECT COUNT(1) %s", sql[index:]), args...)
+	if err != nil {
+		return
+	}
 	page.Total = total
 	if total == 0 {
-		return page, nil
+		return
 	}
 
 	// 总页数
@@ -160,7 +171,6 @@ func Page[T any](db *gorm.DB, current int64, size uint8, sql string, values ...a
 	if total%int64(size) != 0 {
 		pageCount += 1
 	}
-	page.PageCount = pageCount
 
 	// 页数索引集
 	if current == 1 || current > pageCount {
@@ -259,14 +269,16 @@ func Page[T any](db *gorm.DB, current int64, size uint8, sql string, values ...a
 
 	// 数据
 	var data []T
-	rflTyp := reflect.ValueOf(&data).Elem().Type()
+
 	// 创建切片：len 0, cap ?
-	i := reflect.MakeSlice(rflTyp, 0, int(size)).Interface()
+	i := reflect.MakeSlice(reflect.TypeOf(data), 0, int(size)).Interface()
 	data = i.([]T)
+
+	// 查询
 	offset := (current - 1) * int64(size)
 	limit := size
-	db = db.Raw(fmt.Sprintf("%s LIMIT %d,%d", sql, offset, limit), values...)
-	err := db.Scan(&data).Error
+	tx := db.Raw(fmt.Sprintf("%s LIMIT %d,%d", sql, offset, limit), args...)
+	err = tx.Scan(&data).Error
 	page.Data = data
-	return page, err
+	return
 }

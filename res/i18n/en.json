@@ -56,5 +56,6 @@
   "i18n.permlyDel": "Permanently Delete",
   "i18n.close": "Close",
   "i18n.copyAddress": "Copy address",
-  "i18n.copied": "Copied"
+  "i18n.copied": "Copied",
+  "i18n.unsupportedFileType": "不支持此文件类型"
 }

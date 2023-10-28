@@ -70,5 +70,5 @@ CREATE TABLE `note` -- 笔记信息表
     `upd_time`     INTEGER     DEFAULT 0              -- 修改时间（时间戳，s）
 );
 /*
-存储dir、md、doc、pdf、html、zip等
+存储folder、md、doc、pdf、html、zip等
 */

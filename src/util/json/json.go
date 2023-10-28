@@ -7,17 +7,27 @@ import (
 	encoding_json "encoding/json"
 )
 
-// Serialize 使用 Marshal 序列化
-func Serialize(v any) (string, error) {
-	buf, err := encoding_json.Marshal(v)
+// Serialize 使用Marshal序列化
+// v      : 要序列号的实例
+// indent : 是否缩进
+func Serialize(v any, indent bool) (string, error) {
+	var bytes []byte
+	var err error
+	if indent {
+		bytes, err = encoding_json.MarshalIndent(v,
+			"",   // 指定每行输出开头的字符串
+			"\t") // 指定每行要缩进的字符串
+	} else {
+		bytes, err = encoding_json.Marshal(v)
+	}
 	if err != nil {
 		return "", err
 	}
 
-	return string(buf), nil
+	return string(bytes), nil
 }
 
-// Deserialize 使用 Unmarshal 反序列化
+// Deserialize 使用Unmarshal反序列化
 func Deserialize(text string, v any) error {
 	return encoding_json.Unmarshal([]byte(text), v)
 }

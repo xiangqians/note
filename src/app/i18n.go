@@ -8,8 +8,9 @@ import (
 	"github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/text/language"
-	"note/src/model"
+	"note/src/context"
 	"note/src/session"
+	util_language "note/src/util/language"
 	"strings"
 )
 
@@ -23,45 +24,53 @@ func initI18n(engine *gin.Engine) {
 		UnmarshalFunc:    json.Unmarshal,
 		FormatBundleFile: "json",
 	}), i18n.WithGetLngHandle(
-		func(ctx *gin.Context, defaultLang string) string {
-			// 从url中获取lang
-			lang := strings.ToLower(strings.TrimSpace(ctx.Query("lang")))
-			if lang != "" && !(lang == model.Zh || lang == model.En) {
-				lang = ""
-			}
-
-			// 从session中获取lang
-			sessionLang, err := session.Get[string](ctx, "lang", false)
-			if err != nil {
-				sessionLang = ""
-			}
-			if lang == "" {
-				lang = sessionLang
+		func(ctx *gin.Context, defaultLanguage string) string {
+			// 从url中获取language
+			language, _ := context.Query[string](ctx, util_language.NAME)
+			language = strings.ToLower(language)
+			switch language {
+			case util_language.ZH:
+				language = util_language.ZH
+			case util_language.EN:
+				language = util_language.EN
+			default:
+				language = ""
 			}
 
 			// 从请求头获取 Accept-Language
-			if lang == "" {
+			if language == "" {
 				// 从请求头获取 Accept-Language
-				acceptLanguage := ctx.GetHeader("Accept-Language")
+				acceptLanguage, _ := context.Header[string](ctx, "Accept-Language")
 				// en,zh-CN;q=0.9,zh;q=0.8
-				if strings.HasPrefix(acceptLanguage, model.Zh) {
-					lang = model.Zh
-				} else if strings.HasPrefix(acceptLanguage, model.En) {
-					lang = model.En
+				if strings.HasPrefix(acceptLanguage, util_language.ZH) {
+					language = util_language.ZH
+				} else if strings.HasPrefix(acceptLanguage, util_language.EN) {
+					language = util_language.EN
 				}
 			}
 
-			// 如果lang未指定，则使用默认lang
-			if lang == "" {
-				lang = defaultLang
+			// 从session中获取language
+			if language == "" {
+				sessionLanguage, err := session.Get[string](ctx, util_language.NAME, false)
+				if err == nil {
+					switch sessionLanguage {
+					case util_language.ZH:
+						return util_language.ZH
+					case util_language.EN:
+						return util_language.EN
+					}
+				}
 			}
 
-			// 存储lang到session
-			if sessionLang != lang {
-				session.Set(ctx, "lang", lang)
+			// 如果language未指定，则使用默认language
+			if language == "" {
+				language = defaultLanguage
 			}
 
-			return lang
+			// 存储language到session
+			session.Set(ctx, util_language.NAME, language)
+
+			return language
 		},
 	)))
 }

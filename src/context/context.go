@@ -18,6 +18,8 @@ import (
 	"net/http"
 	"note/src/model"
 	"note/src/session"
+	"note/src/util/language"
+	util_language "note/src/util/language"
 	util_string "note/src/util/string"
 	util_time "note/src/util/time"
 	"reflect"
@@ -39,11 +41,11 @@ func init() {
 			// 支持语言
 			zh.New(),
 			en.New())
-		if trans, ok := uni.GetTranslator(model.Zh); ok {
+		if trans, ok := uni.GetTranslator(language.ZH); ok {
 			zh_trans.RegisterDefaultTranslations(v, trans)
 			zhTrans = trans
 		}
-		if trans, ok := uni.GetTranslator(model.En); ok {
+		if trans, ok := uni.GetTranslator(language.EN); ok {
 			en_trans.RegisterDefaultTranslations(v, trans)
 			enTrans = trans
 		}
@@ -129,19 +131,23 @@ func Redirect(ctx *gin.Context, location string, paramMap map[string]any, msg an
 	ctx.Redirect(http.StatusMovedPermanently, fmt.Sprintf("%s%s?%s", model.GetArg().ContextPath, location, strings.Join(arr, "&")))
 }
 
-func PostForm[T any](ctx *gin.Context, key string) (T, error) {
-	value := ctx.PostForm(key)
+func PostForm[T any](ctx *gin.Context, name string) (T, error) {
+	value := ctx.PostForm(name)
 	return convStrToType[T](value)
 }
 
-func Param[T any](ctx *gin.Context, key string) (T, error) {
-	value := ctx.Param(key)
+func Param[T any](ctx *gin.Context, name string) (T, error) {
+	value := ctx.Param(name)
 	return convStrToType[T](value)
 }
 
-func Query[T any](ctx *gin.Context, key string) (T, error) {
-	value := ctx.Query(key)
+func Query[T any](ctx *gin.Context, name string) (T, error) {
+	value := ctx.Query(name)
 	return convStrToType[T](value)
+}
+
+func Header[T any](ctx *gin.Context, name string) (T, error) {
+	return convStrToType[T](ctx.GetHeader(name))
 }
 
 // convStrToType string转类型（基本数据类型）
@@ -192,29 +198,27 @@ func ShouldBind(ctx *gin.Context, i any) error {
 // transErr 翻译异常
 func transErr(ctx *gin.Context, err error) error {
 	if errs, ok := err.(validator.ValidationErrors); ok {
-		session := session.Session(ctx)
-		lang := ""
-		if v, ok := session.Get("lang").(string); ok {
-			lang = v
-		}
+		// 语言
+		language, _ := session.Get[string](ctx, util_language.NAME, false)
+
+		// 校验异常翻译器
 		var validationErrTrans validator.ValidationErrorsTranslations
-		switch lang {
-		case model.En:
+		switch language {
+		case util_language.EN:
 			validationErrTrans = errs.Translate(enTrans)
 		default:
 			validationErrTrans = errs.Translate(zhTrans)
 		}
 
 		errMsg := ""
-		for key, value := range validationErrTrans {
-			name := key[strings.Index(key, ".")+1:]
-			msg, ierr := i18n.GetMessage(fmt.Sprintf("i18n.%s", strings.ToLower(name)))
-			if ierr == nil {
+		for name, value := range validationErrTrans {
+			name = name[strings.Index(name, ".")+1:]
+			if msg, err := i18n.GetMessage(fmt.Sprintf("i18n.%s", strings.ToLower(name))); err == nil {
 				value = strings.Replace(value, name, msg, 1)
 			}
 			if errMsg != "" {
-				switch lang {
-				case model.En:
+				switch language {
+				case util_language.EN:
 					errMsg += ", "
 				default:
 					errMsg += "、"

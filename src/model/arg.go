@@ -27,6 +27,6 @@ func GetArg() Arg {
 	return arg
 }
 
-func SetArg(_arg Arg) {
-	arg = _arg
+func SetArg(arg0 Arg) {
+	arg = arg0
 }
