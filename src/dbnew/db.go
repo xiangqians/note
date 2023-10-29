@@ -50,6 +50,5 @@ type Result interface {
 // DbConnPool 数据库连接池
 type DbConnPool interface {
 	// Get 获取数据库连接
-	// dsn : Data Source Name
-	Get(dsn string) (db Db, err error)
+	Get() (db Db, err error)
 }

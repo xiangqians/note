@@ -8,7 +8,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"log"
-	util_crypto_md5 "note/src/util/crypto/md5"
 	"strings"
 	"sync"
 	"time"
@@ -64,7 +63,7 @@ func (db *GormDb) Upd(sql string, args ...any) (rowsAffected int64, err error) {
 
 func (db *GormDb) Get(sql string, args ...any) (Result, error) {
 	tx := db.db.Raw(sql, args...)
-	return GormResult{tx: tx}, tx.Error
+	return &GormResult{tx: tx}, tx.Error
 }
 
 func (db *GormDb) Page(sql string, current int64, size uint8, args ...any) (Result, error) {
@@ -72,7 +71,7 @@ func (db *GormDb) Page(sql string, current int64, size uint8, args ...any) (Resu
 	index := strings.Index(sql, "FROM")
 	result, err := db.Get(fmt.Sprintf("SELECT COUNT(1) %s", sql[index:]), args...)
 	if err != nil {
-		return GormResult{}, err
+		return &GormResult{}, err
 	}
 	var count int64
 	result.Scan(&count)
@@ -80,8 +79,12 @@ func (db *GormDb) Page(sql string, current int64, size uint8, args ...any) (Resu
 	// 查询分页数据
 	offset := (current - 1) * int64(size)
 	limit := size
-	tx := db.db.Raw(fmt.Sprintf("%s LIMIT %d,%d", sql, offset, limit), args...)
-	return GormResult{tx: tx, count: count}, tx.Error
+	result, err = db.Get(fmt.Sprintf("%s LIMIT %d,%d", sql, offset, limit), args...)
+
+	gormResult := result.(*GormResult)
+	gormResult.count = count
+
+	return gormResult, err
 }
 
 func (db *GormDb) Commit() (err error) {
@@ -97,8 +100,8 @@ func (db *GormDb) Close() (err error) {
 }
 
 type GormResult struct {
-	tx    *gorm.DB
 	count int64
+	tx    *gorm.DB
 }
 
 func (result GormResult) Count() int64 {
@@ -115,35 +118,32 @@ func (result GormResult) Scan(dest any) error {
 }
 
 type GormDbConnPool struct {
-	// sync.Mutex 是一个基本的同步原语，可以实现并发环境下的线程安全
-	mutex sync.Mutex
-
-	// db map
-	m map[string]*gorm.DB
+	Driver string     // driver name
+	Dsn    string     // data source name
+	mutex  sync.Mutex // sync.Mutex 是一个基本的同步原语，可以实现并发环境下的线程安全
+	slice  []*gorm.DB // db切片
 }
 
-func (dbConnPool *GormDbConnPool) Get(dsn string) (Db, error) {
+func (dbConnPool *GormDbConnPool) Get() (Db, error) {
 	dbConnPool.mutex.Lock() // 获取锁
 	// defer的作用是把defer关键字之后的函数执行压入一个栈中延迟执行，多个defer的执行顺序是后进先出LIFO
 	defer dbConnPool.mutex.Unlock() // 释放锁
 
-	if dbConnPool.m == nil {
+	if dbConnPool.slice == nil {
 		// len 0, cap ?
-		// cap ?
-		dbConnPool.m = make(map[string]*gorm.DB, 16)
+		dbConnPool.slice = make([]*gorm.DB, 0, 16)
 	}
 
-	key := util_crypto_md5.Encrypt([]byte(dsn), nil)
-	if db, ok := dbConnPool.m[key]; ok {
-		return &GormDb{db: db}, nil
+	if len(dbConnPool.slice) > 0 {
+		return &GormDb{db: dbConnPool.slice[0]}, nil
 	}
 
-	db, err := dbConnPool.open(dsn)
+	db, err := dbConnPool.open()
 	if err != nil {
 		return nil, err
 	}
 
-	dbConnPool.m[key] = db
+	dbConnPool.slice = append(dbConnPool.slice, db)
 	return &GormDb{db: db}, nil
 }
 
@@ -151,11 +151,11 @@ func (dbConnPool *GormDbConnPool) Get(dsn string) (Db, error) {
 // https://gorm.io/zh_CN/docs
 // https://gorm.io/zh_CN/docs/connecting_to_the_database.html#SQLite
 // dsn : DataSourceName
-func (dbConnPool *GormDbConnPool) open(dsn string) (db *gorm.DB, err error) {
-	log.Println("open db", dsn)
+func (dbConnPool *GormDbConnPool) open() (*gorm.DB, error) {
+	log.Println("open db", dbConnPool.Dsn)
 
-	dialector := sqlite.Open(dsn)
-	db, err = gorm.Open(dialector, &gorm.Config{
+	dialector := sqlite.Open(dbConnPool.Dsn)
+	db, err := gorm.Open(dialector, &gorm.Config{
 		// 全局模式：执行任何 SQL 时都创建并缓存预编译语句，可以提高后续的调用速度
 		PrepareStmt: true,
 
@@ -173,14 +173,14 @@ func (dbConnPool *GormDbConnPool) open(dsn string) (db *gorm.DB, err error) {
 		}),
 	})
 	if err != nil {
-		return
+		return db, err
 	}
 
 	// 配置连接池
 	// 通过数据库连接池，我们可以避免频繁创建和销数据库连接所带来的开销，GROM的数据连接池底层是通过database/sql来实现的，所以其设置方法与database/sql是一样的。
 	sqlDb, err := db.DB()
 	if err != nil {
-		return
+		return db, err
 	}
 	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
 	sqlDb.SetMaxIdleConns(10)
@@ -188,5 +188,5 @@ func (dbConnPool *GormDbConnPool) open(dsn string) (db *gorm.DB, err error) {
 	sqlDb.SetMaxOpenConns(100)
 	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
 	sqlDb.SetConnMaxLifetime(time.Minute * 10)
-	return
+	return db, err
 }

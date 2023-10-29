@@ -6,6 +6,7 @@ import (
 	"log"
 	"note/src/model"
 	util_json "note/src/util/json"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -13,13 +14,22 @@ import (
 var dbConnPool DbConnPool
 
 func init() {
-	//dbConnPool = &GormDbConnPool{}
-	dbConnPool = &DefaultDbConnPool{}
+	driver := "sqlite3"
+	dsn := "C:\\Users\\xiangqian\\Desktop\\tmp\\note\\data\\database.db"
+
+	//dbConnPool = &GormDbConnPool{
+	//	Driver: driver,
+	//	Dsn:    dsn,
+	//}
+	dbConnPool = &DefaultDbConnPool{
+		Driver: driver,
+		Dsn:    dsn,
+	}
+	log.Println("dbConnPool", reflect.TypeOf(dbConnPool))
 }
 
 func GetDb() Db {
-	dsn := "C:\\Users\\xiangqian\\Desktop\\tmp\\note\\data\\database.db"
-	db, err := dbConnPool.Get(dsn)
+	db, err := dbConnPool.Get()
 	if err != nil {
 		panic(err)
 	}
@@ -71,7 +81,7 @@ func TestGet1(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	var i int8
+	var i int
 	result.Scan(&i)
 	log.Println(i)
 }
@@ -136,9 +146,9 @@ func TestPage(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
+	log.Println("count", result.Count())
 	var users []model.User
 	result.Scan(&users)
-	log.Println("count", result.Count())
 
 	json, err := util_json.Serialize(users, true)
 	if err != nil {
