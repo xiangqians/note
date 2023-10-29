@@ -13,7 +13,8 @@ import (
 var dbConnPool DbConnPool
 
 func init() {
-	dbConnPool = &GormDbConnPool{}
+	//dbConnPool = &GormDbConnPool{}
+	dbConnPool = &DefaultDbConnPool{}
 }
 
 func GetDb() Db {

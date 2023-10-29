@@ -123,7 +123,8 @@ type GormDbConnPool struct {
 }
 
 func (dbConnPool *GormDbConnPool) Get(dsn string) (Db, error) {
-	dbConnPool.mutex.Lock()         // 获取锁
+	dbConnPool.mutex.Lock() // 获取锁
+	// defer的作用是把defer关键字之后的函数执行压入一个栈中延迟执行，多个defer的执行顺序是后进先出LIFO
 	defer dbConnPool.mutex.Unlock() // 释放锁
 
 	if dbConnPool.m == nil {
