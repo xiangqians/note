@@ -27,6 +27,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	// https://pkg.go.dev/gorm.io/gorm
@@ -40,6 +41,9 @@ import (
 // db map
 var dbMap map[string]*gorm.DB
 
+// sync.Mutex 是一个基本的同步原语，可以实现并发环境下的线程安全
+var mutex sync.Mutex
+
 func init() {
 	// len 0, cap ?
 	// cap ?
@@ -49,6 +53,9 @@ func init() {
 // Db Database
 // dsn : DataSourceName
 func Db(dsn string) (*gorm.DB, error) {
+	mutex.Lock()         // 获取锁
+	defer mutex.Unlock() // 释放锁
+	
 	key := util_crypto_md5.Encrypt([]byte(dsn), nil)
 	if db, ok := dbMap[key]; ok {
 		return db, nil
