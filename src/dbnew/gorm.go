@@ -14,11 +14,11 @@ import (
 	"time"
 )
 
-type GormDB struct {
+type GormDb struct {
 	db *gorm.DB
 }
 
-func (db *GormDB) Begin() (err error) {
+func (db *GormDb) Begin() (err error) {
 	return
 }
 
@@ -29,7 +29,7 @@ func (db *GormDB) Begin() (err error) {
 // 2、gorm.DB.Raw("sql语句")  执行查询
 // gorm中exec和raw方法的区别是：Raw用来查询，执行其他操作用Exec。
 // (*gorm.DB).Exec does not return an error, if you want to see if your query failed or not read up on error handling with gorm. Use Exec when you don’t care about output, use Raw when you do care about the output.
-func (db *GormDB) Add(sql string, args ...any) (rowsAffected int64, insertId int64, err error) {
+func (db *GormDb) Add(sql string, args ...any) (rowsAffected int64, insertId int64, err error) {
 	// gorm Exec不支持获取自增id
 	// 但是gorm orm是对底层database/sql的封装，所以进行降级执行
 
@@ -48,26 +48,26 @@ func (db *GormDB) Add(sql string, args ...any) (rowsAffected int64, insertId int
 	return
 }
 
-func (db *GormDB) Del(sql string, args ...any) (rowsAffected int64, err error) {
+func (db *GormDb) Del(sql string, args ...any) (rowsAffected int64, err error) {
 	tx := db.db.Exec(sql, args...)
 	rowsAffected = tx.RowsAffected
 	err = tx.Error
 	return
 }
 
-func (db *GormDB) Upd(sql string, args ...any) (rowsAffected int64, err error) {
+func (db *GormDb) Upd(sql string, args ...any) (rowsAffected int64, err error) {
 	tx := db.db.Exec(sql, args...)
 	rowsAffected = tx.RowsAffected
 	err = tx.Error
 	return
 }
 
-func (db *GormDB) Get(sql string, args ...any) (Result, error) {
+func (db *GormDb) Get(sql string, args ...any) (Result, error) {
 	tx := db.db.Raw(sql, args...)
 	return GormResult{tx: tx}, tx.Error
 }
 
-func (db *GormDB) Page(sql string, current int64, size uint8, args ...any) (Result, error) {
+func (db *GormDb) Page(sql string, current int64, size uint8, args ...any) (Result, error) {
 	// 计数
 	index := strings.Index(sql, "FROM")
 	result, err := db.Get(fmt.Sprintf("SELECT COUNT(1) %s", sql[index:]), args...)
@@ -84,15 +84,15 @@ func (db *GormDB) Page(sql string, current int64, size uint8, args ...any) (Resu
 	return GormResult{tx: tx, count: count}, tx.Error
 }
 
-func (db *GormDB) Commit() (err error) {
+func (db *GormDb) Commit() (err error) {
 	return
 }
 
-func (db *GormDB) Rollback() (err error) {
+func (db *GormDb) Rollback() (err error) {
 	return
 }
 
-func (db *GormDB) Close() (err error) {
+func (db *GormDb) Close() (err error) {
 	return
 }
 
@@ -134,7 +134,7 @@ func (dbConnPool *GormDbConnPool) Get(dsn string) (Db, error) {
 
 	key := util_crypto_md5.Encrypt([]byte(dsn), nil)
 	if db, ok := dbConnPool.m[key]; ok {
-		return &GormDB{db: db}, nil
+		return &GormDb{db: db}, nil
 	}
 
 	db, err := dbConnPool.open(dsn)
@@ -143,7 +143,7 @@ func (dbConnPool *GormDbConnPool) Get(dsn string) (Db, error) {
 	}
 
 	dbConnPool.m[key] = db
-	return &GormDB{db: db}, nil
+	return &GormDb{db: db}, nil
 }
 
 // 打开数据库连接
