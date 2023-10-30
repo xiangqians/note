@@ -74,8 +74,6 @@ func (db *DefaultDb) query(sql string, args ...any) (*sql.Rows, error) {
 }
 
 func (db *DefaultDb) Page(sql string, current int64, size uint8, args ...any) (Result, error) {
-	log.Println("[?ms]", sql)
-
 	// 计数
 	index := strings.Index(sql, "FROM")
 	result, err := db.Get(fmt.Sprintf("SELECT COUNT(1) %s", sql[index:]), args...)
@@ -129,6 +127,10 @@ func (result *DefaultResult) Count() int64 {
 }
 
 func (result *DefaultResult) Scan(dest any) error {
+	if result.rows == nil {
+		return nil
+	}
+
 	// defer的作用是把defer关键字之后的函数执行压入一个栈中延迟执行，多个defer的执行顺序是后进先出LIFO
 	defer result.rows.Close()
 
@@ -260,9 +262,11 @@ type DefaultDbConnPool struct {
 }
 
 func (dbConnPool *DefaultDbConnPool) Get() (Db, error) {
-	dbConnPool.mutex.Lock() // 获取锁
+	// 获取锁
+	dbConnPool.mutex.Lock()
+	// 释放锁
 	// defer的作用是把defer关键字之后的函数执行压入一个栈中延迟执行，多个defer的执行顺序是后进先出LIFO
-	defer dbConnPool.mutex.Unlock() // 释放锁
+	defer dbConnPool.mutex.Unlock()
 
 	if dbConnPool.slice == nil {
 		// len 0, cap ?

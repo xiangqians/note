@@ -63,7 +63,7 @@ func (db *GormDb) Upd(sql string, args ...any) (rowsAffected int64, err error) {
 
 func (db *GormDb) Get(sql string, args ...any) (Result, error) {
 	tx := db.db.Raw(sql, args...)
-	return &GormResult{tx: tx}, tx.Error
+	return &GormResult{db: tx}, tx.Error
 }
 
 func (db *GormDb) Page(sql string, current int64, size uint8, args ...any) (Result, error) {
@@ -101,7 +101,7 @@ func (db *GormDb) Close() (err error) {
 
 type GormResult struct {
 	count int64
-	tx    *gorm.DB
+	db    *gorm.DB
 }
 
 func (result *GormResult) Count() int64 {
@@ -109,12 +109,12 @@ func (result *GormResult) Count() int64 {
 }
 
 func (result *GormResult) Scan(dest any) error {
-	if result.tx == nil {
+	if result.db == nil {
 		return nil
 	}
 
 	// Scan? Take?
-	return result.tx.Scan(dest).Error
+	return result.db.Scan(dest).Error
 }
 
 type GormDbConnPool struct {
@@ -182,11 +182,15 @@ func (dbConnPool *GormDbConnPool) open() (*gorm.DB, error) {
 	if err != nil {
 		return db, err
 	}
+
 	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
 	sqlDb.SetMaxIdleConns(10)
+
 	// SetMaxOpenConns sets the maximum number of open connections to the database.
 	sqlDb.SetMaxOpenConns(100)
+
 	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
 	sqlDb.SetConnMaxLifetime(time.Minute * 10)
+
 	return db, err
 }

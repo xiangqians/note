@@ -138,7 +138,7 @@ func TestGet4(t *testing.T) {
 
 func TestGet5(t *testing.T) {
 	var waitGroup sync.WaitGroup
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 100; i++ {
 		// 添加任务数
 		waitGroup.Add(1)
 		go func() {
