@@ -147,7 +147,6 @@ func TestGet5(t *testing.T) {
 			waitGroup.Done()
 		}()
 	}
-
 	// 阻塞等待所有任务完成
 	waitGroup.Wait()
 }
