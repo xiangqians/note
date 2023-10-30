@@ -133,34 +133,67 @@ func (result *DefaultResult) Scan(dest any) error {
 	defer result.rows.Close()
 
 	t := reflect.TypeOf(dest).Elem()
-	kind := t.Kind()
-	switch kind {
+	switch t.Kind() {
 	// 基本数据类型
-	case reflect.Bool,
+	case // 布尔型
+		reflect.Bool,
+		// 整型
 		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+		// 浮点型
 		reflect.Float32, reflect.Float64,
+		// 字符串类型
 		reflect.String:
-		if result.rows.Next() {
-			return result.rows.Scan(dest)
+		if result.next() {
+			return result.scanDefault(dest)
 		}
-
-	// 基本数据类型切片
 
 	// 结构体
 	case reflect.Struct:
-		return result.scan(dest)
+		return result.scanStruct(dest)
 
-	// 结构体切片
+	// 切片
 	case reflect.Slice:
-		log.Println("结构体切片")
+		t := t.Elem()
+		switch t.Kind() {
+		// 基本数据类型切片
+		case // 布尔型
+			reflect.Bool,
+			// 整型
+			reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+			// 浮点型
+			reflect.Float32, reflect.Float64,
+			// 字符串类型
+			reflect.String:
+
+		// 结构体切片
+		case reflect.Struct:
+			// len 0, cap ?
+			slice := reflect.MakeSlice(reflect.SliceOf(t), 0, 1)
+			for result.next() {
+				e := reflect.New(t)
+				result.scanStruct(e.Interface())
+				slice = reflect.Append(slice, e.Elem())
+			}
+			reflect.ValueOf(dest).Elem().Set(slice)
+		}
 	}
 
 	return nil
 }
 
+func (result *DefaultResult) next() bool {
+	return result.rows.Next()
+}
+
+// 扫描基本数据类型
+func (result *DefaultResult) scanDefault(dest any) error {
+	return result.rows.Scan(dest)
+}
+
 // 扫描结构体
-func (result *DefaultResult) scan(dest any) error {
+func (result *DefaultResult) scanStruct(dest any) error {
 	// 查询字段集
 	var err error
 	cols, err := result.rows.Columns()
@@ -182,10 +215,7 @@ func (result *DefaultResult) scan(dest any) error {
 	v := reflect.ValueOf(dest).Elem()
 	result.dest(&cols, &newDest, t, v)
 
-	if result.rows.Next() {
-		return result.rows.Scan(newDest...)
-	}
-	return nil
+	return result.rows.Scan(newDest...)
 }
 
 func (result *DefaultResult) dest(cols *[]string, dest *[]any, t reflect.Type, v reflect.Value) {
@@ -193,10 +223,14 @@ func (result *DefaultResult) dest(cols *[]string, dest *[]any, t reflect.Type, v
 		field := t.Field(i)
 		switch field.Type.Kind() {
 		// 基本数据类型
-		case reflect.Bool,
+		case // 布尔型
+			reflect.Bool,
+			// 整型
 			reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+			// 浮点型
 			reflect.Float32, reflect.Float64,
+			// 字符串类型
 			reflect.String:
 			for i, length := 0, len(*cols); i < length; i++ {
 				col := (*cols)[i]

@@ -7,8 +7,8 @@ import (
 	"note/src/model"
 	util_json "note/src/util/json"
 	"reflect"
+	"sync"
 	"testing"
-	"time"
 )
 
 var dbConnPool DbConnPool
@@ -37,23 +37,19 @@ func GetDb() Db {
 }
 
 func TestDb(t *testing.T) {
-	flag := false
+	var waitGroup sync.WaitGroup
 	for i := 0; i < 10; i++ {
+		// 添加任务数
+		waitGroup.Add(1)
 		go func(i int) {
 			db := GetDb()
 			log.Println(i, db)
-			if i == 9 {
-				flag = true
-			}
+			// 完成任务
+			waitGroup.Done()
 		}(i)
 	}
-
-	for {
-		if flag {
-			break
-		}
-		time.Sleep(100 * time.Millisecond)
-	}
+	// 阻塞等待所有任务完成
+	waitGroup.Wait()
 }
 
 func TestAdd(t *testing.T) {
@@ -138,6 +134,22 @@ func TestGet4(t *testing.T) {
 		panic(err)
 	}
 	log.Println("\n", json)
+}
+
+func TestGet5(t *testing.T) {
+	var waitGroup sync.WaitGroup
+	for i := 0; i < 1000; i++ {
+		// 添加任务数
+		waitGroup.Add(1)
+		go func() {
+			TestGet4(t)
+			// 完成任务
+			waitGroup.Done()
+		}()
+	}
+
+	// 阻塞等待所有任务完成
+	waitGroup.Wait()
 }
 
 func TestPage(t *testing.T) {
