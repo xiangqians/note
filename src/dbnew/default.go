@@ -124,17 +124,16 @@ type DefaultResult struct {
 	rows  *sql.Rows
 }
 
-func (result DefaultResult) Count() int64 {
+func (result *DefaultResult) Count() int64 {
 	return result.count
 }
 
-func (result DefaultResult) Scan(dest any) error {
+func (result *DefaultResult) Scan(dest any) error {
 	// defer的作用是把defer关键字之后的函数执行压入一个栈中延迟执行，多个defer的执行顺序是后进先出LIFO
 	defer result.rows.Close()
 
-	destType := reflect.TypeOf(dest).Elem()
-	kind := destType.Kind()
-
+	t := reflect.TypeOf(dest).Elem()
+	kind := t.Kind()
 	switch kind {
 	// 基本数据类型
 	case reflect.Bool,
@@ -142,7 +141,7 @@ func (result DefaultResult) Scan(dest any) error {
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 		reflect.Float32, reflect.Float64,
 		reflect.String:
-		for result.rows.Next() {
+		if result.rows.Next() {
 			return result.rows.Scan(dest)
 		}
 
@@ -150,22 +149,73 @@ func (result DefaultResult) Scan(dest any) error {
 
 	// 结构体
 	case reflect.Struct:
-		// 查询字段名称集
-		//cols, err := result.rows.Columns()
-		//if err != nil {
-		//	return err
-		//}
-		//
-		//if result.rows.Next() {
-		//}
+		return result.scan(dest)
 
 	// 结构体切片
+	case reflect.Slice:
 
-	// map[string]any
-	case reflect.Map:
 	}
 
 	return nil
+}
+
+// 扫描结构体
+func (result *DefaultResult) scan(dest any) error {
+	// 查询字段集
+	var err error
+	cols, err := result.rows.Columns()
+	if err != nil {
+		return err
+	}
+
+	length := len(cols)
+
+	// len ?, cap ?
+	newDest := make([]any, length, length)
+	var n any
+	for i := 0; i < length; i++ {
+		cols[i] = strings.ReplaceAll(cols[i], "_", "")
+		newDest[i] = &n
+	}
+
+	t := reflect.TypeOf(dest).Elem()
+	v := reflect.ValueOf(dest).Elem()
+	result.dest(&cols, &newDest, t, v)
+
+	if result.rows.Next() {
+		return result.rows.Scan(newDest...)
+	}
+	return nil
+}
+
+func (result *DefaultResult) dest(cols *[]string, dest *[]any, t reflect.Type, v reflect.Value) {
+	for i, length := 0, t.NumField(); i < length; i++ {
+		field := t.Field(i)
+		switch field.Type.Kind() {
+		// 基本数据类型
+		case reflect.Bool,
+			reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+			reflect.Float32, reflect.Float64,
+			reflect.String:
+			for i, length := 0, len(*cols); i < length; i++ {
+				col := (*cols)[i]
+				// 不区分大小写比较
+				if strings.EqualFold(col, field.Name) {
+					//v := v.Field(i)
+					v := v.FieldByName(field.Name)
+					if v.CanAddr() {
+						(*dest)[i] = v.Addr().Interface()
+					}
+				}
+			}
+
+		// 结构体
+		case reflect.Struct:
+			v := v.FieldByName(field.Name)
+			result.dest(cols, dest, field.Type, v)
+		}
+	}
 }
 
 type DefaultDbConnPool struct {

@@ -104,11 +104,11 @@ type GormResult struct {
 	tx    *gorm.DB
 }
 
-func (result GormResult) Count() int64 {
+func (result *GormResult) Count() int64 {
 	return result.count
 }
 
-func (result GormResult) Scan(dest any) error {
+func (result *GormResult) Scan(dest any) error {
 	if result.tx == nil {
 		return nil
 	}
