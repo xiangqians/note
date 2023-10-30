@@ -153,7 +153,7 @@ func (result *DefaultResult) Scan(dest any) error {
 
 	// 结构体切片
 	case reflect.Slice:
-
+		log.Println("结构体切片")
 	}
 
 	return nil
