@@ -6,30 +6,16 @@ import (
 	"log"
 	"note/src/model"
 	util_json "note/src/util/json"
-	"reflect"
 	"sync"
 	"testing"
 )
 
-var dbConnPool DbConnPool
-
-func init() {
-	driver := "sqlite3"
-	dsn := "C:\\Users\\xiangqian\\Desktop\\tmp\\note\\data\\database.db"
-
-	//dbConnPool = &GormDbConnPool{
-	//	Driver: driver,
-	//	Dsn:    dsn,
-	//}
-	dbConnPool = &DefaultDbConnPool{
-		Driver: driver,
-		Dsn:    dsn,
-	}
-	log.Println("dbConnPool", reflect.TypeOf(dbConnPool))
+func TestStats(t *testing.T) {
+	PrintStats()
 }
 
-func GetDb() Db {
-	db, err := dbConnPool.Get()
+func GetDb() *Db {
+	db, err := Get()
 	if err != nil {
 		panic(err)
 	}
