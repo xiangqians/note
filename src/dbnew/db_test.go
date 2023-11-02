@@ -14,7 +14,7 @@ import (
 
 // "gopkg.in/ini.v1"
 func TestIni(t *testing.T) {
-	log.Printf(model.Ini.TimeZone)
+	log.Printf(model.Ini.String())
 }
 
 func TestDb(t *testing.T) {
