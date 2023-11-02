@@ -1,3 +1,18 @@
+/*
+Binary was compiled with 'CGO_ENABLED=0', go-sqlite3 requires cgo to work. This is a stub
+https://github.com/mattn/go-sqlite3/issues/855
+https://github.com/mattn/go-sqlite3/issues/975
+require (
+	github.com/mattn/go-sqlite3 v2.0.3+incompatible
+)
+
+解决方法1：拉取其他版本
+https://github.com/mattn/go-sqlite3
+Latest stable version is v1.14 or later, not v2.
+go get github.com/mattn/go-sqlite3@v1.14.16
+
+解决方法2：在不同系统构建不同可执行包
+*/
 // @author xiangqian
 // @date 20:47 2023/06/10
 package dbnew
@@ -14,14 +29,14 @@ import (
 
 var db *sql.DB
 
-// 初始化数据源
+// 初始化数据库&连接池
 func init() {
 	// driver name
 	driver := "sqlite3"
 
 	// data source name
 	dsn := "C:\\Users\\xiangqian\\Desktop\\tmp\\note\\data\\database.db"
-	//log.Println(fmt.Sprintf("open %s db %s\n", driver, dsn))
+	log.Printf("open %s db: %s\n", driver, dsn)
 
 	var err error
 	db, err = sql.Open(driver, dsn)
@@ -142,32 +157,32 @@ func init() {
 	// 例如，如果我们将ConnMaxIdleTime设置为1小时，那么自上次使用以后在池中空闲了1小时的任何连接都将被标记为过期并被后台清理操作删除。
 	// 这个配置非常有用，因为它意味着我们可以对池中空闲连接的数量设置相对较高的限制，但可以通过删除不再真正使用的空闲连接来周期性地释放资源。
 	db.SetConnMaxIdleTime(30 * time.Minute)
+
+	// 因为每一个连接都是惰性创建的，如何验证sql.Open调用之后，sql.DB对象可用呢？
+	// 通常使用sql.Ping()方法初始化，调用完毕后会马上把连接返回给连接池。
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
 }
 
 // Get 获取数据库连接
-func Get() (*Db, error) {
-	return &Db{db: db},
-		// 因为每一个连接都是惰性创建的，如何验证sql.Open调用之后，sql.DB对象可用呢？
-		// 通常使用sql.Ping()方法初始化，调用完毕后会马上把连接返回给连接池。
-		db.Ping()
+func Get() *Db {
+	return &Db{db: db}
 }
 
 // PrintStats 打印DB状态
 func PrintStats() {
 	stats := db.Stats()
-	log.Printf("\n\t最大连接数：%d，当前连接数：%d，正在使用连接数：%d，空闲连接数：%d"+
-		"\n\t等待连接数：%d，等待创建新连接时长（秒）：%f，空闲超限关闭数：%d，空闲超时关闭数：%d，连接超时关闭数：%d"+
-		"\n",
-		stats.MaxOpenConnections,
-		stats.OpenConnections,
-		stats.InUse,
-		stats.Idle,
-
-		stats.WaitCount,
-		stats.WaitDuration.Seconds(),
-		stats.MaxIdleClosed,
-		stats.MaxIdleTimeClosed,
-		stats.MaxLifetimeClosed)
+	log.Println("\n\t最大连接数\t:", stats.MaxOpenConnections,
+		"\n\t当前连接数\t:", stats.OpenConnections,
+		"\n\t正在使用连接数\t:", stats.InUse,
+		"\n\t空闲连接数\t:", stats.Idle,
+		"\n\t等待连接数\t:", stats.WaitCount,
+		"\n\t等待创建新连接时长（秒）:", stats.WaitDuration.Seconds(),
+		"\n\t空闲超限关闭数\t:", stats.MaxIdleClosed,
+		"\n\t空闲超时关闭数\t:", stats.MaxIdleTimeClosed,
+		"\n\t连接超时关闭数\t:", stats.MaxLifetimeClosed)
 }
 
 type Db struct {

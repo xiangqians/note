@@ -10,16 +10,11 @@ import (
 	"testing"
 )
 
-func TestStats(t *testing.T) {
-	PrintStats()
-}
+// https://pkg.go.dev/gopkg.in/ini.v1
 
-func GetDb() *Db {
-	db, err := Get()
-	if err != nil {
-		panic(err)
-	}
-	return db
+// "gopkg.in/ini.v1"
+func TestIni(t *testing.T) {
+	log.Printf(model.Ini.TimeZone)
 }
 
 func TestDb(t *testing.T) {
@@ -28,8 +23,9 @@ func TestDb(t *testing.T) {
 		// 添加任务数
 		waitGroup.Add(1)
 		go func(i int) {
-			db := GetDb()
+			db := Get()
 			log.Println(i, db)
+			PrintStats()
 			// 完成任务
 			waitGroup.Done()
 		}(i)
@@ -39,7 +35,7 @@ func TestDb(t *testing.T) {
 }
 
 func TestAdd(t *testing.T) {
-	db := GetDb()
+	db := Get()
 	rowsAffected, insertId, err := db.Add("INSERT INTO `user` (`name`, `nickname`, `passwd`, `rem`) VALUES (?, ?, ?, ?)", "test", "测试", "passwd", "备注")
 	if err != nil {
 		panic(err)
@@ -49,7 +45,7 @@ func TestAdd(t *testing.T) {
 }
 
 func TestUpd(t *testing.T) {
-	db := GetDb()
+	db := Get()
 	rowsAffected, err := db.Upd("UPDATE `user` SET `nickname` = ? Where `name` = ?", "测试2", "test")
 	if err != nil {
 		panic(err)
@@ -57,19 +53,44 @@ func TestUpd(t *testing.T) {
 	log.Println("rowsAffected", rowsAffected)
 }
 
-func TestGet1(t *testing.T) {
-	db := GetDb()
-	result, err := db.Get("SELECT 10+10")
+func TestSqliteVersion(t *testing.T) {
+	db := Get()
+	result, err := db.Get("SELECT SQLITE_VERSION()")
 	if err != nil {
 		panic(err)
 	}
-	var i int
-	result.Scan(&i)
-	log.Println(i)
+	var version string
+	result.Scan(&version)
+	log.Println(version)
+}
+
+func TestGet1(t *testing.T) {
+	var waitGroup sync.WaitGroup
+	for i := 0; i < 10; i++ {
+		// 添加任务数
+		waitGroup.Add(1)
+		go func() {
+			db := Get()
+			PrintStats()
+			result, err := db.Get("SELECT 10+10")
+			if err != nil {
+				panic(err)
+			}
+			PrintStats()
+			var i int
+			result.Scan(&i)
+			log.Println(i)
+			// 完成任务
+			waitGroup.Done()
+		}()
+	}
+	// 阻塞等待所有任务完成
+	waitGroup.Wait()
+	PrintStats()
 }
 
 func TestGet2(t *testing.T) {
-	db := GetDb()
+	db := Get()
 
 	// count
 	result, err := db.Get("SELECT COUNT(1) FROM `user`")
@@ -91,7 +112,7 @@ func TestGet2(t *testing.T) {
 }
 
 func TestGet3(t *testing.T) {
-	db := GetDb()
+	db := Get()
 	result, err := db.Get("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user` LIMIT 1")
 	if err != nil {
 		panic(err)
@@ -107,7 +128,7 @@ func TestGet3(t *testing.T) {
 }
 
 func TestGet4(t *testing.T) {
-	db := GetDb()
+	db := Get()
 	result, err := db.Get("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user` LIMIT 10")
 	if err != nil {
 		panic(err)
@@ -138,7 +159,7 @@ func TestGet5(t *testing.T) {
 }
 
 func TestPage(t *testing.T) {
-	db := GetDb()
+	db := Get()
 	result, err := db.Page("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user`", 1, 2)
 	if err != nil {
 		panic(err)
