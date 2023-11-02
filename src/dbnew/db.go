@@ -22,24 +22,24 @@ import (
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
+	"note/src/model"
 	"reflect"
 	"strings"
-	"time"
 )
 
 var db *sql.DB
 
 // 初始化数据库&连接池
 func init() {
-	// driver name
-	driver := "sqlite3"
+	// 驱动名（driver name）
+	driver := model.Ini.Db.Driver
 
-	// data source name
-	dsn := "C:\\Users\\xiangqian\\Desktop\\tmp\\note\\data\\database.db"
-	log.Printf("open %s db: %s\n", driver, dsn)
+	// 数据源（data source name）
+	dsn := model.Ini.Db.Dns
 
 	var err error
 	db, err = sql.Open(driver, dsn)
+	log.Printf("open %s db: %s\n", driver, dsn)
 	if err != nil {
 		panic(err)
 	}
@@ -128,7 +128,7 @@ func init() {
 	// 如果达到MaxOpenConns限制，并且所有连接都在使用中，那么任何新的数据库任务将被迫等待，直到有连接空闲。
 	// 在我们的API上下文中，用户的HTTP请求可能在等待空闲连接时无限期地“挂起”。因此，为了缓解这种情况，使用上下文为数据库任务设置超时是很重要的。
 	// sets the maximum number of open connections to the database.
-	db.SetMaxOpenConns(2) // 应该根据基准测试和压测结果调整这个值
+	db.SetMaxOpenConns(model.Ini.Db.MaxOpenConns) // 应该根据基准测试和压测结果调整这个值
 
 	// 设置一个连接保持可用的最长时间。默认连接的存活时间没有限制，永久可用。
 	// 如果设置ConnMaxLifetime的值为1小时，意味着所有的连接在创建后，经过一个小时就会被标记为失效连接，标志后就不可复用。
@@ -142,7 +142,7 @@ func init() {
 	// 2、有助于数据库替换（优雅地交换数据库）
 	// 如果决定对连接池设置ConnMaxLifetime，那么一定要记住连接过期(然后重新创建)的频率。例如，如果连接池中有100个打开的连接，而ConnMaxLifetime为1分钟，那么应用程序平均每秒可以杀死并重新创建多达1.67个连接。频率太大而最终影响性能。
 	// sets the maximum amount of time a connection may be reused.
-	//db.SetConnMaxLifetime(10 * time.Minute)
+	db.SetConnMaxLifetime(model.Ini.Db.ConnMaxLifetime)
 
 	// 设置池中“空闲”连接数的上限。缺省情况下，最大空闲连接数为2。
 	// 理论上，在池中允许更多的空闲连接将增加性能。因为它减少了从头建立新连接发生概率，因此有助于节省资源。
@@ -150,13 +150,13 @@ func init() {
 	// 因此，与使用更小的空闲连接池相比，将MaxIdleConns设置得过高可能会导致更多的连接变得不可用，浪费资源。因此保持适量的空闲连接是必要的。理想情况下，你只希望保持一个连接空闲，可以快速使用。
 	// 另一件要指出的事情是MaxIdleConns值应该总是小于或等于MaxOpenConns。Go会强制保证这点，并在必要时自动减少MaxIdleConns值。
 	// sets the maximum number of connections in the idle connection pool.
-	db.SetMaxIdleConns(1)
+	db.SetMaxIdleConns(model.Ini.Db.MaxIdleConns)
 
 	// SetConnMaxIdleTime()方法在Go 1.15版本引入对ConnMaxIdleTime进行配置。
 	// 其效果和ConnMaxLifeTime类似，但这里设置的是：在被标记为失效之前一个连接最长空闲时间。
 	// 例如，如果我们将ConnMaxIdleTime设置为1小时，那么自上次使用以后在池中空闲了1小时的任何连接都将被标记为过期并被后台清理操作删除。
 	// 这个配置非常有用，因为它意味着我们可以对池中空闲连接的数量设置相对较高的限制，但可以通过删除不再真正使用的空闲连接来周期性地释放资源。
-	db.SetConnMaxIdleTime(30 * time.Minute)
+	db.SetConnMaxIdleTime(model.Ini.Db.ConnMaxIdleTime)
 
 	// 因为每一个连接都是惰性创建的，如何验证sql.Open调用之后，sql.DB对象可用呢？
 	// 通常使用sql.Ping()方法初始化，调用完毕后会马上把连接返回给连接池。

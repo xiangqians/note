@@ -2,14 +2,16 @@
 // @date 22:00 2023/11/02
 package model
 
-// https://pkg.go.dev/gopkg.in/ini.v1
-// https://github.com/go-ini/ini
 import (
 	"fmt"
+	// https://pkg.go.dev/gopkg.in/ini.v1
+	// https://github.com/go-ini/ini
 	pkg_ini "gopkg.in/ini.v1"
+	"log"
 	"time"
 )
 
+// 配置
 type ini struct {
 	Sys    sys    // 系统配置
 	Server server // 服务配置
@@ -34,9 +36,9 @@ type server struct {
 type db struct {
 	Driver          string        // 驱动名
 	Dns             string        // 数据源
-	MaxOpenConns    uint          // 池中“打开”连接（”正在使用“连接和“空闲”连接）数量的上限
-	ConnMaxLifetime time.Duration // 一个连接保持可用的最长时间。默认（0）连接的存活时间没有限制，永久可用
-	MaxIdleConns    uint          // 池中“空闲”连接数的上限
+	MaxOpenConns    int           // 池中“打开”连接（”正在使用“连接和“空闲”连接）数量的上限
+	ConnMaxLifetime time.Duration // 一个连接保持可用的最长时间。默认连接的存活时间没有限制，永久可用
+	MaxIdleConns    int           // 池中“空闲”连接数的上限
 	ConnMaxIdleTime time.Duration // 在被标记为失效之前一个连接最长空闲时间
 }
 
@@ -79,9 +81,9 @@ func init() {
 	}
 	Ini.Db.Driver = db.Key("driver").String()
 	Ini.Db.Dns = db.Key("dns").String()
-	Ini.Db.MaxOpenConns = db.Key("max-open-conns").MustUint(3)
+	Ini.Db.MaxOpenConns = db.Key("max-open-conns").MustInt(3)
 	Ini.Db.ConnMaxLifetime = db.Key("conn-max-lifetime").MustDuration(0 * time.Minute)
-	Ini.Db.MaxIdleConns = db.Key("max-idle-conns").MustUint(2)
+	Ini.Db.MaxIdleConns = db.Key("max-idle-conns").MustInt(2)
 	Ini.Db.ConnMaxIdleTime = db.Key("conn-max-idle-time").MustDuration(30 * time.Minute)
 
 	// data
@@ -90,6 +92,8 @@ func init() {
 		panic(err)
 	}
 	Ini.Data.Dir = data.Key("dir").String()
+
+	log.Printf(Ini.String())
 }
 
 // String 返回结构体类型字符串

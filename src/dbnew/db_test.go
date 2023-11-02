@@ -10,13 +10,6 @@ import (
 	"testing"
 )
 
-// https://pkg.go.dev/gopkg.in/ini.v1
-
-// "gopkg.in/ini.v1"
-func TestIni(t *testing.T) {
-	log.Printf(model.Ini.String())
-}
-
 func TestDb(t *testing.T) {
 	var waitGroup sync.WaitGroup
 	for i := 0; i < 10; i++ {
