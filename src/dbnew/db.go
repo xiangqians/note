@@ -171,18 +171,21 @@ func Get() *Db {
 	return &Db{db: db}
 }
 
-// PrintStats 打印DB状态
-func PrintStats() {
+// Stats DB状态
+func Stats() string {
 	stats := db.Stats()
-	log.Println("\n\t最大连接数\t:", stats.MaxOpenConnections,
-		"\n\t当前连接数\t:", stats.OpenConnections,
-		"\n\t正在使用连接数\t:", stats.InUse,
-		"\n\t空闲连接数\t:", stats.Idle,
-		"\n\t等待连接数\t:", stats.WaitCount,
-		"\n\t等待创建新连接时长（秒）:", stats.WaitDuration.Seconds(),
-		"\n\t空闲超限关闭数\t:", stats.MaxIdleClosed,
-		"\n\t空闲超时关闭数\t:", stats.MaxIdleTimeClosed,
-		"\n\t连接超时关闭数\t:", stats.MaxLifetimeClosed)
+	statsString := fmt.Sprint("\n\t最大连接数\t\t:", stats.MaxOpenConnections,
+		"\n\t连接池状态",
+		"\n\t\t当前连接数\t:", stats.OpenConnections, "（”正在使用“连接和“空闲”连接）",
+		"\n\t\t正在使用连接数\t:", stats.InUse,
+		"\n\t\t空闲连接数\t:", stats.Idle,
+		"\n\t统计",
+		"\n\t\t等待连接数\t:", stats.WaitCount,
+		"\n\t\t等待创建新连接时长（秒）:", stats.WaitDuration.Seconds(),
+		"\n\t\t空闲超限关闭数\t:", stats.MaxIdleClosed, "（达到MaxIdleConns而关闭的连接数量）",
+		"\n\t\t空闲超时关闭数\t:", stats.MaxIdleTimeClosed,
+		"\n\t\t连接超时关闭数\t:", stats.MaxLifetimeClosed, "（达到ConnMaxLifetime而关闭的连接数量）")
+	return statsString
 }
 
 type Db struct {
@@ -203,7 +206,7 @@ func (db *Db) Begin() (err error) {
 // Not all databases support this feature, and the syntax of such statements varies.
 // return insertId
 func (db *Db) Add(sql string, args ...any) (rowsAffected int64, insertId int64, err error) {
-	log.Println("[?ms]", sql)
+	log.Println("[?ms]", sql, Stats())
 	result, err := db.exec(sql, args...)
 	if err != nil {
 		return
@@ -217,7 +220,7 @@ func (db *Db) Add(sql string, args ...any) (rowsAffected int64, insertId int64, 
 // returns the number of rows affected by an update, insert, or delete. Not every database or database driver may support this.
 // return affect
 func (db *Db) Del(sql string, args ...any) (rowsAffected int64, err error) {
-	log.Println("[?ms]", sql)
+	log.Println("[?ms]", sql, Stats())
 	result, err := db.exec(sql, args...)
 	if err != nil {
 		return
@@ -229,7 +232,7 @@ func (db *Db) Del(sql string, args ...any) (rowsAffected int64, err error) {
 // Upd 更新
 // returns the number of rows affected by an update, insert, or delete. Not every database or database driver may support this.
 func (db *Db) Upd(sql string, args ...any) (rowsAffected int64, err error) {
-	log.Println("[?ms]", sql)
+	log.Println("[?ms]", sql, Stats())
 	result, err := db.exec(sql, args...)
 	if err != nil {
 		return
@@ -248,7 +251,7 @@ func (db *Db) exec(sql string, args ...any) (sql.Result, error) {
 
 // Get 查询
 func (db *Db) Get(sql string, args ...any) (*Result, error) {
-	log.Println("[?ms]", sql)
+	log.Println("[?ms]", sql, Stats())
 	rows, err := db.query(sql, args...)
 	return &Result{rows: rows}, err
 }
@@ -300,11 +303,11 @@ func (db *Db) Rollback() error {
 
 // Close 关闭资源
 func (db *Db) Close() error {
-	//if db.db != nil {
-	//	err := db.db.Close()
-	//	db.db = nil
-	//	return err
-	//}
+	if db.db != nil {
+		err := db.db.Close()
+		db.db = nil
+		return err
+	}
 	return nil
 }
 

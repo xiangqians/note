@@ -8,6 +8,7 @@ import (
 	util_json "note/src/util/json"
 	"sync"
 	"testing"
+	"time"
 )
 
 func TestDb(t *testing.T) {
@@ -18,13 +19,31 @@ func TestDb(t *testing.T) {
 		go func(i int) {
 			db := Get()
 			log.Println(i, db)
-			PrintStats()
 			// 完成任务
 			waitGroup.Done()
 		}(i)
 	}
 	// 阻塞等待所有任务完成
 	waitGroup.Wait()
+}
+
+func TestVersion(t *testing.T) {
+	db := Get()
+
+	var sql string
+	switch model.Ini.Db.Driver {
+	case "sqlite", "sqlite3":
+		sql = "SELECT SQLITE_VERSION()"
+	}
+
+	result, err := db.Get(sql)
+	if err != nil {
+		panic(err)
+	}
+
+	var version string
+	result.Scan(&version)
+	log.Println(version)
 }
 
 func TestAdd(t *testing.T) {
@@ -46,30 +65,17 @@ func TestUpd(t *testing.T) {
 	log.Println("rowsAffected", rowsAffected)
 }
 
-func TestSqliteVersion(t *testing.T) {
-	db := Get()
-	result, err := db.Get("SELECT SQLITE_VERSION()")
-	if err != nil {
-		panic(err)
-	}
-	var version string
-	result.Scan(&version)
-	log.Println(version)
-}
-
-func TestGet1(t *testing.T) {
+func TestGetSum(t *testing.T) {
 	var waitGroup sync.WaitGroup
 	for i := 0; i < 10; i++ {
 		// 添加任务数
 		waitGroup.Add(1)
 		go func() {
 			db := Get()
-			PrintStats()
 			result, err := db.Get("SELECT 10+10")
 			if err != nil {
 				panic(err)
 			}
-			PrintStats()
 			var i int
 			result.Scan(&i)
 			log.Println(i)
@@ -79,10 +85,9 @@ func TestGet1(t *testing.T) {
 	}
 	// 阻塞等待所有任务完成
 	waitGroup.Wait()
-	PrintStats()
 }
 
-func TestGet2(t *testing.T) {
+func TestGetField(t *testing.T) {
 	db := Get()
 
 	// count
@@ -104,12 +109,13 @@ func TestGet2(t *testing.T) {
 	log.Println("name", name)
 }
 
-func TestGet3(t *testing.T) {
+func TestGetStruct(t *testing.T) {
 	db := Get()
 	result, err := db.Get("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user` LIMIT 1")
 	if err != nil {
 		panic(err)
 	}
+	time.Sleep(1 * time.Second)
 	var user model.User
 	result.Scan(&user)
 
@@ -120,7 +126,23 @@ func TestGet3(t *testing.T) {
 	log.Println("\n", json)
 }
 
-func TestGet4(t *testing.T) {
+func TestConcurrentGetStruct(t *testing.T) {
+	var waitGroup sync.WaitGroup
+	for i := 0; i < 10; i++ {
+		// 添加任务数
+		waitGroup.Add(1)
+		go func() {
+			TestGetStruct(t)
+			// 完成任务
+			waitGroup.Done()
+		}()
+	}
+	// 阻塞等待所有任务完成
+	waitGroup.Wait()
+	log.Println(Stats())
+}
+
+func TestGetStructSlice(t *testing.T) {
 	db := Get()
 	result, err := db.Get("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user` LIMIT 10")
 	if err != nil {
@@ -134,21 +156,6 @@ func TestGet4(t *testing.T) {
 		panic(err)
 	}
 	log.Println("\n", json)
-}
-
-func TestGet5(t *testing.T) {
-	var waitGroup sync.WaitGroup
-	for i := 0; i < 100; i++ {
-		// 添加任务数
-		waitGroup.Add(1)
-		go func() {
-			TestGet4(t)
-			// 完成任务
-			waitGroup.Done()
-		}()
-	}
-	// 阻塞等待所有任务完成
-	waitGroup.Wait()
 }
 
 func TestPage(t *testing.T) {
