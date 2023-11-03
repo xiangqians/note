@@ -4,16 +4,18 @@
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` -- 用户信息表
 (
-    `id`       INTEGER PRIMARY KEY AUTOINCREMENT, -- 用户id
-    `name`     VARCHAR(64)  NOT NULL,             -- 用户名
-    `nickname` VARCHAR(64)  DEFAULT '',           -- 昵称
-    `passwd`   VARCHAR(128) NOT NULL,             -- 密码
-    `rem`      VARCHAR(256) DEFAULT '',           -- 备注
-    `try`      TINYINT      DEFAULT 0,            -- 尝试输入密码次数，超过3次账号将会被锁定
-    `del`      TINYINT      DEFAULT 0,            -- 删除标识，0-正常，1-删除
-    `add_time` INTEGER      DEFAULT 0,            -- 创建时间（时间戳，s）
-    `upd_time` INTEGER      DEFAULT 0             -- 修改时间（时间戳，s），也可作锁定时间
+    `id`             INTEGER PRIMARY KEY AUTOINCREMENT, -- 用户id
+    `name`           VARCHAR(64)  NOT NULL,             -- 用户名
+    `nickname`       VARCHAR(64)  DEFAULT '',           -- 昵称
+    `passwd`         VARCHAR(128) NOT NULL,             -- 密码
+    `rem`            VARCHAR(256) DEFAULT '',           -- 备注
+    `try`            TINYINT      DEFAULT 0,            -- 尝试输入密码次数，超过3次账号将会被锁定
+    `sign_in_record` TEXT         DEFAULT '',           -- 登录记录
+    `del`            TINYINT      DEFAULT 0,            -- 删除标识，0-正常，1-删除
+    `add_time`       INTEGER      DEFAULT 0,            -- 创建时间（时间戳，单位s）
+    `upd_time`       INTEGER      DEFAULT 0             -- 修改时间（时间戳，单位s），也可作锁定时间
 );
+
 
 -- -------------------------
 -- Table structure for image
@@ -28,8 +30,8 @@ CREATE TABLE `image` -- 图片信息表
     `history`      TEXT        DEFAULT '',            -- 历史
     `history_size` INTEGER     DEFAULT 0,             -- 历史大小，单位：byte
     `del`          TINYINT     DEFAULT 0,             -- 删除标识，0-正常，1-删除，2-永久删除
-    `add_time`     INTEGER     DEFAULT 0,             -- 创建时间（时间戳，s）
-    `upd_time`     INTEGER     DEFAULT 0              -- 修改时间（时间戳，s）
+    `add_time`     INTEGER     DEFAULT 0,             -- 创建时间（时间戳，单位s）
+    `upd_time`     INTEGER     DEFAULT 0              -- 修改时间（时间戳，单位s）
 );
 
 
@@ -46,8 +48,8 @@ CREATE TABLE `audio` -- 音频信息表
     `history`      TEXT        DEFAULT '',            -- 历史
     `history_size` INTEGER     DEFAULT 0,             -- 历史大小，单位：byte
     `del`          TINYINT     DEFAULT 0,             -- 删除标识，0-正常，1-删除，2-永久删除
-    `add_time`     INTEGER     DEFAULT 0,             -- 创建时间（时间戳，s）
-    `upd_time`     INTEGER     DEFAULT 0              -- 修改时间（时间戳，s）
+    `add_time`     INTEGER     DEFAULT 0,             -- 创建时间（时间戳，单位s）
+    `upd_time`     INTEGER     DEFAULT 0              -- 修改时间（时间戳，单位s）
 );
 
 
@@ -64,8 +66,8 @@ CREATE TABLE `video` -- 视频信息表
     `history`      TEXT        DEFAULT '',            -- 历史
     `history_size` INTEGER     DEFAULT 0,             -- 历史大小，单位：byte
     `del`          TINYINT     DEFAULT 0,             -- 删除标识，0-正常，1-删除，2-永久删除
-    `add_time`     INTEGER     DEFAULT 0,             -- 创建时间（时间戳，s）
-    `upd_time`     INTEGER     DEFAULT 0              -- 修改时间（时间戳，s）
+    `add_time`     INTEGER     DEFAULT 0,             -- 创建时间（时间戳，单位s）
+    `upd_time`     INTEGER     DEFAULT 0              -- 修改时间（时间戳，单位s）
 );
 
 
@@ -83,8 +85,8 @@ CREATE TABLE `note` -- 笔记信息表
     `history`      TEXT        DEFAULT '',            -- 历史
     `history_size` INTEGER     DEFAULT 0,             -- 历史大小，单位：byte
     `del`          TINYINT     DEFAULT 0,             -- 删除标识，0-正常，1-删除，2-永久删除
-    `add_time`     INTEGER     DEFAULT 0,             -- 创建时间（时间戳，s）
-    `upd_time`     INTEGER     DEFAULT 0              -- 修改时间（时间戳，s）
+    `add_time`     INTEGER     DEFAULT 0,             -- 创建时间（时间戳，单位s）
+    `upd_time`     INTEGER     DEFAULT 0              -- 修改时间（时间戳，单位s）
 );
 /*
 存储folder、md、doc、pdf、html、zip等

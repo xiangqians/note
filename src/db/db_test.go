@@ -1,6 +1,6 @@
 // @author xiangqian
 // @date 20:47 2023/06/12
-package dbnew
+package db
 
 import (
 	"log"
@@ -159,16 +159,25 @@ func TestGetStructSlice(t *testing.T) {
 }
 
 func TestPage(t *testing.T) {
+	page := model.Page{
+		Current: 1,
+		Size:    2,
+	}
+
 	db := Get()
-	result, err := db.Page("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user`", 1, 2)
+	result, err := db.Page("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user`", page.Current, page.Size)
 	if err != nil {
 		panic(err)
 	}
-	log.Println("count", result.Count())
+
+	page.Total = result.Count()
+	page.InitIndexes()
+
 	var users []model.User
 	result.Scan(&users)
+	page.Data = users
 
-	json, err := util_json.Serialize(users, true)
+	json, err := util_json.Serialize(page, true)
 	if err != nil {
 		panic(err)
 	}
