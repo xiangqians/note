@@ -1,12 +1,13 @@
 // 授权
 // @author xiangqian
 // @date 23:19 2023/07/18
-package app
+package server
 
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"note/src/ini"
 	"note/src/session"
 	"note/src/util/time"
 	"strings"
@@ -15,7 +16,7 @@ import (
 // 初始化授权
 func initAuth(engine *gin.Engine) {
 	// 根路径
-	contextPath := arg.ContextPath
+	contextPath := ini.Ini.Server.ContextPath
 
 	// 未授权拦截
 	engine.Use(func(ctx *gin.Context) {

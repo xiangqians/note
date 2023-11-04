@@ -1,7 +1,7 @@
 // 会话
 // @author xiangqian
 // @date 20:01 2023/03/22
-package app
+package server
 
 import (
 	"github.com/gin-contrib/sessions"

@@ -1,16 +1,16 @@
-// 时区
 // @author xiangqian
 // @date 19:49 2023/07/10
-package app
+package sys
 
 import (
 	"log"
+	"note/src/ini"
 	"time"
 )
 
 // 初始化时区
-func initTimeZone() {
-	timeZone := arg.TimeZone
+func init() {
+	timeZone := ini.Ini.Sys.TimeZone
 	loc, err := time.LoadLocation(timeZone)
 	if err != nil {
 		log.Println(timeZone, err)

@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -122,7 +123,7 @@ func Stat(path string) File {
 //   - os.ModePerm: 0777
 func MkDir(path string, perm os.FileMode) error {
 	file := Stat(path)
-	if !file.IsExist() {
+	if !file.IsExist() || !file.IsDir() {
 		return os.MkdirAll(path, perm)
 	}
 	return nil
@@ -318,4 +319,78 @@ func DecodeBuf(buf []byte) string {
 	}
 
 	return string(buf)
+}
+
+type Byte float64
+
+const (
+	B  Byte = 1         // B（Byte），字节，1B = 8b（bit）
+	KB      = 1024 * B  // KB(Kilobyte)，千字节
+	MB      = 1024 * KB // MB（Megabyte），兆字节
+	GB      = 1024 * MB // GB（Gigabyte），千兆字节
+	TB      = 1024 * GB // TB（Terabyte）
+	PB      = 1024 * TB // PB（Petabyte）
+)
+
+func ParseByte(s string) (Byte, error) {
+	s = strings.ToUpper(s)
+	if strings.HasSuffix(s, "PB") {
+		f, err := strconv.ParseFloat(s[:len(s)-2], 64)
+		return Byte(f) * PB, err
+	}
+
+	if strings.HasSuffix(s, "TB") {
+		f, err := strconv.ParseFloat(s[:len(s)-2], 64)
+		return Byte(f) * TB, err
+	}
+
+	if strings.HasSuffix(s, "GB") {
+		f, err := strconv.ParseFloat(s[:len(s)-2], 64)
+		return Byte(f) * GB, err
+	}
+
+	if strings.HasSuffix(s, "MB") {
+		f, err := strconv.ParseFloat(s[:len(s)-2], 64)
+		return Byte(f) * MB, err
+	}
+
+	if strings.HasSuffix(s, "KB") {
+		f, err := strconv.ParseFloat(s[:len(s)-2], 64)
+		return Byte(f) * KB, err
+	}
+
+	if strings.HasSuffix(s, "B") {
+		f, err := strconv.ParseFloat(s[:len(s)-1], 64)
+		return Byte(f) * B, err
+	}
+
+	f, err := strconv.ParseFloat(s[:len(s)-1], 64)
+	return Byte(f), err
+}
+
+func (byte Byte) String() string {
+	if byte <= 0 {
+		return "0 B"
+	}
+
+	// GB
+	gb := byte / GB
+	if gb > 1 {
+		return fmt.Sprintf("%.2f GB", gb)
+	}
+
+	// MB
+	mb := byte / MB
+	if mb > 1 {
+		return fmt.Sprintf("%.2f MB", mb)
+	}
+
+	// KB
+	kb := byte / KB
+	if kb > 1 {
+		return fmt.Sprintf("%.2f KB", kb)
+	}
+
+	// B
+	return fmt.Sprintf("%f B", byte)
 }

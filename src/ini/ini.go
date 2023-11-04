@@ -1,22 +1,33 @@
 // @author xiangqian
 // @date 22:00 2023/11/02
-package model
+package ini
 
 import (
 	"fmt"
+	util_os "note/src/util/os"
+
 	// https://pkg.go.dev/gopkg.in/ini.v1
 	// https://github.com/go-ini/ini
 	pkg_ini "gopkg.in/ini.v1"
-	"log"
+
 	"time"
 )
 
 // 配置
 type ini struct {
+	Log    log    // 日志配置
 	Sys    sys    // 系统配置
 	Server server // 服务配置
 	Db     db     // 数据库配置
 	Data   data   // 数据配置
+}
+
+// 日志配置
+type log struct {
+	Dir        string // 日志文件目录
+	FileName   string // 日志文件名
+	MaxSize    int64  // 日志文件大小
+	MaxHistory int    // 日志文件最大历史记录
 }
 
 // 系统配置
@@ -57,6 +68,20 @@ func init() {
 		panic(err)
 	}
 
+	// log
+	log, err := file.GetSection("log")
+	if err != nil {
+		panic(err)
+	}
+	Ini.Log.Dir = log.Key("dir").MustString("./log")
+	Ini.Log.FileName = log.Key("file-name").MustString("debug.log")
+	maxSize, err := util_os.ParseByte(log.Key("max-size").MustString("10MB"))
+	if err != nil {
+		panic(err)
+	}
+	Ini.Log.MaxSize = int64(maxSize)
+	Ini.Log.MaxHistory = log.Key("max-history").MustInt(2)
+
 	// sys
 	sys, err := file.GetSection("sys")
 	if err != nil {
@@ -92,12 +117,11 @@ func init() {
 		panic(err)
 	}
 	Ini.Data.Dir = data.Key("dir").String()
-
-	log.Printf(Ini.String())
 }
 
 // String 返回结构体类型字符串
 func (ini ini) String() string {
+	logString := fmt.Sprintf("Log\t\t{ Dir = %s, MaxSize = %f, MaxHistory = %d }", Ini.Log.Dir, Ini.Log.MaxSize, Ini.Log.MaxHistory)
 	sysString := fmt.Sprintf("Sys\t\t{ TimeZone = %s }", ini.Sys.TimeZone)
 	serverString := fmt.Sprintf("Server\t{ Mode = %s, Port = %d, ContextPath = %s, OpenSignup = %t }", ini.Server.Mode, ini.Server.Port, ini.Server.ContextPath, ini.Server.OpenSignup)
 	dbString := fmt.Sprintf("Db\t\t{ Driver = %s, Dns = %s, MaxOpenConns = %d, ConnMaxLifetime = %s, MaxIdleConns = %d, ConnMaxIdleTime = %s }",
@@ -107,7 +131,9 @@ func (ini ini) String() string {
 		"\n\t%s"+
 		"\n\t%s"+
 		"\n\t%s"+
+		"\n\t%s"+
 		"\n\t%s",
+		logString,
 		sysString,
 		serverString,
 		dbString,

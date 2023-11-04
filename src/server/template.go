@@ -1,7 +1,7 @@
 // 模板
 // @author xiangqian
 // @date 21:45 2022/12/23
-package app
+package server
 
 import (
 	"fmt"

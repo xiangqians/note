@@ -5,7 +5,7 @@
 //
 // @author xiangqian
 // @date 20:45 2023/07/17
-package app
+package server
 
 import (
 	"fmt"

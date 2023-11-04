@@ -1,24 +1,16 @@
 // app
 // @author xiangqian
 // @date 22:39 2023/07/20
-package app
+package server
 
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"note/src/ini"
 )
 
 // Run 启动应用
 func Run() {
-	// 初始化日志记录器
-	initLog()
-
-	// 初始化应用参数
-	initArg()
-
-	// 初始化时区
-	initTimeZone()
-
 	// 设置gin模式
 	gin.SetMode(gin.DebugMode)
 
@@ -44,6 +36,6 @@ func Run() {
 	initRoute(engine)
 
 	// 运行
-	addr := fmt.Sprintf(":%d", arg.Port)
+	addr := fmt.Sprintf(":%d", ini.Ini.Server.Port)
 	engine.Run(addr)
 }

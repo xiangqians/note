@@ -4,6 +4,7 @@ package db
 
 import (
 	"log"
+	"note/src/ini"
 	"note/src/model"
 	util_json "note/src/util/json"
 	"sync"
@@ -31,7 +32,7 @@ func TestVersion(t *testing.T) {
 	db := Get()
 
 	var sql string
-	switch model.Ini.Db.Driver {
+	switch ini.Ini.Db.Driver {
 	case "sqlite", "sqlite3":
 		sql = "SELECT SQLITE_VERSION()"
 	}
