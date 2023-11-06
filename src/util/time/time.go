@@ -1,4 +1,3 @@
-// time
 // @author xiangqian
 // @date 12:33 2023/02/04
 package time
@@ -15,36 +14,33 @@ func HumanizUnix(unix int64) string {
 		return "-"
 	}
 
-	// time
+	// 解析时间戳
 	t := ParseUnix(unix)
+
+	// 当前时间
 	nowTime := NowTime()
 
-	// format
-	format := func(i18nKey string, value int64) string {
-		return fmt.Sprintf(i18n.MustGetMessage(i18nKey), value)
-	}
-
-	// Duration
+	// 当前时间 - 解析后的时间戳
 	duration := nowTime.Sub(t)
 
-	// hour
+	// 小时
 	hour := int64(duration.Hours())
 	if hour >= 24 {
 		return FormatTime(t)
 	}
 	if hour >= 1 {
-		return format("i18n.nHoursAgo", hour)
+		return fmt.Sprintf(i18n.MustGetMessage("i18n.nHoursAgo"), hour)
 	}
 
-	// minute
+	// 分钟
 	minute := int64(duration.Minutes())
 	if minute >= 1 {
-		return format("i18n.nMinutesAgo", minute)
+		return fmt.Sprintf(i18n.MustGetMessage("i18n.nMinutesAgo"), minute)
 	}
 
-	// second
+	// 秒
 	second := int64(duration.Seconds())
-	return format("i18n.nSecondsAgo", second)
+	return fmt.Sprintf(i18n.MustGetMessage("i18n.nSecondsAgo"), second)
 }
 
 // ParseUnix 解析日期时间戳（s）

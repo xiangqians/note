@@ -1,4 +1,3 @@
-// validate util
 // @author xiangqian
 // @date 14:30 2023/05/07
 package validate
@@ -18,7 +17,7 @@ func UserName(userName string) error {
 	}
 
 	if !matched {
-		return errors.New(i18n.MustGetMessage("i18n.userNameMastNBitsLength"))
+		return errors.New(i18n.MustGetMessage("i18n.validateUserName"))
 	}
 
 	return nil
@@ -26,14 +25,14 @@ func UserName(userName string) error {
 
 // Passwd 校验密码
 func Passwd(passwd string) error {
-	// 1-120位长度（字母，数字，特殊字符）
-	matched, err := regexp.MatchString("^[a-zA-Z0-9!@#$%^&*()-_=+]{1,120}$", passwd)
+	// 1-20位长度（字母，数字，特殊字符）
+	matched, err := regexp.MatchString("^[a-zA-Z0-9!@#$%^&*()-_=+]{1,20}$", passwd)
 	if err != nil {
 		return err
 	}
 
 	if !matched {
-		return errors.New(i18n.MustGetMessage("i18n.passwdMastNBitsLength"))
+		return errors.New(i18n.MustGetMessage("i18n.validatePasswd"))
 	}
 
 	return nil
@@ -50,7 +49,7 @@ func FileName(fileName string) error {
 	}
 
 	if !matched {
-		return errors.New(i18n.MustGetMessage("i18n.fileNameCannotContainCharacters"))
+		return errors.New(i18n.MustGetMessage("i18n.validateFileName"))
 	}
 
 	return nil

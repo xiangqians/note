@@ -1,4 +1,3 @@
-// string
 // @author xiangqian
 // @date 15:18 2023/10/05
 package string

@@ -83,9 +83,9 @@ func init() {
 	case "android":
 		isLinux = true
 
-	// 不支持当前操作系统错误
+	// 不支持当前操作系统
 	default:
-		panic(errors.New(fmt.Sprintf("The current os is not supported, %s", runtime.GOOS)))
+		panic(fmt.Sprintf("不支持当前操作系统：%s", runtime.GOOS))
 	}
 }
 
@@ -319,6 +319,56 @@ func DecodeBuf(buf []byte) string {
 	}
 
 	return string(buf)
+}
+
+// 文件类型
+const (
+	Folder  = "folder"  // 文件夹
+	Md      = "md"      // md文件
+	Html    = "html"    // html文件
+	Pdf     = "pdf"     // pdf文件
+	Doc     = "doc"     // doc文件
+	Zip     = "zip"     // zip文件
+	Ico     = "ico"     // ico文件
+	Gif     = "gif"     // gif文件
+	Jpg     = "jpg"     // jpg文件
+	Jpeg    = "jpeg"    // jpeg文件
+	Png     = "png"     // png文件
+	Webp    = "webp"    // webp文件
+	Unknown = "unknown" // 未知
+)
+
+// ContentTypeOf 根据文件内容类型获取文件类型
+func ContentTypeOf(contentType string) string {
+	switch contentType {
+	case "text/html":
+		return Html
+	case "application/pdf":
+		return Pdf
+	case "application/x-zip-compressed":
+		return Zip
+	// image
+	case "image/x-icon":
+		return Ico
+	case "image/gif":
+		return Gif
+	case "image/jpg":
+		return Jpg
+	case "image/jpeg":
+		return Jpeg
+	case "image/png":
+		return Png
+	case "image/webp":
+		return Webp
+
+	// audio
+
+	//video
+
+	// 未知
+	default:
+		return Unknown
+	}
 }
 
 type Byte float64
