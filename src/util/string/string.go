@@ -10,6 +10,10 @@ func String(i any) string {
 		return ""
 	}
 
+	if s, ok := i.(string); ok {
+		return s
+	}
+
 	if err, ok := i.(error); ok {
 		return err.Error()
 	}

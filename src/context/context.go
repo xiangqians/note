@@ -1,4 +1,3 @@
-// context
 // @author xiangqian
 // @date 20:04 2023/03/22
 package context
@@ -18,18 +17,18 @@ import (
 	"net/http"
 	"note/src/model"
 	"note/src/session"
-	"note/src/util/language"
-	util_language "note/src/util/language"
-	util_string "note/src/util/string"
 	util_time "note/src/util/time"
-	"reflect"
-	"strconv"
 	"strings"
 )
 
 var (
 	zhTrans ut.Translator
 	enTrans ut.Translator
+)
+
+const (
+	ZH = "zh"
+	EN = "en"
 )
 
 const redirectMsgKey = "redirectMsg"
@@ -41,23 +40,23 @@ func init() {
 			// 支持语言
 			zh.New(),
 			en.New())
-		if trans, ok := uni.GetTranslator(language.ZH); ok {
+		if trans, ok := uni.GetTranslator(ZH); ok {
 			zh_trans.RegisterDefaultTranslations(v, trans)
 			zhTrans = trans
 		}
-		if trans, ok := uni.GetTranslator(language.EN); ok {
+		if trans, ok := uni.GetTranslator(EN); ok {
 			en_trans.RegisterDefaultTranslations(v, trans)
 			enTrans = trans
 		}
 	}
 }
 
-func HtmlNotFound[T any](ctx *gin.Context, name string, resp model.Resp[T]) {
-	Html[T](ctx, http.StatusNotFound, name, resp)
+func HtmlNotFound(ctx *gin.Context, name string, resp model.Resp) {
+	Html(ctx, http.StatusNotFound, name, resp)
 }
 
-func HtmlOk[T any](ctx *gin.Context, name string, resp model.Resp[T]) {
-	Html[T](ctx, http.StatusOK, name, resp)
+func HtmlOk(ctx *gin.Context, name string, resp model.Resp) {
+	Html(ctx, http.StatusOK, name, resp)
 }
 
 // Html html模板
@@ -65,15 +64,12 @@ func HtmlOk[T any](ctx *gin.Context, name string, resp model.Resp[T]) {
 // code : http状态码
 // name : html模板名称
 // resp : 响应数据
-func Html[T any](ctx *gin.Context, code int, name string, resp model.Resp[T]) {
+func Html(ctx *gin.Context, code int, name string, resp model.Resp) {
 	// 从session中获取重定向消息
-	redirectMsg, _ := session.Get[string](ctx, redirectMsgKey, true)
+	redirectMsg := session.GetString(ctx, redirectMsgKey, true)
 	if redirectMsg != "" {
 		resp.Msg = redirectMsg + " " + resp.Msg
 	}
-
-	// 当前登录用户信息
-	user, _ := session.GetUser(ctx)
 
 	// 请求信息
 	request := ctx.Request
@@ -83,102 +79,63 @@ func Html[T any](ctx *gin.Context, code int, name string, resp model.Resp[T]) {
 		"contextPath": model.GetArg().ContextPath, // 上下文路径
 		"path":        request.URL.Path,           // 请求路径
 		"uri":         request.RequestURI,         // 请求uri地址
-		"user":        user,                       // 登录用户信息
+		"user":        session.GetUser(ctx),       // 当前登录用户信息
 		"resp":        resp,                       // 响应数据
 	})
 }
 
-func JsonBadRequest[T any](ctx *gin.Context, resp model.Resp[T]) {
+func JsonBadRequest(ctx *gin.Context, resp model.Resp) {
 	Json(ctx, http.StatusBadRequest, resp)
 }
 
-func JsonOk[T any](ctx *gin.Context, resp model.Resp[T]) {
+func JsonOk(ctx *gin.Context, resp model.Resp) {
 	Json(ctx, http.StatusOK, resp)
 }
 
-func Json[T any](ctx *gin.Context, code int, resp model.Resp[T]) {
+func Json(ctx *gin.Context, code int, resp model.Resp) {
 	ctx.JSON(code, resp)
 }
 
 // Redirect 重定向
 // ctx 		: *gin.Context
 // location : 重定向地址
-// paramMap : 重定向参数映射
 // msg		: 重定向消息（没有消息就是最好的消息）
-func Redirect(ctx *gin.Context, location string, paramMap map[string]any, msg any) {
+func Redirect(ctx *gin.Context, location string, msg any) {
 	// 存储重定向消息到session中
-	session.Set(ctx, redirectMsgKey, util_string.String(msg))
+	session.SetString(ctx, redirectMsgKey, msg)
 
-	// 数组容量
-	var cap int = 1
-	if paramMap != nil {
-		cap += len(paramMap)
+	// 添加时间戳请求参数
+	if strings.Contains(location, "?") {
+		location += fmt.Sprintf("&t=%v", util_time.NowUnix())
+	} else {
+		location += fmt.Sprintf("?t=%v", util_time.NowUnix())
 	}
-
-	// len 0, cap ?
-	arr := make([]string, 0, cap)
-
-	// 【请求参数】more
-	if paramMap != nil && len(paramMap) > 0 {
-		for k, v := range paramMap {
-			arr = append(arr, fmt.Sprintf("%v=%v", k, v))
-		}
-	}
-	// 【请求参数】时间戳
-	arr = append(arr, fmt.Sprintf("t=%v", util_time.NowUnix()))
 
 	// 重定向
-	ctx.Redirect(http.StatusMovedPermanently, fmt.Sprintf("%s%s?%s", model.GetArg().ContextPath, location, strings.Join(arr, "&")))
+	ctx.Redirect(http.StatusMovedPermanently, fmt.Sprintf("%s%s", model.GetArg().ContextPath, location))
 }
 
-func PostForm[T any](ctx *gin.Context, name string) (T, error) {
-	value := ctx.PostForm(name)
-	return convStrToType[T](value)
+// PostForm 获取请求表单参数
+func PostForm(ctx *gin.Context, name string) string {
+	return ctx.PostForm(name)
 }
 
-func Param[T any](ctx *gin.Context, name string) (T, error) {
-	value := ctx.Param(name)
-	return convStrToType[T](value)
+// Param 获取请求占位符参数
+func Param(ctx *gin.Context, name string) string {
+	return ctx.Param(name)
 }
 
-func Query[T any](ctx *gin.Context, name string) (T, error) {
-	value := ctx.Query(name)
-	return convStrToType[T](value)
+// Query 获取请求参数
+func Query(ctx *gin.Context, name string) string {
+	return ctx.Query(name)
 }
 
-func Header[T any](ctx *gin.Context, name string) (T, error) {
-	return convStrToType[T](ctx.GetHeader(name))
+// Header 获取请求头参数
+func Header(ctx *gin.Context, name string) string {
+	return ctx.GetHeader(name)
 }
 
-// convStrToType string转类型（基本数据类型）
-func convStrToType[T any](value string) (T, error) {
-	var t T
-	rflVal := reflect.ValueOf(t)
-	//log.Println(rflVal)
-	switch rflVal.Type().Kind() {
-	case reflect.Int:
-		id, err := strconv.ParseInt(value, 10, 64)
-		return any(int(any(id).(int64))).(T), err
-
-	case reflect.Int8:
-		id, err := strconv.ParseInt(value, 10, 64)
-		return any(int8(any(id).(int64))).(T), err
-
-	case reflect.Uint8:
-		id, err := strconv.ParseInt(value, 10, 64)
-		return any(uint8(any(id).(int64))).(T), err
-
-	case reflect.Int64:
-		id, err := strconv.ParseInt(value, 10, 64)
-		return any(id).(T), err
-
-	case reflect.String:
-		return any(strings.TrimSpace(value)).(T), nil
-	}
-
-	return t, errors.New(fmt.Sprintf("This type does not support conversion: %v", rflVal.Type().Kind()))
-}
-
+// ShouldBindQuery 将请求参数绑定给变量
 func ShouldBindQuery(ctx *gin.Context, i any) error {
 	err := ctx.ShouldBindQuery(i)
 	if err != nil {
@@ -187,6 +144,7 @@ func ShouldBindQuery(ctx *gin.Context, i any) error {
 	return err
 }
 
+// ShouldBind 将请求报文体绑定给变量
 func ShouldBind(ctx *gin.Context, i any) error {
 	err := ctx.ShouldBind(i)
 	if err != nil {
@@ -199,12 +157,12 @@ func ShouldBind(ctx *gin.Context, i any) error {
 func transErr(ctx *gin.Context, err error) error {
 	if errs, ok := err.(validator.ValidationErrors); ok {
 		// 语言
-		language, _ := session.Get[string](ctx, util_language.NAME, false)
+		language := session.GetString(ctx, "language", false)
 
 		// 校验异常翻译器
 		var validationErrTrans validator.ValidationErrorsTranslations
 		switch language {
-		case util_language.EN:
+		case EN:
 			validationErrTrans = errs.Translate(enTrans)
 		default:
 			validationErrTrans = errs.Translate(zhTrans)
@@ -218,7 +176,7 @@ func transErr(ctx *gin.Context, err error) error {
 			}
 			if errMsg != "" {
 				switch language {
-				case util_language.EN:
+				case EN:
 					errMsg += ", "
 				default:
 					errMsg += "、"
