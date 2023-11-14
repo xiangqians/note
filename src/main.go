@@ -18,11 +18,13 @@ func main() {
 	// 注册路由和相应的处理器函数
 	handler.Handle(mux)
 
+	port := model.Ini.Server.Port
+	
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%d", model.Ini.Server.Port),
+		Addr:    fmt.Sprintf(":%d", port),
 		Handler: mux,
 	}
 
-	log.Printf("Server started on port %d\n", model.Ini.Server.Port)
+	log.Printf("Server started on port %d\n", port)
 	panic(server.ListenAndServe())
 }

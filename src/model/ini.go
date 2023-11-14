@@ -110,7 +110,7 @@ func init() {
 
 // String 返回结构体类型字符串
 func (ini ini) String() string {
-	logString := fmt.Sprintf("Log\t\t{ Dir = %s, MaxSize = %f, MaxHistory = %d }", Ini.Log.Dir, Ini.Log.MaxSize, Ini.Log.MaxHistory)
+	logString := fmt.Sprintf("Log\t\t{ Dir = %s, MaxSize = %s, MaxHistory = %d }", Ini.Log.Dir, util_os.Byte(Ini.Log.MaxSize), Ini.Log.MaxHistory)
 	dbString := fmt.Sprintf("Db\t\t{ Driver = %s, Dns = %s, MaxOpenConns = %d, ConnMaxLifetime = %s, MaxIdleConns = %d, ConnMaxIdleTime = %s }",
 		ini.Db.Driver, ini.Db.Dns, ini.Db.MaxOpenConns, ini.Db.ConnMaxLifetime, ini.Db.MaxIdleConns, ini.Db.ConnMaxIdleTime)
 	dataString := fmt.Sprintf("Data\t{ Dir = %s }", ini.Data.Dir)

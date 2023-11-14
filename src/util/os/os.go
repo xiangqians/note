@@ -425,19 +425,19 @@ func (byte Byte) String() string {
 
 	// GB
 	gb := byte / GB
-	if gb > 1 {
+	if gb >= 1 {
 		return fmt.Sprintf("%.2f GB", gb)
 	}
 
 	// MB
 	mb := byte / MB
-	if mb > 1 {
+	if mb >= 1 {
 		return fmt.Sprintf("%.2f MB", mb)
 	}
 
 	// KB
 	kb := byte / KB
-	if kb > 1 {
+	if kb >= 1 {
 		return fmt.Sprintf("%.2f KB", kb)
 	}
 
