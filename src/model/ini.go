@@ -15,23 +15,17 @@ import (
 
 // 配置
 type ini struct {
-	Sys  sys  // 系统配置
-	Log  log  // 日志配置
-	Db   db   // 数据库配置
-	Data data // 数据配置
-	Http http // HTTP配置
-}
-
-// 系统配置
-type sys struct {
-	TimeZone string // 时区，如：Asia/Shanghai（上海时区）
+	Log    log    // 日志配置
+	Db     db     // 数据库配置
+	Data   data   // 数据配置
+	Server server // 服务配置
 }
 
 // 日志配置
 type log struct {
 	Dir        string // 日志文件目录
 	FileName   string // 日志文件名
-	MaxSize    int64  // 日志文件大小
+	MaxSize    int64  // 日志文件大小，单位：字节
 	MaxHistory int    // 日志文件最大历史记录
 }
 
@@ -51,12 +45,12 @@ type data struct {
 }
 
 // 服务配置
-type http struct {
-	Port             uint16 // 监听端口
-	ContextPath      string // 应用的上下文路径，也可以称为项目路径，是构成url地址的一部分
-	SessionSecretKey string // 会话密钥
-	SessionMaxAge    int    // 会话过期时间
-	OpenSignup       bool   // 是否开放注册功能
+type server struct {
+	Port             uint16        // 监听端口
+	ContextPath      string        // 应用的上下文路径，也可以称为项目路径，是构成url地址的一部分
+	SessionSecretKey string        // 会话密钥
+	SessionMaxAge    time.Duration // 会话过期时间
+	OpenSignup       bool          // 是否开放注册功能
 }
 
 var Ini ini
@@ -68,13 +62,6 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-
-	// sys
-	sys, err := file.GetSection("sys")
-	if err != nil {
-		panic(err)
-	}
-	Ini.Sys.TimeZone = sys.Key("time-zone").MustString("Asia/Shanghai")
 
 	// log
 	log, err := file.GetSection("log")
@@ -89,16 +76,6 @@ func init() {
 	}
 	Ini.Log.MaxSize = int64(maxSize)
 	Ini.Log.MaxHistory = log.Key("max-history").MustInt(2)
-
-	// server
-	server, err := file.GetSection("server")
-	if err != nil {
-		panic(err)
-	}
-	Ini.Server.Mode = server.Key("mode").MustString("release")
-	Ini.Server.Port = uint16(server.Key("port").MustUint64(8080))
-	Ini.Server.ContextPath = server.Key("context-path").MustString("/")
-	Ini.Server.OpenSignup = server.Key("open-signup").MustBool(true)
 
 	// db
 	db, err := file.GetSection("db")
@@ -118,25 +95,33 @@ func init() {
 		panic(err)
 	}
 	Ini.Data.Dir = data.Key("dir").String()
+
+	// server
+	server, err := file.GetSection("server")
+	if err != nil {
+		panic(err)
+	}
+	Ini.Server.Port = uint16(server.Key("port").MustUint64(8080))
+	Ini.Server.ContextPath = server.Key("context-path").MustString("/")
+	Ini.Server.SessionSecretKey = server.Key("session-secret-key").String()
+	Ini.Server.SessionMaxAge = server.Key("session-max-age").MustDuration(12 * time.Hour)
+	Ini.Server.OpenSignup = server.Key("open-signup").MustBool(true)
 }
 
 // String 返回结构体类型字符串
 func (ini ini) String() string {
 	logString := fmt.Sprintf("Log\t\t{ Dir = %s, MaxSize = %f, MaxHistory = %d }", Ini.Log.Dir, Ini.Log.MaxSize, Ini.Log.MaxHistory)
-	sysString := fmt.Sprintf("Sys\t\t{ TimeZone = %s }", ini.Sys.TimeZone)
-	serverString := fmt.Sprintf("Server\t{ Mode = %s, Port = %d, ContextPath = %s, OpenSignup = %t }", ini.Server.Mode, ini.Server.Port, ini.Server.ContextPath, ini.Server.OpenSignup)
 	dbString := fmt.Sprintf("Db\t\t{ Driver = %s, Dns = %s, MaxOpenConns = %d, ConnMaxLifetime = %s, MaxIdleConns = %d, ConnMaxIdleTime = %s }",
 		ini.Db.Driver, ini.Db.Dns, ini.Db.MaxOpenConns, ini.Db.ConnMaxLifetime, ini.Db.MaxIdleConns, ini.Db.ConnMaxIdleTime)
 	dataString := fmt.Sprintf("Data\t{ Dir = %s }", ini.Data.Dir)
+	serverString := fmt.Sprintf("Server\t{ Port = %d, ContextPath = %s, SessionSecretKey = %s, SessionMaxAge = %s, OpenSignup = %t }", ini.Server.Port, ini.Server.ContextPath, ini.Server.SessionSecretKey, ini.Server.SessionMaxAge, ini.Server.OpenSignup)
 	return fmt.Sprintf("Ini"+
-		"\n\t%s"+
 		"\n\t%s"+
 		"\n\t%s"+
 		"\n\t%s"+
 		"\n\t%s",
 		logString,
-		sysString,
-		serverString,
 		dbString,
-		dataString)
+		dataString,
+		serverString)
 }
