@@ -56,7 +56,7 @@ type server struct {
 var Ini ini
 
 func init() {
-	source := "E:\\workspace\\goland\\note\\src\\res\\note.ini"
+	source := "E:\\workspace\\goland\\note\\res\\note.ini"
 	//source := "./note.ini"
 	file, err := pkg_ini.Load(source)
 	if err != nil {
