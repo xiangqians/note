@@ -15,7 +15,7 @@ var TemplateFs embed.FS
 
 // Handle 注册路由和相应的处理器函数
 func Handle(mux *http.ServeMux) {
-	// 静态文件处理器
+	// 处理静态资源
 	// 嵌入的静态文件
 	staticFs, err := fs.Sub(StaticFs, "embed/static")
 	if err != nil {

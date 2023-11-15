@@ -1,6 +1,6 @@
 // @author xiangqian
 // @date 22:41 2023/11/07
-package session
+package handler
 
 import (
 	"github.com/gorilla/sessions"
@@ -11,7 +11,7 @@ import (
 // 会话存储器
 var store *sessions.CookieStore
 
-func init() {
+func init1() {
 	// keyPairs 用于加密和解密会话 cookie 的密钥对。
 	// keyPairs 是一个字节切片（[]byte），可以包含一个或多个密钥。
 	// 会话 cookie 是存储在客户端浏览器中的数据，用于标识用户会话并进行身份验证。为了确保安全性，会话 cookie 应该进行加密，以防止被篡改或伪造。
@@ -43,7 +43,7 @@ func init() {
 	}
 }
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
+func homeHandler1(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "session-name") // 获取会话
 
 	// 检查会话中的值

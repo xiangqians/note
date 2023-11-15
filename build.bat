@@ -42,19 +42,19 @@ REM /Q 复制时不显示文件名
 REM /T 创建目录结构，但不复制文件。不包括空目录或子目录。/T /E 包括空目录和子目录
 REM /Y 禁止提示以确认改写一个现存目标文件
 :R
-xcopy "res\data" "%OUTPUT_DIR%\data" /s /e /h /i /y /f > nul
+::xcopy "res\data" "%OUTPUT_DIR%\data" /s /e /h /i /y /f > nul
 
 REM 包名称
 for /F %%i in ('go env GOOS') do (set OS=%%i)
 for /F %%i in ('go env GOARCH') do (set ARCH=%%i)
-set "PKG_NAME=auto_deploy_%OS%_%ARCH%.exe"
+set "PKG_NAME=note_%OS%_%ARCH%.exe"
 
 REM 包路径
 set "PKG_PATH=%OUTPUT_DIR%\%PKG_NAME%"
 
 REM 构建
 cd ./src && go build -ldflags="-s -w" -o %PKG_PATH%
-::cd ./src && go build -ldflags="-s -w" -o %PKG_PATH% && upx -9 --brute %pkgPath%
+::cd ./src && go build -ldflags="-s -w" -o %PKG_PATH% && upx -9 --brute %PKG_PATH%
 
 REM startup.bat
 set "STARTUP_PATH=%OUTPUT_DIR%\startup.bat"

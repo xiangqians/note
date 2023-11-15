@@ -1,6 +1,6 @@
 // @author xiangqian
 // @date 22:00 2023/11/02
-package model
+package structure
 
 import (
 	"fmt"

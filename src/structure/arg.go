@@ -1,7 +1,7 @@
 // 应用参数
 // @author xiangqian
 // @date 22:45 2023/06/12
-package model
+package structure
 
 import (
 	"fmt"

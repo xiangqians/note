@@ -4,7 +4,7 @@ package db
 
 import (
 	"log"
-	"note/src/model"
+	"note/src/structure"
 	util_json "note/src/util/json"
 	"sync"
 	"testing"
@@ -31,7 +31,7 @@ func TestVersion(t *testing.T) {
 	db := Get()
 
 	var sql string
-	switch model.Ini.Db.Driver {
+	switch structure.Ini.Db.Driver {
 	case "sqlite", "sqlite3":
 		sql = "SELECT SQLITE_VERSION()"
 	}
@@ -116,7 +116,7 @@ func TestGetStruct(t *testing.T) {
 		panic(err)
 	}
 	time.Sleep(1 * time.Second)
-	var user model.User
+	var user structure.User
 	result.Scan(&user)
 
 	json, err := util_json.Serialize(user, true)
@@ -148,7 +148,7 @@ func TestGetStructSlice(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	var users []model.User
+	var users []structure.User
 	result.Scan(&users)
 
 	json, err := util_json.Serialize(users, true)
@@ -159,7 +159,7 @@ func TestGetStructSlice(t *testing.T) {
 }
 
 func TestPage(t *testing.T) {
-	page := model.Page{
+	page := structure.Page{
 		Current: 1,
 		Size:    2,
 	}
@@ -173,7 +173,7 @@ func TestPage(t *testing.T) {
 	page.Total = result.Count()
 	page.InitIndexes()
 
-	var users []model.User
+	var users []structure.User
 	result.Scan(&users)
 	page.Data = users
 
