@@ -120,7 +120,7 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 				"embed/template/common/foot1.html",          // 嵌套模板文件
 				"embed/template/common/foot2.html",          // 嵌套模板文件
 				"embed/template/common/table.html",          // 嵌套模板文件
-				"embed/template/common/variable.html") // 嵌套模板文件
+				"embed/template/common/variable.html")       // 嵌套模板文件
 			if err != nil {
 				panic(err)
 			}

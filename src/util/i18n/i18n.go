@@ -46,6 +46,6 @@ func GetMessage(name, language string) string {
 		return enMessageMap[name]
 
 	default:
-		return ""
+		return "Undefined"
 	}
 }
