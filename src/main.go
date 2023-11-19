@@ -183,8 +183,11 @@ func main() {
 
 	// 配置服务
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%d", port),
-		Handler: mux,
+		Addr:           fmt.Sprintf(":%d", port),
+		Handler:        mux,
+		ReadTimeout:    60 * time.Second,
+		WriteTimeout:   60 * time.Second,
+		MaxHeaderBytes: 1 << 20, // 设置接收的HTTP请求头的最大字节数。默认情况下，MaxHeaderBytes 的值为 1 << 20，即 1MB（1024 * 1024 Byte）。这意味着如果请求头的大小超过了 1MB，服务器将返回一个错误响应 http.ErrHeaderTooLong。
 	}
 
 	// 监听

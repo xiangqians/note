@@ -5,8 +5,9 @@ package index
 import (
 	"net/http"
 	"note/src/model"
+	"note/src/session"
 )
 
-func Index(r *http.Request) (string, model.Response) {
+func Index(request *http.Request, session *session.Session) (string, model.Response) {
 	return "index", model.Response{}
 }

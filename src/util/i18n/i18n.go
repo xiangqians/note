@@ -7,11 +7,9 @@ import (
 	util_json "note/src/util/json"
 )
 
-type Language string
-
 const (
-	ZH Language = "zh"
-	EN Language = "en"
+	ZH string = "zh"
+	EN string = "en"
 )
 
 var zhMessageMap map[string]string
@@ -39,7 +37,7 @@ func Init(fs embed.FS) {
 	}
 }
 
-func GetMessage(name string, language Language) string {
+func GetMessage(name, language string) string {
 	switch language {
 	case ZH:
 		return zhMessageMap[name]
