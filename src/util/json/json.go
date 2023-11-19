@@ -27,6 +27,8 @@ func Serialize(v any, indent bool) (string, error) {
 }
 
 // Deserialize 使用Unmarshal反序列化
-func Deserialize(text string, v any) error {
-	return json.Unmarshal([]byte(text), v)
+// data :
+// v    :
+func Deserialize(data []byte, v any) error {
+	return json.Unmarshal(data, v)
 }

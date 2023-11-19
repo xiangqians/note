@@ -102,7 +102,7 @@ func init() {
 		panic(err)
 	}
 	Ini.Server.Port = uint16(server.Key("port").MustUint64(8080))
-	Ini.Server.ContextPath = server.Key("context-path").MustString("/")
+	Ini.Server.ContextPath = server.Key("context-path").MustString("")
 	Ini.Server.SessionSecretKey = server.Key("session-secret-key").String()
 	Ini.Server.SessionMaxAge = server.Key("session-max-age").MustDuration(12 * time.Hour)
 	Ini.Server.OpenSignup = server.Key("open-signup").MustBool(true)

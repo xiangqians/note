@@ -8,5 +8,5 @@ import (
 )
 
 func Index(r *http.Request) (string, model.Response) {
-	return "index.html", model.Response{}
+	return "index", model.Response{}
 }

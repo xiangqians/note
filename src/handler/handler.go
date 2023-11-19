@@ -17,7 +17,7 @@ import (
 )
 
 // Handle 注册路由和相应的处理器函数
-func Handle(i18nFs, staticFs, templateFs embed.FS, mux *http.ServeMux) {
+func Handle(staticFs, templateFs embed.FS, mux *http.ServeMux) {
 	// 处理静态资源
 	handleStatic(staticFs, mux)
 
@@ -72,8 +72,11 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 		mux.HandleFunc(pattern, func(writer http.ResponseWriter, request *http.Request) {
 			log.Println("--> ", request.URL.Path)
 
+			templateName, response := handler(request)
+
 			// 解析嵌入的父模板
-			parentTmpl, err := template.New("index.html").Funcs(templateFuncMap).ParseFS(templateFs, "embed/template/index.html",
+			parentTmpl, err := template.New(fmt.Sprintf("%s.html", templateName)).Funcs(templateFuncMap).ParseFS(templateFs,
+				fmt.Sprintf("embed/template/%s.html", templateName),
 				"embed/template/common/foot1.html",
 				"embed/template/common/foot2.html",
 				"embed/template/common/table.html",
@@ -82,12 +85,21 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 				panic(err)
 			}
 
-			err = parentTmpl.Execute(writer, map[string]string{"title": "Golang Embed 测试"})
+			err = parentTmpl.Execute(writer, map[string]any{
+				"contextPath": model.Ini.Server.ContextPath, // 上下文路径
+				"path":        request.URL.Path,             // 请求路径
+				"uri":         request.RequestURI,           // 请求uri地址
+				"user":        model.User{},                 // 当前登录用户信息
+				"response":    response,                     // 响应数据
+			})
 			if err != nil {
 				panic(err)
 			}
 		})
 	}
 
+	// user
+
+	// index
 	handle("/", index.Index)
 }
