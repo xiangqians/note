@@ -1,5 +1,5 @@
 -- ------------------------
--- Table structure for user
+-- Table model for user
 -- ------------------------
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` -- 用户信息表
@@ -21,7 +21,7 @@ CREATE TABLE `user` -- 用户信息表
 
 
 -- -------------------------
--- Table structure for image
+-- Table model for image
 -- -------------------------
 DROP TABLE IF EXISTS `image`;
 CREATE TABLE `image` -- 图片信息表
@@ -39,7 +39,7 @@ CREATE TABLE `image` -- 图片信息表
 
 
 -- -------------------------
--- Table structure for audio
+-- Table model for audio
 -- -------------------------
 DROP TABLE IF EXISTS `audio`;
 CREATE TABLE `audio` -- 音频信息表
@@ -57,7 +57,7 @@ CREATE TABLE `audio` -- 音频信息表
 
 
 -- -------------------------
--- Table structure for video
+-- Table model for video
 -- -------------------------
 DROP TABLE IF EXISTS `video`;
 CREATE TABLE `video` -- 视频信息表
@@ -75,7 +75,7 @@ CREATE TABLE `video` -- 视频信息表
 
 
 -- ------------------------
--- Table structure for note
+-- Table model for note
 -- ------------------------
 DROP TABLE IF EXISTS `note`;
 CREATE TABLE `note` -- 笔记信息表

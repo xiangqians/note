@@ -10,7 +10,7 @@ import (
 	"log"
 	"net/http"
 	"note/src/handler"
-	"note/src/structure"
+	"note/src/model"
 	util_os "note/src/util/os"
 	util_time "note/src/util/time"
 	"os"
@@ -21,6 +21,9 @@ import (
 	"time"
 )
 
+// 嵌入资源
+// embed.FS
+
 //go:embed embed/i18n
 var i18nFs embed.FS
 
@@ -30,7 +33,7 @@ var staticFs embed.FS
 //go:embed embed/template
 var templateFs embed.FS
 
-var ini = structure.Ini
+var ini = model.Ini
 
 // 初始化日志写入器
 func init() {
@@ -168,13 +171,8 @@ func main() {
 	// 创建了一个 http.ServeMux 对象，用于注册和管理路由和处理器函数
 	mux := http.NewServeMux()
 
-	// 嵌入资源
-	handler.I18nFs = i18nFs
-	handler.StaticFs = staticFs
-	handler.TemplateFs = templateFs
-
 	// 注册路由和相应的处理器函数
-	handler.Handle(mux)
+	handler.Handle(i18nFs, staticFs, templateFs, mux)
 
 	// 服务监听端口
 	port := ini.Server.Port

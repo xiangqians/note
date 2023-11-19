@@ -1,7 +1,6 @@
-// lib type
 // @author xiangqian
 // @date 11:53 2023/05/07
-package structure
+package model
 
 import "encoding/gob"
 

@@ -1,6 +1,6 @@
 // @author xiangqian
 // @date 20:35 2023/06/10
-package structure
+package model
 
 import "encoding/gob"
 
