@@ -2,6 +2,7 @@
  | @author xiangqian
  | @date 15:41 2023/02/04
  |-->
+{{ define "system/passwd" }}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,24 +12,13 @@
     <link rel="stylesheet" href="{{ .contextPath }}/static/css/form.css" type="text/css"/>
     <link rel="stylesheet" href="{{ .contextPath }}/static/css/foot2.css" type="text/css"/>
     <link rel="stylesheet" href="{{ .contextPath }}/static/css/foot1.css" type="text/css"/>
-    <title>{{ Localize "i18n.settings" }}</title>
+    <title>{{ Localize "i18n.passwd" }}</title>
 </head>
 <body>
-<msg>{{ .resp.Msg }}</msg>
-<form action='/user/settings?t={{ NowUnix }}' method="post">
-    <input name="_method" type="hidden" value="PUT">
-    <input name="passwd" type="hidden" value="passwd">
-    {{ $user := .resp.Data }}
+<msg>{{ .response.Msg }}</msg>
+<form action="{{ .contextPath }}/passwd?t={{ NowUnix }}" method="post">
     <table>
         <tbody>
-        <tr>
-            <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.userName" }}</label></td>
-            <td><input name="name" type="text" value="{{ $user.Name }}"></td>
-        </tr>
-        <tr>
-            <td><label>{{ Localize "i18n.nickname" }}</label></td>
-            <td><input name="nickname" type="text" value="{{ $user.Nickname }}"></td>
-        </tr>
         <tr>
             <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.origPasswd" }}</label></td>
             <td><input name="origPasswd" type="password"></td>
@@ -40,10 +30,6 @@
         <tr>
             <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.reNewPasswd" }}</label></td>
             <td><input name="reNewPasswd" type="password"></td>
-        </tr>
-        <tr>
-            <td><label>{{ Localize "i18n.rem" }}</label></td>
-            <td><textarea name="rem" type="text">{{ $user.Rem }}</textarea></td>
         </tr>
         </tbody>
         <tfoot>
@@ -59,3 +45,4 @@
 {{ template "common/foot2" . }}
 {{ template "common/foot1" . }}
 </html>
+{{ end }}

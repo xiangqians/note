@@ -51,8 +51,14 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 		"NowUnix": func() int64 {
 			return util_time.NowUnix()
 		},
+		"FormatUnix": func(unix int64) string {
+			if unix <= 0 {
+				return "-"
+			}
+			return util_time.FormatTime(util_time.ParseUnix(unix))
+		},
 		"HumanizUnix": func(unix int64) string {
-			return util_time.HumanizUnix(unix)
+			return util_time.HumanizUnix(unix, currentLanguage)
 		},
 		"HumanizFileSize": func(size int64) string {
 			return util_os.HumanizFileSize(size)
@@ -180,10 +186,12 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 	}
 
 	// system
-	handle("/signin", system.SignIn)
+	handle(fmt.Sprintf("%s/signin", contextPath), system.SignIn)
+	handle(fmt.Sprintf("%s/signout", contextPath), system.SignOut)
+	handle(fmt.Sprintf("%s/passwd", contextPath), system.Passwd)
 
 	// index
-	handle("/", index.Index)
+	handle(fmt.Sprintf("%s/", contextPath), index.Index)
 }
 
 // 处理静态资源

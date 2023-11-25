@@ -16,7 +16,6 @@
 <body>
 <msg>{{ .response.Msg }}</msg>
 <form action="{{ .contextPath }}/signin?t={{ NowUnix }}" method="post">
-    <input name="_method" type="hidden" value="POST">
     {{ $user := .resp.Data }}
     <table>
         <tbody>

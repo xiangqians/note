@@ -9,7 +9,7 @@ import (
 )
 
 // 会话存储器
-var store *sessions.CookieStore
+var store sessions.Store
 
 func init() {
 	// keyPairs 用于加密和解密会话 cookie 的密钥对。
@@ -24,14 +24,16 @@ func init() {
 	}
 
 	// 实例化会话存储器
-	store = sessions.NewCookieStore(keyPairs)
+	cookieStore := sessions.NewCookieStore(keyPairs)
 
 	// 配置会话存储器
-	store.Options = &sessions.Options{
+	cookieStore.Options = &sessions.Options{
 		Path:     "/",          // 会话可用的路径
 		MaxAge:   60 * 60 * 12, // 设置会话过期时间为12小时，单位：秒
 		HttpOnly: true,         // 限制 Cookie 只能通过 HTTP 访问
 	}
+
+	store = cookieStore
 }
 
 const (
@@ -56,10 +58,10 @@ func (session *Session) Set(name string, value any) error {
 	return s.Save(session.request, session.writer)
 }
 
-func (session *Session) Del(name string) {
+func (session *Session) Del(name string) error {
 	s := session.session
 	delete(s.Values, name)
-	s.Save(session.request, session.writer)
+	return s.Save(session.request, session.writer)
 }
 
 func (session *Session) GetSystem() model.System {
@@ -71,6 +73,10 @@ func (session *Session) GetSystem() model.System {
 
 func (session *Session) SetSystem(system model.System) error {
 	return session.Set(systemName, system)
+}
+
+func (session *Session) DelSystem() error {
+	return session.Del(systemName)
 }
 
 func (session *Session) GetLanguage() string {

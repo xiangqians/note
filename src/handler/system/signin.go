@@ -12,6 +12,7 @@ import (
 	util_string "note/src/util/string"
 	util_time "note/src/util/time"
 	util_validate "note/src/util/validate"
+	"strings"
 	"time"
 )
 
@@ -43,16 +44,8 @@ func SignIn(request *http.Request, session *session.Session) (string, model.Resp
 		return errRedirect(err)
 	}
 
-	// 查询密钥信息表
-	db := db.Get()
-	result, err := db.Get("SELECT `passwd`, `try`, `last_sign_in_ip`, `last_sign_in_time`, `current_sign_in_ip`, `current_sign_in_time`, `upd_time` FROM `system` LIMIT 1")
-	if err != nil {
-		return errRedirect(err)
-	}
-
-	// 映射密钥信息表
-	var system model.System
-	err = result.Scan(&system)
+	// 获取系统信息
+	system, err := getSystem()
 	if err != nil {
 		return errRedirect(err)
 	}
@@ -88,21 +81,59 @@ func SignIn(request *http.Request, session *session.Session) (string, model.Resp
 		}
 	}
 
-	// 重置try值
-	if try != 0 {
-		updTry(0)
+	// 获取 X-Forwarded-For 头信息
+	remoteAddr := request.Header.Get("X-Forwarded-For")
+
+	// 如果 X-Forwarded-For 头信息为空，则尝试获取 X-Real-IP 头信息
+	if remoteAddr == "" {
+		remoteAddr = request.Header.Get("X-Real-IP")
 	}
+
+	// 如果仍然无法获取到客户端实际IP，则使用 RemoteAddr 字段的值作为备选方案
+	if remoteAddr == "" {
+		remoteAddr = request.RemoteAddr
+		index := strings.LastIndex(remoteAddr, ":")
+		if index > 0 {
+			remoteAddr = remoteAddr[:index]
+		}
+	}
+
+	nowUnix := util_time.NowUnix()
+	db := db.Get()
+	db.Upd("UPDATE `system` SET `last_sign_in_ip` = `current_sign_in_ip`, `last_sign_in_time` = `current_sign_in_time`")
+	db.Upd("UPDATE `system` SET `try` = ?, `current_sign_in_ip` = ?, `current_sign_in_time` = ?, `upd_time` = ?", 0, remoteAddr, nowUnix, nowUnix)
+
+	system.Try = 0
+	system.LastSignInIp = system.CurrentSignInIp
+	system.LastSignInTime = system.CurrentSignInTime
+	system.CurrentSignInIp = remoteAddr
+	system.CurrentSignInTime = nowUnix
+	system.UpdTime = nowUnix
 
 	//	保存系统信息到会话
 	session.SetSystem(system)
 
 	// 重定向到首页
-	return "redirect:index", model.Response{}
+	return "redirect:/", model.Response{}
 }
 
-func updTry(try byte) {
+func updTry(try byte) error {
 	db := db.Get()
-	db.Upd("UPDATE `System` SET `try` = ?, `upd_time` = ?", try, util_time.NowUnix())
+	_, err := db.Upd("UPDATE `system` SET `try` = ?, `upd_time` = ?", try, util_time.NowUnix())
+	return err
+}
+
+func getSystem() (model.System, error) {
+	var system model.System
+
+	db := db.Get()
+	result, err := db.Get("SELECT `passwd`, `try`, `last_sign_in_ip`, `last_sign_in_time`, `current_sign_in_ip`, `current_sign_in_time`, `upd_time` FROM `system` LIMIT 1")
+	if err != nil {
+		return system, err
+	}
+
+	err = result.Scan(&system)
+	return system, err
 }
 
 // --------------------

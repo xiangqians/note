@@ -19,10 +19,14 @@
     </ul>
     </p>
     <p>
-        <span><a
-                href="{{ .contextPath }}/user/settings?t={{ NowUnix }}">{{ .user.Name }} ( {{ .user.Nickname }} )</a></span>
+        <span>{{ Localize "i18n.lastSignIn" }}</span>
+        <span style="padding-left: 10px;">{{ .system.LastSignInIp }}</span>
+        <span style="padding-left: 10px;">{{ FormatUnix .system.LastSignInTime }}</span>
+    </p>
+    <p>
+        <span><a href="{{ .contextPath }}/passwd?t={{ NowUnix }}">{{ Localize "i18n.passwd" }}</a></span>
         <span style="padding-left: 15px">
-            <a href="{{ .contextPath }}/user/signout?t={{ NowUnix }}">{{ Localize "i18n.signOut" }}</a>
+            <a href="{{ .contextPath }}/signout?t={{ NowUnix }}">{{ Localize "i18n.signOut" }}</a>
         </span>
     </p>
 </foot2>

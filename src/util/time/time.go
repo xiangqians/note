@@ -4,12 +4,12 @@ package time
 
 import (
 	"fmt"
-	"github.com/gin-contrib/i18n"
+	util_i18n "note/src/util/i18n"
 	"time"
 )
 
 // HumanizUnix 人性化日期时间戳（s）
-func HumanizUnix(unix int64) string {
+func HumanizUnix(unix int64, language string) string {
 	if unix <= 0 {
 		return "-"
 	}
@@ -29,18 +29,18 @@ func HumanizUnix(unix int64) string {
 		return FormatTime(t)
 	}
 	if hour >= 1 {
-		return fmt.Sprintf(i18n.MustGetMessage("i18n.nHoursAgo"), hour)
+		return fmt.Sprintf(util_i18n.GetMessage("i18n.nHoursAgo", language), hour)
 	}
 
 	// 分钟
 	minute := int64(duration.Minutes())
 	if minute >= 1 {
-		return fmt.Sprintf(i18n.MustGetMessage("i18n.nMinutesAgo"), minute)
+		return fmt.Sprintf(util_i18n.GetMessage("i18n.nMinutesAgo", language), minute)
 	}
 
 	// 秒
 	second := int64(duration.Seconds())
-	return fmt.Sprintf(i18n.MustGetMessage("i18n.nSecondsAgo"), second)
+	return fmt.Sprintf(util_i18n.GetMessage("i18n.nSecondsAgo", language), second)
 }
 
 // ParseUnix 解析日期时间戳（s）
