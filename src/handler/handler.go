@@ -28,28 +28,16 @@ func Handle(staticFs, templateFs embed.FS, mux *http.ServeMux) {
 	handleTemplate(templateFs, mux)
 }
 
-// 处理静态资源
-func handleStatic(embedFs embed.FS, mux *http.ServeMux) {
-	// 嵌入的静态文件
-	ioFs, err := fs.Sub(embedFs, "embed/static")
-	if err != nil {
-		panic(err)
-	}
-
-	// 创建一个文件服务器，将静态文件从嵌入的FS中提供
-	fileServer := http.FileServer(http.FS(ioFs))
-
-	// 注册路由到处理器
-	mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
-}
-
 // 处理模板
 func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
+	// 当前语言
+	currentLanguage := i18n.ZH
+
 	// 模板函数
 	templateFuncMap := template.FuncMap{
-		// 获取i18n文件中key对应的value
-		"Localize": func(key string) string {
-			return key
+		// i18n国际化
+		"Localize": func(name string) string {
+			return i18n.GetMessage(name, currentLanguage)
 		},
 
 		// 两数相加
@@ -73,13 +61,22 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 	handle := func(pattern string, handler func(request *http.Request, session *session.Session) (name string, response model.Response)) {
 		// 注册路由和相应的处理器函数
 		mux.HandleFunc(pattern, func(writer http.ResponseWriter, request *http.Request) {
-			// 获取session
+			// 获取会话
 			session := session.GetSession(writer, request)
 
-			// i18n language
-			log.Println("1->", session.GetLanguage())
-			// 从url中获取language
+			// 从url中获取语言
 			language := strings.TrimSpace(request.URL.Query().Get("language"))
+			if language != i18n.ZH && language != i18n.EN {
+				language = ""
+			}
+
+			// 从session中获取语言
+			sessionLanguage := session.GetLanguage()
+			if language == "" {
+				language = sessionLanguage
+			}
+
+			// 从请求头获取语言
 			if language == "" {
 				// 从请求头获取 Accept-Language
 				// en,zh-CN;q=0.9,zh;q=0.8
@@ -90,19 +87,22 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 					language = i18n.EN
 				}
 			}
-			if language != "" {
-				if language != i18n.ZH && language != i18n.EN {
-					language = i18n.ZH
-				}
-				sessionLanguage := session.GetLanguage()
-				if language != sessionLanguage {
-					err := session.SetLanguage(language)
-					if err != nil {
-						log.Println(err)
-					}
+
+			// 设置默认语言
+			if language == "" {
+				language = i18n.ZH
+			}
+
+			// 保存语言到会话中
+			if language != sessionLanguage {
+				err := session.SetLanguage(language)
+				if err != nil {
+					log.Println(err)
 				}
 			}
-			log.Println("2->", session.GetLanguage())
+
+			// 设置当前语言（多线程会存在问题，但，笔记应用没有什么并发量，可忽略）
+			currentLanguage = language
 
 			// 处理器
 			name, response := handler(request, session)
@@ -120,7 +120,7 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 				"embed/template/common/foot1.html",          // 嵌套模板文件
 				"embed/template/common/foot2.html",          // 嵌套模板文件
 				"embed/template/common/table.html",          // 嵌套模板文件
-				"embed/template/common/variable.html")       // 嵌套模板文件
+				"embed/template/common/variable.html") // 嵌套模板文件
 			if err != nil {
 				panic(err)
 			}
@@ -143,4 +143,19 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 
 	// index
 	handle("/", index.Index)
+}
+
+// 处理静态资源
+func handleStatic(embedFs embed.FS, mux *http.ServeMux) {
+	// 嵌入的静态文件
+	ioFs, err := fs.Sub(embedFs, "embed/static")
+	if err != nil {
+		panic(err)
+	}
+
+	// 创建一个文件服务器处理器，将静态文件从嵌入的FS中提供
+	handler := http.FileServer(http.FS(ioFs))
+
+	// 注册路由到处理器
+	mux.Handle("/static/", http.StripPrefix("/static/", handler))
 }

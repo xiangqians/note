@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/sessions"
 	"net/http"
 	"note/src/model"
-	"note/src/util/i18n"
 )
 
 // 会话存储器
@@ -68,10 +67,10 @@ func (session *Session) SetUser(user model.User) error {
 }
 
 func (session *Session) GetLanguage() string {
-	if user, ok := session.Get(languageName).(string); ok {
-		return user
+	if language, ok := session.Get(languageName).(string); ok {
+		return language
 	}
-	return i18n.ZH
+	return ""
 }
 
 func (session *Session) SetLanguage(language string) error {
