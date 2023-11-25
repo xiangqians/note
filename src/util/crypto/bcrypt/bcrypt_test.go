@@ -17,7 +17,7 @@ func Test(t *testing.T) {
 		return hash
 	}
 
-	passwd := "123456"
+	passwd := "admin"
 	hash := encrypt(passwd)
 	fmt.Println(hash)
 	fmt.Println(CompareHash(passwd, hash))
@@ -28,5 +28,4 @@ func Test(t *testing.T) {
 	fmt.Println(hash)
 	fmt.Println(CompareHash(passwd, hash))
 	fmt.Println()
-
 }

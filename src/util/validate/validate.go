@@ -5,6 +5,7 @@ package validate
 import (
 	"errors"
 	"github.com/gin-contrib/i18n"
+	util_i18n "note/src/util/i18n"
 	"regexp"
 )
 
@@ -24,15 +25,16 @@ func UserName(userName string) error {
 }
 
 // Passwd 校验密码
-func Passwd(passwd string) error {
-	// 1-20位长度（字母，数字，特殊字符）
-	matched, err := regexp.MatchString("^[a-zA-Z0-9!@#$%^&*()-_=+]{1,20}$", passwd)
+func Passwd(passwd, language string) error {
+	// ^[a-zA-Z0-9!@#$%^&*()\-_=+]{1,20}$
+	// 1-20位长度（字母、数字、特殊字符）
+	matched, err := regexp.MatchString("^[a-zA-Z0-9!@#$%^&*()\\-_=+]{1,20}$", passwd)
 	if err != nil {
 		return err
 	}
 
 	if !matched {
-		return errors.New(i18n.MustGetMessage("i18n.validatePasswd"))
+		return errors.New(util_i18n.GetMessage("i18n.validatePasswd", language))
 	}
 
 	return nil

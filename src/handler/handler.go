@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"note/src/handler/index"
+	"note/src/handler/system"
 	"note/src/model"
 	"note/src/session"
 	"note/src/util/i18n"
@@ -58,6 +59,9 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 		},
 	}
 
+	// 上下文路径
+	contextPath := model.Ini.Server.ContextPath
+
 	handle := func(pattern string, handler func(request *http.Request, session *session.Session) (name string, response model.Response)) {
 		// 注册路由和相应的处理器函数
 		mux.HandleFunc(pattern, func(writer http.ResponseWriter, request *http.Request) {
@@ -104,34 +108,70 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 			// 设置当前语言（多线程会存在问题，但，笔记应用没有什么并发量，可忽略）
 			currentLanguage = language
 
+			// 请求路径
+			path := request.URL.Path
+
+			// 获取当前会话系统信息
+			system := session.GetSystem()
+
+			// 已登录
+			if system.Passwd != "" {
+				if path == fmt.Sprintf("%s/signin", contextPath) {
+					// 重定向到首页
+					http.Redirect(writer, request, fmt.Sprintf("%s/", contextPath), http.StatusMovedPermanently) // 301 永久重定向
+					return
+				}
+			} else
+			// 未登录
+			{
+				if path != fmt.Sprintf("%s/signin", contextPath) {
+					// 重定向到登录页
+					http.Redirect(writer, request, fmt.Sprintf("%s/signin", contextPath), http.StatusMovedPermanently) // 301 永久重定向
+					return
+				}
+			}
+
 			// 处理器
 			name, response := handler(request, session)
 
 			// 判断是否进行重定向
 			if strings.HasPrefix(name, "redirect:") {
+				// 保存消息到会话
+				msg := response.Msg
+				if msg != "" {
+					session.SetMsg(msg)
+				}
+
 				// 301 永久重定向
 				http.Redirect(writer, request, name[len("redirect:"):], http.StatusMovedPermanently)
 				return
 			}
 
 			// 解析模板
-			template, err := template.New(fmt.Sprintf("%s.html", name)).Funcs(templateFuncMap).ParseFS(templateFs,
-				fmt.Sprintf("embed/template/%s.html", name), // 主模板文件
-				"embed/template/common/foot1.html",          // 嵌套模板文件
-				"embed/template/common/foot2.html",          // 嵌套模板文件
-				"embed/template/common/table.html",          // 嵌套模板文件
-				"embed/template/common/variable.html") // 嵌套模板文件
+			//template, err := template.New(name).Funcs(templateFuncMap).ParseFS(templateFs,
+			//	fmt.Sprintf("embed/template/%s.html", name), // 主模板文件
+			//	"embed/template/common/foot1.html",          // 嵌套模板文件
+			//	"embed/template/common/foot2.html",          // 嵌套模板文件
+			//	"embed/template/common/table.html",          // 嵌套模板文件
+			//	"embed/template/common/variable.html")       // 嵌套模板文件
+			// dev
+			basePath := "E:\\workspace\\goland\\note\\src"
+			template, err := template.New(name).Funcs(templateFuncMap).ParseFiles(fmt.Sprintf("%s\\embed\\template\\%s.html", basePath, name),
+				fmt.Sprintf("%s\\embed\\template\\common\\foot1.html", basePath),
+				fmt.Sprintf("%s\\embed\\template\\common\\foot2.html", basePath),
+				fmt.Sprintf("%s\\embed\\template\\common\\table.html", basePath),
+				fmt.Sprintf("%s\\embed\\template\\common\\variable.html", basePath))
 			if err != nil {
 				panic(err)
 			}
 
 			// 执行模板
 			err = template.Execute(writer, map[string]any{
-				"contextPath": model.Ini.Server.ContextPath, // 上下文路径
-				"path":        request.URL.Path,             // 请求路径
-				"uri":         request.RequestURI,           // 请求uri地址
-				"user":        model.User{},                 // 当前登录用户信息
-				"response":    response,                     // 响应数据
+				"contextPath": contextPath,        // 上下文路径
+				"path":        request.URL.Path,   // 请求路径
+				"uri":         request.RequestURI, // 请求uri地址
+				"system":      system,             // 授权信息
+				"response":    response,           // 响应数据
 			})
 			if err != nil {
 				panic(err)
@@ -139,7 +179,8 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 		})
 	}
 
-	// user
+	// system
+	handle("/signin", system.SignIn)
 
 	// index
 	handle("/", index.Index)
@@ -155,6 +196,8 @@ func handleStatic(embedFs embed.FS, mux *http.ServeMux) {
 
 	// 创建一个文件服务器处理器，将静态文件从嵌入的FS中提供
 	handler := http.FileServer(http.FS(ioFs))
+	// dev
+	handler = http.FileServer(http.Dir("E:\\workspace\\goland\\note\\src\\embed\\static"))
 
 	// 注册路由到处理器
 	mux.Handle("/static/", http.StripPrefix("/static/", handler))

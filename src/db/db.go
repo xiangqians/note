@@ -349,7 +349,9 @@ func (result *Result) Scan(dest any) error {
 
 	// 结构体
 	case reflect.Struct:
-		return result.scanStruct(dest)
+		if result.next() {
+			return result.scanStruct(dest)
+		}
 
 	// 切片
 	case reflect.Slice:

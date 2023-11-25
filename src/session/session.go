@@ -35,8 +35,9 @@ func init() {
 }
 
 const (
-	userName     = "user"
+	systemName   = "system"
 	languageName = "language"
+	msgName      = "msg"
 )
 
 type Session struct {
@@ -55,15 +56,21 @@ func (session *Session) Set(name string, value any) error {
 	return s.Save(session.request, session.writer)
 }
 
-func (session *Session) GetUser() model.User {
-	if user, ok := session.Get(userName).(model.User); ok {
-		return user
-	}
-	return model.User{}
+func (session *Session) Del(name string) {
+	s := session.session
+	delete(s.Values, name)
+	s.Save(session.request, session.writer)
 }
 
-func (session *Session) SetUser(user model.User) error {
-	return session.Set(userName, user)
+func (session *Session) GetSystem() model.System {
+	if system, ok := session.Get(systemName).(model.System); ok {
+		return system
+	}
+	return model.System{}
+}
+
+func (session *Session) SetSystem(system model.System) error {
+	return session.Set(systemName, system)
 }
 
 func (session *Session) GetLanguage() string {
@@ -75,6 +82,18 @@ func (session *Session) GetLanguage() string {
 
 func (session *Session) SetLanguage(language string) error {
 	return session.Set(languageName, language)
+}
+
+func (session *Session) GetMsg() string {
+	if msg, ok := session.Get(msgName).(string); ok {
+		session.Del(msgName)
+		return msg
+	}
+	return ""
+}
+
+func (session *Session) SetMsg(msg string) error {
+	return session.Set(msgName, msg)
 }
 
 func GetSession(writer http.ResponseWriter, request *http.Request) *Session {

@@ -2,6 +2,7 @@
  | @author xiangqian
  | @date 22:37 2023/06/13
  |-->
+{{ define "system/signin" }}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,24 +14,17 @@
     <title>{{ Localize "i18n.signIn" }}</title>
 </head>
 <body>
-<msg>{{ .resp.Msg }}</msg>
-<form action="{{ .contextPath }}/user/signin?t={{ NowUnix }}" method="post">
+<msg>{{ .response.Msg }}</msg>
+<form action="{{ .contextPath }}/signin?t={{ NowUnix }}" method="post">
     <input name="_method" type="hidden" value="POST">
     {{ $user := .resp.Data }}
     <table>
         <tbody>
         <tr>
-            <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.userName" }}</label></td>
-            <td><input name="name" type="text" value="{{ $user.Name }}"></td>
-        </tr>
-        <tr>
             <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.passwd" }}</label></td>
             <td><input name="passwd" type="password"></td>
-        </tr>
-        <tr>
-            <td colspan="2">
+            <td>
                 <input type="submit" value='{{ Localize "i18n.signIn" }}'>
-                <span><a style="padding-left: 10px" href="{{ .contextPath }}/user/signup?t={{ NowUnix }}">{{ Localize "i18n.signUp" }}</a></span>
             </td>
         </tr>
         </tbody>
@@ -39,3 +33,4 @@
 </body>
 {{ template "common/foot1" . }}
 </html>
+{{ end }}
