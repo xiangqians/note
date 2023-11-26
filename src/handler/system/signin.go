@@ -96,6 +96,9 @@ func SignIn(request *http.Request, session *session.Session) (string, model.Resp
 		if index > 0 {
 			remoteAddr = remoteAddr[:index]
 		}
+		if strings.HasPrefix(remoteAddr, "[") && strings.HasSuffix(remoteAddr, "]") {
+			remoteAddr = remoteAddr[1 : len(remoteAddr)-1]
+		}
 	}
 
 	nowUnix := util_time.NowUnix()

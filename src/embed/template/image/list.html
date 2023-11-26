@@ -2,6 +2,7 @@
  | @author xiangqian
  | @date 11:49 2023/02/12
  |-->
+{{ define "image/list" }}
 <!DOCTYPE html>
 <html lang="en" url="{{ .url }}">
 <head>
@@ -11,10 +12,9 @@
     <link rel="stylesheet" href="{{ .contextPath }}/static/css/table.css" type="text/css"/>
     <link rel="stylesheet" href="{{ .contextPath }}/static/css/foot2.css" type="text/css"/>
     <link rel="stylesheet" href="{{ .contextPath }}/static/css/foot1.css" type="text/css"/>
-    <title>{{ Localize "i18n.image" }}</title>
+    <title>{{ Localize "i18n.image" .language }}</title>
 </head>
 <body>
-{{ template "common/variable" . }}
 {{ template "common/table" . }}
 </body>
 {{ template "common/foot2" . }}
@@ -23,3 +23,4 @@
 <script type="text/javascript" src="{{ .contextPath }}/static/js/jquery.js"></script>
 <script type="text/javascript" src="{{ .contextPath }}/static/js/body.js"></script>
 <script type="text/javascript" src="{{ .contextPath }}/static/js/table.js"></script>
+{{ end }}

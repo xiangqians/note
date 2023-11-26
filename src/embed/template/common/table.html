@@ -3,6 +3,72 @@
  | @date 18:50 2023/10/14
  |-->
 {{ define "common/table" }}
+<script type="text/javascript">
+    let variable = (function () {
+        let obj = {}
+
+        // i18n
+        let i18n = {}
+        i18n.name = '{{ Localize "i18n.name" .language }}'
+        i18n.add = '{{ Localize "i18n.add" .language }}'
+        i18n.addFolder = '{{ Localize "i18n.addFolder" .language }}'
+        i18n.addMdFile = '{{ Localize "i18n.addMdFile" .language }}'
+        i18n.uploadFile = '{{ Localize "i18n.uploadFile" .language }}'
+        i18n.upload = '{{ Localize "i18n.upload" .language }}'
+        i18n.upd = '{{ Localize "i18n.upd" .language }}'
+        i18n.rename = '{{ Localize "i18n.rename" .language }}'
+        i18n.cut = '{{ Localize "i18n.cut" .language }}'
+        i18n.paste = '{{ Localize "i18n.paste" .language }}'
+        i18n.del = '{{ Localize "i18n.del" .language }}'
+        i18n.restore = '{{ Localize "i18n.restore" .language }}'
+        i18n.permlyDel = '{{ Localize "i18n.permlyDel" .language }}'
+        i18n.close = '{{ Localize "i18n.close" .language }}'
+        i18n.copyAddress = '{{ Localize "i18n.copyAddress" .language }}'
+        i18n.copied = '{{ Localize "i18n.copied" .language }}'
+        obj.i18n = i18n
+
+        // 上下文路径
+        let contextPath = '{{ .contextPath }}'
+        obj.contextPath = contextPath
+        console.log('contextPath', contextPath)
+
+        // 请求路径
+        let path = '{{ .path }}'
+        obj.path = path
+        console.log('path', path)
+
+        // 请求uri地址
+        let uri = '{{ .uri }}'
+        obj.uri = uri
+        console.log('uri', uri)
+
+        // 响应数据
+        let resp = `{{ .resp }}`
+        obj.resp = resp
+        console.log('resp', JSON.parse(resp))
+
+        // 当前页
+        let current = '{{ .response.Data.Current }}'
+        obj.current = current
+
+        // 页数量
+        let size = '{{ .response.Data.Size }}'
+        obj.size = size
+
+        // 搜索
+        let search = '{{ .response.Data.Search }}'
+        obj.search = search
+
+        // 总数
+        let total = '{{ .response.Data.Total }}'
+        obj.total = total
+
+        console.log(current, size, search, total)
+
+        return obj
+    })()
+</script>
+
 <msg>{{ .resp.Msg }}</msg>
 
 <!-- 变量赋值 -->

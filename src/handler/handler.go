@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"note/src/handler/image"
 	"note/src/handler/index"
 	"note/src/handler/system"
 	"note/src/model"
@@ -147,7 +148,7 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 				}
 
 				// 301 永久重定向
-				http.Redirect(writer, request, name[len("redirect:"):], http.StatusMovedPermanently)
+				http.Redirect(writer, request, fmt.Sprintf("%s%s", contextPath, name[len("redirect:"):]), http.StatusMovedPermanently)
 				return
 			}
 
@@ -157,15 +158,13 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 				template, err = pkg_template.New(name).Funcs(templateFuncMap).ParseFiles(fmt.Sprintf("%s/src/embed/template/%s.html", model.GetProjectDir(), name),
 					fmt.Sprintf("%s/src/embed/template/common/foot1.html", model.GetProjectDir()),
 					fmt.Sprintf("%s/src/embed/template/common/foot2.html", model.GetProjectDir()),
-					fmt.Sprintf("%s/src/embed/template/common/table.html", model.GetProjectDir()),
-					fmt.Sprintf("%s/src/embed/template/common/variable.html", model.GetProjectDir()))
+					fmt.Sprintf("%s/src/embed/template/common/table.html", model.GetProjectDir()))
 			} else {
 				template, err = pkg_template.New(name).Funcs(templateFuncMap).ParseFS(templateFs,
 					fmt.Sprintf("embed/template/%s.html", name), // 主模板文件
 					"embed/template/common/foot1.html",          // 嵌套模板文件
 					"embed/template/common/foot2.html",          // 嵌套模板文件
-					"embed/template/common/table.html",          // 嵌套模板文件
-					"embed/template/common/variable.html")       // 嵌套模板文件
+					"embed/template/common/table.html")          // 嵌套模板文件
 			}
 			if err != nil {
 				panic(err)
@@ -190,6 +189,9 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 	handle(fmt.Sprintf("%s/signin", contextPath), system.SignIn)
 	handle(fmt.Sprintf("%s/signout", contextPath), system.SignOut)
 	handle(fmt.Sprintf("%s/setting", contextPath), system.Setting)
+
+	// image
+	handle(fmt.Sprintf("%s/image", contextPath), image.List)
 
 	// index
 	handle(fmt.Sprintf("%s/", contextPath), index.Index)

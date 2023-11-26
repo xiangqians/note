@@ -2,7 +2,9 @@
 // @date 10:52 2023/02/04
 package model
 
-import "sort"
+import (
+	"sort"
+)
 
 // Page 分页数据
 type Page struct {
@@ -15,7 +17,7 @@ type Page struct {
 }
 
 // InitIndexes 初始化页数索引集
-func (page Page) InitIndexes() {
+func (page *Page) InitIndexes() {
 	// 总页数
 	pageCount := page.Total / int64(page.Size)
 	if page.Total%int64(page.Size) != 0 {

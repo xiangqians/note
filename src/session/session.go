@@ -92,8 +92,8 @@ func (session *Session) Del(name string) error {
 
 func (session *Session) Clear() error {
 	s := session.session
-	delete(s.Values, systemName)
 	s.Options.MaxAge = -1
+	delete(s.Values, systemName)
 	return s.Save(session.request, session.writer)
 }
 

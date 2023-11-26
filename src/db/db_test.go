@@ -6,26 +6,11 @@ import (
 	"log"
 	"note/src/model"
 	util_json "note/src/util/json"
+	util_time "note/src/util/time"
 	"sync"
 	"testing"
 	"time"
 )
-
-func TestDb(t *testing.T) {
-	var waitGroup sync.WaitGroup
-	for i := 0; i < 10; i++ {
-		// 添加任务数
-		waitGroup.Add(1)
-		go func(i int) {
-			db := Get()
-			log.Println(i, db)
-			// 完成任务
-			waitGroup.Done()
-		}(i)
-	}
-	// 阻塞等待所有任务完成
-	waitGroup.Wait()
-}
 
 func TestVersion(t *testing.T) {
 	db := Get()
@@ -34,6 +19,8 @@ func TestVersion(t *testing.T) {
 	switch model.Ini.Db.Driver {
 	case "sqlite", "sqlite3":
 		sql = "SELECT SQLITE_VERSION()"
+	default:
+		panic("未知数据库类型")
 	}
 
 	result, err := db.Get(sql)
@@ -44,25 +31,6 @@ func TestVersion(t *testing.T) {
 	var version string
 	result.Scan(&version)
 	log.Println(version)
-}
-
-func TestAdd(t *testing.T) {
-	db := Get()
-	rowsAffected, insertId, err := db.Add("INSERT INTO `user` (`name`, `nickname`, `passwd`, `rem`) VALUES (?, ?, ?, ?)", "test", "测试", "passwd", "备注")
-	if err != nil {
-		panic(err)
-	}
-	log.Println("rowsAffected", rowsAffected)
-	log.Println("insertId", insertId)
-}
-
-func TestUpd(t *testing.T) {
-	db := Get()
-	rowsAffected, err := db.Upd("UPDATE `user` SET `nickname` = ? Where `name` = ?", "测试2", "test")
-	if err != nil {
-		panic(err)
-	}
-	log.Println("rowsAffected", rowsAffected)
 }
 
 func TestGetSum(t *testing.T) {
@@ -76,6 +44,8 @@ func TestGetSum(t *testing.T) {
 			if err != nil {
 				panic(err)
 			}
+			time.Sleep(1 * time.Second)
+
 			var i int
 			result.Scan(&i)
 			log.Println(i)
@@ -87,11 +57,30 @@ func TestGetSum(t *testing.T) {
 	waitGroup.Wait()
 }
 
+func TestAdd(t *testing.T) {
+	db := Get()
+	rowsAffected, insertId, err := db.Add("INSERT INTO `image` (`name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?)", "test", "png", 10232, util_time.NowUnix())
+	if err != nil {
+		panic(err)
+	}
+	log.Println("rowsAffected", rowsAffected)
+	log.Println("insertId", insertId)
+}
+
+func TestUpd(t *testing.T) {
+	db := Get()
+	rowsAffected, err := db.Upd("UPDATE `image` SET `name` = ? Where `id` = ?", "6", 6)
+	if err != nil {
+		panic(err)
+	}
+	log.Println("rowsAffected", rowsAffected)
+}
+
 func TestGetField(t *testing.T) {
 	db := Get()
 
 	// count
-	result, err := db.Get("SELECT COUNT(1) FROM `user`")
+	result, err := db.Get("SELECT COUNT(1) FROM `image`")
 	if err != nil {
 		panic(err)
 	}
@@ -100,7 +89,7 @@ func TestGetField(t *testing.T) {
 	log.Println("count", count)
 
 	// name
-	result, err = db.Get("SELECT `name` FROM `user` LIMIT 1")
+	result, err = db.Get("SELECT `name` FROM `image` LIMIT 1")
 	if err != nil {
 		panic(err)
 	}
@@ -111,15 +100,17 @@ func TestGetField(t *testing.T) {
 
 func TestGetStruct(t *testing.T) {
 	db := Get()
-	result, err := db.Get("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user` LIMIT 1")
+	result, err := db.Get("SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `image` LIMIT 1")
 	if err != nil {
 		panic(err)
 	}
-	time.Sleep(1 * time.Second)
-	var user model.User
-	result.Scan(&user)
 
-	json, err := util_json.Serialize(user, true)
+	time.Sleep(1 * time.Second)
+
+	var image model.Image
+	result.Scan(&image)
+
+	json, err := util_json.Serialize(image, true)
 	if err != nil {
 		panic(err)
 	}
@@ -144,14 +135,14 @@ func TestConcurrentGetStruct(t *testing.T) {
 
 func TestGetStructSlice(t *testing.T) {
 	db := Get()
-	result, err := db.Get("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user` LIMIT 10")
+	result, err := db.Get("SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `image` LIMIT 10")
 	if err != nil {
 		panic(err)
 	}
-	var users []model.User
-	result.Scan(&users)
+	var images []model.Image
+	result.Scan(&images)
 
-	json, err := util_json.Serialize(users, true)
+	json, err := util_json.Serialize(images, true)
 	if err != nil {
 		panic(err)
 	}
@@ -165,17 +156,17 @@ func TestPage(t *testing.T) {
 	}
 
 	db := Get()
-	result, err := db.Page("SELECT `id`, `name`, `nickname`, `passwd`, `rem`, `try`, `del`, `add_time`, `upd_time` FROM `user`", page.Current, page.Size)
+	result, err := db.Page("SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `image`", page.Current, page.Size)
 	if err != nil {
 		panic(err)
 	}
 
 	page.Total = result.Count()
-	page.InitIndexes()
+	(&page).InitIndexes()
 
-	var users []model.User
-	result.Scan(&users)
-	page.Data = users
+	var images []model.Image
+	result.Scan(&images)
+	page.Data = images
 
 	json, err := util_json.Serialize(page, true)
 	if err != nil {
