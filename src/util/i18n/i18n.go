@@ -4,7 +4,10 @@ package i18n
 
 import (
 	"embed"
+	"fmt"
+	"note/src/model"
 	util_json "note/src/util/json"
+	"os"
 )
 
 const (
@@ -38,6 +41,28 @@ func Init(fs embed.FS) {
 }
 
 func GetMessage(name, language string) string {
+	if model.GetMode() == model.ModeDev {
+		// zh
+		bytes, err := os.ReadFile(fmt.Sprintf("%s/src/embed/i18n/zh.json", model.GetProjectDir()))
+		if err != nil {
+			panic(err)
+		}
+		err = util_json.Deserialize(bytes, &zhMessageMap)
+		if err != nil {
+			panic(err)
+		}
+
+		// en
+		bytes, err = os.ReadFile(fmt.Sprintf("%s/src/embed/i18n/en.json", model.GetProjectDir()))
+		if err != nil {
+			panic(err)
+		}
+		err = util_json.Deserialize(bytes, &enMessageMap)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	switch language {
 	case ZH:
 		return zhMessageMap[name]

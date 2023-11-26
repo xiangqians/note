@@ -5,7 +5,7 @@ package handler
 import (
 	"embed"
 	"fmt"
-	"html/template"
+	pkg_template "html/template"
 	"io/fs"
 	"log"
 	"net/http"
@@ -35,7 +35,7 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 	currentLanguage := i18n.ZH
 
 	// 模板函数
-	templateFuncMap := template.FuncMap{
+	templateFuncMap := pkg_template.FuncMap{
 		// i18n国际化
 		"Localize": func(name string) string {
 			return i18n.GetMessage(name, currentLanguage)
@@ -153,20 +153,22 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 				return
 			}
 
-			// 解析模板
-			//template, err := template.New(name).Funcs(templateFuncMap).ParseFS(templateFs,
-			//	fmt.Sprintf("embed/template/%s.html", name), // 主模板文件
-			//	"embed/template/common/foot1.html",          // 嵌套模板文件
-			//	"embed/template/common/foot2.html",          // 嵌套模板文件
-			//	"embed/template/common/table.html",          // 嵌套模板文件
-			//	"embed/template/common/variable.html")       // 嵌套模板文件
-			// dev
-			basePath := "E:\\workspace\\goland\\note\\src"
-			template, err := template.New(name).Funcs(templateFuncMap).ParseFiles(fmt.Sprintf("%s\\embed\\template\\%s.html", basePath, name),
-				fmt.Sprintf("%s\\embed\\template\\common\\foot1.html", basePath),
-				fmt.Sprintf("%s\\embed\\template\\common\\foot2.html", basePath),
-				fmt.Sprintf("%s\\embed\\template\\common\\table.html", basePath),
-				fmt.Sprintf("%s\\embed\\template\\common\\variable.html", basePath))
+			var template *pkg_template.Template
+			var err error
+			if model.GetMode() == model.ModeDev {
+				template, err = pkg_template.New(name).Funcs(templateFuncMap).ParseFiles(fmt.Sprintf("%s/src/embed/template/%s.html", model.GetProjectDir(), name),
+					fmt.Sprintf("%s/src/embed/template/common/foot1.html", model.GetProjectDir()),
+					fmt.Sprintf("%s/src/embed/template/common/foot2.html", model.GetProjectDir()),
+					fmt.Sprintf("%s/src/embed/template/common/table.html", model.GetProjectDir()),
+					fmt.Sprintf("%s/src/embed/template/common/variable.html", model.GetProjectDir()))
+			} else {
+				template, err = pkg_template.New(name).Funcs(templateFuncMap).ParseFS(templateFs,
+					fmt.Sprintf("embed/template/%s.html", name), // 主模板文件
+					"embed/template/common/foot1.html",          // 嵌套模板文件
+					"embed/template/common/foot2.html",          // 嵌套模板文件
+					"embed/template/common/table.html",          // 嵌套模板文件
+					"embed/template/common/variable.html")       // 嵌套模板文件
+			}
 			if err != nil {
 				panic(err)
 			}
@@ -196,16 +198,22 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 
 // 处理静态资源
 func handleStatic(embedFs embed.FS, mux *http.ServeMux) {
-	// 嵌入的静态文件
-	ioFs, err := fs.Sub(embedFs, "embed/static")
-	if err != nil {
-		panic(err)
-	}
+	var handler http.Handler
 
-	// 创建一个文件服务器处理器，将静态文件从嵌入的FS中提供
-	handler := http.FileServer(http.FS(ioFs))
-	// dev
-	handler = http.FileServer(http.Dir("E:\\workspace\\goland\\note\\src\\embed\\static"))
+	if model.GetMode() == model.ModeDev {
+		// 创建一个文件处理器（文件服务器），本地目录提供静态文件
+		handler = http.FileServer(http.Dir(fmt.Sprintf("%s/src/embed/static", model.GetProjectDir())))
+
+	} else {
+		// 嵌入的静态文件
+		ioFs, err := fs.Sub(embedFs, "embed/static")
+		if err != nil {
+			panic(err)
+		}
+
+		// 创建一个文件处理器（文件服务器），FS提供静态文件
+		handler = http.FileServer(http.FS(ioFs))
+	}
 
 	// 注册路由到处理器
 	mux.Handle("/static/", http.StripPrefix("/static/", handler))
