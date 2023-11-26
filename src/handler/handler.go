@@ -16,11 +16,10 @@ import (
 	"note/src/util/i18n"
 	util_os "note/src/util/os"
 	util_time "note/src/util/time"
-	"strconv"
 	"strings"
 )
 
-// Handle 注册路由和相应的处理器函数
+// Handle 注册路由到处理器
 func Handle(staticFs, templateFs embed.FS, mux *http.ServeMux) {
 	// 处理静态资源
 	handleStatic(staticFs, mux)
@@ -31,35 +30,28 @@ func Handle(staticFs, templateFs embed.FS, mux *http.ServeMux) {
 
 // 处理模板
 func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
-	// 当前语言
-	currentLanguage := i18n.ZH
-
 	// 模板函数
 	templateFuncMap := pkg_template.FuncMap{
 		// i18n国际化
-		"Localize": func(name string) string {
-			return i18n.GetMessage(name, currentLanguage)
-		},
-
-		// 两数相加
-		"Add": func(arg1 any, arg2 any) int64 {
-			i1, _ := strconv.ParseInt(fmt.Sprintf("%v", arg1), 10, 64)
-			i2, _ := strconv.ParseInt(fmt.Sprintf("%v", arg2), 10, 64)
-			return i1 + i2
+		"Localize": func(name, language string) string {
+			return i18n.GetMessage(name, language)
 		},
 
 		"NowUnix": func() int64 {
 			return util_time.NowUnix()
 		},
+
 		"FormatUnix": func(unix int64) string {
 			if unix <= 0 {
 				return "-"
 			}
 			return util_time.FormatTime(util_time.ParseUnix(unix))
 		},
-		"HumanizUnix": func(unix int64) string {
-			return util_time.HumanizUnix(unix, currentLanguage)
+
+		"HumanizUnix": func(unix int64, language string) string {
+			return util_time.HumanizUnix(unix, language)
 		},
+
 		"HumanizFileSize": func(size int64) string {
 			return util_os.HumanizFileSize(size)
 		},
@@ -111,9 +103,6 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 				}
 			}
 
-			// 设置当前语言（多线程会存在问题，但，笔记应用没有什么并发量，可忽略）
-			currentLanguage = language
-
 			// 请求路径
 			path := request.URL.Path
 
@@ -137,8 +126,17 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 				}
 			}
 
+			var name string
+			var response model.Response
+
+			// Not Found
+			if path != pattern {
+				name = "notfound"
+			} else
 			// 处理器
-			name, response := handler(request, session)
+			{
+				name, response = handler(request, session)
+			}
 
 			// 判断是否进行重定向
 			if strings.HasPrefix(name, "redirect:") {
@@ -167,7 +165,7 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 					"embed/template/common/foot1.html",          // 嵌套模板文件
 					"embed/template/common/foot2.html",          // 嵌套模板文件
 					"embed/template/common/table.html",          // 嵌套模板文件
-					"embed/template/common/variable.html")       // 嵌套模板文件
+					"embed/template/common/variable.html") // 嵌套模板文件
 			}
 			if err != nil {
 				panic(err)
@@ -178,7 +176,8 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 				"contextPath": contextPath,        // 上下文路径
 				"path":        request.URL.Path,   // 请求路径
 				"uri":         request.RequestURI, // 请求uri地址
-				"system":      system,             // 授权信息
+				"language":    language,           // 语言
+				"system":      system,             // 系统信息
 				"response":    response,           // 响应数据
 			})
 			if err != nil {
@@ -190,7 +189,7 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 	// system
 	handle(fmt.Sprintf("%s/signin", contextPath), system.SignIn)
 	handle(fmt.Sprintf("%s/signout", contextPath), system.SignOut)
-	handle(fmt.Sprintf("%s/passwd", contextPath), system.Passwd)
+	handle(fmt.Sprintf("%s/setting", contextPath), system.Setting)
 
 	// index
 	handle(fmt.Sprintf("%s/", contextPath), index.Index)

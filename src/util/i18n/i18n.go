@@ -71,6 +71,6 @@ func GetMessage(name, language string) string {
 		return enMessageMap[name]
 
 	default:
-		return "Undefined"
+		panic(fmt.Sprintf("%s[%s] undefined", language, name))
 	}
 }

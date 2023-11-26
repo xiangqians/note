@@ -13,7 +13,10 @@ const (
 	ModeProd Mode = "prod" // 生产环境
 )
 
+// 模式
 var mode Mode
+
+// 项目目录
 var projectDir string
 
 func init() {

@@ -2,7 +2,7 @@
  | @author xiangqian
  | @date 15:41 2023/02/04
  |-->
-{{ define "system/passwd" }}
+{{ define "system/setting" }}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,11 +12,11 @@
     <link rel="stylesheet" href="{{ .contextPath }}/static/css/form.css" type="text/css"/>
     <link rel="stylesheet" href="{{ .contextPath }}/static/css/foot2.css" type="text/css"/>
     <link rel="stylesheet" href="{{ .contextPath }}/static/css/foot1.css" type="text/css"/>
-    <title>{{ Localize "i18n.passwd" }}</title>
+    <title>{{ Localize "i18n.setting" }}</title>
 </head>
 <body>
 <msg>{{ .response.Msg }}</msg>
-<form action="{{ .contextPath }}/passwd?t={{ NowUnix }}" method="post">
+<form action="{{ .contextPath }}/setting?t={{ NowUnix }}" method="post">
     <table>
         <tbody>
         <tr>
