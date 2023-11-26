@@ -13,10 +13,10 @@
         <thead>
         <tr>
             <td></td>
-            <td>{{ Localize "i18n.name" }}</td>
-            <td>{{ Localize "i18n.size" }}</td>
-            <td>{{ Localize "i18n.addTime" }}</td>
-            <td>{{ Localize "i18n.updTime" }}</td>
+            <td>{{ Localize "i18n.name" .language }}</td>
+            <td>{{ Localize "i18n.size" .language }}</td>
+            <td>{{ Localize "i18n.addTime" .language }}</td>
+            <td>{{ Localize "i18n.updTime" .language }}</td>
         </tr>
         </thead>
         <tbody>
@@ -52,20 +52,21 @@
                     <input name="size" value="{{ $page.Size }}" type="hidden">
                     <input name="search"
                            type="text"
-                           placeholder='{{ Localize "i18n.search" }}'
+                           placeholder='{{ Localize "i18n.search" .language }}'
                            title="id:{id}&#10;name:{name}&#10;type:{type}"
                            value="{{ $page.Search }}">
                     <input name="t" value="{{ NowUnix }}" type="hidden">
                 </form>
                 {{ if le $page.Current 1 }}
-                <span>{{ Localize "i18n.prev" }}</span>
+                <span>{{ Localize "i18n.prev" .language }}</span>
                 {{ else }}
-                {{ $prev := Add $page.Current -1 }}
+                { $prev := Add $page.Current -1 }
+                {{ $prev := -1 }}
                 {{ if gt $prev $page.PageCount }}
                 {{ $prev = $page.PageCount }}
                 {{ end }}
                 <span>
-                    <a href="{{ $.contextPath }}/image?current={{ $prev }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.prev" }}</a>
+                    <a href="{{ $.contextPath }}/image?current={{ $prev }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.prev" .language }}</a>
                 </span>
                 {{ end }}
 
@@ -86,11 +87,12 @@
                 {{ end }}
 
                 {{ if ge $page.Current $page.PageCount }}
-                <span>{{ Localize "i18n.next" }}</span>
+                <span>{{ Localize "i18n.next" .language }}</span>
                 {{ else }}
                 <span>
-                    {{ $next := Add $page.Current 1 }}
-                    <a href="{{ $.contextPath }}/image?current={{ $next }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.next" }}</a>
+                    { $next := Add $page.Current 1 }
+                    {{ $next := 1 }}
+                    <a href="{{ $.contextPath }}/image?current={{ $next }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.next" .language }}</a>
                 </span>
                 {{ end }}
             </td>

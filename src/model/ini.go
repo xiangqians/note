@@ -46,11 +46,9 @@ type data struct {
 
 // 服务配置
 type server struct {
-	Port             uint16        // 监听端口
-	ContextPath      string        // 应用的上下文路径，也可以称为项目路径，是构成url地址的一部分
-	SessionSecretKey string        // 会话密钥
-	SessionMaxAge    time.Duration // 会话过期时间
-	OpenSignup       bool          // 是否开放注册功能
+	Port          uint16        // 监听端口
+	ContextPath   string        // 应用的上下文路径，也可以称为项目路径，是构成url地址的一部分
+	SessionMaxAge time.Duration // 会话过期时间
 }
 
 var Ini ini
@@ -103,9 +101,7 @@ func init() {
 	}
 	Ini.Server.Port = uint16(server.Key("port").MustUint64(8080))
 	Ini.Server.ContextPath = server.Key("context-path").MustString("")
-	Ini.Server.SessionSecretKey = server.Key("session-secret-key").String()
 	Ini.Server.SessionMaxAge = server.Key("session-max-age").MustDuration(12 * time.Hour)
-	Ini.Server.OpenSignup = server.Key("open-signup").MustBool(true)
 }
 
 // String 返回结构体类型字符串
@@ -114,7 +110,7 @@ func (ini ini) String() string {
 	dbString := fmt.Sprintf("Db\t\t{ Driver = %s, Dns = %s, MaxOpenConns = %d, ConnMaxLifetime = %s, MaxIdleConns = %d, ConnMaxIdleTime = %s }",
 		ini.Db.Driver, ini.Db.Dns, ini.Db.MaxOpenConns, ini.Db.ConnMaxLifetime, ini.Db.MaxIdleConns, ini.Db.ConnMaxIdleTime)
 	dataString := fmt.Sprintf("Data\t{ Dir = %s }", ini.Data.Dir)
-	serverString := fmt.Sprintf("Server\t{ Port = %d, ContextPath = %s, SessionSecretKey = %s, SessionMaxAge = %s, OpenSignup = %t }", ini.Server.Port, ini.Server.ContextPath, ini.Server.SessionSecretKey, ini.Server.SessionMaxAge, ini.Server.OpenSignup)
+	serverString := fmt.Sprintf("Server\t{ Port = %d, ContextPath = %s, SessionMaxAge = %s }", ini.Server.Port, ini.Server.ContextPath, ini.Server.SessionMaxAge)
 	return fmt.Sprintf("Ini"+
 		"\n\t%s"+
 		"\n\t%s"+

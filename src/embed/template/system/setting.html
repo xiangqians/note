@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="{{ .contextPath }}/static/css/form.css" type="text/css"/>
     <link rel="stylesheet" href="{{ .contextPath }}/static/css/foot2.css" type="text/css"/>
     <link rel="stylesheet" href="{{ .contextPath }}/static/css/foot1.css" type="text/css"/>
-    <title>{{ Localize "i18n.setting" }}</title>
+    <title>{{ Localize "i18n.setting" .language }}</title>
 </head>
 <body>
 <msg>{{ .response.Msg }}</msg>
@@ -20,22 +20,22 @@
     <table>
         <tbody>
         <tr>
-            <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.origPasswd" }}</label></td>
+            <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.origPasswd" .language }}</label></td>
             <td><input name="origPasswd" type="password"></td>
         </tr>
         <tr>
-            <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.newPasswd" }}</label></td>
+            <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.newPasswd" .language }}</label></td>
             <td><input name="newPasswd" type="password"></td>
         </tr>
         <tr>
-            <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.reNewPasswd" }}</label></td>
+            <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.reNewPasswd" .language }}</label></td>
             <td><input name="reNewPasswd" type="password"></td>
         </tr>
         </tbody>
         <tfoot>
         <tr>
             <td colspan="2">
-                <input type="submit" value='{{ Localize "i18n.save" }}'>
+                <input type="submit" value='{{ Localize "i18n.save" .language }}'>
             </td>
         </tr>
         </tfoot>

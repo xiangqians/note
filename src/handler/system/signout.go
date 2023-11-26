@@ -10,8 +10,8 @@ import (
 
 // SignOut 注销
 func SignOut(request *http.Request, session *session.Session) (string, model.Response) {
-	// 删除系统信息
-	session.DelSystem()
+	// 清除会话
+	session.Clear()
 
 	// 重定向到登录页
 	return "redirect:/signin", model.Response{}

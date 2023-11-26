@@ -2,7 +2,9 @@
 // @date 10:31 2023/11/26
 package model
 
-import "os"
+import (
+	"os"
+)
 
 // Mode 模式
 type Mode string

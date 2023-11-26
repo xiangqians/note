@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="{{ .contextPath }}/static/css/body.css" type="text/css"/>
     <link rel="stylesheet" href="{{ .contextPath }}/static/css/form.css" type="text/css"/>
     <link rel="stylesheet" href="{{ .contextPath }}/static/css/foot1.css" type="text/css"/>
-    <title>{{ Localize "i18n.signIn" }}</title>
+    <title>{{ Localize "i18n.signIn" .language }}</title>
 </head>
 <body>
 <msg>{{ .response.Msg }}</msg>
@@ -20,10 +20,10 @@
     <table>
         <tbody>
         <tr>
-            <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.passwd" }}</label></td>
+            <td><span style="font-weight: bold;">*</span><label>{{ Localize "i18n.passwd" .language }}</label></td>
             <td><input name="passwd" type="password"></td>
             <td>
-                <input type="submit" value='{{ Localize "i18n.signIn" }}'>
+                <input type="submit" value='{{ Localize "i18n.signIn" .language }}'>
             </td>
         </tr>
         </tbody>

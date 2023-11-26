@@ -64,7 +64,7 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 		// 注册路由和相应的处理器函数
 		mux.HandleFunc(pattern, func(writer http.ResponseWriter, request *http.Request) {
 			// 获取会话
-			session := session.GetSession(writer, request)
+			session := session.GetSession(request, writer)
 
 			// 从url中获取语言
 			language := strings.TrimSpace(request.URL.Query().Get("language"))
@@ -165,7 +165,7 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 					"embed/template/common/foot1.html",          // 嵌套模板文件
 					"embed/template/common/foot2.html",          // 嵌套模板文件
 					"embed/template/common/table.html",          // 嵌套模板文件
-					"embed/template/common/variable.html") // 嵌套模板文件
+					"embed/template/common/variable.html")       // 嵌套模板文件
 			}
 			if err != nil {
 				panic(err)
