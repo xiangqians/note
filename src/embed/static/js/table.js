@@ -21,7 +21,14 @@ $(function () {
     let $uploadFile = $(`<a name="uploadFile" href="#"><li>${variable.i18n.uploadFile}</li></a>`)
     $ul.append($uploadFile)
     // 【上传】
-    let $upload = $(`<li name="upload"><form action="${variable.contextPath}/${variable.table}" method="post" enctype="multipart/form-data"><input name="file" type="file"/><button type="submit">${variable.i18n.upload}</button></form></li>`)
+    let $upload = null
+    if (variable.table == 'image') {
+        // accept="image/*" 只允许图片类型文件
+        // accept="audio/*" 只允许音频类型文件
+        // accept="video/*" 只允许视频类型文件
+        // accept=".doc,.docx,.pdf,.zip,.tar.gz" 只允许doc、docx、pdf、zip、tar.gz类型文件
+        $upload = $(`<li name="upload"><form action="${variable.contextPath}/${variable.table}" method="post" enctype="multipart/form-data"><input name="file" type="file" accept="image/*"/><button type="submit">${variable.i18n.upload}</button></form></li>`)
+    }
     $ul.append($upload)
     // 【重命名】
     let $rename = $(`<a name="rename" href="#"><li>${variable.i18n.rename}</li></a>`)
