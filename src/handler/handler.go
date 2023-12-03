@@ -102,9 +102,8 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 	// 上下文路径
 	contextPath := model.Ini.Server.ContextPath
 
-	handle := func(pattern string, handler func(request *http.Request, session *session.Session) (name string, response model.Response)) {
-		// 注册路由和相应的处理器函数
-		router.HandleFunc(contextPath+pattern, func(writer http.ResponseWriter, request *http.Request) {
+	handlerFunc := func(handler func(request *http.Request, session *session.Session) (name string, response model.Response)) http.HandlerFunc {
+		return func(writer http.ResponseWriter, request *http.Request) {
 			// 获取会话
 			session := session.GetSession(request, writer)
 
@@ -158,7 +157,7 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 			if system.Passwd != "" {
 				if path == signInPath {
 					// 重定向到首页
-					http.Redirect(writer, request, contextPath+"/", http.StatusMovedPermanently) // 301 永久重定向
+					http.Redirect(writer, request, fmt.Sprintf("%s/?t=%d", contextPath, util_time.NowUnix()), http.StatusMovedPermanently) // 301 永久重定向
 					return
 				}
 			} else
@@ -166,7 +165,7 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 			{
 				if path != signInPath {
 					// 重定向到登录页
-					http.Redirect(writer, request, signInPath, http.StatusMovedPermanently) // 301 永久重定向
+					http.Redirect(writer, request, fmt.Sprintf("%s?t=%d", signInPath, util_time.NowUnix()), http.StatusMovedPermanently) // 301 永久重定向
 					return
 				}
 			}
@@ -182,7 +181,7 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 				}
 
 				// 301 永久重定向
-				http.Redirect(writer, request, fmt.Sprintf("%s%s", contextPath, name[len("redirect:"):]), http.StatusMovedPermanently)
+				http.Redirect(writer, request, fmt.Sprintf("%s%s?t=%d", contextPath, name[len("redirect:"):], util_time.NowUnix()), http.StatusMovedPermanently)
 				return
 			}
 
@@ -216,21 +215,25 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 			if err != nil {
 				panic(err)
 			}
-		})
+		}
 	}
 
-	// system
-	handle("/signin", system.SignIn)
-	handle("/signout", system.SignOut)
-	handle("/setting", system.Setting)
+	router.NotFoundHandler = handlerFunc(func(request *http.Request, session *session.Session) (name string, response model.Response) {
+		return "404", model.Response{}
+	})
 
-	// image
-	handle("/image", image.List)
-	handle("/image/rename", image.Rename)
-	handle("/image/{id}", image.Rename1)
+	// system
+	router.HandleFunc(contextPath+"/signin", handlerFunc(system.SignIn))
+	router.HandleFunc(contextPath+"/signout", handlerFunc(system.SignOut))
+	router.HandleFunc(contextPath+"/setting", handlerFunc(system.Setting))
 
 	// index
-	handle("/", index.Index)
+	router.HandleFunc(contextPath+"/", handlerFunc(index.Index))
+
+	// image
+	router.HandleFunc(contextPath+"/image", handlerFunc(image.List))
+	router.HandleFunc(contextPath+"/image/rename", handlerFunc(image.Rename))
+	router.HandleFunc(contextPath+"/image/{id}", handlerFunc(image.Rename1))
 }
 
 // 处理静态资源
