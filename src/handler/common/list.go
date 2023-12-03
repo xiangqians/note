@@ -18,10 +18,11 @@ import (
 func List(request *http.Request, session *session.Session, table string) (string, model.Response) {
 	// html模板
 	html := func(page model.Page, err any) (string, model.Response) {
-		return fmt.Sprintf("%s/list", table), model.Response{
-			Msg:  util_string.String(err),
-			Data: page,
-		}
+		return fmt.Sprintf("%s/list", table),
+			model.Response{Msg: util_string.String(err), Data: map[string]any{
+				"table": table,
+				"page":  page,
+			}}
 	}
 
 	// 当前页
@@ -33,22 +34,22 @@ func List(request *http.Request, session *session.Session, table string) (string
 	// 页数量
 	size64, _ := strconv.ParseInt(request.URL.Query().Get("size"), 10, 64)
 	size := uint8(size64)
-	if size <= 0 || size > 100 {
+	if size <= 0 {
 		size = 10
+	}
+	if size > 100 {
+		size = 100
 	}
 
 	// 检索条件
 	search := strings.TrimSpace(request.URL.Query().Get("search"))
-	//search = "name:12342d type:2df23 size>=1234"
 
 	page := model.Page{
 		Current: current,
 		Size:    size,
-		Total:   0,
 		Search:  search,
+		Total:   0,
 	}
-
-	search = fmt.Sprintf(" %s", search)
 
 	columns := []column{
 		{
@@ -73,13 +74,6 @@ func List(request *http.Request, session *session.Session, table string) (string
 			value:     nil,
 		},
 		{
-			name:      " size>=",
-			index:     -1,
-			kind:      reflect.Int64,
-			statement: "`size` >= ?",
-			value:     nil,
-		},
-		{
 			name:      " del:",
 			index:     -1,
 			kind:      reflect.Uint8,
@@ -91,6 +85,8 @@ func List(request *http.Request, session *session.Session, table string) (string
 	length := len(columns)
 
 	if search != "" {
+		search = fmt.Sprintf(" %s", search)
+
 		// 获取字段所在检索文本search中的位置
 		for i := 0; i < length; i++ {
 			index := strings.Index(search, columns[i].name)
@@ -124,8 +120,8 @@ func List(request *http.Request, session *session.Session, table string) (string
 			value := strings.TrimSpace(search[index+len(columns[i].name) : nextIndex])
 			switch columns[i].kind {
 			case reflect.Uint8:
-				i, _ := strconv.ParseInt(value, 10, 64)
-				(&columns[i]).value = uint8(i)
+				i64, _ := strconv.ParseInt(value, 10, 64)
+				(&columns[i]).value = uint8(i64)
 
 			case reflect.Int64:
 				(&columns[i]).value, _ = strconv.ParseInt(value, 10, 64)
@@ -134,7 +130,6 @@ func List(request *http.Request, session *session.Session, table string) (string
 				(&columns[i]).value = value
 			}
 		}
-
 	}
 
 	// len 0, cap ?
@@ -149,7 +144,7 @@ func List(request *http.Request, session *session.Session, table string) (string
 	}
 
 	db := db.Get()
-	sql := fmt.Sprintf("SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `%s` WHERE %s",
+	sql := fmt.Sprintf("SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `%s` WHERE %s ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC",
 		table,
 		strings.Join(statements, " AND "))
 	result, err := db.Page(sql, current, size, values...)
@@ -163,9 +158,11 @@ func List(request *http.Request, session *session.Session, table string) (string
 	var data any
 	switch table {
 	case "image":
-		data = []model.Image{}
+		var images []model.Image
+		err = result.Scan(&images)
+		data = images
 	}
-	err = result.Scan(&data)
+
 	page.Data = data
 	return html(page, err)
 }
@@ -178,24 +175,3 @@ type column struct {
 	statement string       // 语句
 	value     any          // 值
 }
-
-//// RedirectToList 重定向到列表
-//// ctx  : *gin.Context
-//// table: 数据表名
-//// msg  : 重定向消息（没有消息就是最好的消息）
-//func RedirectToList[T any](ctx *gin.Context, msg any) {
-//	// 数据表名
-//	table := Table[T]()
-//
-//	// 获取分页参数
-//	current, _ := context.Query[int64](ctx, "current")
-//	size, _ := context.Query[uint8](ctx, "size")
-//	search, _ := context.Query[string](ctx, "search")
-//
-//	// 重定向到图片首页
-//	context.Redirect(ctx, fmt.Sprintf("/%s", table), map[string]any{
-//		"current": current,
-//		"size":    size,
-//		"search":  search,
-//	}, msg)
-//}

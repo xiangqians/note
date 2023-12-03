@@ -105,7 +105,7 @@ func TestGetStruct(t *testing.T) {
 		panic(err)
 	}
 
-	time.Sleep(1 * time.Second)
+	//time.Sleep(1 * time.Second)
 
 	var image model.Image
 	result.Scan(&image)
@@ -139,8 +139,8 @@ func TestGetStructSlice(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	var images any
-	images = []model.Image{}
+
+	var images []model.Image
 	result.Scan(&images)
 
 	json, err := util_json.Serialize(images, true)

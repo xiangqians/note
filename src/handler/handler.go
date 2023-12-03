@@ -5,6 +5,7 @@ package handler
 import (
 	"embed"
 	"fmt"
+	"github.com/gorilla/mux"
 	pkg_template "html/template"
 	"io/fs"
 	"log"
@@ -21,16 +22,16 @@ import (
 )
 
 // Handle 注册路由到处理器
-func Handle(staticFs, templateFs embed.FS, mux *http.ServeMux) {
+func Handle(staticFs, templateFs embed.FS, router *mux.Router) {
 	// 处理静态资源
-	handleStatic(staticFs, mux)
+	handleStatic(staticFs, router)
 
 	// 处理模板
-	handleTemplate(templateFs, mux)
+	handleTemplate(templateFs, router)
 }
 
 // 处理模板
-func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
+func handleTemplate(templateFs embed.FS, router *mux.Router) {
 	// 模板函数
 	templateFuncMap := pkg_template.FuncMap{
 		// 递增
@@ -103,7 +104,7 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 
 	handle := func(pattern string, handler func(request *http.Request, session *session.Session) (name string, response model.Response)) {
 		// 注册路由和相应的处理器函数
-		mux.HandleFunc(pattern, func(writer http.ResponseWriter, request *http.Request) {
+		router.HandleFunc(contextPath+pattern, func(writer http.ResponseWriter, request *http.Request) {
 			// 获取会话
 			session := session.GetSession(request, writer)
 
@@ -150,34 +151,27 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 			// 获取当前会话系统信息
 			system := session.GetSystem()
 
+			// 登录路径
+			signInPath := contextPath + "/signin"
+
 			// 已登录
 			if system.Passwd != "" {
-				if path == fmt.Sprintf("%s/signin", contextPath) {
+				if path == signInPath {
 					// 重定向到首页
-					http.Redirect(writer, request, fmt.Sprintf("%s/", contextPath), http.StatusMovedPermanently) // 301 永久重定向
+					http.Redirect(writer, request, contextPath+"/", http.StatusMovedPermanently) // 301 永久重定向
 					return
 				}
 			} else
 			// 未登录
 			{
-				if path != fmt.Sprintf("%s/signin", contextPath) {
+				if path != signInPath {
 					// 重定向到登录页
-					http.Redirect(writer, request, fmt.Sprintf("%s/signin", contextPath), http.StatusMovedPermanently) // 301 永久重定向
+					http.Redirect(writer, request, signInPath, http.StatusMovedPermanently) // 301 永久重定向
 					return
 				}
 			}
 
-			var name string
-			var response model.Response
-
-			// Not Found
-			if path != pattern {
-				name = "notfound"
-			} else
-			// 处理器
-			{
-				name, response = handler(request, session)
-			}
+			name, response := handler(request, session)
 
 			// 判断是否进行重定向
 			if strings.HasPrefix(name, "redirect:") {
@@ -226,36 +220,36 @@ func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 	}
 
 	// system
-	handle(fmt.Sprintf("%s/signin", contextPath), system.SignIn)
-	handle(fmt.Sprintf("%s/signout", contextPath), system.SignOut)
-	handle(fmt.Sprintf("%s/setting", contextPath), system.Setting)
+	handle("/signin", system.SignIn)
+	handle("/signout", system.SignOut)
+	handle("/setting", system.Setting)
 
 	// image
-	handle(fmt.Sprintf("%s/image", contextPath), image.List)
+	handle("/image", image.List)
+	handle("/image/rename", image.Rename)
+	handle("/image/{id}", image.Rename1)
 
 	// index
-	handle(fmt.Sprintf("%s/", contextPath), index.Index)
+	handle("/", index.Index)
 }
 
 // 处理静态资源
-func handleStatic(embedFs embed.FS, mux *http.ServeMux) {
+func handleStatic(embedFs embed.FS, router *mux.Router) {
 	var handler http.Handler
 
 	if model.GetMode() == model.ModeDev {
 		// 创建一个文件处理器（文件服务器），本地目录提供静态文件
 		handler = http.FileServer(http.Dir(fmt.Sprintf("%s/src/embed/static", model.GetProjectDir())))
-
 	} else {
 		// 嵌入的静态文件
 		ioFs, err := fs.Sub(embedFs, "embed/static")
 		if err != nil {
 			panic(err)
 		}
-
 		// 创建一个文件处理器（文件服务器），FS提供静态文件
 		handler = http.FileServer(http.FS(ioFs))
 	}
 
 	// 注册路由到处理器
-	mux.Handle("/static/", http.StripPrefix("/static/", handler))
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", handler))
 }

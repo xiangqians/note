@@ -21,7 +21,7 @@ $(function () {
     let $uploadFile = $(`<a name="uploadFile" href="#"><li>${variable.i18n.uploadFile}</li></a>`)
     $ul.append($uploadFile)
     // 【上传】
-    let $upload = $(`<li name="upload"><form action="#" method="post" enctype="multipart/form-data"><input name="file" type="file"/><button type="submit">${variable.i18n.upload}</button></form></li>`)
+    let $upload = $(`<li name="upload"><form action="${variable.contextPath}/${variable.table}" method="post" enctype="multipart/form-data"><input name="file" type="file"/><button type="submit">${variable.i18n.upload}</button></form></li>`)
     $ul.append($upload)
     // 【重命名】
     let $rename = $(`<a name="rename" href="#"><li>${variable.i18n.rename}</li></a>`)
@@ -234,7 +234,7 @@ $(function () {
             return false
         }
 
-        let href = `${variable.contextPath}/image/rename?id=${id}&name=${name}&current=${variable.current}&size=${variable.size}&search=${variable.search}&t=${new Date().getTime()}`
+        let href = `${variable.contextPath}/${variable.table}/rename?id=${id}&name=${name}&t=${new Date().getTime()}`
         $rename.attr('href', href)
     })
 

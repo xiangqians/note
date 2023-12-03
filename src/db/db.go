@@ -332,11 +332,6 @@ func (result *Result) Scan(dest any) error {
 	defer result.rows.Close()
 
 	v := reflect.ValueOf(dest).Elem()
-
-	if v.Kind() == reflect.Interface {
-		v = v.Elem()
-	}
-
 	switch v.Kind() {
 	// 基本数据类型
 	case // 布尔型
@@ -417,8 +412,8 @@ func (result *Result) scanStruct(dest any) error {
 		newDest[i] = &n
 	}
 
-	t := reflect.TypeOf(dest).Elem()
 	v := reflect.ValueOf(dest).Elem()
+	t := v.Type()
 	result.dest(&cols, &newDest, t, v)
 
 	return result.rows.Scan(newDest...)

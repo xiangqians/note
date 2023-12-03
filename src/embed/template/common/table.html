@@ -48,10 +48,19 @@
         obj.language = language
         console.log('language', language)
 
+        // 数据表名
+        let table = '{{ .response.Data.table }}'
+        obj.table = table
+        console.log('table', table)
+
         // 响应数据
         let response = `{{ .response }}`
         obj.response = response
-        console.log('response', JSON.parse(response))
+        try{
+            console.log('response', JSON.parse(response))
+        }catch (e) {
+            console.error(e)
+        }
 
         return obj
     })();
@@ -60,7 +69,7 @@
 <msg>{{ .response.Msg }}</msg>
 
 <!-- 变量赋值 -->
-{{ $page := .response.Data }}
+{{ $page := .response.Data.page }}
 {{ $data := $page.Data }}
 <div class="nowrap">
     <table>
@@ -86,7 +95,7 @@
                     <td><img src="{{ $.contextPath }}/static/icon/{{ $value.Type }}.png"
                              title="{{ $value.Type }}"
                              onerror="this.onerror=''; this.src='{{ $.contextPath }}/static/icon/unknown.png'"></td>
-                    <td><a href="#">{{ $value.Name }}{{ if ne $value.Type "folder" }}.{{ $value.Type }}{{ end }}</a></td>
+                    <td><a href="#">{{ $value.Name }}</a></td>
                     <td>{{ HumanizFileSize $value.Size }}</td>
                     <td>{{ HumanizUnix $value.AddTime $.language }}</td>
                     <td>{{ HumanizUnix $value.UpdTime $.language }}</td>
@@ -107,10 +116,13 @@
                     <input name="search"
                            type="text"
                            placeholder='{{ Localize "i18n.search" .language }}'
-                           title="id:{id}&nbsp;&nbsp;name:{name}&nbsp;&nbsp;type:{type}"
+                           title="id:{id}&nbsp;&nbsp;name:{name}&nbsp;&nbsp;type:{type}&nbsp;&nbsp;del:{del}"
                            value="{{ $page.Search }}">
                     <input name="t" value="{{ NowUnix }}" type="hidden">
                 </form>
+
+                <!-- 数据表 -->
+                {{ $table := .response.Data.table }}
 
                 <!-- 页索引集 -->
                 {{ $indexes := $page.Indexes }}
@@ -133,7 +145,7 @@
                         {{ $prev = $last }}
                     {{ end }}
                     <span>
-                        <a href="{{ $.contextPath }}/image?current={{ $prev }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.prev" .language }}</a>
+                        <a href="{{ $.contextPath }}/{{ $table }}?current={{ $prev }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.prev" .language }}</a>
                     </span>
                 {{ end }}
 
@@ -145,7 +157,7 @@
                             <span>{{ $index }}</span>
                         {{ else }}
                             <span>
-                                <a href="{{ $.contextPath }}/image?current={{ $index }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ $index }}</a>
+                                <a href="{{ $.contextPath }}/{{ $table }}?current={{ $index }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ $index }}</a>
                             </span>
                         {{ end }}
                     {{ end }}
@@ -156,7 +168,7 @@
                 {{ else }}
                     <span>
                         {{ $next := Increment $page.Current }}
-                        <a href="{{ $.contextPath }}/image?current={{ $next }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.next" .language }}</a>
+                        <a href="{{ $.contextPath }}/{{ $table }}?current={{ $next }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.next" .language }}</a>
                     </span>
                 {{ end }}
             </td>
