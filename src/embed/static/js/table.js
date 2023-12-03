@@ -27,7 +27,7 @@ $(function () {
     let $rename = $(`<a name="rename" href="#"><li>${variable.i18n.rename}</li></a>`)
     $ul.append($rename)
     // 【复制地址】
-    let $copyAddress = $(`<a name="copyAddress" href="#"><li>${variable.i18n.copyAddress}</li></a>`)
+    let $copyAddress = $(`<a name="copyAddress" href="javascript:void(0);"><li>${variable.i18n.copyAddress}</li></a>`)
     $ul.append($copyAddress)
     // 【剪切】
     let $cut = $(`<a name="cut" href="#"><li>${variable.i18n.cut}</li></a>`)
@@ -239,9 +239,42 @@ $(function () {
     })
 
     // 【复制地址】
+    let $copyAddressTr = null
     $copyAddress.click(function () {
-        alert(i18n.copied)
+        $copyAddressTr = $selectedTr
     })
+    ;(function () {
+        // 销毁clipboard，如果存在的话
+        if (window.clipboard) {
+            window.clipboard.destroy()
+            window.clipboard = null
+        }
+
+        let clipboard = new ClipboardJS('[name="copyAddress"]', {
+            text: function () {
+                let id = $copyAddressTr.attr('id')
+                let name = $copyAddressTr.attr('name')
+                $copyAddressTr = null
+                return `![${name}](/${variable.table}/${id})`
+            }
+        })
+
+        clipboard.on('success', function (e) {
+            // console.info('Action:', e.action)
+            // console.info('Text:', e.text)
+            // console.info('Trigger:', e.trigger)
+            alert(variable.i18n.copied)
+        })
+
+        clipboard.on('error', function (e) {
+            // console.info('Action:', e.action)
+            // console.info('Text:', e.text)
+            // console.info('Trigger:', e.trigger)
+            alert(e)
+        })
+
+        window.clipboard = clipboard
+    })();
 
     // 【剪切】
     $cut.click(function () {
