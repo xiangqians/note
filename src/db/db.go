@@ -331,8 +331,13 @@ func (result *Result) Scan(dest any) error {
 	// defer的作用是把defer关键字之后的函数执行压入一个栈中延迟执行，多个defer的执行顺序是后进先出LIFO
 	defer result.rows.Close()
 
-	t := reflect.TypeOf(dest).Elem()
-	switch t.Kind() {
+	v := reflect.ValueOf(dest).Elem()
+
+	if v.Kind() == reflect.Interface {
+		v = v.Elem()
+	}
+
+	switch v.Kind() {
 	// 基本数据类型
 	case // 布尔型
 		reflect.Bool,
@@ -355,7 +360,7 @@ func (result *Result) Scan(dest any) error {
 
 	// 切片
 	case reflect.Slice:
-		t := t.Elem()
+		t := v.Type().Elem()
 		switch t.Kind() {
 		// 基本数据类型切片
 		case // 布尔型

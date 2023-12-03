@@ -33,6 +33,46 @@ func Handle(staticFs, templateFs embed.FS, mux *http.ServeMux) {
 func handleTemplate(templateFs embed.FS, mux *http.ServeMux) {
 	// 模板函数
 	templateFuncMap := pkg_template.FuncMap{
+		// 递增
+		"Increment": func(i any) any {
+			if i, ok := i.(int); ok {
+				return i + 1
+			}
+			if i, ok := i.(int8); ok {
+				return i + 1
+			}
+			if i, ok := i.(int16); ok {
+				return i + 1
+			}
+			if i, ok := i.(int32); ok {
+				return i + 1
+			}
+			if i, ok := i.(int64); ok {
+				return i + 1
+			}
+			return 0
+		},
+
+		// 递减
+		"Decrement": func(i any) any {
+			if i, ok := i.(int); ok {
+				return i - 1
+			}
+			if i, ok := i.(int8); ok {
+				return i - 1
+			}
+			if i, ok := i.(int16); ok {
+				return i - 1
+			}
+			if i, ok := i.(int32); ok {
+				return i - 1
+			}
+			if i, ok := i.(int64); ok {
+				return i - 1
+			}
+			return 0
+		},
+
 		// i18n国际化
 		"Localize": func(name, language string) string {
 			return i18n.GetMessage(name, language)

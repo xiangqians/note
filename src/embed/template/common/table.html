@@ -4,6 +4,7 @@
  |-->
 {{ define "common/table" }}
 <script type="text/javascript">
+    ;
     let variable = (function () {
         let obj = {}
 
@@ -42,37 +43,24 @@
         obj.uri = uri
         console.log('uri', uri)
 
+        // 语言
+        let language = '{{ .language }}'
+        obj.language = language
+        console.log('language', language)
+
         // 响应数据
-        let resp = `{{ .resp }}`
-        obj.resp = resp
-        console.log('resp', JSON.parse(resp))
-
-        // 当前页
-        let current = '{{ .response.Data.Current }}'
-        obj.current = current
-
-        // 页数量
-        let size = '{{ .response.Data.Size }}'
-        obj.size = size
-
-        // 搜索
-        let search = '{{ .response.Data.Search }}'
-        obj.search = search
-
-        // 总数
-        let total = '{{ .response.Data.Total }}'
-        obj.total = total
-
-        console.log(current, size, search, total)
+        let response = `{{ .response }}`
+        obj.response = response
+        console.log('response', JSON.parse(response))
 
         return obj
-    })()
+    })();
 </script>
 
-<msg>{{ .resp.Msg }}</msg>
+<msg>{{ .response.Msg }}</msg>
 
 <!-- 变量赋值 -->
-{{ $page := .resp.Data }}
+{{ $page := .response.Data }}
 {{ $data := $page.Data }}
 <div class="nowrap">
     <table>
@@ -88,26 +76,26 @@
         <tbody>
         {{ $len := len $data }}
         {{ if gt $len 0 }}
-        {{ range $index,$value := $data }}
-        <tr id="{{ $value.Id }}" name="{{ $value.Name }}" del="{{ $value.Del }}">
-            <!--
-             | . 访问当前位置的上下文
-             | $ 引用当前模板根级的上下文
-             | $. 引用模板中的根级上下文
-             |-->
-            <td><img src="{{ $.contextPath }}/static/icon/{{ $value.Type }}.png"
-                     title="{{ $value.Type }}"
-                     onerror="this.onerror=''; this.src='{{ $.contextPath }}/static/icon/unknown.png'"></td>
-            <td><a href="#">{{ $value.Name }}{{ if ne $value.Type "folder" }}.{{ $value.Type }}{{ end }}</a></td>
-            <td>{{ HumanizFileSize $value.Size }}</td>
-            <td>{{ HumanizUnix $value.AddTime }}</td>
-            <td>{{ HumanizUnix $value.UpdTime }}</td>
-        </tr>
-        {{ end }}
+            {{ range $index,$value := $data }}
+                <tr id="{{ $value.Id }}" name="{{ $value.Name }}" del="{{ $value.Del }}">
+                    <!--
+                     | . 访问当前位置的上下文
+                     | $ 引用当前模板根级的上下文
+                     | $. 引用模板中的根级上下文
+                     |-->
+                    <td><img src="{{ $.contextPath }}/static/icon/{{ $value.Type }}.png"
+                             title="{{ $value.Type }}"
+                             onerror="this.onerror=''; this.src='{{ $.contextPath }}/static/icon/unknown.png'"></td>
+                    <td><a href="#">{{ $value.Name }}{{ if ne $value.Type "folder" }}.{{ $value.Type }}{{ end }}</a></td>
+                    <td>{{ HumanizFileSize $value.Size }}</td>
+                    <td>{{ HumanizUnix $value.AddTime $.language }}</td>
+                    <td>{{ HumanizUnix $value.UpdTime $.language }}</td>
+                </tr>
+            {{ end }}
         {{ else }}
-        <tr class="no-data">
-            <td colspan="5">{{ Localize "i18n.noData" }}</td>
-        </tr>
+            <tr class="no-data">
+                <td colspan="5">{{ Localize "i18n.noData" .language }}</td>
+            </tr>
         {{ end }}
         </tbody>
         <tfoot>
@@ -119,52 +107,63 @@
                     <input name="search"
                            type="text"
                            placeholder='{{ Localize "i18n.search" .language }}'
-                           title="id:{id}&#10;name:{name}&#10;type:{type}"
+                           title="id:{id}&nbsp;&nbsp;name:{name}&nbsp;&nbsp;type:{type}"
                            value="{{ $page.Search }}">
                     <input name="t" value="{{ NowUnix }}" type="hidden">
                 </form>
-                {{ if le $page.Current 1 }}
-                <span>{{ Localize "i18n.prev" .language }}</span>
-                {{ else }}
-                { $prev := Add $page.Current -1 }
-                {{ $prev := -1 }}
-                {{ if gt $prev $page.PageCount }}
-                {{ $prev = $page.PageCount }}
-                {{ end }}
-                <span>
-                    <a href="{{ $.contextPath }}/image?current={{ $prev }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.prev" .language }}</a>
-                </span>
-                {{ end }}
 
-                {{ $pageIndexes := $page.PageIndexes }}
-                {{ $len := len $pageIndexes }}
+                <!-- 页索引集 -->
+                {{ $indexes := $page.Indexes }}
+                {{ $len := len $indexes }}
+
+                <!-- 第一页 -->
+                {{ $first := 1 }}
+                <!-- 最后一页 -->
+                {{ $last := 1 }}
                 {{ if gt $len 0 }}
-                {{ range $index,$pageIndex := $pageIndexes }}
-                {{ if eq $pageIndex 0 }}
-                <span>...</span>
-                {{ else if eq $pageIndex $page.Current }}
-                <span>{{ $pageIndex }}</span>
-                {{ else }}
-                <span>
-                    <a href="{{ $.contextPath }}/image?current={{ $pageIndex }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ $pageIndex }}</a>
-                </span>
-                {{ end }}
-                {{ end }}
+                    {{ $i := Decrement $len }}
+                    {{ $last = index $indexes $i }}
                 {{ end }}
 
-                {{ if ge $page.Current $page.PageCount }}
-                <span>{{ Localize "i18n.next" .language }}</span>
+                {{ if le $page.Current 1 }}
+                    <span>{{ Localize "i18n.prev" .language }}</span>
                 {{ else }}
-                <span>
-                    { $next := Add $page.Current 1 }
-                    {{ $next := 1 }}
-                    <a href="{{ $.contextPath }}/image?current={{ $next }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.next" .language }}</a>
-                </span>
+                    {{ $prev := Decrement $page.Current }}
+                    {{ if gt $prev $last }}
+                        {{ $prev = $last }}
+                    {{ end }}
+                    <span>
+                        <a href="{{ $.contextPath }}/image?current={{ $prev }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.prev" .language }}</a>
+                    </span>
+                {{ end }}
+
+                {{ if gt $len 0 }}
+                    {{ range $i,$index := $indexes }}
+                        {{ if eq $index 0 }}
+                            <span>...</span>
+                        {{ else if eq $index $page.Current }}
+                            <span>{{ $index }}</span>
+                        {{ else }}
+                            <span>
+                                <a href="{{ $.contextPath }}/image?current={{ $index }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ $index }}</a>
+                            </span>
+                        {{ end }}
+                    {{ end }}
+                {{ end }}
+
+                {{ if ge $page.Current $last }}
+                    <span>{{ Localize "i18n.next" .language }}</span>
+                {{ else }}
+                    <span>
+                        {{ $next := Increment $page.Current }}
+                        <a href="{{ $.contextPath }}/image?current={{ $next }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.next" .language }}</a>
+                    </span>
                 {{ end }}
             </td>
         </tr>
         </tfoot>
     </table>
+    <!-- 右侧右键区 -->
     <table>
         <thead>
         <tr>
@@ -174,15 +173,15 @@
         <tbody>
         {{ $len := len $data }}
         {{ if gt $len 0 }}
-        {{ range $index,$value := $data }}
-        <tr>
-            <td></td>
-        </tr>
-        {{ end }}
+            {{ range $index,$value := $data }}
+            <tr>
+                <td></td>
+            </tr>
+            {{ end }}
         {{ else }}
-        <tr>
-            <td></td>
-        </tr>
+            <tr>
+                <td></td>
+            </tr>
         {{ end }}
         </tbody>
         <tfoot>

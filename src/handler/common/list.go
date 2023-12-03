@@ -20,7 +20,7 @@ func List(request *http.Request, session *session.Session, table string) (string
 	html := func(page model.Page, err any) (string, model.Response) {
 		return fmt.Sprintf("%s/list", table), model.Response{
 			Msg:  util_string.String(err),
-			Data: model.Page{},
+			Data: page,
 		}
 	}
 
@@ -39,7 +39,7 @@ func List(request *http.Request, session *session.Session, table string) (string
 
 	// 检索条件
 	search := strings.TrimSpace(request.URL.Query().Get("search"))
-	search = "name:12342d type:2df23 size>=1234"
+	//search = "name:12342d type:2df23 size>=1234"
 
 	page := model.Page{
 		Current: current,
