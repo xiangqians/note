@@ -1,87 +1,34 @@
-// os
 // @author xiangqian
 // @date 11:08 2023/02/04
 package os
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"golang.org/x/text/encoding/simplifiedchinese"
-	"io"
-	"os"
 	"os/exec"
 	"runtime"
 	"strconv"
 	"strings"
-	"time"
 )
 
-type File interface {
-	Err() error         // 文件错误
-	IsExist() bool      // 判断文件（普通文件、目录文件）是否存在
-	Name() string       // base name of the file
-	Size() int64        // length in bytes for regular files; system-dependent for others
-	Mode() os.FileMode  // file mode bits
-	ModTime() time.Time // modification time
-	IsDir() bool        // abbreviation for Mode().IsDir()
-	Sys() any           // underlying data source (can return nil)
-}
+// IsWindows 是否是windows系统
+var IsWindows = false
 
-type fileImpl struct {
-	fileInfo os.FileInfo
-	err      error
-}
-
-func (file *fileImpl) Err() error {
-	return file.err
-}
-
-func (file *fileImpl) IsExist() bool {
-	if file.err != nil {
-		return os.IsExist(file.err)
-	}
-	return true
-}
-
-func (file *fileImpl) Name() string {
-	return file.fileInfo.Name()
-}
-
-func (file *fileImpl) Size() int64 {
-	return file.fileInfo.Size()
-}
-
-func (file *fileImpl) Mode() os.FileMode {
-	return file.fileInfo.Mode()
-}
-
-func (file *fileImpl) ModTime() time.Time {
-	return file.fileInfo.ModTime()
-}
-
-func (file *fileImpl) IsDir() bool {
-	return file.fileInfo.IsDir()
-}
-
-func (file *fileImpl) Sys() any {
-	return file.fileInfo.Sys()
-}
-
-var isWindows = false
-var isLinux = false
+// IsLinux 是否是linux系统
+var IsLinux = false
 
 func init() {
 	switch runtime.GOOS {
 	// windows
 	case "windows":
-		isWindows = true
+		IsWindows = true
 
 	// linux
 	case "linux":
 		fallthrough // 执行穿透
 	case "android":
-		isLinux = true
+		IsLinux = true
 
 	// 不支持当前操作系统
 	default:
@@ -89,183 +36,43 @@ func init() {
 	}
 }
 
-// IsWindows 是否是windows系统
-func IsWindows() bool {
-	return isWindows
-}
-
-// IsLinux 是否是linux系统
-func IsLinux() bool {
-	return isLinux
-}
-
 // Path 拼接路径
 func Path(more ...string) string {
-	if isWindows {
+	if IsWindows {
 		return strings.Join(more, "\\")
 	}
 
-	if isLinux {
+	if IsLinux {
 		return strings.Join(more, "/")
 	}
 
 	panic(errors.New(fmt.Sprintf("Not Implemented, %s", runtime.GOOS)))
 }
 
-// Stat 文件信息
-func Stat(path string) File {
-	fileInfo, err := os.Stat(path)
-	return &fileImpl{fileInfo, err}
-}
-
-// MkDir (make directories) 创建目录文件
-// perm
-//   - os.ModePerm: 0777
-func MkDir(path string, perm os.FileMode) error {
-	file := Stat(path)
-	if !file.IsExist() || !file.IsDir() {
-		return os.MkdirAll(path, perm)
-	}
-	return nil
-}
-
-// Rm 删除文件（普通文件或者目录文件）
-func Rm(path string) error {
-	file := Stat(path)
-	if !file.IsExist() {
-		return errors.New(fmt.Sprintf("File Not Found, %s", path))
-	}
-
-	// 删除目录文件
-	if file.IsDir() {
-		return os.RemoveAll(path)
-	}
-
-	// 删除普通文件
-	return os.Remove(path)
-}
-
-// CopyFile 拷贝文件
-func CopyFile(srcPath, dstPath string) (written int64, err error) {
-	// 源文件
-	src, err := os.Open(srcPath)
-	if err != nil {
-		return 0, err
-	}
-	defer src.Close()
-
-	// 目标文件
-	dst, err := os.Create(dstPath)
-	if err != nil {
-		return 0, err
-	}
-	defer dst.Close()
-
-	// 拷贝
-	written, err = io.Copy(dst, src)
-	return
-}
-
-// Deprecated: use io.Copy
-// CopyIo 拷贝数据流
-// src: io.Reader
-// dst: io.Writer
-// bufSize: 缓存大小，byte。默认 bufio.defaultBufSize = 4KB
-func CopyIo(src io.Reader, dst io.Writer, bufSize int) (int, error) {
-	// buf size
-	if bufSize <= 0 {
-		bufSize = 1024 * 4 // 4KB
-	}
-
-	// r & w
-	reader := bufio.NewReaderSize(src, bufSize)
-	writer := bufio.NewWriterSize(dst, bufSize)
-
-	// 已写入的字节数
-	var written int
-
-	// 块缓存大小
-	// len 0, cap ?
-	// cap ?
-	buf := make([]byte, bufSize)
-
-	// write
-	for {
-		// Read reads data into buf.
-		// It returns the number of bytes read into buf.
-		// The bytes are taken from at most one Read on the underlying Reader, hence n may be less than len(buf).
-		rn, rerr := reader.Read(buf)
-
-		// write
-		if rn > 0 {
-			wn, werr := writer.Write(buf[:rn])
-			if werr == nil && (wn < 0 || rn < wn) {
-				werr = errors.New("invalid write result")
-			}
-
-			if werr == nil && rn != wn {
-				werr = errors.New("short write")
-			}
-
-			if werr != nil {
-				return written, werr
-			}
-
-			writer.Flush()
-			written += wn
-		}
-
-		// If the underlying Reader can return a non-zero count with io.EOF,
-		// then this Read method can do so as well; see the [io.Reader] docs.
-		if rerr == io.EOF {
-			break
-		}
-
-		// err ?
-		if rerr != nil {
-			return written, rerr
-		}
-	}
-	return written, nil
-}
-
 // Cmd 执行命令
 func Cmd(cmd string) (*exec.Cmd, error) {
-	if isWindows {
+	if IsWindows {
 		return exec.Command("cmd", "/C", cmd), nil
 	}
 
-	if isLinux {
+	if IsLinux {
 		return exec.Command("bash", "-c", cmd), nil
 	}
 
-	panic(errors.New(fmt.Sprintf("Not Implemented, %s", runtime.GOOS)))
+	panic(errors.New(fmt.Sprintf("不支持当前操作系统：%s", runtime.GOOS)))
 }
 
 // Cd 执行cd命令
 func Cd(path string) (*exec.Cmd, error) {
-	if isWindows {
+	if IsWindows {
 		return Cmd(fmt.Sprintf("cd /d %s", path))
 	}
 
-	if isLinux {
+	if IsLinux {
 		return Cmd(fmt.Sprintf("cd %s", path))
 	}
 
-	panic(errors.New(fmt.Sprintf("Not Implemented, %s", runtime.GOOS)))
-}
-
-// CopyDir 拷贝目录
-func CopyDir(srcPath, dstPath string) (*exec.Cmd, error) {
-	if isWindows {
-		return Cmd(fmt.Sprintf("xcopy %s %s /s /e /h /i /y", srcPath, dstPath))
-	}
-
-	if isLinux {
-		return Cmd(fmt.Sprintf("cp -r %s %s", srcPath, dstPath))
-	}
-
-	panic(errors.New(fmt.Sprintf("Not Implemented, %s", runtime.GOOS)))
+	panic(errors.New(fmt.Sprintf("不支持当前操作系统：%s", runtime.GOOS)))
 }
 
 // HumanizFileSize 人性化文件大小
@@ -313,62 +120,12 @@ func DecodeBuf(buf []byte) string {
 
 	// 解决windows乱码问题
 	// GB18030编码
-	if isWindows {
+	if IsWindows {
 		var decodeBytes, _ = simplifiedchinese.GB18030.NewDecoder().Bytes(buf)
 		return string(decodeBytes)
 	}
 
 	return string(buf)
-}
-
-// 文件类型
-const (
-	Folder  = "folder"  // 文件夹
-	Md      = "md"      // md文件
-	Html    = "html"    // html文件
-	Pdf     = "pdf"     // pdf文件
-	Doc     = "doc"     // doc文件
-	Zip     = "zip"     // zip文件
-	Ico     = "ico"     // ico文件
-	Gif     = "gif"     // gif文件
-	Jpg     = "jpg"     // jpg文件
-	Jpeg    = "jpeg"    // jpeg文件
-	Png     = "png"     // png文件
-	Webp    = "webp"    // webp文件
-	Unknown = "unknown" // 未知
-)
-
-// ContentTypeOf 根据文件内容类型获取文件类型
-func ContentTypeOf(contentType string) string {
-	switch contentType {
-	case "text/html":
-		return Html
-	case "application/pdf":
-		return Pdf
-	case "application/x-zip-compressed":
-		return Zip
-	// image
-	case "image/x-icon":
-		return Ico
-	case "image/gif":
-		return Gif
-	case "image/jpg":
-		return Jpg
-	case "image/jpeg":
-		return Jpeg
-	case "image/png":
-		return Png
-	case "image/webp":
-		return Webp
-
-	// audio
-
-	//video
-
-	// 未知
-	default:
-		return Unknown
-	}
 }
 
 type Byte float64

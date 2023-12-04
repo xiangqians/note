@@ -4,9 +4,6 @@
  */
 ;
 $(function () {
-    // 基础路径
-    let basePath = variable.path
-
     let $body = $($('body')[0])
 
     // 右键菜单列表
@@ -22,12 +19,12 @@ $(function () {
     $ul.append($uploadFile)
     // 【上传】
     let $upload = null
-    if (variable.table == 'image') {
+    if (variable.table === 'image') {
         // accept="image/*" 只允许图片类型文件
         // accept="audio/*" 只允许音频类型文件
         // accept="video/*" 只允许视频类型文件
         // accept=".doc,.docx,.pdf,.zip,.tar.gz" 只允许doc、docx、pdf、zip、tar.gz类型文件
-        $upload = $(`<li name="upload"><form action="${variable.contextPath}/${variable.table}" method="post" enctype="multipart/form-data"><input name="file" type="file" accept="image/*"/><button type="submit">${variable.i18n.upload}</button></form></li>`)
+        $upload = $(`<li name="upload"><form action="${variable.contextPath}/${variable.table}/upload" method="post" enctype="multipart/form-data"><input name="file" type="file" accept="image/*"/><button type="submit">${variable.i18n.upload}</button></form></li>`)
     }
     $ul.append($upload)
     // 【重命名】
@@ -114,7 +111,7 @@ $(function () {
                 displayElements($rename, $del)
 
                 // note
-                if (basePath === variable.contextPath + '/note') {
+                if (variable.table === 'note') {
                     hideElements($copyAddress)
                     displayElements($cut)
                 }
@@ -133,7 +130,7 @@ $(function () {
             hideElements($upload, $rename, $copyAddress, $cut, $del, $restore, $permlyDel, $close)
 
             // note
-            if (basePath === variable.contextPath + '/note') {
+            if (variable.table === 'note') {
                 displayElements($addFolder, $addMdFile, $uploadFile, $paste)
             }
             // 其他：image、audio、video

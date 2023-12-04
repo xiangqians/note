@@ -19,6 +19,10 @@ func Rename(request *http.Request, session *session.Session) (string, model.Resp
 	return common.Rename(request, session, "image")
 }
 
+func Upload(request *http.Request, session *session.Session) (string, model.Response) {
+	return common.Upload(request, session, "image")
+}
+
 func Rename1(request *http.Request, session *session.Session) (string, model.Response) {
 	vars := mux.Vars(request)
 	id := vars["id"]

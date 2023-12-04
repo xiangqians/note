@@ -19,7 +19,7 @@ func List(request *http.Request, session *session.Session, table string) (string
 	// html模板
 	html := func(page model.Page, err any) (string, model.Response) {
 		return fmt.Sprintf("%s/list", table),
-			model.Response{Msg: util_string.String(err), Data: map[string]any{
+			model.Response{Msg: session.GetMsg() + util_string.String(err), Data: map[string]any{
 				"table": table,
 				"page":  page,
 			}}
@@ -78,7 +78,7 @@ func List(request *http.Request, session *session.Session, table string) (string
 			index:     -1,
 			kind:      reflect.Uint8,
 			statement: "`del` = ?",
-			value:     0,
+			value:     uint8(0),
 		},
 	}
 
@@ -130,6 +130,11 @@ func List(request *http.Request, session *session.Session, table string) (string
 				(&columns[i]).value = value
 			}
 		}
+	}
+
+	del := columns[length-1].value.(uint8)
+	if del != 0 && del != 1 {
+		return html(page, nil)
 	}
 
 	// len 0, cap ?

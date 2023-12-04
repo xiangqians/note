@@ -233,6 +233,7 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 	// image
 	router.HandleFunc(contextPath+"/image", handlerFunc(image.List))
 	router.HandleFunc(contextPath+"/image/rename", handlerFunc(image.Rename))
+	router.HandleFunc(contextPath+"/image/upload", handlerFunc(image.Upload))
 	router.HandleFunc(contextPath+"/image/{id}", handlerFunc(image.Rename1))
 }
 

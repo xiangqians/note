@@ -71,6 +71,7 @@
 <!-- 变量赋值 -->
 {{ $page := .response.Data.page }}
 {{ $data := $page.Data }}
+
 <div class="nowrap">
     <table>
         <thead>
@@ -83,7 +84,10 @@
         </tr>
         </thead>
         <tbody>
-        {{ $len := len $data }}
+        {{ $len := 0 }}
+        {{ if $data }}
+            {{ $len = len $data }}
+        {{ end }}
         {{ if gt $len 0 }}
             {{ range $index,$value := $data }}
                 <tr id="{{ $value.Id }}" name="{{ $value.Name }}" del="{{ $value.Del }}">
@@ -126,7 +130,10 @@
 
                 <!-- 页索引集 -->
                 {{ $indexes := $page.Indexes }}
-                {{ $len := len $indexes }}
+                {{ $len := 0 }}
+                {{ if $indexes }}
+                    {{ $len = len $indexes }}
+                {{ end }}
 
                 <!-- 第一页 -->
                 {{ $first := 1 }}
@@ -183,7 +190,10 @@
         </tr>
         </thead>
         <tbody>
-        {{ $len := len $data }}
+        {{ $len := 0 }}
+        {{ if $data }}
+            {{ $len = len $data }}
+        {{ end }}
         {{ if gt $len 0 }}
             {{ range $index,$value := $data }}
             <tr>

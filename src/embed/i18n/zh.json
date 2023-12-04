@@ -51,5 +51,5 @@
   "i18n.close": "关闭",
   "i18n.copyAddress": "复制地址",
   "i18n.copied": "已复制",
-  "i18n.unsupportedFileType": "This file type is not supported"
+  "i18n.fileTypeUnsupportedUpload": "%s 文件类型不支持上传"
 }
