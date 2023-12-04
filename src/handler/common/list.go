@@ -15,7 +15,7 @@ import (
 	"strings"
 )
 
-func List(request *http.Request, session *session.Session, table string) (string, model.Response) {
+func List(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (string, model.Response) {
 	// html模板
 	html := func(page model.Page, err any) (string, model.Response) {
 		return fmt.Sprintf("%s/list", table),

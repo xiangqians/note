@@ -15,7 +15,7 @@ import (
 )
 
 // Setting 设置
-func Setting(request *http.Request, session *session.Session) (string, model.Response) {
+func Setting(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
 	// 请求方法
 	method := request.Method
 

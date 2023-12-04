@@ -17,7 +17,7 @@ import (
 )
 
 // SignIn 登录
-func SignIn(request *http.Request, session *session.Session) (string, model.Response) {
+func SignIn(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
 	// 请求方法
 	method := request.Method
 

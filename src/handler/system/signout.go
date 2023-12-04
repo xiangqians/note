@@ -9,7 +9,7 @@ import (
 )
 
 // SignOut 注销
-func SignOut(request *http.Request, session *session.Session) (string, model.Response) {
+func SignOut(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
 	// 清除会话
 	session.Clear()
 

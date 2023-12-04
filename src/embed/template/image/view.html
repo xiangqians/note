@@ -1,0 +1,20 @@
+<!--
+ | @author xiangqian
+ | @date 12:33 2023/02/12
+ |-->
+{{ define "image/view" }}
+{{ $table := .response.Data.table }}
+{{ $data := .response.Data.data }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" rel="external nofollow" href="{{ .contextPath }}/static/favicon.ico">
+    <link rel="stylesheet" href="{{ .contextPath }}/static/css/body.css" type="text/css"/>
+    <title>{{ $data.Name }}</title>
+</head>
+<body>
+<img src="{{ .contextPath }}/{{ $table }}/{{ $data.Id }}" alt="{{ $data.Name }}">
+</body>
+</html>
+{{ end }}

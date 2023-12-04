@@ -102,7 +102,7 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 	// 上下文路径
 	contextPath := model.Ini.Server.ContextPath
 
-	handlerFunc := func(handler func(request *http.Request, session *session.Session) (name string, response model.Response)) http.HandlerFunc {
+	handlerFunc := func(handler func(request *http.Request, writer http.ResponseWriter, session *session.Session) (name string, response model.Response)) http.HandlerFunc {
 		return func(writer http.ResponseWriter, request *http.Request) {
 			// 获取会话
 			session := session.GetSession(request, writer)
@@ -170,7 +170,10 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 				}
 			}
 
-			name, response := handler(request, session)
+			name, response := handler(request, writer, session)
+			if name == "" {
+				return
+			}
 
 			// 判断是否进行重定向
 			if strings.HasPrefix(name, "redirect:") {
@@ -191,13 +194,15 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 				template, err = pkg_template.New(name).Funcs(templateFuncMap).ParseFiles(fmt.Sprintf("%s/src/embed/template/%s.html", model.GetProjectDir(), name),
 					fmt.Sprintf("%s/src/embed/template/common/foot1.html", model.GetProjectDir()),
 					fmt.Sprintf("%s/src/embed/template/common/foot2.html", model.GetProjectDir()),
-					fmt.Sprintf("%s/src/embed/template/common/table.html", model.GetProjectDir()))
+					fmt.Sprintf("%s/src/embed/template/common/table.html", model.GetProjectDir()),
+					fmt.Sprintf("%s/src/embed/template/common/variable.html", model.GetProjectDir()))
 			} else {
 				template, err = pkg_template.New(name).Funcs(templateFuncMap).ParseFS(templateFs,
 					fmt.Sprintf("embed/template/%s.html", name), // 主模板文件
 					"embed/template/common/foot1.html",          // 嵌套模板文件
 					"embed/template/common/foot2.html",          // 嵌套模板文件
-					"embed/template/common/table.html")          // 嵌套模板文件
+					"embed/template/common/table.html",          // 嵌套模板文件
+					"embed/template/common/variable.html")       // 嵌套模板文件
 			}
 			if err != nil {
 				panic(err)
@@ -218,7 +223,7 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 		}
 	}
 
-	router.NotFoundHandler = handlerFunc(func(request *http.Request, session *session.Session) (name string, response model.Response) {
+	router.NotFoundHandler = handlerFunc(func(request *http.Request, writer http.ResponseWriter, session *session.Session) (name string, response model.Response) {
 		return "404", model.Response{}
 	})
 
@@ -234,7 +239,8 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 	router.HandleFunc(contextPath+"/image", handlerFunc(image.List))
 	router.HandleFunc(contextPath+"/image/rename", handlerFunc(image.Rename))
 	router.HandleFunc(contextPath+"/image/upload", handlerFunc(image.Upload))
-	router.HandleFunc(contextPath+"/image/{id}", handlerFunc(image.Rename1))
+	router.HandleFunc(contextPath+"/image/{id}", handlerFunc(image.Get))
+	router.HandleFunc(contextPath+"/image/{id}/view", handlerFunc(image.View))
 }
 
 // 处理静态资源

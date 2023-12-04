@@ -3,69 +3,6 @@
  | @date 18:50 2023/10/14
  |-->
 {{ define "common/table" }}
-<script type="text/javascript">
-    ;
-    let variable = (function () {
-        let obj = {}
-
-        // i18n
-        let i18n = {}
-        i18n.name = '{{ Localize "i18n.name" .language }}'
-        i18n.add = '{{ Localize "i18n.add" .language }}'
-        i18n.addFolder = '{{ Localize "i18n.addFolder" .language }}'
-        i18n.addMdFile = '{{ Localize "i18n.addMdFile" .language }}'
-        i18n.uploadFile = '{{ Localize "i18n.uploadFile" .language }}'
-        i18n.upload = '{{ Localize "i18n.upload" .language }}'
-        i18n.upd = '{{ Localize "i18n.upd" .language }}'
-        i18n.rename = '{{ Localize "i18n.rename" .language }}'
-        i18n.cut = '{{ Localize "i18n.cut" .language }}'
-        i18n.paste = '{{ Localize "i18n.paste" .language }}'
-        i18n.del = '{{ Localize "i18n.del" .language }}'
-        i18n.restore = '{{ Localize "i18n.restore" .language }}'
-        i18n.permlyDel = '{{ Localize "i18n.permlyDel" .language }}'
-        i18n.close = '{{ Localize "i18n.close" .language }}'
-        i18n.copyAddress = '{{ Localize "i18n.copyAddress" .language }}'
-        i18n.copied = '{{ Localize "i18n.copied" .language }}'
-        obj.i18n = i18n
-
-        // 上下文路径
-        let contextPath = '{{ .contextPath }}'
-        obj.contextPath = contextPath
-        console.log('contextPath', contextPath)
-
-        // 请求路径
-        let path = '{{ .path }}'
-        obj.path = path
-        console.log('path', path)
-
-        // 请求uri地址
-        let uri = '{{ .uri }}'
-        obj.uri = uri
-        console.log('uri', uri)
-
-        // 语言
-        let language = '{{ .language }}'
-        obj.language = language
-        console.log('language', language)
-
-        // 数据表名
-        let table = '{{ .response.Data.table }}'
-        obj.table = table
-        console.log('table', table)
-
-        // 响应数据
-        let response = `{{ .response }}`
-        obj.response = response
-        try{
-            console.log('response', JSON.parse(response))
-        }catch (e) {
-            console.error(e)
-        }
-
-        return obj
-    })();
-</script>
-
 <msg>{{ .response.Msg }}</msg>
 
 <!-- 变量赋值 -->
@@ -89,6 +26,7 @@
             {{ $len = len $data }}
         {{ end }}
         {{ if gt $len 0 }}
+            {{ $table := .response.Data.table }}
             {{ range $index,$value := $data }}
                 <tr id="{{ $value.Id }}" name="{{ $value.Name }}" del="{{ $value.Del }}">
                     <!--
@@ -99,7 +37,7 @@
                     <td><img src="{{ $.contextPath }}/static/icon/{{ $value.Type }}.png"
                              title="{{ $value.Type }}"
                              onerror="this.onerror=''; this.src='{{ $.contextPath }}/static/icon/unknown.png'"></td>
-                    <td><a href="#">{{ $value.Name }}</a></td>
+                    <td><a href='{{ $.contextPath }}/{{ $table }}/{{ $value.Id }}/view?t={{ NowUnix }}' target="_blank">{{ $value.Name }}</a></td>
                     <td>{{ HumanizFileSize $value.Size }}</td>
                     <td>{{ HumanizUnix $value.AddTime $.language }}</td>
                     <td>{{ HumanizUnix $value.UpdTime $.language }}</td>

@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-func Rename(request *http.Request, session *session.Session, table string) (string, model.Response) {
+func Rename(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (string, model.Response) {
 	// id
 	idStr := strings.TrimSpace(request.URL.Query().Get("id"))
 	id, err := strconv.ParseInt(idStr, 10, 64)

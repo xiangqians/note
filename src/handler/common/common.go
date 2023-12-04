@@ -9,9 +9,16 @@ import (
 	util_string "note/src/util/string"
 )
 
+var dataDir = model.Ini.Data.Dir
+
 // 重定向
 func redirect(table string, err any) (string, model.Response) {
 	return "redirect:/" + table, model.Response{Msg: util_string.String(err)}
+}
+
+// html 404
+func html404(err any) (string, model.Response) {
+	return "404", model.Response{Msg: util_string.String(err)}
 }
 
 // 获取永久删除id，以复用

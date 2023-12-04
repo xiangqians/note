@@ -17,7 +17,7 @@ import (
 	"strings"
 )
 
-func Upload(request *http.Request, session *session.Session, table string) (string, model.Response) {
+func Upload(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (string, model.Response) {
 	// 读取上传文件
 	file, fileHeader, err := request.FormFile("file")
 	if err != nil {
@@ -84,7 +84,7 @@ func Upload(request *http.Request, session *session.Session, table string) (stri
 	}
 
 	// 数据目录
-	dataDir := util_os.Path(model.Ini.Data.Dir, table)
+	dataDir := util_os.Path(dataDir, table)
 	fileInfo, err := os.Stat(dataDir)
 	// 数据目录不存在或者不是文件目录，则创建数据目录
 	if (err != nil && !os.IsExist(err)) || !fileInfo.IsDir() {

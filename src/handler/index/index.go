@@ -8,6 +8,6 @@ import (
 	"note/src/session"
 )
 
-func Index(request *http.Request, session *session.Session) (string, model.Response) {
+func Index(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
 	return "index", model.Response{}
 }
