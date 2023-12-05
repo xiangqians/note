@@ -14,21 +14,39 @@ import (
 	util_os "note/src/util/os"
 	"note/src/util/time"
 	"os"
+	"strconv"
 	"strings"
 )
 
 func Upload(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (string, model.Response) {
+	// 有id，重新上传
+	idStr := request.PostFormValue("id")
+	id, _ := strconv.ParseInt(idStr, 10, 64)
+	if id != 0 {
+		db := db.Get()
+		result, err := db.Get(fmt.Sprintf("SELECT `id` FROM `%s` WHERE `del` = 0 AND `id` = ? LIMIT 1", table), id)
+		if err != nil {
+			return redirect(table, id, err)
+		}
+
+		id = 0
+		err = result.Scan(&id)
+		if err != nil || id == 0 {
+			return redirect(table, id, err)
+		}
+	}
+
 	// 读取上传文件
 	file, fileHeader, err := request.FormFile("file")
 	if err != nil {
-		return redirect(table, err)
+		return redirect(table, id, err)
 	}
 	defer file.Close()
 
 	// 读取文件字节内容
 	bytes, err := io.ReadAll(file)
 	if err != nil {
-		return redirect(table, err)
+		return redirect(table, id, err)
 	}
 
 	// 获取文件类型
@@ -40,7 +58,7 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 			filetype != util_filetype.Jpeg &&
 			filetype != util_filetype.Png &&
 			filetype != util_filetype.Webp {
-			return redirect(table, fmt.Sprintf(util_i18n.GetMessage("i18n.fileTypeUnsupportedUpload", session.GetLanguage()), filetype))
+			return redirect(table, id, fmt.Sprintf(util_i18n.GetMessage("i18n.fileTypeUnsupportedUpload", session.GetLanguage()), filetype))
 		}
 	}
 
@@ -55,32 +73,54 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 	// 文件大小，单位：字节
 	size := fileHeader.Size
 
-	// 获取永久删除id，以复用
-	id, err := getPermlyDelId(table)
-	if err != nil {
-		return redirect(table, err)
-	}
-
 	db := db.Get()
 
 	// 开启事务
 	err = db.Begin()
 	if err != nil {
-		return redirect(table, err)
+		return redirect(table, id, err)
 	}
 
 	// 入库
-	// 新id
-	if id == 0 {
-		_, id, err = db.Add(fmt.Sprintf("INSERT INTO `%s` (`name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?)", table), name, filetype, size, time.NowUnix())
+	// 重新上传
+	if id != 0 {
+		_, err = db.Upd(fmt.Sprintf("UPDATE `%s` SET `name` = ?, `type` = ?, `size` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", table),
+			name,
+			filetype,
+			size,
+			time.NowUnix(),
+			id)
 	} else
-	// 复用id
+	// 上传
 	{
-		_, err = db.Upd(fmt.Sprintf("UPDATE `%s` SET `name` = ?, `type` = ?, `size` = ?, `hist` = '', `hist_size` = 0, `del` = 0, `add_time` = ?, `upd_time` = 0 WHERE `id` = ?", table), name, filetype, size, time.NowUnix(), id)
+		// 获取永久删除id，以复用
+		id, err = getPermlyDelId(table)
+		if err != nil {
+			return redirect(table, 0, err)
+		}
+
+		// 新id
+		if id == 0 {
+			_, id, err = db.Add(fmt.Sprintf("INSERT INTO `%s` (`name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?)", table),
+				name,
+				filetype,
+				size,
+				time.NowUnix())
+		} else
+		// 复用id
+		{
+			_, err = db.Upd(fmt.Sprintf("UPDATE `%s` SET `name` = ?, `type` = ?, `size` = ?, `del` = 0, `add_time` = ?, `upd_time` = 0 WHERE `id` = ?", table),
+				name,
+				filetype,
+				size,
+				time.NowUnix(),
+				id)
+		}
 	}
+
 	if err != nil {
 		db.Rollback()
-		return redirect(table, err)
+		return redirect(table, id, err)
 	}
 
 	// 数据目录
@@ -92,7 +132,7 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 	}
 	if err != nil {
 		db.Rollback()
-		return redirect(table, err)
+		return redirect(table, id, err)
 	}
 
 	// 保存文件
@@ -103,17 +143,17 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 		0666)
 	if err != nil {
 		db.Rollback()
-		return redirect(table, err)
+		return redirect(table, id, err)
 	}
 	defer newFile.Close()
 	_, err = newFile.Write(bytes)
 	if err != nil {
 		db.Rollback()
-		return redirect(table, err)
+		return redirect(table, id, err)
 	}
 
 	// 提交事务
 	db.Commit()
 
-	return redirect(table, err)
+	return redirect(table, id, err)
 }

@@ -12,8 +12,12 @@ import (
 var dataDir = model.Ini.Data.Dir
 
 // 重定向
-func redirect(table string, err any) (string, model.Response) {
-	return "redirect:/" + table, model.Response{Msg: util_string.String(err)}
+func redirect(table string, id int64, err any) (string, model.Response) {
+	name := "redirect:/" + table
+	if id > 0 {
+		name += fmt.Sprintf("/%d/view", id)
+	}
+	return name, model.Response{Msg: util_string.String(err)}
 }
 
 // html 404

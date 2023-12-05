@@ -31,7 +31,8 @@
         </tr>
         </tbody>
     </table>
-    <form action="{{ .contextPath }}/{{ $table }}/upload" method="post" enctype="multipart/form-data">
+    <form action="{{ .contextPath }}/{{ $table }}/upload" method="post" enctype="multipart/form-data"
+          style="padding-top: 10px;">
         <input name="id" type="text" value="{{ $data.Id }}" hidden/>
         <input name="file" type="file"/>
         <button type="submit">{{ Localize "i18n.reUpload" .language }}</button>
