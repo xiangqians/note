@@ -5,7 +5,6 @@ package i18n
 import (
 	"embed"
 	"fmt"
-	"note/src/model"
 	util_json "note/src/util/json"
 	"os"
 )
@@ -17,6 +16,12 @@ const (
 
 var zhMessageMap map[string]string
 var enMessageMap map[string]string
+
+// 模式，dev、test、prod
+var mode = os.Getenv("GO_ENV_MODE")
+
+// 项目目录
+var projectDir, _ = os.Getwd()
 
 func Init(fs embed.FS) {
 	// zh
@@ -41,9 +46,9 @@ func Init(fs embed.FS) {
 }
 
 func GetMessage(name, language string) string {
-	if model.GetMode() == model.ModeDev {
+	if mode == "dev" {
 		// zh
-		bytes, err := os.ReadFile(fmt.Sprintf("%s/src/embed/i18n/zh.json", model.GetProjectDir()))
+		bytes, err := os.ReadFile(fmt.Sprintf("%s/src/embed/i18n/zh.json", projectDir))
 		if err != nil {
 			panic(err)
 		}
@@ -53,7 +58,7 @@ func GetMessage(name, language string) string {
 		}
 
 		// en
-		bytes, err = os.ReadFile(fmt.Sprintf("%s/src/embed/i18n/en.json", model.GetProjectDir()))
+		bytes, err = os.ReadFile(fmt.Sprintf("%s/src/embed/i18n/en.json", projectDir))
 		if err != nil {
 			panic(err)
 		}

@@ -1,0 +1,40 @@
+<!--
+ | @author xiangqian
+ | @date 19:23 2023/04/10
+ |-->
+{{ define "common/float" }}
+{{ $table := .response.Data.table }}
+{{ $data := .response.Data.data }}
+<div class="float hide">
+    <msg>{{ .response.Msg }}</msg>
+    <table border="1" cellspacing="0" cellpadding="10" align="center">
+        <tbody>
+        <tr>
+            <td>{{ Localize "i18n.name" .language }}</td>
+            <td>{{ $data.Name }}</td>
+        </tr>
+        <tr>
+            <td>{{ Localize "i18n.type" .language }}</td>
+            <td>{{ $data.Type }}</td>
+        </tr>
+        <tr>
+            <td>{{ Localize "i18n.size" .language }}</td>
+            <td>{{ HumanizFileSize $data.Size }}</td>
+        </tr>
+        <tr>
+            <td>{{ Localize "i18n.addTime" .language }}</td>
+            <td>{{ HumanizUnix $data.AddTime .language }}</td>
+        </tr>
+        <tr>
+            <td>{{ Localize "i18n.updTime" .language }}</td>
+            <td>{{ HumanizUnix $data.UpdTime .language }}</td>
+        </tr>
+        </tbody>
+    </table>
+    <form action="{{ .contextPath }}/{{ $table }}/upload" method="post" enctype="multipart/form-data">
+        <input name="id" type="text" value="{{ $data.Id }}" hidden/>
+        <input name="file" type="file"/>
+        <button type="submit">{{ Localize "i18n.reUpload" .language }}</button>
+    </form>
+</div>
+{{ end }}

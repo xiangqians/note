@@ -1,0 +1,14 @@
+/**
+ * @author xiangqian
+ * @date 20:08 2023/12/05
+ */
+
+body .float {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: auto;
+    height: auto;
+    text-align: center;
+    background: white;
+}

@@ -18,8 +18,15 @@ import (
 	"note/src/util/i18n"
 	util_os "note/src/util/os"
 	util_time "note/src/util/time"
+	"os"
 	"strings"
 )
+
+// 模式，dev、test、prod
+var mode = os.Getenv("GO_ENV_MODE")
+
+// 项目目录
+var projectDir, _ = os.Getwd()
 
 // Handle 注册路由到处理器
 func Handle(staticFs, templateFs embed.FS, router *mux.Router) {
@@ -190,19 +197,21 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 
 			var template *pkg_template.Template
 			var err error
-			if model.GetMode() == model.ModeDev {
-				template, err = pkg_template.New(name).Funcs(templateFuncMap).ParseFiles(fmt.Sprintf("%s/src/embed/template/%s.html", model.GetProjectDir(), name),
-					fmt.Sprintf("%s/src/embed/template/common/foot1.html", model.GetProjectDir()),
-					fmt.Sprintf("%s/src/embed/template/common/foot2.html", model.GetProjectDir()),
-					fmt.Sprintf("%s/src/embed/template/common/table.html", model.GetProjectDir()),
-					fmt.Sprintf("%s/src/embed/template/common/variable.html", model.GetProjectDir()))
+			if mode == "dev" {
+				template, err = pkg_template.New(name).Funcs(templateFuncMap).ParseFiles(fmt.Sprintf("%s/src/embed/template/%s.html", projectDir, name),
+					fmt.Sprintf("%s/src/embed/template/common/foot1.html", projectDir),
+					fmt.Sprintf("%s/src/embed/template/common/foot2.html", projectDir),
+					fmt.Sprintf("%s/src/embed/template/common/table.html", projectDir),
+					fmt.Sprintf("%s/src/embed/template/common/variable.html", projectDir),
+					fmt.Sprintf("%s/src/embed/template/common/float.html", projectDir))
 			} else {
 				template, err = pkg_template.New(name).Funcs(templateFuncMap).ParseFS(templateFs,
 					fmt.Sprintf("embed/template/%s.html", name), // 主模板文件
 					"embed/template/common/foot1.html",          // 嵌套模板文件
 					"embed/template/common/foot2.html",          // 嵌套模板文件
 					"embed/template/common/table.html",          // 嵌套模板文件
-					"embed/template/common/variable.html")       // 嵌套模板文件
+					"embed/template/common/variable.html",       // 嵌套模板文件
+					"embed/template/common/float.html") // 嵌套模板文件
 			}
 			if err != nil {
 				panic(err)
@@ -247,9 +256,9 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 func handleStatic(embedFs embed.FS, router *mux.Router) {
 	var handler http.Handler
 
-	if model.GetMode() == model.ModeDev {
+	if mode == "dev" {
 		// 创建一个文件处理器（文件服务器），本地目录提供静态文件
-		handler = http.FileServer(http.Dir(fmt.Sprintf("%s/src/embed/static", model.GetProjectDir())))
+		handler = http.FileServer(http.Dir(fmt.Sprintf("%s/src/embed/static", projectDir)))
 	} else {
 		// 嵌入的静态文件
 		ioFs, err := fs.Sub(embedFs, "embed/static")
