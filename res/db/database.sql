@@ -67,7 +67,7 @@ CREATE TABLE `video` -- 视频信息表
 -- Table model for note
 -- --------------------
 DROP TABLE IF EXISTS `note`;
-CREATE TABLE `note` -- 笔记信息表（）
+CREATE TABLE `note` -- 笔记信息表
 (
     `id`       INTEGER PRIMARY KEY AUTOINCREMENT, -- id
     `pid`      INTEGER     DEFAULT 0,             -- 父id
