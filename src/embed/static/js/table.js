@@ -9,47 +9,41 @@ $(function () {
     // 右键菜单列表
     let $ul = $('<ul></ul>')
     // 【新增文件夹】
-    let $addFolder = $(`<a name="addFolder" href="#"><li>${variable.i18n.addFolder}</li></a>`)
+    let $addFolder = $(`<li><a href="javascript:void(0);">${variable.i18n.addFolder}</a></li>`)
     $ul.append($addFolder)
     // 【新增MD文件】
-    let $addMdFile = $(`<a name="addMdFile" href="#"><li>${variable.i18n.addMdFile}</li></a>`)
+    let $addMdFile = $(`<li><a href="javascript:void(0);">${variable.i18n.addMdFile}</a></li>`)
     $ul.append($addMdFile)
     // 【上传文件】
-    let $uploadFile = $(`<a name="uploadFile" href="#"><li>${variable.i18n.uploadFile}</li></a>`)
+    let $uploadFile = $(`<li><a href="javascript:void(0);">${variable.i18n.uploadFile}</a></li>`)
     $ul.append($uploadFile)
     // 【上传】
-    let $upload = null
-    if (variable.table === 'image') {
-        // accept="image/*" 只允许图片类型文件
-        // accept="audio/*" 只允许音频类型文件
-        // accept="video/*" 只允许视频类型文件
-        // accept=".doc,.docx,.pdf,.zip,.tar.gz" 只允许doc、docx、pdf、zip、tar.gz类型文件
-        $upload = $(`<li name="upload"><form action="${variable.contextPath}/${variable.table}/upload" method="post" enctype="multipart/form-data"><input name="file" type="file" accept="image/*"/><button type="submit">${variable.i18n.upload}</button></form></li>`)
-    }
+    let $upload = $(`<li><form action="${variable.contextPath}/${variable.table}/upload?t=${new Date().getTime()}" method="post" enctype="multipart/form-data"><input name="file" type="file"/><button type="submit">${variable.i18n.upload}</button></form></li>`)
+    setAccept($($upload.find('input[type="file"]')[0]))
     $ul.append($upload)
     // 【重命名】
-    let $rename = $(`<a name="rename" href="#"><li>${variable.i18n.rename}</li></a>`)
+    let $rename = $(`<li><form id="rename" action="${variable.contextPath}/${variable.table}/rename?t=${new Date().getTime()}" method="post"><input name="id" hidden><input name="name" hidden><a href="javascript:rename.submit();">${variable.i18n.rename}</a></form></li>`)
     $ul.append($rename)
     // 【复制地址】
-    let $copyAddress = $(`<a name="copyAddress" href="javascript:void(0);"><li>${variable.i18n.copyAddress}</li></a>`)
+    let $copyAddress = $(`<li><a href="javascript:void(0);">${variable.i18n.copyAddress}</a></li>`)
     $ul.append($copyAddress)
     // 【剪切】
-    let $cut = $(`<a name="cut" href="#"><li>${variable.i18n.cut}</li></a>`)
+    let $cut = $(`<li><a href="javascript:void(0);">${variable.i18n.cut}</a></li>`)
     $ul.append($cut)
     // 【粘贴】
-    let $paste = $(`<a name="paste" href="#"><li>${variable.i18n.paste}</li></a>`)
+    let $paste = $(`<li><a href="javascript:void(0);">${variable.i18n.paste}</a></li>`)
     $ul.append($paste)
     // 【删除】
-    let $del = $(`<a name="del" href="#"><li>${variable.i18n.del}</li></a>`)
+    let $del = $(`<li><a href="javascript:void(0);">${variable.i18n.del}</a></li>`)
     $ul.append($del)
     // 【恢复】
-    let $restore = $(`<a name="restore" href="#"><li>${variable.i18n.restore}</li></a>`)
+    let $restore = $(`<li><a href="javascript:void(0);">${variable.i18n.restore}</a></li>`)
     $ul.append($restore)
     // 【永久删除】
-    let $permlyDel = $(`<a name="permlyDel" href="#"><li>${variable.i18n.permlyDel}</li></a>`)
+    let $permlyDel = $(`<li><a href="javascript:void(0);">${variable.i18n.permlyDel}</a></li>`)
     $ul.append($permlyDel)
     // 【关闭】
-    let $close = $(`<a name="close" href="#"><li>${variable.i18n.close}</li></a>`)
+    let $close = $(`<li><a href="javascript:void(0);">${variable.i18n.close}</a></li>`)
     $ul.append($close)
     // 遮罩层
     let $div = $('<div class="menu"></div>')
@@ -181,7 +175,7 @@ $(function () {
     })
 
     // 监听 html->body 鼠标点击事件
-    $body.click(function (event) {
+    $body.click(function () {
         // 如果不是上传文件操作，单击空白处则隐藏菜单
         if (!isUploadFile) {
             hideMenu()
@@ -213,7 +207,7 @@ $(function () {
     })
 
     // 【上传文件】
-    $uploadFile.click(function () {
+    $($uploadFile.find('a')[0]).click(function () {
         hideElements($addFolder, $addMdFile, $uploadFile, $rename, $copyAddress, $cut, $paste, $del, $restore, $permlyDel)
         displayElements($upload, $close)
         isUploadFile = true
@@ -221,13 +215,12 @@ $(function () {
     })
 
     // 【上传】
-    $($ul.find('button[type="submit1"]')[0]).click(function () {
-        console.log('--1-')
-        return false
+    $($upload.find('[type="submit"]')[0]).click(function () {
+        return true
     })
 
     // 【重命名】
-    $rename.click(function (event) {
+    $($rename.find('a')[0]).click(function () {
         let id = $selectedTr.attr('id')
         let name = $selectedTr.attr('name')
         name = prompt(`${variable.i18n.name}`, name)
@@ -238,13 +231,14 @@ $(function () {
             return false
         }
 
-        let href = `${variable.contextPath}/${variable.table}/rename?id=${id}&name=${name}&t=${new Date().getTime()}`
-        $rename.attr('href', href)
+        $($rename.find('input[name="id"]')[0]).val(id)
+        $($rename.find('input[name="name"]')[0]).val(name)
+        return true
     })
 
     // 【复制地址】
     let $copyAddressTr = null
-    $copyAddress.click(function () {
+    $($copyAddress.find('a')[0]).click(function () {
         $copyAddressTr = $selectedTr
     })
     ;(function () {
@@ -254,7 +248,7 @@ $(function () {
             window.clipboard = null
         }
 
-        let clipboard = new ClipboardJS('[name="copyAddress"]', {
+        let clipboard = new ClipboardJS($copyAddress.find('a')[0], {
             text: function () {
                 let id = $copyAddressTr.attr('id')
                 let name = $copyAddressTr.attr('name')
@@ -282,12 +276,10 @@ $(function () {
 
     // 【剪切】
     $cut.click(function () {
-
     })
 
     // 【粘贴】
     $paste.click(function () {
-
     })
 
     // 【删除】
@@ -324,7 +316,7 @@ $(function () {
     })
 
     // 【关闭】
-    $close.click(function () {
+    $($close.find('a')[0]).click(function () {
         // 隐藏菜单
         hideMenu()
     })

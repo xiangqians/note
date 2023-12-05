@@ -15,8 +15,8 @@ type System struct {
 	UpdTime           int64  // 修改时间（时间戳，单位s）
 }
 
-// Abs 抽象类型定义
-type Abs struct {
+// 抽象类型定义
+type abs struct {
 	Id      int64  `json:"id"`      // 主键id
 	Name    string `json:"name"`    // 名称
 	Type    string `json:"type"`    // 类型
@@ -28,22 +28,22 @@ type Abs struct {
 
 // Image 图片
 type Image struct {
-	Abs
+	abs
 }
 
 // Audio 音频
 type Audio struct {
-	Abs
+	abs
 }
 
 // Video 视频
 type Video struct {
-	Abs
+	abs
 }
 
 // Note 笔记
 type Note struct {
-	Abs
+	abs
 	Pid int64 `json:"pid"` // 父id
 }
 

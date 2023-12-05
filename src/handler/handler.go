@@ -211,7 +211,7 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 					"embed/template/common/foot2.html",          // 嵌套模板文件
 					"embed/template/common/table.html",          // 嵌套模板文件
 					"embed/template/common/variable.html",       // 嵌套模板文件
-					"embed/template/common/float.html") // 嵌套模板文件
+					"embed/template/common/float.html")          // 嵌套模板文件
 			}
 			if err != nil {
 				panic(err)
@@ -248,8 +248,9 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 	router.HandleFunc(contextPath+"/image", handlerFunc(image.List))
 	router.HandleFunc(contextPath+"/image/rename", handlerFunc(image.Rename))
 	router.HandleFunc(contextPath+"/image/upload", handlerFunc(image.Upload))
-	router.HandleFunc(contextPath+"/image/{id}", handlerFunc(image.Get))
-	router.HandleFunc(contextPath+"/image/{id}/view", handlerFunc(image.View))
+	router.HandleFunc(contextPath+"/image/{id:[0-9]+}", handlerFunc(image.Get))
+	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/view", handlerFunc(image.View))
+	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/del", handlerFunc(image.Del))
 }
 
 // 处理静态资源

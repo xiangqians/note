@@ -29,3 +29,7 @@ func Get(request *http.Request, writer http.ResponseWriter, session *session.Ses
 func View(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
 	return common.View(request, writer, session, "image")
 }
+
+func Del(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
+	return common.Del(request, writer, session, "image")
+}

@@ -64,5 +64,25 @@
 
         return obj
     })();
+
+    function setAccept($input) {
+        let accept = null
+        if (variable.table === 'image') {
+            // 只允许图片类型文件
+            accept = "image/*"
+        } else if (variable.table === 'audio') {
+            // 只允许音频类型文件
+            accept = "audio/*"
+        } else if (variable.table === 'video') {
+            // 只允许视频类型文件
+            accept = "video/*"
+        } else if (variable.table === 'note') {
+            // 只允许doc、docx、pdf、zip、tar.gz类型文件
+            accept = ".doc,.docx,.pdf,.zip,.tar.gz"
+        }
+        $input.attr('accept', accept)
+    }
+
+    ;
 </script>
 {{ end }}

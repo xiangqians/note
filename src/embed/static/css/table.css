@@ -114,3 +114,8 @@ body div.menu ul li {
 body div.menu ul li:hover {
     background: #CCCCCC;
 }
+
+/* <a> 标签以填充整个 <li> */
+body div.menu ul li a {
+    display: block;
+}
