@@ -100,7 +100,7 @@ func TestGetField(t *testing.T) {
 
 func TestGetStruct(t *testing.T) {
 	db := Get()
-	result, err := db.Get("SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `image` LIMIT 1")
+	result, err := db.Get("SELECT `id`, `name`, `type`, `size`, `del`, `add_time`, `upd_time` FROM `image` LIMIT 1")
 	if err != nil {
 		panic(err)
 	}
@@ -135,7 +135,7 @@ func TestConcurrentGetStruct(t *testing.T) {
 
 func TestGetStructSlice(t *testing.T) {
 	db := Get()
-	result, err := db.Get("SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `image` LIMIT 10")
+	result, err := db.Get("SELECT `id`, `name`, `type`, `size`, `del`, `add_time`, `upd_time` FROM `image` LIMIT 10")
 	if err != nil {
 		panic(err)
 	}
@@ -157,7 +157,7 @@ func TestPage(t *testing.T) {
 	}
 
 	db := Get()
-	result, err := db.Page("SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `image`", page.Current, page.Size)
+	result, err := db.Page("SELECT `id`, `name`, `type`, `size`, `del`, `add_time`, `upd_time` FROM `image`", page.Current, page.Size)
 	if err != nil {
 		panic(err)
 	}

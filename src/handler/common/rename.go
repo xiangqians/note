@@ -28,7 +28,7 @@ func Rename(request *http.Request, writer http.ResponseWriter, session *session.
 	}
 
 	db := db.Get()
-	sql := fmt.Sprintf("SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `%s` WHERE `del` = 0 AND `id` = ?", table)
+	sql := fmt.Sprintf("SELECT `id`, `name`, `type`, `size`, `del`, `add_time`, `upd_time` FROM `%s` WHERE `del` = 0 AND `id` = ?", table)
 	result, err := db.Get(sql, id)
 	if err != nil {
 		return redirect(table, err)

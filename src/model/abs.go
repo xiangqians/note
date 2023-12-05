@@ -13,9 +13,7 @@ type Abs struct {
 
 type Abs1 struct {
 	Abs
-	Name        string `json:"name" form:"name" binding:"required,min=1,max=60"` // 名称
-	Type        string `json:"type" form:"type"`                                 // 类型
-	Size        int64  `json:"size" form:"size"`                                 // 大小，单位：byte
-	History     string `json:"history"`                                          // 历史
-	HistorySize int64  `json:"historySize"`                                      // 历史大小，单位：byte
+	Name string `json:"name" form:"name" binding:"required,min=1,max=60"` // 名称
+	Type string `json:"type" form:"type"`                                 // 类型
+	Size int64  `json:"size" form:"size"`                                 // 大小，单位：byte
 }

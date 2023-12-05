@@ -31,7 +31,7 @@ func View(request *http.Request, writer http.ResponseWriter, session *session.Se
 	}
 
 	db := db.Get()
-	result, err := db.Get(fmt.Sprintf("SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `%s` WHERE `del` = 0 AND `id` = ? LIMIT 1", table), id)
+	result, err := db.Get(fmt.Sprintf("SELECT `id`, `name`, `type`, `size`, `del`, `add_time`, `upd_time` FROM `%s` WHERE `del` = 0 AND `id` = ? LIMIT 1", table), id)
 	if err != nil {
 		return html404(err)
 	}

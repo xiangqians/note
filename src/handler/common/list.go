@@ -149,7 +149,7 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 	}
 
 	db := db.Get()
-	sql := fmt.Sprintf("SELECT `id`, `name`, `type`, `size`, `history`, `history_size`, `del`, `add_time`, `upd_time` FROM `%s` WHERE %s ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC",
+	sql := fmt.Sprintf("SELECT `id`, `name`, `type`, `size`, `del`, `add_time`, `upd_time` FROM `%s` WHERE %s ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC",
 		table,
 		strings.Join(statements, " AND "))
 	result, err := db.Page(sql, current, size, values...)
