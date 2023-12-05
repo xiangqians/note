@@ -19,7 +19,6 @@ $(function () {
     function display() {
         $btn.attr('value', '-')
         $btn.text('-')
-        $btn.css('margin-top', '10px')
         displayElements($div)
         storage.set('float', 'block')
     }
@@ -28,7 +27,6 @@ $(function () {
     function hide() {
         $btn.attr('value', '+')
         $btn.text('+')
-        $btn.css('margin-top', '0px')
         hideElements($div)
         storage.set('float', 'none')
     }

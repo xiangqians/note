@@ -93,7 +93,7 @@ $(function () {
             // 设置选中的tr背景颜色
             let $target = $(event.target)
             if (event.target.tagName.toLowerCase() !== 'tr') {
-                $selectedTr = $target.parent('tr')
+                $selectedTr = $target.closest('tr')
             }
             $selectedTr.css('background-color', '#CCCCCC')
 
