@@ -37,10 +37,10 @@ $(function () {
     let $del = $(`<li><form id="del" action="${variable.contextPath}/${variable.table}/{id}/del?t=${new Date().getTime()}" method="post"><a href="javascript:del.submit();">${variable.i18n.del}</a></form></li>`)
     $ul.append($del)
     // 【恢复】
-    let $restore = $(`<li><a href="javascript:void(0);">${variable.i18n.restore}</a></li>`)
+    let $restore = $(`<li><form id="restore" action="${variable.contextPath}/${variable.table}/{id}/restore?t=${new Date().getTime()}" method="post"><a href="javascript:restore.submit();">${variable.i18n.restore}</a></form></li>`)
     $ul.append($restore)
     // 【永久删除】
-    let $permlyDel = $(`<li><a href="javascript:void(0);">${variable.i18n.permlyDel}</a></li>`)
+    let $permlyDel = $(`<li><form id="permlyDel" action="${variable.contextPath}/${variable.table}/{id}/permlydel?t=${new Date().getTime()}" method="post"><a href="javascript:permlyDel.submit();">${variable.i18n.permlyDel}</a></form></li>`)
     $ul.append($permlyDel)
     // 【关闭】
     let $close = $(`<li><a href="javascript:void(0);">${variable.i18n.close}</a></li>`)
@@ -298,7 +298,8 @@ $(function () {
     })
 
     // 【恢复】
-    $restore.click(function () {
+    $($restore.find('a')[0]).click(function () {
+        let id = $selectedTr.attr('id')
         let name = $selectedTr.attr('name')
         if (!confirm(`${variable.i18n.restore} ${name} ?`)) {
             // 隐藏菜单
@@ -306,10 +307,14 @@ $(function () {
             // 取消 <a></a> 默认行为
             return false
         }
+
+        let $form = $($restore.find('form')[0])
+        $form.attr('action', `${variable.contextPath}/${variable.table}/${id}/restore?t=${new Date().getTime()}`)
     })
 
     // 【永久删除】
-    $permlyDel.click(function () {
+    $($permlyDel.find('a')[0]).click(function () {
+        let id = $selectedTr.attr('id')
         let name = $selectedTr.attr('name')
         if (!confirm(`${variable.i18n.permlyDel} ${name} ?`)) {
             // 隐藏菜单
@@ -317,6 +322,9 @@ $(function () {
             // 取消 <a></a> 默认行为
             return false
         }
+
+        let $form = $($permlyDel.find('form')[0])
+        $form.attr('action', `${variable.contextPath}/${variable.table}/${id}/permlydel?t=${new Date().getTime()}`)
     })
 
     // 【关闭】
