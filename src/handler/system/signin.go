@@ -138,10 +138,3 @@ func getSystem() (model.System, error) {
 	err = result.Scan(&system)
 	return system, err
 }
-
-// --------------------
-
-//_method := strings.TrimSpace(request.URL.Query().Get("_method"))
-//if _method == "" {
-//_method = strings.TrimSpace(request.PostForm.Get("_method"))
-//}

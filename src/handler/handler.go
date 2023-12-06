@@ -246,11 +246,13 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 
 	// image
 	router.HandleFunc(contextPath+"/image", handlerFunc(image.List))
-	router.HandleFunc(contextPath+"/image/rename", handlerFunc(image.Rename))
-	router.HandleFunc(contextPath+"/image/upload", handlerFunc(image.Upload))
+	router.HandleFunc(contextPath+"/image/upload", handlerFunc(image.Upload)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/image/rename", handlerFunc(image.Rename)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/image/{id:[0-9]+}", handlerFunc(image.Get))
 	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/view", handlerFunc(image.View))
-	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/del", handlerFunc(image.Del))
+	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/del", handlerFunc(image.Del)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/restore", handlerFunc(image.Restore)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/permlydel", handlerFunc(image.PermlyDel)).Methods(http.MethodPost)
 }
 
 // 处理静态资源

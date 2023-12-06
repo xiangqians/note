@@ -4,36 +4,24 @@ package common
 
 import (
 	"fmt"
-	"note/src/db"
 	"note/src/model"
 	util_string "note/src/util/string"
 )
 
+// 数据目录
 var dataDir = model.Ini.Data.Dir
-
-// 重定向
-func redirect(table string, id int64, err any) (string, model.Response) {
-	name := "redirect:/" + table
-	if id > 0 {
-		name += fmt.Sprintf("/%d/view", id)
-	}
-	return name, model.Response{Msg: util_string.String(err)}
-}
 
 // html 404
 func html404(err any) (string, model.Response) {
 	return "404", model.Response{Msg: util_string.String(err)}
 }
 
-// 获取永久删除id，以复用
-func getPermlyDelId(table string) (int64, error) {
-	db := db.Get()
-	result, err := db.Get(fmt.Sprintf("SELECT `id` FROM `%s` WHERE `del` = 2 LIMIT 1", table))
-	if err != nil {
-		return 0, err
-	}
+// 重定向到列表
+func redirectList(table string, err any) (string, model.Response) {
+	return fmt.Sprintf("redirect:/%s", table), model.Response{Msg: util_string.String(err)}
+}
 
-	var id int64
-	err = result.Scan(&id)
-	return id, err
+// 重定向到详情页
+func redirectView(table string, id int64, err any) (string, model.Response) {
+	return fmt.Sprintf("redirect:/%s/%d/view", table, id), model.Response{Msg: util_string.String(err)}
 }

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"note/src/db"
+	pkg_db "note/src/db"
 	"note/src/model"
 	"note/src/session"
 	util_filetype "note/src/util/filetype"
@@ -19,34 +19,45 @@ import (
 )
 
 func Upload(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (string, model.Response) {
-	// 有id，重新上传
+	// 有id，标识着重新上传
 	idStr := request.PostFormValue("id")
 	id, _ := strconv.ParseInt(idStr, 10, 64)
+
+	// 重定向函数
+	viewId := id
+	redirect := func(err any) (string, model.Response) {
+		if viewId == 0 {
+			return redirectList(table, err)
+		}
+		return redirectView(table, viewId, err)
+	}
+
+	// 重新上传时，校验id
 	if id != 0 {
-		db := db.Get()
+		db := pkg_db.Get()
 		result, err := db.Get(fmt.Sprintf("SELECT `id` FROM `%s` WHERE `del` = 0 AND `id` = ? LIMIT 1", table), id)
 		if err != nil {
-			return redirect(table, id, err)
+			return redirect(err)
 		}
 
 		id = 0
 		err = result.Scan(&id)
 		if err != nil || id == 0 {
-			return redirect(table, id, err)
+			return redirect(err)
 		}
 	}
 
 	// 读取上传文件
 	file, fileHeader, err := request.FormFile("file")
 	if err != nil {
-		return redirect(table, id, err)
+		return redirect(err)
 	}
 	defer file.Close()
 
 	// 读取文件字节内容
 	bytes, err := io.ReadAll(file)
 	if err != nil {
-		return redirect(table, id, err)
+		return redirect(err)
 	}
 
 	// 获取文件类型
@@ -58,7 +69,7 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 			filetype != util_filetype.Jpeg &&
 			filetype != util_filetype.Png &&
 			filetype != util_filetype.Webp {
-			return redirect(table, id, fmt.Sprintf(util_i18n.GetMessage("i18n.fileTypeUnsupportedUpload", session.GetLanguage()), filetype))
+			return redirect(fmt.Sprintf(util_i18n.GetMessage("i18n.fileTypeUnsupportedUpload", session.GetLanguage()), filetype))
 		}
 	}
 
@@ -73,12 +84,12 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 	// 文件大小，单位：字节
 	size := fileHeader.Size
 
-	db := db.Get()
+	db := pkg_db.Get()
 
 	// 开启事务
 	err = db.Begin()
 	if err != nil {
-		return redirect(table, id, err)
+		return redirect(err)
 	}
 
 	// 入库
@@ -94,9 +105,17 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 	// 上传
 	{
 		// 获取永久删除id，以复用
-		id, err = getPermlyDelId(table)
+		var result *pkg_db.Result
+		result, err = db.Get(fmt.Sprintf("SELECT `id` FROM `%s` WHERE `del` = 2 LIMIT 1", table))
 		if err != nil {
-			return redirect(table, 0, err)
+			db.Rollback()
+			return redirect(err)
+		}
+		id = 0
+		err = result.Scan(&id)
+		if err != nil {
+			db.Rollback()
+			return redirect(err)
 		}
 
 		// 新id
@@ -120,7 +139,7 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 
 	if err != nil {
 		db.Rollback()
-		return redirect(table, id, err)
+		return redirect(err)
 	}
 
 	// 数据目录
@@ -132,7 +151,7 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 	}
 	if err != nil {
 		db.Rollback()
-		return redirect(table, id, err)
+		return redirect(err)
 	}
 
 	// 保存文件
@@ -143,17 +162,17 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 		0666)
 	if err != nil {
 		db.Rollback()
-		return redirect(table, id, err)
+		return redirect(err)
 	}
 	defer newFile.Close()
 	_, err = newFile.Write(bytes)
 	if err != nil {
 		db.Rollback()
-		return redirect(table, id, err)
+		return redirect(err)
 	}
 
 	// 提交事务
 	db.Commit()
 
-	return redirect(table, id, err)
+	return redirect(err)
 }

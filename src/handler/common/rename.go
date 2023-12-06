@@ -18,20 +18,20 @@ func Rename(request *http.Request, writer http.ResponseWriter, session *session.
 	idStr := strings.TrimSpace(request.PostFormValue("id"))
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil || id <= 0 {
-		return redirect(table, 0, err)
+		return redirectList(table, err)
 	}
 
 	// 名称
 	name := strings.TrimSpace(request.PostFormValue("name"))
 	if name == "" {
-		return redirect(table, 0, err)
+		return redirectList(table, err)
 	}
 
 	db := db.Get()
 	sql := fmt.Sprintf("SELECT `id` FROM `%s` WHERE `del` = 0 AND `id` = ?", table)
 	result, err := db.Get(sql, id)
 	if err != nil {
-		return redirect(table, 0, err)
+		return redirectList(table, err)
 	}
 
 	id = 0
@@ -40,5 +40,5 @@ func Rename(request *http.Request, writer http.ResponseWriter, session *session.
 		db.Upd(fmt.Sprintf("UPDATE `%s` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` != ?", table), name, util_time.NowUnix(), id, name)
 	}
 
-	return redirect(table, 0, err)
+	return redirectList(table, err)
 }

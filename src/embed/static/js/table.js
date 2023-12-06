@@ -34,7 +34,7 @@ $(function () {
     let $paste = $(`<li><a href="javascript:void(0);">${variable.i18n.paste}</a></li>`)
     $ul.append($paste)
     // 【删除】
-    let $del = $(`<li><a href="javascript:void(0);">${variable.i18n.del}</a></li>`)
+    let $del = $(`<li><form id="del" action="${variable.contextPath}/${variable.table}/{id}/del?t=${new Date().getTime()}" method="post"><a href="javascript:del.submit();">${variable.i18n.del}</a></form></li>`)
     $ul.append($del)
     // 【恢复】
     let $restore = $(`<li><a href="javascript:void(0);">${variable.i18n.restore}</a></li>`)
@@ -283,7 +283,8 @@ $(function () {
     })
 
     // 【删除】
-    $del.click(function () {
+    $($del.find('a')[0]).click(function () {
+        let id = $selectedTr.attr('id')
         let name = $selectedTr.attr('name')
         if (!confirm(`${variable.i18n.del} ${name} ?`)) {
             // 隐藏菜单
@@ -291,6 +292,9 @@ $(function () {
             // 取消 <a></a> 默认行为
             return false
         }
+
+        let $form = $($del.find('form')[0])
+        $form.attr('action', `${variable.contextPath}/${variable.table}/${id}/del?t=${new Date().getTime()}`)
     })
 
     // 【恢复】

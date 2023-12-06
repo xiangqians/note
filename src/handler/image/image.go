@@ -13,12 +13,12 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 	return common.List(request, writer, session, "image")
 }
 
-func Rename(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
-	return common.Rename(request, writer, session, "image")
-}
-
 func Upload(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
 	return common.Upload(request, writer, session, "image")
+}
+
+func Rename(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
+	return common.Rename(request, writer, session, "image")
 }
 
 func Get(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
@@ -32,4 +32,12 @@ func View(request *http.Request, writer http.ResponseWriter, session *session.Se
 
 func Del(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
 	return common.Del(request, writer, session, "image")
+}
+
+func Restore(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
+	return common.Restore(request, writer, session, "image")
+}
+
+func PermlyDel(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
+	return common.PermlyDel(request, writer, session, "image")
 }

@@ -1,5 +1,5 @@
 // @author xiangqian
-// @date 21:44 2023/12/05
+// @date 22:09 2023/12/06
 package common
 
 import (
@@ -13,7 +13,7 @@ import (
 	"strconv"
 )
 
-func Del(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (string, model.Response) {
+func Restore(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (string, model.Response) {
 	vars := mux.Vars(request)
 	idStr := vars["id"]
 	id, err := strconv.ParseInt(idStr, 10, 64)
@@ -22,6 +22,6 @@ func Del(request *http.Request, writer http.ResponseWriter, session *session.Ses
 	}
 
 	db := db.Get()
-	_, err = db.Del(fmt.Sprintf("UPDATE `%s` SET `del` = 1, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", table), util_time.NowUnix(), id)
+	_, err = db.Upd(fmt.Sprintf("UPDATE `%s` SET `del` = 0, `upd_time` = ? WHERE `del` = 1 AND `id` = ?", table), util_time.NowUnix(), id)
 	return redirectList(table, err)
 }

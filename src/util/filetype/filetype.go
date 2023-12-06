@@ -6,19 +6,18 @@ import "net/http"
 
 // 文件类型
 const (
-	Folder  = "folder"  // 文件夹
-	Md      = "md"      // md文件
-	Html    = "html"    // html文件
-	Pdf     = "pdf"     // pdf文件
-	Doc     = "doc"     // doc文件
-	Zip     = "zip"     // zip文件
-	Ico     = "ico"     // ico文件
-	Gif     = "gif"     // gif文件
-	Jpg     = "jpg"     // jpg文件
-	Jpeg    = "jpeg"    // jpeg文件
-	Png     = "png"     // png文件
-	Webp    = "webp"    // webp文件
-	Unknown = "unknown" // 未知
+	Folder = "folder" // 文件夹
+	Md     = "md"     // md文件
+	Html   = "html"   // html文件
+	Pdf    = "pdf"    // pdf文件
+	Doc    = "doc"    // doc文件
+	Zip    = "zip"    // zip文件
+	Ico    = "ico"    // ico文件
+	Gif    = "gif"    // gif文件
+	Jpg    = "jpg"    // jpg文件
+	Jpeg   = "jpeg"   // jpeg文件
+	Png    = "png"    // png文件
+	Webp   = "webp"   // webp文件
 )
 
 func GetType(data []byte) string {
@@ -46,6 +45,6 @@ func GetType(data []byte) string {
 	case "image/webp":
 		return Webp
 	default:
-		return Unknown
+		return contentType
 	}
 }
