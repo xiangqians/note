@@ -60,6 +60,13 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 			value:     nil,
 		},
 		{
+			name:      " pid:",
+			index:     -1,
+			kind:      reflect.Int64,
+			statement: "`pid` = ?",
+			value:     int64(0),
+		},
+		{
 			name:      " name:",
 			index:     -1,
 			kind:      reflect.String,
@@ -132,9 +139,14 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 		}
 	}
 
-	del := columns[length-1].value.(uint8)
-	if del != 0 && del != 1 {
-		return html(page, nil)
+	for _, column := range columns {
+		if column.name == " del:" {
+			del := column.value.(uint8)
+			if del != 0 && del != 1 {
+				return html(page, nil)
+			}
+			break
+		}
 	}
 
 	// len 0, cap ?
@@ -142,16 +154,29 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 	values := make([]any, 0, length)
 
 	for i := 0; i < length; i++ {
-		if columns[i].value != nil {
-			statements = append(statements, columns[i].statement)
-			values = append(values, columns[i].value)
+		column := columns[i]
+		if column.value != nil {
+			if column.name == " pid:" && table != "note" {
+				continue
+			}
+			statements = append(statements, column.statement)
+			values = append(values, column.value)
 		}
 	}
 
 	db := db.Get()
-	sql := fmt.Sprintf("SELECT `id`, `name`, `type`, `size`, `del`, `add_time`, `upd_time` FROM `%s` WHERE %s ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC",
-		table,
-		strings.Join(statements, " AND "))
+	sql := "SELECT `id`, `name`, `type`, `size`, `del`, `add_time`, `upd_time`"
+	if table == "note" {
+		sql += ", pid"
+	}
+	sql += fmt.Sprintf(" FROM `%s` ", table)
+	sql += fmt.Sprintf(" WHERE %s ", strings.Join(statements, " AND "))
+	switch table {
+	case "image", "audio", "video":
+		sql += " ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC"
+	case "note":
+		sql += " ORDER BY `type`, `name`, (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC"
+	}
 	result, err := db.Page(sql, current, size, values...)
 	if err != nil {
 		return html(page, err)
@@ -166,6 +191,11 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 		var images []model.Image
 		err = result.Scan(&images)
 		data = images
+
+	case "note":
+		var notes []model.Note
+		err = result.Scan(&notes)
+		data = notes
 	}
 
 	page.Data = data

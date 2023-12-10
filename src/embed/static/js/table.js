@@ -242,6 +242,10 @@ $(function () {
         $copyAddressTr = $selectedTr
     })
     ;(function () {
+        if (variable.table === 'note') {
+            return
+        }
+
         // 销毁clipboard，如果存在的话
         if (window.clipboard) {
             window.clipboard.destroy()

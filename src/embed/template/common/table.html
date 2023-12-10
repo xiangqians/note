@@ -52,7 +52,10 @@
         <tfoot>
         <tr>
             <td colspan="5">
-                <form action="{{ .contextPath }}/image" method="get">
+                <!-- 数据表 -->
+                {{ $table := .response.Data.table }}
+
+                <form action="{{ .contextPath }}/{{ $table }}" method="get">
                     <input name="current" value="1" type="hidden">
                     <input name="size" value="{{ $page.Size }}" type="hidden">
                     <input name="search"
@@ -62,9 +65,6 @@
                            value="{{ $page.Search }}">
                     <input name="t" value="{{ NowUnix }}" type="hidden">
                 </form>
-
-                <!-- 数据表 -->
-                {{ $table := .response.Data.table }}
 
                 <!-- 页索引集 -->
                 {{ $indexes := $page.Indexes }}

@@ -1,0 +1,27 @@
+<!--
+ | @author xiangqian
+ | @date 21:39 2023/12/10
+ |-->
+{{ define "note/list" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" rel="external nofollow" href="{{ .contextPath }}/static/favicon.ico">
+    <link rel="stylesheet" href="{{ .contextPath }}/static/css/body.css" type="text/css"/>
+    <link rel="stylesheet" href="{{ .contextPath }}/static/css/table.css" type="text/css"/>
+    <link rel="stylesheet" href="{{ .contextPath }}/static/css/foot2.css" type="text/css"/>
+    <link rel="stylesheet" href="{{ .contextPath }}/static/css/foot1.css" type="text/css"/>
+    <title>{{ Localize "i18n.note" .language }}</title>
+</head>
+<body>
+{{ template "common/variable" . }}
+{{ template "common/table" . }}
+</body>
+{{ template "common/foot2" . }}
+{{ template "common/foot1" . }}
+</html>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/jquery.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/body.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/table.js"></script>
+{{ end }}

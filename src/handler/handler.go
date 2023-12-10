@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"note/src/handler/image"
 	"note/src/handler/index"
+	"note/src/handler/note"
 	"note/src/handler/system"
 	"note/src/model"
 	"note/src/session"
@@ -253,6 +254,11 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/del", handlerFunc(image.Del)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/restore", handlerFunc(image.Restore)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/permlydel", handlerFunc(image.PermlyDel)).Methods(http.MethodPost)
+
+	// note
+	router.HandleFunc(contextPath+"/note", handlerFunc(note.List))
+	router.HandleFunc(contextPath+"/note/rename", handlerFunc(note.Rename)).Methods(http.MethodPost)
+
 }
 
 // 处理静态资源
