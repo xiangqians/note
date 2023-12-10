@@ -26544,16 +26544,20 @@
     /* global $, _ */
     let mdHtml, mdSrc, permalink, scrollMap;
     const defaults = {
+        // 是否可以识别html
         // Enable HTML tags in source
         html: false,
         // Use '/' to close single tags (<br />)
         xhtmlOut: false,
+        // 是否回车换行
         // Convert '\n' in paragraphs into <br>
         breaks: false,
         // CSS language prefix for fenced blocks
         langPrefix: "language-",
+        // 是否自动检测像链接的文本
         // autoconvert URL-like texts to links
         linkify: true,
+        // 是否优化排版，标点
         // Enable smartypants and other sweet transforms
         typographer: true,
         // options below are for demo only
@@ -26599,13 +26603,65 @@
         defaults._view = val;
     }
 
+    // 中文文档地址：
+    // https://markdown-it.docschina.org/api/MarkdownIt.html
     function mdInit() {
         if (defaults._strict) {
             mdHtml = window.markdownit("commonmark");
             mdSrc = window.markdownit("commonmark");
         } else {
-            mdHtml = window.markdownit(defaults).use(abbr_plugin).use(container_plugin, "warning").use(deflist_plugin).use(emoji_plugin).use(footnote_plugin).use(ins_plugin$1).use(ins_plugin).use(sub_plugin).use(sup_plugin);
-            mdSrc = window.markdownit(defaults).use(abbr_plugin).use(container_plugin, "warning").use(deflist_plugin).use(emoji_plugin).use(footnote_plugin).use(ins_plugin$1).use(ins_plugin).use(sub_plugin).use(sup_plugin);
+            // 创建 markdown-it 实例
+            mdHtml = window.markdownit(defaults)
+                .use(abbr_plugin)
+                .use(container_plugin, "warning")
+                // 注册 markdown-it-deflist 插件，用于解析定义列表（定义术语和描述的列表）
+                .use(deflist_plugin)
+                // 注册 markdown-it-emoji 插件，用于解析和渲染 Emoji 表情
+                .use(emoji_plugin)
+                // 注册 markdown-it-footnote 插件，用于解析和渲染脚注
+                .use(footnote_plugin)
+                // 注册 markdown-it-ins 插件，用于解析和渲染插入线（ins标签）
+                .use(ins_plugin$1)
+                .use(ins_plugin)
+                // 注册 markdown-it-sub 插件，用于解析和渲染下标文本（例如 H~2~O）
+                .use(sub_plugin)
+                // 注册 markdown-it-sup 插件，用于解析和渲染上标文本（例如 x^2^）
+                .use(sup_plugin)
+                // 注册 markdown-it-mark 插件，用于解析和渲染标记文本（mark标签）
+                // .use(window.markdownitMark)
+                // 注册 markdown-it-task-lists 插件，用于解析任务列表（带有复选框的列表）
+                // .use(window.markdownitTaskLists)
+                // 注册 markdown-it-anchor 插件
+                // .use(window.markdownItAnchor, {
+                //     permalink: true, // 启用永久链接，默认为 false
+                //     permalinkBefore: true, // 永久链接元素是否在标题前面，默认为 false
+                //     permalinkClass: false, // 永久链接元素的 CSS 类，默认为 'header-anchor'
+                //     permalinkSymbol: '§' // 永久链接符号，默认为 '¶'
+                // })
+                // 注册 markdown-it-toc-done-right 插件
+                // .use(window.markdownItTocDoneRight, {
+                //     containerClass: 'toc', // 生成的容器的类名，这样最后返回来的字符串是 <nav class="toc"><nav/>
+                //     containerId: 'toc', // 生成的容器的ID，这样最后返回来的字符串是 <nav id="toc"><nav/>
+                //     listType: 'ul', // 导航列表使用ul还是ol
+                //     listClass: 'listClass', // li标签的样式名
+                //     itemClass: 'itemClass',
+                //     linkClass: 'linkClass', // a标签的样式名
+                //     callback: function (html, ast) {
+                //         // 把目录单独列出来
+                //         // document.getElementById('toc').innerHTML = html
+                //     },
+                //     level: [1, 2, 3], // 设置生成目录的标题级别
+                // })
+            mdSrc = window.markdownit(defaults)
+                .use(abbr_plugin)
+                .use(container_plugin, "warning")
+                .use(deflist_plugin)
+                .use(emoji_plugin)
+                .use(footnote_plugin)
+                .use(ins_plugin$1)
+                .use(ins_plugin)
+                .use(sub_plugin)
+                .use(sup_plugin)
         }
         // Beautify output of parser for html content
         mdHtml.renderer.rules.table_open = function () {
