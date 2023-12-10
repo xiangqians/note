@@ -1,4 +1,4 @@
-# icon
+# file icon
 
 https://www.iconfinder.com/
 
