@@ -4,13 +4,12 @@ package validate
 
 import (
 	"errors"
-	"github.com/gin-contrib/i18n"
 	util_i18n "note/src/util/i18n"
 	"regexp"
 )
 
 // UserName 校验用户名
-func UserName(userName string) error {
+func UserName(userName string, language string) error {
 	// 1-60位长度（字母，数字，下划线，减号）
 	matched, err := regexp.MatchString("^[a-zA-Z0-9_-]{1,60}$", userName)
 	if err != nil {
@@ -18,7 +17,7 @@ func UserName(userName string) error {
 	}
 
 	if !matched {
-		return errors.New(i18n.MustGetMessage("i18n.validateUserName"))
+		return errors.New(util_i18n.GetMessage("i18n.validateUserName", language))
 	}
 
 	return nil
@@ -41,7 +40,7 @@ func Passwd(passwd, language string) error {
 }
 
 // FileName 校验文件名
-func FileName(fileName string) error {
+func FileName(fileName string, language string) error {
 	// 名称不能包含字符：\ / : * ? " < > |
 
 	// ^[^\\/:*?"<>|]*$
@@ -51,7 +50,7 @@ func FileName(fileName string) error {
 	}
 
 	if !matched {
-		return errors.New(i18n.MustGetMessage("i18n.validateFileName"))
+		return errors.New(util_i18n.GetMessage("i18n.validateFileName", language))
 	}
 
 	return nil

@@ -9,10 +9,10 @@ $(function () {
     // 右键菜单列表
     let $ul = $('<ul></ul>')
     // 【新增文件夹】
-    let $addFolder = $(`<li><a href="javascript:void(0);">${variable.i18n.addFolder}</a></li>`)
+    let $addFolder = $(`<li><form id="addFolder" action="${variable.contextPath}/${variable.table}/addfolder?t=${new Date().getTime()}" method="post"><input name="pid" hidden><input name="name" hidden><a href="javascript:addFolder.submit();">${variable.i18n.addFolder}</a></form></li>`)
     $ul.append($addFolder)
     // 【新增MD文件】
-    let $addMdFile = $(`<li><a href="javascript:void(0);">${variable.i18n.addMdFile}</a></li>`)
+    let $addMdFile = $(`<li><form id="addMdFile" action="${variable.contextPath}/${variable.table}/addmdfile?t=${new Date().getTime()}" method="post"><input name="pid" hidden><input name="name" hidden><a href="javascript:addMdFile.submit();">${variable.i18n.addMdFile}</a></form></li>`)
     $ul.append($addMdFile)
     // 【上传文件】
     let $uploadFile = $(`<li><a href="javascript:void(0);">${variable.i18n.uploadFile}</a></li>`)
@@ -183,7 +183,8 @@ $(function () {
     })
 
     // 【新增文件夹】
-    $addFolder.click(function () {
+    $($addFolder.find('a')[0]).click(function () {
+        let pid = variable.pNote.id
         let name = prompt(`${variable.i18n.name}`, '')
         if (!name || (name = name.trim()) === '') {
             // 隐藏菜单
@@ -191,11 +192,15 @@ $(function () {
             // 取消 <a></a> 默认行为
             return false
         }
-        console.log(name)
+
+        $($addFolder.find('input[name="pid"]')[0]).val(pid)
+        $($addFolder.find('input[name="name"]')[0]).val(name)
+        return true
     })
 
     // 【新增md文件】
-    $addMdFile.click(function () {
+    $($addMdFile.find('a')[0]).click(function () {
+        let pid = variable.pNote.id
         let name = prompt(`${variable.i18n.name}`, '')
         if (!name || (name = name.trim()) === '') {
             // 隐藏菜单
@@ -203,7 +208,10 @@ $(function () {
             // 取消 <a></a> 默认行为
             return false
         }
-        console.log(name)
+
+        $($addMdFile.find('input[name="pid"]')[0]).val(pid)
+        $($addMdFile.find('input[name="name"]')[0]).val(name)
+        return true
     })
 
     // 【上传文件】

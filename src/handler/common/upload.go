@@ -62,13 +62,19 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 
 	// 获取文件类型
 	filetype := util_filetype.GetType(bytes)
-	if table == "image" {
+	switch table {
+	case "image":
 		if filetype != util_filetype.Ico &&
 			filetype != util_filetype.Gif &&
 			filetype != util_filetype.Jpg &&
 			filetype != util_filetype.Jpeg &&
 			filetype != util_filetype.Png &&
 			filetype != util_filetype.Webp {
+			return redirect(fmt.Sprintf(util_i18n.GetMessage("i18n.fileTypeUnsupportedUpload", session.GetLanguage()), filetype))
+		}
+	case "note":
+		if filetype != util_filetype.Pdf &&
+			filetype != util_filetype.Zip {
 			return redirect(fmt.Sprintf(util_i18n.GetMessage("i18n.fileTypeUnsupportedUpload", session.GetLanguage()), filetype))
 		}
 	}

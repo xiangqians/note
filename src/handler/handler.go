@@ -192,7 +192,13 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 				}
 
 				// 301 永久重定向
-				http.Redirect(writer, request, fmt.Sprintf("%s%s?t=%d", contextPath, name[len("redirect:"):], util_time.NowUnix()), http.StatusMovedPermanently)
+				url := contextPath + name[len("redirect:"):]
+				if strings.Contains(url, "?") {
+					url += fmt.Sprintf("&t=%d", util_time.NowUnix())
+				} else {
+					url += fmt.Sprintf("?t=%d", util_time.NowUnix())
+				}
+				http.Redirect(writer, request, url, http.StatusMovedPermanently)
 				return
 			}
 
@@ -258,7 +264,9 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 	// note
 	router.HandleFunc(contextPath+"/note", handlerFunc(note.List))
 	router.HandleFunc(contextPath+"/note/rename", handlerFunc(note.Rename)).Methods(http.MethodPost)
-
+	router.HandleFunc(contextPath+"/note/addfolder", handlerFunc(note.AddFolder)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/note/addmdfile", handlerFunc(note.AddMdFile)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/note/upload", handlerFunc(note.Upload)).Methods(http.MethodPost)
 }
 
 // 处理静态资源

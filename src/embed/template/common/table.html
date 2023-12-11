@@ -90,7 +90,7 @@
                     <input name="search"
                            type="text"
                            placeholder='{{ Localize "i18n.search" .language }}'
-                           title="id:{id}&nbsp;&nbsp;name:{name}&nbsp;&nbsp;type:{type}&nbsp;&nbsp;del:{del}"
+                           title='{{ if eq $table "note" }}id:{id}&nbsp;&nbsp;pid:{pid}&nbsp;&nbsp;name:{name}&nbsp;&nbsp;type:{type}&nbsp;&nbsp;del:{del}{{ else }}id:{id}&nbsp;&nbsp;name:{name}&nbsp;&nbsp;type:{type}&nbsp;&nbsp;del:{del}{{ end }}'
                            value="{{ $page.Search }}">
                     <input name="t" value="{{ NowUnix }}" type="hidden">
                 </form>

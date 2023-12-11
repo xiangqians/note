@@ -7,6 +7,7 @@ import (
 	"note/src/handler/common"
 	"note/src/model"
 	"note/src/session"
+	util_filetype "note/src/util/filetype"
 )
 
 func List(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
@@ -15,4 +16,16 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 
 func Rename(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
 	return common.Rename(request, writer, session, "note")
+}
+
+func AddFolder(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
+	return add(request, writer, session, util_filetype.Folder)
+}
+
+func AddMdFile(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
+	return add(request, writer, session, util_filetype.Md)
+}
+
+func Upload(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
+	return common.Upload(request, writer, session, "note")
 }
