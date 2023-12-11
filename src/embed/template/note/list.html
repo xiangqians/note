@@ -15,6 +15,7 @@
     <title>{{ Localize "i18n.note" .language }}</title>
 </head>
 <body>
+<h2><span>Index of /</span>{{ $table := .response.Data.table }}{{ $pNote := .response.Data.pNote }}{{ $ids := $pNote.Ids }}{{ if $ids }}{{ $len := len $ids }}{{ if gt $len 0 }}{{ $names := $pNote.Names }}{{ range $index,$id := $ids }}{{ if gt $index 0 }}<span>/</span>{{ end }}<a href='{{ $.contextPath }}/{{ $table }}?search=pid%3A%20{{ $id }}&t={{ NowUnix }}'>{{ index $names $index }}</a>{{ end }}{{ end }}{{ end }}</h2>
 {{ template "common/variable" . }}
 {{ template "common/table" . }}
 </body>

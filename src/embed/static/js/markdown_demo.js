@@ -26639,19 +26639,22 @@
                 //     permalinkSymbol: '§' // 永久链接符号，默认为 '¶'
                 // })
                 // 注册 markdown-it-toc-done-right 插件
-                // .use(window.markdownItTocDoneRight, {
-                //     containerClass: 'toc', // 生成的容器的类名，这样最后返回来的字符串是 <nav class="toc"><nav/>
-                //     containerId: 'toc', // 生成的容器的ID，这样最后返回来的字符串是 <nav id="toc"><nav/>
-                //     listType: 'ul', // 导航列表使用ul还是ol
-                //     listClass: 'listClass', // li标签的样式名
-                //     itemClass: 'itemClass',
-                //     linkClass: 'linkClass', // a标签的样式名
-                //     callback: function (html, ast) {
-                //         // 把目录单独列出来
-                //         // document.getElementById('toc').innerHTML = html
-                //     },
-                //     level: [1, 2, 3], // 设置生成目录的标题级别
-                // })
+                .use(window.markdownItTocDoneRight, {
+                    containerClass: 'toc', // 生成的容器的类名，这样最后返回来的字符串是 <nav class="toc"><nav/>
+                    containerId: 'toc', // 生成的容器的ID，这样最后返回来的字符串是 <nav id="toc"><nav/>
+                    listType: 'ul', // 导航列表使用ul还是ol
+                    listClass: 'listClass', // li标签的样式名
+                    itemClass: 'itemClass',
+                    linkClass: 'linkClass', // a标签的样式名
+                    callback: function (html, ast) {
+                        // 把目录单独列出来
+                        let toc = document.getElementById('toc')
+                        if (toc) {
+                            toc.innerHTML = html
+                        }
+                    },
+                    level: [1, 2, 3], // 设置生成目录的标题级别
+                })
             mdSrc = window.markdownit(defaults)
                 .use(abbr_plugin)
                 .use(container_plugin, "warning")
@@ -26715,18 +26718,20 @@
         }
         // reset lines mapping cache on content update
         scrollMap = null;
-        try {
-            if (source) {
-                // serialize state - source and options
-                permalink.href = "#md3=" + encode(JSON.stringify({
-                    source: source,
-                    defaults: _.omit(defaults, "highlight")
-                }), "-_.!~", false);
-            } else {
+        if (permalink) {
+            try {
+                if (source) {
+                    // serialize state - source and options
+                    permalink.href = "#md3=" + encode(JSON.stringify({
+                        source: source,
+                        defaults: _.omit(defaults, "highlight")
+                    }), "-_.!~", false);
+                } else {
+                    permalink.href = "";
+                }
+            } catch (__) {
                 permalink.href = "";
             }
-        } catch (__) {
-            permalink.href = "";
         }
     }
 

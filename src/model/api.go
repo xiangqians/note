@@ -47,6 +47,14 @@ type Note struct {
 	Pid int64 `json:"pid"` // 父id
 }
 
+// PNote 笔记父节点
+type PNote struct {
+	IdsStr   string   `json:"idsStr"`   // 父节点id集
+	NamesStr string   `json:"namesStr"` // 父节点名称集
+	Ids      []string `json:"ids"`      // 父节点id集
+	Names    []string `json:"names"`    // 父节点名称集
+}
+
 // 注册模型
 func init() {
 	gob.Register(System{})
