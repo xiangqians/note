@@ -157,8 +157,10 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 	for i := 0; i < length; i++ {
 		column := columns[i]
 		if column.value != nil {
-			if column.name == " pid:" && table != "note" {
-				continue
+			if column.name == " pid:" {
+				if table != "note" || column.value.(int64) < 0 {
+					continue
+				}
 			}
 			statements = append(statements, column.statement)
 			values = append(values, column.value)
@@ -254,6 +256,7 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 				return html(page, model.PNote{}, err)
 			}
 		}
+		pNote.Id = pid
 
 		if pNote.IdsStr != "" {
 			pNote.Ids = strings.Split(pNote.IdsStr, "/")

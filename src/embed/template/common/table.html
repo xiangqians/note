@@ -25,23 +25,25 @@
         {{ $table := .response.Data.table }}
 
         {{ if eq $table "note" }}
-        <tr class="no-data">
-            <td></td>
-            <td colspan="4">
-                {{ $pNote := .response.Data.pNote }}
-                {{ $pid := 0 }}
-                {{ $ids := $pNote.Ids }}
-                {{ if $ids }}
-                    {{ $len := len $ids }}
-                    {{ if gt $len 1 }}
-                        {{ $index := Decrement $len }}
-                        {{ $index = Decrement $index }}
-                        {{ $pid = index $ids $index }}
-                    {{ end }}
-                {{ end }}
-                <a href='{{ $.contextPath }}/{{ $table }}?search=pid%3A%20{{ $pid }}&t={{ NowUnix }}'>. .</a>
-            </td>
-        </tr>
+            {{ $pNote := .response.Data.pNote }}
+            {{ if ge $pNote.Id 0 }}
+                <tr class="no-data">
+                    <td></td>
+                    <td colspan="4">
+                        {{ $pid := 0 }}
+                        {{ $ids := $pNote.Ids }}
+                        {{ if $ids }}
+                            {{ $len := len $ids }}
+                            {{ if gt $len 1 }}
+                                {{ $index := Decrement $len }}
+                                {{ $index = Decrement $index }}
+                                {{ $pid = index $ids $index }}
+                            {{ end }}
+                        {{ end }}
+                        <a href='{{ $.contextPath }}/{{ $table }}?search=pid%3A%20{{ $pid }}&t={{ NowUnix }}'>. .</a>
+                    </td>
+                </tr>
+            {{ end }}
         {{ end }}
 
         {{ $len := 0 }}
