@@ -7,42 +7,59 @@
     <link rel="stylesheet" href="css/bootstrap.css">
     <link rel="stylesheet" href="css/highlight.css">
     <link rel="stylesheet" href="css/markdown_demo.css">
+    <style>
+        .toc {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    </style>
 </head>
 <body>
 <div style="padding-left: 20px; padding-top: 20px;">
     <div class="form-inline demo-options">
         <div class="checkbox not-strict">
-            <label class="_tip" title="enable html tags in source text">
+            <label title="edit">
+                <input id="edit" type="checkbox"> edit
+            </label>
+        </div>
+        <div class="checkbox not-strict">
+            <label title="enable html tags in source text">
                 <input id="html" type="checkbox"> html
             </label>
         </div>
         <div class="checkbox not-strict">
-            <label class="_tip" title="produce xtml output (add / to single tags (&lt;br /&gt; instead of &lt;br&gt;)">
+            <label title="produce xtml output (add / to single tags (&lt;br /&gt; instead of &lt;br&gt;)">
                 <input id="xhtmlOut" type="checkbox"> xhtmlOut
             </label>
         </div>
         <div class="checkbox not-strict">
-            <label class="_tip" title="newlines in paragraphs are rendered as &lt;br&gt;">
+            <label title="newlines in paragraphs are rendered as &lt;br&gt;">
                 <input id="breaks" type="checkbox"> breaks
             </label>
         </div>
         <div class="checkbox not-strict">
-            <label class="_tip" title="autoconvert link-like texts to links">
+            <label title="autoconvert link-like texts to links">
                 <input id="linkify" type="checkbox"> linkify
             </label>
         </div>
         <div class="checkbox not-strict">
-            <label class="_tip" title="do typographic replacements, (c) → © and so on">
+            <label title="do typographic replacements, (c) → © and so on">
                 <input id="typographer" type="checkbox"> typographer
             </label>
         </div>
         <div class="checkbox not-strict">
-            <label class="_tip" title="enable output highlight for fenced blocks">
+            <label title="enable output highlight for fenced blocks">
                 <input id="_highlight" type="checkbox"> highlight
             </label>
         </div>
         <div class="checkbox">
-            <label class="_tip" title="force strict CommonMark mode - output will be equal to reference parser">
+            <label title="force strict CommonMark mode - output will be equal to reference parser">
                 <input id="_strict" type="checkbox"> CommonMark strict
             </label>
         </div>
@@ -51,7 +68,7 @@
 
 <div class="full-height">
     <!-- 编辑页 -->
-    <div id="editor" class="col-xs-5 full-height">
+    <div id="editor" class="full-height" style="display: none;">
         <textarea class="source full-height" style="resize: none;">---
 __Advertisement :)__
 
@@ -301,12 +318,12 @@ It converts &quot;HTML&quot;, but keep intact partial entries like &quot;xxxHTML
     </div>
 
     <!-- 渲染页 -->
-    <div id="preview" class="col-xs-6 full-height">
+    <div id="preview" class="col-xs-10 full-height">
         <div class="result-html full-height"></div>
     </div>
 
     <!-- 目录 -->
-    <div class="col-xs-1 full-height">
+    <div class="col-xs-2 full-height">
         <div id="toc" class="full-height"></div>
     </div>
 </div>

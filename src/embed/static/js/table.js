@@ -18,7 +18,7 @@ $(function () {
     let $uploadFile = $(`<li><a href="javascript:void(0);">${variable.i18n.uploadFile}</a></li>`)
     $ul.append($uploadFile)
     // 【上传】
-    let $upload = $(`<li><form action="${variable.contextPath}/${variable.table}/upload?t=${new Date().getTime()}" method="post" enctype="multipart/form-data"><input name="file" type="file"/><button type="submit">${variable.i18n.upload}</button></form></li>`)
+    let $upload = $(`<li><form action="${variable.contextPath}/${variable.table}/upload?t=${new Date().getTime()}" method="post" enctype="multipart/form-data"><input name="file" type="file"/><input name="pid" hidden><button type="submit">${variable.i18n.upload}</button></form></li>`)
     setAccept($($upload.find('input[type="file"]')[0]))
     $ul.append($upload)
     // 【重命名】
@@ -125,7 +125,12 @@ $(function () {
 
             // note
             if (variable.table === 'note') {
-                displayElements($addFolder, $addMdFile, $uploadFile, $paste)
+                if (variable.pNote && variable.pNote.id >= 0) {
+                    displayElements($addFolder, $addMdFile, $uploadFile, $paste)
+                } else {
+                    hideElements($addFolder, $addMdFile, $uploadFile, $paste)
+                    return
+                }
             }
             // 其他：image、audio、video
             else {
@@ -224,6 +229,11 @@ $(function () {
 
     // 【上传】
     $($upload.find('[type="submit"]')[0]).click(function () {
+        let pid = 0
+        if (variable.pNote) {
+            pid = variable.pNote.id
+        }
+        $($upload.find('input[name="pid"]')[0]).val(pid)
         return true
     })
 

@@ -10,34 +10,34 @@ import (
 )
 
 func List(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
-	return common.List(request, writer, session, "image")
+	return common.List(request, writer, session, common.TableImage)
 }
 
 func Upload(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
-	return common.Upload(request, writer, session, "image")
+	return common.Upload(request, writer, session, common.TableImage)
 }
 
 func Rename(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
-	return common.Rename(request, writer, session, "image")
+	return common.Rename(request, writer, session, common.TableImage)
 }
 
 func Get(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
-	common.Get(request, writer, session, "image")
+	common.Get(request, writer, session, common.TableImage)
 	return "", model.Response{}
 }
 
 func View(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
-	return common.View(request, writer, session, "image")
+	return common.View(request, writer, session, common.TableImage)
 }
 
 func Del(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
-	return common.Del(request, writer, session, "image")
+	return common.Del(request, writer, session, common.TableImage)
 }
 
 func Restore(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
-	return common.Restore(request, writer, session, "image")
+	return common.Restore(request, writer, session, common.TableImage)
 }
 
 func PermlyDel(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
-	return common.PermlyDel(request, writer, session, "image")
+	return common.PermlyDel(request, writer, session, common.TableImage)
 }

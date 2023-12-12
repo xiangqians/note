@@ -38,7 +38,7 @@ func View(request *http.Request, writer http.ResponseWriter, session *session.Se
 
 	var data any
 	switch table {
-	case "image":
+	case TableImage:
 		var image model.Image
 		err = result.Scan(&image)
 		id = image.Id

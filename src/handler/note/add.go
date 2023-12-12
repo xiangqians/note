@@ -8,6 +8,7 @@ import (
 	"note/src/db"
 	"note/src/model"
 	"note/src/session"
+	util_string "note/src/util/string"
 	"note/src/util/time"
 	util_validate "note/src/util/validate"
 	"strconv"
@@ -18,49 +19,47 @@ func add(request *http.Request, writer http.ResponseWriter, session *session.Ses
 	// 父id
 	pid, err := strconv.ParseInt(strings.TrimSpace(request.PostFormValue("pid")), 10, 64)
 
-	redirect := func(err any) (string, model.Response) {
-		return "redirect:/note?search=pid%3A%20" + fmt.Sprintf("%d", pid), model.Response{}
-	}
-
 	if pid < 0 {
-		return redirect(nil)
+		return redirect(0, err)
 	}
 
 	// 名称
 	name := strings.TrimSpace(request.PostFormValue("name"))
 	if name == "" {
-		return redirect(nil)
+		return redirect(pid, nil)
 	}
 	err = util_validate.FileName(name, session.GetLanguage())
 	if err != nil {
-		return redirect(nil)
+		return redirect(pid, err)
 	}
 
 	db := db.Get()
 
 	// 校验父id是否存在
-	result, err := db.Get("SELECT `id` FROM `note` WHERE `del` = 0 AND `id` = ? LIMIT 1", pid)
-	if err != nil {
-		return redirect(err)
-	}
-	pid = 0
-	err = result.Scan(&pid)
-	if err != nil {
-		return redirect(err)
-	}
-	if pid == 0 {
-		return redirect(nil)
+	if pid > 0 {
+		result, err := db.Get("SELECT `id` FROM `note` WHERE `del` = 0 AND `id` = ? LIMIT 1", pid)
+		if err != nil {
+			return redirect(pid, err)
+		}
+		pid = 0
+		err = result.Scan(&pid)
+		if err != nil {
+			return redirect(pid, err)
+		}
+		if pid == 0 {
+			return redirect(pid, nil)
+		}
 	}
 
 	// 获取永久删除id，以复用
-	result, err = db.Get("SELECT `id` FROM `note` WHERE `del` = 2 LIMIT 1")
+	result, err := db.Get("SELECT `id` FROM `note` WHERE `del` = 2 LIMIT 1")
 	if err != nil {
-		return redirect(err)
+		return redirect(pid, err)
 	}
 	var id int64
 	err = result.Scan(&id)
 	if err != nil {
-		return redirect(err)
+		return redirect(pid, err)
 	}
 
 	// 新id
@@ -77,5 +76,9 @@ func add(request *http.Request, writer http.ResponseWriter, session *session.Ses
 			id)
 	}
 
-	return redirect(err)
+	return redirect(pid, err)
+}
+
+func redirect(pid int64, err any) (string, model.Response) {
+	return "redirect:/note?search=pid%3A%20" + fmt.Sprintf("%d", pid), model.Response{Msg: util_string.String(err)}
 }

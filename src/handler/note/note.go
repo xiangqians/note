@@ -11,11 +11,11 @@ import (
 )
 
 func List(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
-	return common.List(request, writer, session, "note")
+	return common.List(request, writer, session, common.TableNote)
 }
 
 func Rename(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
-	return common.Rename(request, writer, session, "note")
+	return common.Rename(request, writer, session, common.TableNote)
 }
 
 func AddFolder(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
@@ -27,5 +27,5 @@ func AddMdFile(request *http.Request, writer http.ResponseWriter, session *sessi
 }
 
 func Upload(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
-	return common.Upload(request, writer, session, "note")
+	return common.Upload(request, writer, session, common.TableNote)
 }

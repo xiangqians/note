@@ -33,7 +33,7 @@ func Get(request *http.Request, writer http.ResponseWriter, session *session.Ses
 	var name string
 	var filetype string
 	switch table {
-	case "image":
+	case TableImage:
 		var image model.Image
 		err = result.Scan(&image)
 		id = image.Id

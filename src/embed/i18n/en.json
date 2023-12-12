@@ -52,5 +52,10 @@
   "i18n.close": "Close",
   "i18n.copyAddress": "Copy address",
   "i18n.copied": "Copied",
-  "i18n.fileTypeUnsupportedUpload": "The %s file type does not support uploading"
+  "i18n.fileTypeUnsupportedUpload": "The file type '%s' is not supported for uploading"
 }
+
+
+
+
+

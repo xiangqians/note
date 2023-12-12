@@ -158,7 +158,7 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 		column := columns[i]
 		if column.value != nil {
 			if column.name == " pid:" {
-				if table != "note" || column.value.(int64) < 0 {
+				if table != TableNote || column.value.(int64) < 0 {
 					continue
 				}
 			}
@@ -169,15 +169,15 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 
 	db := db.Get()
 	sql := "SELECT `id`, `name`, `type`, `size`, `del`, `add_time`, `upd_time`"
-	if table == "note" {
+	if table == TableNote {
 		sql += ", pid"
 	}
 	sql += fmt.Sprintf(" FROM `%s` ", table)
 	sql += fmt.Sprintf(" WHERE %s ", strings.Join(statements, " AND "))
 	switch table {
-	case "image", "audio", "video":
+	case TableImage, TableAudio, TableVideo:
 		sql += " ORDER BY (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC"
-	case "note":
+	case TableNote:
 		sql += " ORDER BY `type`, `name`, (CASE WHEN `upd_time` > `add_time` THEN `upd_time` ELSE `add_time` END) DESC"
 	}
 	result, err := db.Page(sql, current, size, values...)
@@ -190,12 +190,12 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 
 	var data any
 	switch table {
-	case "image":
+	case TableImage:
 		var images []model.Image
 		err = result.Scan(&images)
 		data = images
 
-	case "note":
+	case TableNote:
 		var notes []model.Note
 		err = result.Scan(&notes)
 		data = notes
@@ -203,7 +203,7 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 
 	page.Data = data
 
-	if table == "note" {
+	if table == TableNote {
 		var pid int64
 		for _, column := range columns {
 			if column.name == " pid:" {

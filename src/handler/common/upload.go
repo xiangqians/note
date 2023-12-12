@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	pkg_db "note/src/db"
+	"note/src/db"
 	"note/src/model"
 	"note/src/session"
 	util_filetype "note/src/util/filetype"
@@ -20,31 +20,26 @@ import (
 
 func Upload(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (string, model.Response) {
 	// 有id，标识着重新上传
-	idStr := request.PostFormValue("id")
-	id, _ := strconv.ParseInt(idStr, 10, 64)
-
-	// 重定向函数
+	id, _ := strconv.ParseInt(request.PostFormValue("id"), 10, 64)
 	viewId := id
-	redirect := func(err any) (string, model.Response) {
-		if viewId == 0 {
-			return redirectList(table, err)
-		}
-		return redirectView(table, viewId, err)
+
+	// note.pid
+	pid, _ := strconv.ParseInt(request.PostFormValue("pid"), 10, 64)
+	if pid < 0 {
+		pid = 0
 	}
 
-	// 重新上传时，校验id
-	if id != 0 {
-		db := pkg_db.Get()
-		result, err := db.Get(fmt.Sprintf("SELECT `id` FROM `%s` WHERE `del` = 0 AND `id` = ? LIMIT 1", table), id)
-		if err != nil {
-			return redirect(err)
+	// 重定向函数
+	redirect := func(err any) (string, model.Response) {
+		if viewId > 0 {
+			return redirectView(table, viewId, err)
 		}
 
-		id = 0
-		err = result.Scan(&id)
-		if err != nil || id == 0 {
-			return redirect(err)
+		if table == TableNote {
+			return redirectNoteList(pid, err)
 		}
+
+		return redirectList(table, err)
 	}
 
 	// 读取上传文件
@@ -63,7 +58,7 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 	// 获取文件类型
 	filetype := util_filetype.GetType(bytes)
 	switch table {
-	case "image":
+	case TableImage:
 		if filetype != util_filetype.Ico &&
 			filetype != util_filetype.Gif &&
 			filetype != util_filetype.Jpg &&
@@ -72,9 +67,11 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 			filetype != util_filetype.Webp {
 			return redirect(fmt.Sprintf(util_i18n.GetMessage("i18n.fileTypeUnsupportedUpload", session.GetLanguage()), filetype))
 		}
-	case "note":
-		if filetype != util_filetype.Pdf &&
-			filetype != util_filetype.Zip {
+	case TableNote:
+		if filetype != util_filetype.Doc &&
+			filetype != util_filetype.Pdf &&
+			filetype != util_filetype.Zip &&
+			filetype != util_filetype.TarGz {
 			return redirect(fmt.Sprintf(util_i18n.GetMessage("i18n.fileTypeUnsupportedUpload", session.GetLanguage()), filetype))
 		}
 	}
@@ -90,7 +87,8 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 	// 文件大小，单位：字节
 	size := fileHeader.Size
 
-	db := pkg_db.Get()
+	var result *db.Result
+	db := db.Get()
 
 	// 开启事务
 	err = db.Begin()
@@ -100,7 +98,21 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 
 	// 入库
 	// 重新上传
-	if id != 0 {
+	if id > 0 {
+		// 校验id
+		result, err = db.Get(fmt.Sprintf("SELECT `id` FROM `%s` WHERE `del` = 0 AND `id` = ? LIMIT 1", table), id)
+		if err != nil {
+			db.Rollback()
+			return redirect(err)
+		}
+
+		id = 0
+		err = result.Scan(&id)
+		if err != nil || id == 0 {
+			db.Rollback()
+			return redirect(err)
+		}
+
 		_, err = db.Upd(fmt.Sprintf("UPDATE `%s` SET `name` = ?, `type` = ?, `size` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", table),
 			name,
 			filetype,
@@ -111,7 +123,6 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 	// 上传
 	{
 		// 获取永久删除id，以复用
-		var result *pkg_db.Result
 		result, err = db.Get(fmt.Sprintf("SELECT `id` FROM `%s` WHERE `del` = 2 LIMIT 1", table))
 		if err != nil {
 			db.Rollback()
@@ -124,22 +135,78 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 			return redirect(err)
 		}
 
+		// 校验pid
+		if table == TableNote && pid > 0 {
+			result, err = db.Get("SELECT `id`, `type` FROM `note` WHERE `del` = 0 AND `id` = ? LIMIT 1", pid)
+			if err != nil {
+				db.Rollback()
+				return redirect(err)
+			}
+			var note model.Note
+			err = result.Scan(&note)
+			if err != nil || note.Id == 0 || note.Type != util_filetype.Folder {
+				db.Rollback()
+				return redirect(err)
+			}
+		}
+
 		// 新id
 		if id == 0 {
-			_, id, err = db.Add(fmt.Sprintf("INSERT INTO `%s` (`name`, `type`, `size`, `add_time`) VALUES (?, ?, ?, ?)", table),
-				name,
-				filetype,
-				size,
-				time.NowUnix())
+			// len 0, cap ?
+			capacity := 5
+			columns := make([]string, 0, capacity)
+			values := make([]any, 0, capacity)
+
+			if table == TableNote {
+				columns = append(columns, "`pid`")
+			}
+			columns = append(columns, "`name`")
+			columns = append(columns, "`type`")
+			columns = append(columns, "`size`")
+			columns = append(columns, "`add_time`")
+
+			if table == TableNote {
+				values = append(values, pid)
+			}
+			values = append(values, name)
+			values = append(values, filetype)
+			values = append(values, size)
+			values = append(values, time.NowUnix())
+
+			placeholders := make([]string, 0, capacity)
+			for i, length := 0, len(columns); i < length; i++ {
+				placeholders = append(placeholders, "?")
+			}
+
+			_, id, err = db.Add(fmt.Sprintf("INSERT INTO `%s` (%s) VALUES (%s)", table, strings.Join(columns, ", "), strings.Join(placeholders, ", ")), values...)
 		} else
 		// 复用id
 		{
-			_, err = db.Upd(fmt.Sprintf("UPDATE `%s` SET `name` = ?, `type` = ?, `size` = ?, `del` = 0, `add_time` = ?, `upd_time` = 0 WHERE `id` = ?", table),
-				name,
-				filetype,
-				size,
-				time.NowUnix(),
-				id)
+			// len 0, cap ?
+			capacity := 7
+			columns := make([]string, 0, capacity)
+			values := make([]any, 0, capacity)
+
+			if table == TableNote {
+				columns = append(columns, "`pid` = ?")
+			}
+			columns = append(columns, "`name` = ?")
+			columns = append(columns, "`type` = ?")
+			columns = append(columns, "`size` = ?")
+			columns = append(columns, "`del` = 0")
+			columns = append(columns, "`add_time` = ?")
+			columns = append(columns, "`upd_time` = 0")
+
+			if table == TableNote {
+				values = append(values, pid)
+			}
+			values = append(values, name)
+			values = append(values, filetype)
+			values = append(values, size)
+			values = append(values, time.NowUnix())
+			values = append(values, id)
+
+			_, err = db.Upd(fmt.Sprintf("UPDATE `%s` SET %s  WHERE `id` = ?", table, strings.Join(columns, ", ")), values...)
 		}
 	}
 

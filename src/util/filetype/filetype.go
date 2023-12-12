@@ -8,10 +8,10 @@ import "net/http"
 const (
 	Folder = "folder" // 文件夹
 	Md     = "md"     // md文件
-	Html   = "html"   // html文件
-	Pdf    = "pdf"    // pdf文件
 	Doc    = "doc"    // doc文件
+	Pdf    = "pdf"    // pdf文件
 	Zip    = "zip"    // zip文件
+	TarGz  = "tar.gz" // tar.gz文件
 	Ico    = "ico"    // ico文件
 	Gif    = "gif"    // gif文件
 	Jpg    = "jpg"    // jpg文件
@@ -21,17 +21,18 @@ const (
 )
 
 func GetType(data []byte) string {
-	// Go标准库提供一个基于 mimesniff 算法的 http.DetectContentType 函数，只需要读取文件的前512个字节就能够判定文件类型
+	// Go标准库提供一个基于 mimesniff 算法的 http.DetectContentType 函数，只需要读取文件的前512个字节就能够判定文件类型。
+	// 请注意，这种方法并不是绝对准确的，因为文件头部信息可能会被修改或伪造。
 	contentType := http.DetectContentType(data)
 	switch contentType {
-	case "text/html":
-		return Html
+	case ".doc?":
+		return Doc
 	case "application/pdf":
 		return Pdf
-	case "application/?":
-		return Doc
 	case "application/zip", "application/x-gzip":
 		return Zip
+	case ".tar.gz?":
+		return TarGz
 	case "image/x-icon":
 		return Ico
 	case "image/gif":
