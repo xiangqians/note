@@ -4,8 +4,10 @@ package common
 
 import (
 	"fmt"
+	"net/url"
 	"note/src/model"
 	util_string "note/src/util/string"
+	"strings"
 )
 
 // 数据目录
@@ -17,8 +19,17 @@ func html404(err any) (string, model.Response) {
 }
 
 // 重定向到列表
-func redirectList(table string, err any) (string, model.Response) {
-	return fmt.Sprintf("redirect:/%s", table), model.Response{Msg: util_string.String(err)}
+func redirectList(table string, paramMap map[string]any, err any) (string, model.Response) {
+	name := fmt.Sprintf("redirect:/%s", table)
+	if paramMap != nil {
+		// len 0, cap ?
+		params := make([]string, 0, len(paramMap))
+		for key, value := range paramMap {
+			params = append(params, fmt.Sprintf("%s=%s", key, url.QueryEscape(util_string.String(value))))
+		}
+		name += "?" + strings.Join(params, "&")
+	}
+	return name, model.Response{Msg: util_string.String(err)}
 }
 
 // 重定向到笔记列表

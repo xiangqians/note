@@ -9,36 +9,64 @@ import (
 	"note/src/model"
 	"note/src/session"
 	util_time "note/src/util/time"
+	util_validate "note/src/util/validate"
 	"strconv"
 	"strings"
 )
 
 func Rename(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (string, model.Response) {
+	var pid int64 = 0
+	redirect := func(err any) (string, model.Response) {
+		var paramMap map[string]any = nil
+		if table == TableNote {
+			paramMap = map[string]any{"search": fmt.Sprintf("pid: %d", pid)}
+		}
+		return redirectList(table, paramMap, err)
+	}
+
 	// id
-	idStr := strings.TrimSpace(request.PostFormValue("id"))
-	id, err := strconv.ParseInt(idStr, 10, 64)
+	id, err := strconv.ParseInt(strings.TrimSpace(request.PostFormValue("id")), 10, 64)
 	if err != nil || id <= 0 {
-		return redirectList(table, err)
+		return redirect(err)
+	}
+
+	var result *db.Result
+	db := db.Get()
+
+	// 校验id
+	if table == TableNote {
+		result, err = db.Get(fmt.Sprintf("SELECT `id`, `pid` FROM `%s` WHERE `del` = 0 AND `id` = ?", table), id)
+		if err != nil {
+			return redirect(err)
+		}
+		var note model.Note
+		err = result.Scan(&note)
+		id = note.Id
+		pid = note.Pid
+
+	} else {
+		result, err = db.Get(fmt.Sprintf("SELECT `id` FROM `%s` WHERE `del` = 0 AND `id` = ?", table), id)
+		if err != nil {
+			return redirect(err)
+		}
+		id = 0
+		err = result.Scan(&id)
+	}
+	if err != nil || id <= 0 {
+		return redirect(err)
 	}
 
 	// 名称
 	name := strings.TrimSpace(request.PostFormValue("name"))
 	if name == "" {
-		return redirectList(table, err)
+		return redirect(err)
 	}
-
-	db := db.Get()
-	sql := fmt.Sprintf("SELECT `id` FROM `%s` WHERE `del` = 0 AND `id` = ?", table)
-	result, err := db.Get(sql, id)
+	err = util_validate.FileName(name, session.GetLanguage())
 	if err != nil {
-		return redirectList(table, err)
+		return redirect(err)
 	}
 
-	id = 0
-	err = result.Scan(&id)
-	if err == nil && id != 0 {
-		db.Upd(fmt.Sprintf("UPDATE `%s` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` != ?", table), name, util_time.NowUnix(), id, name)
-	}
-
-	return redirectList(table, err)
+	// 更新名称
+	_, err = db.Upd(fmt.Sprintf("UPDATE `%s` SET `name` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ? AND `name` != ?", table), name, util_time.NowUnix(), id, name)
+	return redirect(err)
 }

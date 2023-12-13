@@ -18,10 +18,10 @@ func Del(request *http.Request, writer http.ResponseWriter, session *session.Ses
 	idStr := vars["id"]
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		return redirectList(table, err)
+		return redirectList(table, nil, err)
 	}
 
 	db := db.Get()
 	_, err = db.Del(fmt.Sprintf("UPDATE `%s` SET `del` = 1, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", table), util_time.NowUnix(), id)
-	return redirectList(table, err)
+	return redirectList(table, nil, err)
 }

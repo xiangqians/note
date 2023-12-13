@@ -41,10 +41,10 @@ func Passwd(passwd, language string) error {
 
 // FileName 校验文件名
 func FileName(fileName string, language string) error {
-	// 名称不能包含字符：\ / : * ? " < > |
+	// 名称不能包含字符：/ \ : * ? " < > |
 
-	// ^[^\\/:*?"<>|]*$
-	matched, err := regexp.MatchString("^[^\\\\/:*?\"<>|]*$", fileName)
+	// ^[^/\\:*?"<>|]*$
+	matched, err := regexp.MatchString("^[^/\\\\:*?\"<>|]*$", fileName)
 	if err != nil {
 		return err
 	}

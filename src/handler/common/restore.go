@@ -18,10 +18,10 @@ func Restore(request *http.Request, writer http.ResponseWriter, session *session
 	idStr := vars["id"]
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		return redirectList(table, err)
+		return redirectList(table, nil, err)
 	}
 
 	db := db.Get()
 	_, err = db.Upd(fmt.Sprintf("UPDATE `%s` SET `del` = 0, `upd_time` = ? WHERE `del` = 1 AND `id` = ?", table), util_time.NowUnix(), id)
-	return redirectList(table, err)
+	return redirectList(table, nil, err)
 }

@@ -4,7 +4,7 @@
   "i18n.nSecondsAgo": "%v seconds ago",
   "i18n.validateUserName": "UserName must be 1-60 bits in length(letters, numbers, underscores, minus signs)",
   "i18n.validatePasswd": "Password must be 1-20 bits in length(letters, numbers, special characters)",
-  "i18n.validateFileName": "The file name cannot contain characters: \\ / : * ? \" < > |",
+  "i18n.validateFileName": "The file name cannot contain characters: / \\ : * ? \" < > |",
   "i18n.passwd": "Password",
   "i18n.origPasswd": "Original Password",
   "i18n.newPasswd": "New Password",
