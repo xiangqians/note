@@ -29,3 +29,7 @@ func AddMdFile(request *http.Request, writer http.ResponseWriter, session *sessi
 func Upload(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
 	return common.Upload(request, writer, session, common.TableNote)
 }
+
+func Del(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
+	return common.Del(request, writer, session, common.TableNote)
+}

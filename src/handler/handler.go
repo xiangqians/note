@@ -267,6 +267,7 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 	router.HandleFunc(contextPath+"/note/addfolder", handlerFunc(note.AddFolder)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/addmdfile", handlerFunc(note.AddMdFile)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/upload", handlerFunc(note.Upload)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/note/{id:[0-9]+}/del", handlerFunc(note.Del)).Methods(http.MethodPost)
 }
 
 // 处理静态资源
