@@ -16,7 +16,12 @@ import (
 	"strconv"
 )
 
-func Get(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) {
+func Get(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (string, model.Response) {
+	get(request, writer, session, table)
+	return "", model.Response{}
+}
+
+func get(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) {
 	vars := mux.Vars(request)
 	idStr := vars["id"]
 	id, err := strconv.ParseInt(idStr, 10, 64)

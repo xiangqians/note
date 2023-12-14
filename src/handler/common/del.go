@@ -20,7 +20,7 @@ func Del(request *http.Request, writer http.ResponseWriter, session *session.Ses
 		if table == TableNote {
 			paramMap = map[string]any{"search": fmt.Sprintf("pid: %d", pid)}
 		}
-		return redirectList(table, paramMap, err)
+		return RedirectList(table, paramMap, err)
 	}
 
 	// id

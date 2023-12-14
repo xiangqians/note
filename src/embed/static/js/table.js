@@ -31,7 +31,7 @@ $(function () {
     let $cut = $(`<li><a href="javascript:void(0);">${variable.i18n.cut}</a></li>`)
     $ul.append($cut)
     // 【粘贴】
-    let $paste = $(`<li><a href="javascript:void(0);">${variable.i18n.paste}</a></li>`)
+    let $paste = $(`<li><form id="paste" action="${variable.contextPath}/${variable.table}/paste?t=${new Date().getTime()}" method="post"><input name="fromId" hidden><input name="toId" hidden><a href="javascript:paste.submit();">${variable.i18n.paste}</a></form></li>`)
     $ul.append($paste)
     // 【删除】
     let $del = $(`<li><form id="del" action="${variable.contextPath}/${variable.table}/{id}/del?t=${new Date().getTime()}" method="post"><a href="javascript:del.submit();">${variable.i18n.del}</a></form></li>`)
@@ -343,7 +343,6 @@ $(function () {
     // 设置已剪切的tr为灰色
     (function () {
         let data = getCutData()
-        console.log('data', data)
         if (data) {
             addTrGrayClass(data.id)
         }
@@ -351,8 +350,9 @@ $(function () {
 
     // 【剪切】
     $($cut.find('a')[0]).click(function () {
+        let pNote = variable.pNote
         let id = $selectedTr.attr('id')
-        let name = $selectedTr.attr('name')
+        let name = `${pNote.namesStr}/${$selectedTr.attr('name')}`
 
         let data = getCutData()
         if (data) {
@@ -366,8 +366,22 @@ $(function () {
 
     // 【粘贴】
     $($paste.find('a')[0]).click(function () {
-        console.log(getCutData())
-        setCutData(null)
+        let data = getCutData()
+        if (data) {
+            let pNote = variable.pNote
+            if (!confirm(`${data.name} -> ${pNote.id === 0 ? "/" : pNote.namesStr} ?`)) {
+                // 隐藏菜单
+                hideMenu()
+                // 取消 <a></a> 默认行为
+                return false
+            }
+
+            $($paste.find('input[name="fromId"]')[0]).val(data.id)
+            $($paste.find('input[name="toId"]')[0]).val(pNote.id)
+            setCutData(null)
+            return true
+        }
+        return false
     })
 
     // 【删除】

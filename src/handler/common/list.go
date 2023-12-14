@@ -263,10 +263,8 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 			pNote.Ids = pNote.Ids[1:]
 			pNote.Names = strings.Split(pNote.NamesStr, "/")
 			pNote.Names = pNote.Names[1:]
-		} else {
-			pNote.Ids = []string{}
-			pNote.Names = []string{}
 		}
+
 		return html(page, pNote, err)
 	}
 

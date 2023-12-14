@@ -18,8 +18,8 @@ func html404(err any) (string, model.Response) {
 	return "404", model.Response{Msg: util_string.String(err)}
 }
 
-// 重定向到列表
-func redirectList(table string, paramMap map[string]any, err any) (string, model.Response) {
+// RedirectList 重定向到列表
+func RedirectList(table string, paramMap map[string]any, err any) (string, model.Response) {
 	name := fmt.Sprintf("redirect:/%s", table)
 	if paramMap != nil {
 		// len 0, cap ?

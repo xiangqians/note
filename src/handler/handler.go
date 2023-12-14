@@ -10,7 +10,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
-	"note/src/handler/image"
+	"note/src/handler/common"
 	"note/src/handler/index"
 	"note/src/handler/note"
 	"note/src/handler/system"
@@ -239,6 +239,18 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 		}
 	}
 
+	imageHandlerFunc := func(handler func(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (name string, response model.Response)) http.HandlerFunc {
+		return handlerFunc(func(request *http.Request, writer http.ResponseWriter, session *session.Session) (name string, response model.Response) {
+			return handler(request, writer, session, common.TableImage)
+		})
+	}
+
+	noteHandlerFunc := func(handler func(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (name string, response model.Response)) http.HandlerFunc {
+		return handlerFunc(func(request *http.Request, writer http.ResponseWriter, session *session.Session) (name string, response model.Response) {
+			return handler(request, writer, session, common.TableNote)
+		})
+	}
+
 	router.NotFoundHandler = handlerFunc(func(request *http.Request, writer http.ResponseWriter, session *session.Session) (name string, response model.Response) {
 		return "404", model.Response{}
 	})
@@ -252,22 +264,28 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 	router.HandleFunc(contextPath+"/", handlerFunc(index.Index))
 
 	// image
-	router.HandleFunc(contextPath+"/image", handlerFunc(image.List))
-	router.HandleFunc(contextPath+"/image/upload", handlerFunc(image.Upload)).Methods(http.MethodPost)
-	router.HandleFunc(contextPath+"/image/rename", handlerFunc(image.Rename)).Methods(http.MethodPost)
-	router.HandleFunc(contextPath+"/image/{id:[0-9]+}", handlerFunc(image.Get))
-	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/view", handlerFunc(image.View))
-	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/del", handlerFunc(image.Del)).Methods(http.MethodPost)
-	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/restore", handlerFunc(image.Restore)).Methods(http.MethodPost)
-	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/permlydel", handlerFunc(image.PermlyDel)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/image", imageHandlerFunc(common.List))
+	router.HandleFunc(contextPath+"/image/upload", imageHandlerFunc(common.Upload)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/image/rename", imageHandlerFunc(common.Rename)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/image/del", imageHandlerFunc(common.Del)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/image/restore", imageHandlerFunc(common.Restore)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/image/permlydel", imageHandlerFunc(common.PermlyDel)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/image/{id:[0-9]+}", imageHandlerFunc(common.Get))
+	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/view", imageHandlerFunc(common.View))
 
 	// note
 	router.HandleFunc(contextPath+"/note", handlerFunc(note.List))
-	router.HandleFunc(contextPath+"/note/rename", handlerFunc(note.Rename)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/addfolder", handlerFunc(note.AddFolder)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/addmdfile", handlerFunc(note.AddMdFile)).Methods(http.MethodPost)
-	router.HandleFunc(contextPath+"/note/upload", handlerFunc(note.Upload)).Methods(http.MethodPost)
-	router.HandleFunc(contextPath+"/note/{id:[0-9]+}/del", handlerFunc(note.Del)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/note/upload", noteHandlerFunc(common.Upload)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/note/rename", noteHandlerFunc(common.Rename)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/note/paste", handlerFunc(note.Paste)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/note/del", noteHandlerFunc(common.Del)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/note/restore", noteHandlerFunc(common.Restore)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/note/permlydel", noteHandlerFunc(common.PermlyDel)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/note/{id:[0-9]+}", noteHandlerFunc(common.Get))
+	router.HandleFunc(contextPath+"/note/{id:[0-9]+}", handlerFunc(note.Upd)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/note/{id:[0-9]+}/view", noteHandlerFunc(common.View))
 }
 
 // 处理静态资源

@@ -39,7 +39,7 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 			return redirectNoteList(pid, err)
 		}
 
-		return redirectList(table, nil, err)
+		return RedirectList(table, nil, err)
 	}
 
 	// 读取上传文件
