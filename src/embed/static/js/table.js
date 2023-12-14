@@ -125,9 +125,10 @@ $(function () {
 
             // note
             if (variable.table === 'note') {
-                if (variable.pNote && variable.pNote.id >= 0) {
+                if (variable.pNote.id >= 0) {
                     displayElements($addFolder, $addMdFile, $uploadFile)
-                    if (getCutData()) {
+                    let data = getCutData()
+                    if (data && data.pid != variable.pNote.id) {
                         displayElements($paste)
                     } else {
                         hideElements($paste)
@@ -352,6 +353,7 @@ $(function () {
     $($cut.find('a')[0]).click(function () {
         let pNote = variable.pNote
         let id = $selectedTr.attr('id')
+        let pid = pNote.id
         let name = `${pNote.namesStr}/${$selectedTr.attr('name')}`
 
         let data = getCutData()
@@ -359,7 +361,11 @@ $(function () {
             removeTrGrayClass(data.id)
         }
 
-        data = {id: id, name: name}
+        data = {
+            id: id,
+            pid: pid,
+            name: name
+        }
         setCutData(data)
         addTrGrayClass(data.id)
     })
