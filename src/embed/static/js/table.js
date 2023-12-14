@@ -126,7 +126,13 @@ $(function () {
             // note
             if (variable.table === 'note') {
                 if (variable.pNote && variable.pNote.id >= 0) {
-                    displayElements($addFolder, $addMdFile, $uploadFile, $paste)
+                    displayElements($addFolder, $addMdFile, $uploadFile)
+                    if (getCutData()) {
+                        displayElements($paste)
+                    } else {
+                        hideElements($paste)
+                    }
+
                 } else {
                     hideElements($addFolder, $addMdFile, $uploadFile, $paste)
                     return
@@ -296,12 +302,72 @@ $(function () {
         window.clipboard = clipboard
     })();
 
+
+    // 根据id获取$tr
+    function get$TrById(id) {
+        let tr = $(`tr[id="${id}"]`)
+        if (tr.length > 0) {
+            return $(tr[0])
+        }
+        return null
+    }
+
+    // 移除tr灰色样式
+    function addTrGrayClass(id) {
+        let $tr = get$TrById(id)
+        if ($tr) {
+            $tr.addClass('gray')
+        }
+    }
+
+    // 移除tr灰色样式
+    function removeTrGrayClass(id) {
+        let $tr = get$TrById(id)
+        if ($tr) {
+            $tr.removeClass('gray')
+        }
+    }
+
+    const CUT_STORAGE_KEY = 'cut_data'
+
+    // 获取剪切数据
+    function getCutData() {
+        return storage.getObject(CUT_STORAGE_KEY)
+    }
+
+    // 设置剪切数据
+    function setCutData(data) {
+        storage.setObject(CUT_STORAGE_KEY, data)
+    }
+
+    // 设置已剪切的tr为灰色
+    (function () {
+        let data = getCutData()
+        console.log('data', data)
+        if (data) {
+            addTrGrayClass(data.id)
+        }
+    })()
+
     // 【剪切】
-    $cut.click(function () {
+    $($cut.find('a')[0]).click(function () {
+        let id = $selectedTr.attr('id')
+        let name = $selectedTr.attr('name')
+
+        let data = getCutData()
+        if (data) {
+            removeTrGrayClass(data.id)
+        }
+
+        data = {id: id, name: name}
+        setCutData(data)
+        addTrGrayClass(data.id)
     })
 
     // 【粘贴】
-    $paste.click(function () {
+    $($paste.find('a')[0]).click(function () {
+        console.log(getCutData())
+        setCutData(null)
     })
 
     // 【删除】

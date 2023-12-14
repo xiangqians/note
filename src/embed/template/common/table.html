@@ -40,7 +40,7 @@
                                 {{ $pid = index $ids $index }}
                             {{ end }}
                         {{ end }}
-                        <a href='{{ $.contextPath }}/{{ $table }}?search=pid%3A%20{{ $pid }}&t={{ NowUnix }}'>. .</a>
+                        <a href='{{ $.contextPath }}/{{ $table }}?search=pid%3A%20{{ $pid }}&t={{ NowUnix }}'><img src="{{ $.contextPath }}/static/image/file/back.png"></a>
                     </td>
                 </tr>
             {{ end }}
@@ -59,9 +59,9 @@
                      | $ 引用当前模板根级的上下文
                      | $. 引用模板中的根级上下文
                      |-->
-                    <td><img src="{{ $.contextPath }}/static/icon/file/{{ $value.Type }}.png"
+                    <td><img src="{{ $.contextPath }}/static/image/file/{{ $value.Type }}.png"
                              title="{{ $value.Type }}"
-                             onerror="this.onerror=''; this.src='{{ $.contextPath }}/static/icon/file/unknown.png'"></td>
+                             onerror="this.onerror=''; this.src='{{ $.contextPath }}/static/image/file/unknown.png'"></td>
                     {{ if eq $value.Type "folder" }}
                         <td><a href='{{ $.contextPath }}/{{ $table }}?search=pid%3A%20{{ $value.Id }}&t={{ NowUnix }}'>{{ $value.Name }}</a></td>
                     {{ else }}

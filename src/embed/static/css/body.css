@@ -48,3 +48,13 @@ body .nowrap {
 body .hide {
     display: none;
 }
+
+/* 变灰 */
+.gray {
+    color: gray;
+}
+
+/* <a>变灰 */
+.gray a {
+    color: inherit;
+}
