@@ -11,25 +11,30 @@
 
 <div class="nowrap">
     <table>
+        {{ $table := .response.Data.table }}
+        {{ $pNote := .response.Data.pNote }}
+        {{ $c := false }}
+        {{ if eq $table "note" }}
+            {{ $c = $pNote.C }}
+        {{ end }}
         <thead>
         <tr>
             <td></td>
             <td>{{ Localize "i18n.name" .language }}</td>
+            {{ if $c }}
+                <td>{{ Localize "i18n.path" .language }}</td>
+            {{ end }}
             <td>{{ Localize "i18n.size" .language }}</td>
             <td>{{ Localize "i18n.addTime" .language }}</td>
             <td>{{ Localize "i18n.updTime" .language }}</td>
         </tr>
         </thead>
         <tbody>
-
-        {{ $table := .response.Data.table }}
-
         {{ if eq $table "note" }}
-            {{ $pNote := .response.Data.pNote }}
             {{ if ge $pNote.Id 0 }}
                 <tr class="no-data">
                     <td></td>
-                    <td colspan="4">
+                    <td colspan="{{ if $c }}5{{ else }}4{{ end }}">
                         {{ $pid := 0 }}
                         {{ $ids := $pNote.Ids }}
                         {{ if $ids }}
@@ -67,6 +72,9 @@
                     {{ else }}
                         <td><a href='{{ $.contextPath }}/{{ $table }}/{{ $value.Id }}/view?t={{ NowUnix }}' target="_blank">{{ $value.Name }}</a></td>
                     {{ end }}
+                    {{ if $c }}
+                        <td>{{ if eq $value.Pid 0 }}<span>/</span>{{ else }}{{ $ids := $value.Pids }}{{ if $ids }}{{ $len := len $ids }}{{ if gt $len 0 }}{{ $names := $value.Pnames }}{{ range $index,$id := $ids }}<span>/</span><a href='{{ $.contextPath }}/{{ $table }}?search=pid%3A%20{{ $id }}&t={{ NowUnix }}'>{{ index $names $index }}</a>{{ end }}{{ end }}{{ end }}{{ end }}</td>
+                    {{ end }}
                     <td>{{ HumanizFileSize $value.Size }}</td>
                     <td>{{ HumanizUnix $value.AddTime $.language }}</td>
                     <td>{{ HumanizUnix $value.UpdTime $.language }}</td>
@@ -90,7 +98,7 @@
                     <input name="search"
                            type="text"
                            placeholder='{{ Localize "i18n.search" .language }}'
-                           title='{{ if eq $table "note" }}id:{id}&nbsp;&nbsp;pid:{pid}&nbsp;&nbsp;name:{name}&nbsp;&nbsp;type:{type}&nbsp;&nbsp;del:{del}{{ else }}id:{id}&nbsp;&nbsp;name:{name}&nbsp;&nbsp;type:{type}&nbsp;&nbsp;del:{del}{{ end }}'
+                           title='{{ if eq $table "note" }}id:{id}&nbsp;&nbsp;pid:{pid}&nbsp;&nbsp;c:[true | false]&nbsp;&nbsp;name:{name}&nbsp;&nbsp;type:{type}&nbsp;&nbsp;del:[true | false]{{ else }}id:{id}&nbsp;&nbsp;name:{name}&nbsp;&nbsp;type:{type}&nbsp;&nbsp;del:[true | false]{{ end }}'
                            value="{{ $page.Search }}">
                     <input name="t" value="{{ NowUnix }}" type="hidden">
                 </form>

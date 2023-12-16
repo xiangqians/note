@@ -44,16 +44,21 @@ type Video struct {
 // Note 笔记
 type Note struct {
 	abs
-	Pid int64 `json:"pid"` // 父id
+	Pid       int64    `json:"pid"`       // 父id
+	PidsStr   string   `json:"pidsStr"`   // 父节点id集字符串
+	PnamesStr string   `json:"pnamesStr"` // 父节点名称集字符串
+	Pids      []string `json:"pids"`      // 父节点id集
+	Pnames    []string `json:"pnames"`    // 父节点名称集
 }
 
 // PNote 笔记父节点
 type PNote struct {
 	Id       int64    `json:"id"`       // 父节点id
-	IdsStr   string   `json:"idsStr"`   // 父节点id集
-	NamesStr string   `json:"namesStr"` // 父节点名称集
+	IdsStr   string   `json:"idsStr"`   // 父节点id集字符串
+	NamesStr string   `json:"namesStr"` // 父节点名称集字符串
 	Ids      []string `json:"ids"`      // 父节点id集
 	Names    []string `json:"names"`    // 父节点名称集
+	C        bool     `json:"c"`        // contain & child，是否包含子目录
 }
 
 // 注册模型

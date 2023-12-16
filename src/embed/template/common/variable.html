@@ -53,6 +53,7 @@
         obj.table = table
         console.log('table', table)
 
+        // note.p
         let pNote = null
         if (table === "note") {
             try {
@@ -64,14 +65,15 @@
         obj.pNote = pNote
         console.log('pNote', pNote)
 
-        // 响应数据
-        let response = `{{ .response }}`
-        obj.response = response
+        // 分页数据
+        let page = null
         try {
-            console.log('response', JSON.parse(response))
+            page = JSON.parse(`{{ .response.Data.page }}`)
         } catch (e) {
             console.error(e)
         }
+        obj.page = page
+        console.log('page', page)
 
         return obj
     })();

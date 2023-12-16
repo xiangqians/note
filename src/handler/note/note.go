@@ -17,10 +17,6 @@ import (
 	"strings"
 )
 
-func List(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
-	return common.List(request, writer, session, common.TableNote)
-}
-
 func AddFolder(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
 	return add(request, writer, session, util_filetype.Folder)
 }

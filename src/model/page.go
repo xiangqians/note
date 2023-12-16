@@ -29,6 +29,7 @@ func (page *Page) InitIndexes() {
 	}
 
 	if page.Current == 1 || page.Current > pageCount {
+		// len 0, cap ?
 		indexes := make([]int64, 0, 8)
 		var index int64 = 1
 		count := cap(indexes)
@@ -49,6 +50,7 @@ func (page *Page) InitIndexes() {
 		page.Indexes = indexes
 
 	} else if page.Current == pageCount {
+		// len 0, cap ?
 		indexes := make([]int64, 0, 8)
 		var index int64 = pageCount
 		count := cap(indexes)
@@ -73,6 +75,7 @@ func (page *Page) InitIndexes() {
 		page.Indexes = indexes
 
 	} else {
+		// len 0, cap ?
 		indexes := make([]int64, 0, 6+1+6)
 		var index int64 = page.Current - 6
 		if index <= 0 {

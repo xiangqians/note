@@ -274,7 +274,7 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/view", imageHandlerFunc(common.View))
 
 	// note
-	router.HandleFunc(contextPath+"/note", handlerFunc(note.List))
+	router.HandleFunc(contextPath+"/note", noteHandlerFunc(common.List))
 	router.HandleFunc(contextPath+"/note/addfolder", handlerFunc(note.AddFolder)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/addmdfile", handlerFunc(note.AddMdFile)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/upload", noteHandlerFunc(common.Upload)).Methods(http.MethodPost)

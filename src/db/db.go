@@ -268,8 +268,7 @@ func (db *Db) query(sql string, args ...any) (*sql.Rows, error) {
 // Page 分页查询
 func (db *Db) Page(sql string, current int64, size uint8, args ...any) (*Result, error) {
 	// 计数
-	index := strings.Index(sql, "FROM")
-	result, err := db.Get(fmt.Sprintf("SELECT COUNT(1) %s", sql[index:]), args...)
+	result, err := db.Get(fmt.Sprintf("SELECT COUNT(1) FROM (%s) r", sql), args...)
 	if err != nil {
 		return &Result{}, err
 	}
