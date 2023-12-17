@@ -13,8 +13,7 @@ import (
 // 数据目录
 var dataDir = model.Ini.Data.Dir
 
-// html 404
-func html404(err any) (string, model.Response) {
+func NotFound(err any) (string, model.Response) {
 	return "404", model.Response{Msg: util_string.String(err)}
 }
 
@@ -37,7 +36,7 @@ func redirectNoteList(pid int64, err any) (string, model.Response) {
 	return "redirect:/note?search=pid%3A%20" + fmt.Sprintf("%d", pid), model.Response{Msg: util_string.String(err)}
 }
 
-// 重定向到详情页
-func redirectView(table string, id int64, err any) (string, model.Response) {
+// RedirectView 重定向到详情页
+func RedirectView(table string, id int64, err any) (string, model.Response) {
 	return fmt.Sprintf("redirect:/%s/%d/view", table, id), model.Response{Msg: util_string.String(err)}
 }

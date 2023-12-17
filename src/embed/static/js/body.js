@@ -72,6 +72,12 @@ Storage.prototype.del = function (key) {
 
 storage = new Storage()
 
+
+// 是否是隐藏元素
+function hasHideElement($element) {
+    return $element.hasClass('hide')
+}
+
 // 显示元素
 function displayElements() {
     if (arguments.length === 0) {

@@ -15,7 +15,7 @@
   "i18n.signOut": "Sign out",
   "i18n.about": "About",
   "i18n.index": "Index",
-  "i18n.404": "Page not found",
+  "i18n.404": "Not Found",
   "i18n.navigation": "Navigation",
   "i18n.passwdIncorrect": "The password is incorrect",
   "i18n.systemWillBeLocked": "You have entered the wrong password twice in a row. If you enter the wrong password three times in a row, system will be locked.",

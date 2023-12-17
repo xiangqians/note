@@ -26960,30 +26960,6 @@
             }
         }));
 
-        $("#edit").on("click", (function (event) {
-            let $editor = $("#editor");
-            let $preview = $("#preview");
-
-            // 移除以 "col-xs-" 开头的class
-            function removeClass(index, className) {
-                return (className.match(/(^|\s)col-xs-\S+/g) || []).join(' ');
-            }
-
-            $editor.removeClass(removeClass);
-            $preview.removeClass(removeClass);
-
-            if ($(event.target).prop('checked')) {
-                // 显示元素
-                $editor.css("display", "");
-                $editor.addClass("col-xs-5");
-                $preview.addClass("col-xs-5");
-            } else {
-                // 隐藏元素
-                $editor.css("display", "none");
-                $preview.addClass("col-xs-10");
-            }
-        }));
-
         // Need to recalculate line positions on window resize
         $(window).on("resize", (function () {
             scrollMap = null;

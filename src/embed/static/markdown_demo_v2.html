@@ -8,6 +8,12 @@
     <link rel="stylesheet" href="css/highlight.css">
     <link rel="stylesheet" href="css/markdown_demo.css">
     <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
         .toc {
             width: 100%;
             height: 100%;
@@ -21,6 +27,7 @@
     </style>
 </head>
 <body>
+<!--
 <div style="padding-left: 20px; padding-top: 20px;">
     <div class="form-inline demo-options">
         <div class="checkbox not-strict">
@@ -28,45 +35,10 @@
                 <input id="edit" type="checkbox"> edit
             </label>
         </div>
-        <div class="checkbox not-strict">
-            <label title="enable html tags in source text">
-                <input id="html" type="checkbox"> html
-            </label>
-        </div>
-        <div class="checkbox not-strict">
-            <label title="produce xtml output (add / to single tags (&lt;br /&gt; instead of &lt;br&gt;)">
-                <input id="xhtmlOut" type="checkbox"> xhtmlOut
-            </label>
-        </div>
-        <div class="checkbox not-strict">
-            <label title="newlines in paragraphs are rendered as &lt;br&gt;">
-                <input id="breaks" type="checkbox"> breaks
-            </label>
-        </div>
-        <div class="checkbox not-strict">
-            <label title="autoconvert link-like texts to links">
-                <input id="linkify" type="checkbox"> linkify
-            </label>
-        </div>
-        <div class="checkbox not-strict">
-            <label title="do typographic replacements, (c) → © and so on">
-                <input id="typographer" type="checkbox"> typographer
-            </label>
-        </div>
-        <div class="checkbox not-strict">
-            <label title="enable output highlight for fenced blocks">
-                <input id="_highlight" type="checkbox"> highlight
-            </label>
-        </div>
-        <div class="checkbox">
-            <label title="force strict CommonMark mode - output will be equal to reference parser">
-                <input id="_strict" type="checkbox"> CommonMark strict
-            </label>
-        </div>
     </div>
 </div>
-
-<div class="full-height">
+-->
+<div class="full-height" style="padding-top: 15px; padding-bottom: 15px;">
     <!-- 编辑页 -->
     <div id="editor" class="full-height" style="display: none;">
         <textarea class="source full-height" style="resize: none;">---
@@ -346,3 +318,56 @@ It converts &quot;HTML&quot;, but keep intact partial entries like &quot;xxxHTML
 <script type="text/javascript" src="js/markdown_it_toc_done_right.js"></script>
 <script type="text/javascript" src="js/highlight.js"></script>
 <script type="text/javascript" src="js/markdown_demo.js"></script>
+<script type="text/javascript">
+    ;
+    $(function () {
+        let $body = $($("body")[0])
+
+        let $editor = $("#editor");
+        let $preview = $("#preview");
+
+        // 移除以 "col-xs-" 开头的class
+        function removeColXsClass(index, className) {
+            return (className.match(/(^|\s)col-xs-\S+/g) || []).join(' ');
+        }
+
+        // 按下键盘事件
+        $body.on('keydown', function (event) {
+            // Ctrl + E，切换编辑状态
+            if (event.ctrlKey && event.key.toUpperCase() === 'E') {
+                $editor.removeClass(removeColXsClass);
+                $preview.removeClass(removeColXsClass);
+
+                // 退出编辑
+                if ($editor[0].hasAttribute('edit')) {
+                    $editor.removeAttr('edit')
+                    $editor.css("display", "none");
+                    $preview.addClass("col-xs-10");
+                }
+                // 编辑
+                else {
+                    $editor.attr('edit', '')
+                    $editor.css("display", "");
+                    $editor.addClass("col-xs-5");
+                    $preview.addClass("col-xs-5");
+                }
+
+                // 阻止默认行为
+                // Prevent the default handler from running.
+                event.preventDefault()
+                return
+            }
+
+            // Ctrl + S，保存
+            if (event.ctrlKey && event.key.toUpperCase() === 'S') {
+                alert('保存成功')
+
+                // 阻止默认行为
+                // Prevent the default handler from running.
+                event.preventDefault()
+                return
+            }
+        })
+    })
+    ;
+</script>

@@ -15,7 +15,6 @@
     <title>{{ $data.Name }}</title>
 </head>
 <body>
-{{ template "common/variable" . }}
 {{ template "common/float" . }}
 <img src="{{ .contextPath }}/{{ $table }}/{{ $data.Id }}" alt="{{ $data.Name }}">
 </body>

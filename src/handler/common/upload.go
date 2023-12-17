@@ -32,7 +32,7 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 	// 重定向函数
 	redirect := func(err any) (string, model.Response) {
 		if viewId > 0 {
-			return redirectView(table, viewId, err)
+			return RedirectView(table, viewId, err)
 		}
 
 		if table == TableNote {

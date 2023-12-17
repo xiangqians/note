@@ -6,44 +6,42 @@
 $(function () {
     let $float = $($('div[class*="float"]')[0])
 
-    let $div = $('<div class="hide" style="padding: 10px;"></div>')
-    $div.html($float.html())
+    let key = 'float'
 
-    $float.html('')
+    function hasHide() {
+        return storage.getString(key) === 'hide'
+    }
 
-    let $btn = $('<button></button>')
-    $float.append($btn)
-    $float.append($div)
-
-    // 显示
     function display() {
-        $btn.attr('value', '-')
-        $btn.text('-')
-        displayElements($div)
-        storage.set('float', 'block')
+        storage.setString(key, '')
+        displayElements($float)
     }
 
-    // 隐藏
     function hide() {
-        $btn.attr('value', '+')
-        $btn.text('+')
-        hideElements($div)
-        storage.set('float', 'none')
+        storage.setString(key, 'hide')
+        hideElements($float)
     }
 
-    if (storage.get('float') === 'none') {
-        hide()
-    } else {
+    if (!hasHide()) {
         display()
     }
-    displayElements($float)
 
-    $btn.click(function () {
-        let value = $btn.attr('value')
-        if (value === '-') {
-            hide()
-        } else {
-            display()
+    let $body = $($("body")[0])
+
+    // 按下键盘事件
+    $body.on('keydown', function (event) {
+        // Ctrl + M，切换显示更多信息
+        if (event.ctrlKey && event.key.toUpperCase() === 'M') {
+            if (hasHide()) {
+                display()
+            } else {
+                hide()
+            }
+
+            // 阻止默认行为
+            // Prevent the default handler from running.
+            event.preventDefault()
+            return
         }
     })
 })

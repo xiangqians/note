@@ -16,16 +16,11 @@ import (
 	"strconv"
 )
 
-func Get(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (string, model.Response) {
-	get(request, writer, session, table)
-	return "", model.Response{}
-}
-
-func get(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) {
+func Get(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (templateName string, response model.Response) {
 	vars := mux.Vars(request)
 	idStr := vars["id"]
 	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
+	if err != nil || id <= 0 {
 		return
 	}
 
@@ -35,20 +30,14 @@ func get(request *http.Request, writer http.ResponseWriter, session *session.Ses
 		return
 	}
 
-	var name string
-	var filetype string
-	switch table {
-	case TableImage:
-		var image model.Image
-		err = result.Scan(&image)
-		id = image.Id
-		name = image.Name
-		filetype = image.Type
-	}
-
-	if err != nil || id == 0 {
+	var abs model.Abs
+	err = result.Scan(&abs)
+	if err != nil || abs.Id == 0 {
 		return
 	}
+
+	name := abs.Name
+	filetype := abs.Type
 
 	file, err := os.Open(util_os.Path(dataDir, table, fmt.Sprintf("%d", id)))
 	if err != nil {
