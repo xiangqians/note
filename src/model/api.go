@@ -49,6 +49,7 @@ type Note struct {
 	PnamesStr string   `json:"pnamesStr"` // 父节点名称集字符串
 	Pids      []string `json:"pids"`      // 父节点id集
 	Pnames    []string `json:"pnames"`    // 父节点名称集
+	Content   string   `json:"content"`   // 文件内容
 }
 
 // PNote 笔记父节点

@@ -1,0 +1,129 @@
+<!--
+ | @author xiangqian
+ | @date 20:27 2023/12/16
+ |-->
+{{ define "note/md/view" }}
+{{ $table := .response.Data.table }}
+{{ $data := .response.Data.data }}
+{{ $pNote := .response.Data.pNote }}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" rel="external nofollow" href="{{ .contextPath }}/static/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ .contextPath }}/static/css/bootstrap.css">
+    <link rel="stylesheet" href="{{ .contextPath }}/static/css/highlight.css">
+    <link rel="stylesheet" href="{{ .contextPath }}/static/css/markdown_demo.css">
+    <title>{{ $data.Name }}</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .toc {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+<div class="full-height" style="padding-top: 15px; padding-bottom: 15px;">
+    <!-- 编辑页 -->
+    <div id="editor" class="full-height" style="display: none;">
+        <textarea class="source full-height" style="resize: none;">{{ $data.Content }}</textarea>
+    </div>
+
+    <!-- 渲染页 -->
+    <div id="preview" class="col-xs-10 full-height">
+        <div class="result-html full-height"></div>
+    </div>
+
+    <!-- 目录 -->
+    <div class="col-xs-2 full-height">
+        <div id="toc" class="full-height"></div>
+    </div>
+</div>
+</body>
+</html>
+
+<script type="text/javascript" src="{{ .contextPath }}/static/js/jquery.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/lodash.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/bootstrap.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/twemoji.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_emoji.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_sub.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_sup.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_ins.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_mark.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_footnote.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_deflist.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_task_lists.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_anchor.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_toc_done_right.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/highlight.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_demo.js"></script>
+<script type="text/javascript">
+    ;
+    $(function () {
+        let $body = $($("body")[0])
+
+        let $editor = $("#editor");
+        let $preview = $("#preview");
+
+        // 移除以 "col-xs-" 开头的class
+        function removeColXsClass(index, className) {
+            return (className.match(/(^|\s)col-xs-\S+/g) || []).join(' ');
+        }
+
+        // 按下键盘事件
+        $body.on('keydown', function (event) {
+            // Ctrl + E，切换编辑状态
+            if (event.ctrlKey && event.key.toUpperCase() === 'E') {
+                $editor.removeClass(removeColXsClass);
+                $preview.removeClass(removeColXsClass);
+
+                // 退出编辑
+                if ($editor[0].hasAttribute('edit')) {
+                    $editor.removeAttr('edit')
+                    $editor.css("display", "none");
+                    $preview.addClass("col-xs-10");
+                }
+                // 编辑
+                else {
+                    $editor.attr('edit', '')
+                    $editor.css("display", "");
+                    $editor.addClass("col-xs-5");
+                    $preview.addClass("col-xs-5");
+                }
+
+                // 阻止默认行为
+                // Prevent the default handler from running.
+                event.preventDefault()
+                return
+            }
+
+            // Ctrl + S，保存
+            if (event.ctrlKey && event.key.toUpperCase() === 'S') {
+                alert('保存成功')
+
+                // 阻止默认行为
+                // Prevent the default handler from running.
+                event.preventDefault()
+                return
+            }
+        })
+    })
+    ;
+</script>
+{{ end }}

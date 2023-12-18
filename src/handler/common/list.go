@@ -224,39 +224,7 @@ func noteList(page model.Page, columns []column, session *session.Session) (stri
 	db := db.Get()
 
 	if pid > 0 {
-		sql := "SELECT" +
-			"    (CASE WHEN p10.`id` IS NULL THEN '' ELSE '/' || p10.`id` END)" +
-			" || (CASE WHEN p9.`id` IS NULL THEN '' ELSE '/' || p9.`id`END)" +
-			" || (CASE WHEN p8.`id` IS NULL THEN '' ELSE '/' || p8.`id`END)" +
-			" || (CASE WHEN p7.`id` IS NULL THEN '' ELSE '/' || p7.`id`END)" +
-			" || (CASE WHEN p6.`id` IS NULL THEN '' ELSE '/' || p6.`id`END)" +
-			" || (CASE WHEN p5.`id` IS NULL THEN '' ELSE '/' || p5.`id`END)" +
-			" || (CASE WHEN p4.`id` IS NULL THEN '' ELSE '/' || p4.`id`END)" +
-			" || (CASE WHEN p3.`id` IS NULL THEN '' ELSE '/' || p3.`id`END)" +
-			" || (CASE WHEN p2.`id` IS NULL THEN '' ELSE '/' || p2.`id`END)" +
-			" || (CASE WHEN p1.`id` IS NULL THEN '' ELSE '/' || p1.`id`END) AS 'ids_str'," +
-			"    (CASE WHEN p10.`id` IS NULL THEN '' ELSE '/' || p10.`name` END)" +
-			" || (CASE WHEN p9.`id` IS NULL THEN '' ELSE '/' || p9.`name` END)" +
-			" || (CASE WHEN p8.`id` IS NULL THEN '' ELSE '/' || p8.`name` END)" +
-			" || (CASE WHEN p7.`id` IS NULL THEN '' ELSE '/' || p7.`name` END)" +
-			" || (CASE WHEN p6.`id` IS NULL THEN '' ELSE '/' || p6.`name` END)" +
-			" || (CASE WHEN p5.`id` IS NULL THEN '' ELSE '/' || p5.`name` END)" +
-			" || (CASE WHEN p4.`id` IS NULL THEN '' ELSE '/' || p4.`name` END)" +
-			" || (CASE WHEN p3.`id` IS NULL THEN '' ELSE '/' || p3.`name` END)" +
-			" || (CASE WHEN p2.`id` IS NULL THEN '' ELSE '/' || p2.`name` END)" +
-			" || (CASE WHEN p1.`id` IS NULL THEN '' ELSE '/' || p1.`name` END) AS 'names_str'" +
-			" FROM `note` p1" +
-			" LEFT JOIN `note` p2 ON p2.`id` = p1.`pid`" +
-			" LEFT JOIN `note` p3 ON p3.`id` = p2.`pid`" +
-			" LEFT JOIN `note` p4 ON p4.`id` = p3.`pid`" +
-			" LEFT JOIN `note` p5 ON p5.`id` = p4.`pid`" +
-			" LEFT JOIN `note` p6 ON p6.`id` = p5.`pid`" +
-			" LEFT JOIN `note` p7 ON p7.`id` = p6.`pid`" +
-			" LEFT JOIN `note` p8 ON p8.`id` = p7.`pid`" +
-			" LEFT JOIN `note` p9 ON p9.`id` = p8.`pid`" +
-			" LEFT JOIN `note` p10 ON p10.`id` = p9.`pid`" +
-			" WHERE p1.`id` = ?"
-		result, err := db.Get(sql, pid)
+		result, err := db.Get(getPNoteSql(), pid)
 		if err != nil {
 			return html(err)
 		}
