@@ -133,9 +133,19 @@ func Upd(request *http.Request, writer http.ResponseWriter, session *session.Ses
 	defer file.Close()
 
 	content := strings.TrimSpace(request.PostFormValue("content"))
+	bytes := []byte(content)
 
 	// 写入到文件
-	_, err = file.Write([]byte(content))
+	_, err = file.Write(bytes)
+	if err != nil {
+		write(err)
+		return
+	}
+
+	_, err = db.Upd("UPDATE `note` SET `size` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?",
+		len(bytes),
+		time.NowUnix(),
+		id)
 	write(err)
 	return
 }
