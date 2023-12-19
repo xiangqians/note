@@ -4,6 +4,7 @@ package note
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 	"note/src/db"
 	"note/src/handler/common"
@@ -78,8 +79,30 @@ func Paste(request *http.Request, writer http.ResponseWriter, session *session.S
 	return redirect(err)
 }
 
-func Upd(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
-	return "", model.Response{}
+func Upd(request *http.Request, writer http.ResponseWriter, session *session.Session) (templateName string, response model.Response) {
+	vars := mux.Vars(request)
+	id, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil || id <= 0 {
+		return
+	}
+
+	/*
+		db := db.Get()
+		result, err := db.Get(fmt.Sprintf("SELECT `id`, `name`, `type`, `size`, `del`, `add_time`, `upd_time` FROM `%s` WHERE `del` = 0 AND `id` = ? LIMIT 1", table), id)
+		if err != nil {
+			return
+		}
+
+
+		data, err :=
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			return
+		}*/
+
+	writer.Header().Set("Content-Type", "application/json")
+	writer.Write(nil)
+	return
 }
 
 func add(request *http.Request, writer http.ResponseWriter, session *session.Session, Type string) (string, model.Response) {

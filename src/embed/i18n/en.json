@@ -37,6 +37,7 @@
   "i18n.search": "Search",
   "i18n.upload": "Upload",
   "i18n.reUpload": "Re-upload",
+  "i18n.download": "Download",
   "i18n.noData": "No data",
   "i18n.add": "Add",
   "i18n.addFolder": "Add a new folder",
@@ -55,8 +56,3 @@
   "i18n.fileTypeUnsupportedUpload": "The file type '%s' is not supported for uploading",
   "i18n.path": "Path"
 }
-
-
-
-
-

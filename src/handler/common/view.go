@@ -79,6 +79,10 @@ func noteView(request *http.Request, writer http.ResponseWriter, session *sessio
 				note.Content = string(bytes)
 			}
 		}
+
+	case filetype.Pdf:
+		templateName = fmt.Sprintf("%s/pdf/view", table)
+
 	default:
 		templateName = fmt.Sprintf("%s/default/view", table)
 	}

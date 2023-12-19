@@ -18,8 +18,7 @@ import (
 
 func Get(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (templateName string, response model.Response) {
 	vars := mux.Vars(request)
-	idStr := vars["id"]
-	id, err := strconv.ParseInt(idStr, 10, 64)
+	id, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil || id <= 0 {
 		return
 	}
