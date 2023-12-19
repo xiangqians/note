@@ -5,6 +5,7 @@ package model
 import (
 	"fmt"
 	util_os "note/src/util/os"
+	"os"
 
 	// https://pkg.go.dev/gopkg.in/ini.v1
 	// https://github.com/go-ini/ini
@@ -53,9 +54,16 @@ type server struct {
 
 var Ini ini
 
+// 模式，dev、test、prod
+var mode = os.Getenv("GO_ENV_MODE")
+
 func init() {
-	source := "E:\\workspace\\goland\\note\\res\\note.ini"
-	//source := "./note.ini"
+	var source string
+	if mode == "dev" {
+		source = "E:\\workspace\\goland\\note\\res\\note.ini"
+	} else {
+		source = "./note.ini"
+	}
 	file, err := pkg_ini.Load(source)
 	if err != nil {
 		panic(err)
