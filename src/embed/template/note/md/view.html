@@ -12,10 +12,10 @@
     <meta charset="UTF-8">
     <link rel="shortcut icon" rel="external nofollow" href="{{ .contextPath }}/static/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="{{ .contextPath }}/static/css/float.css"/>
     <link rel="stylesheet" type="text/css" href="{{ .contextPath }}/static/css/bootstrap.css">
     <link rel="stylesheet" type="text/css" href="{{ .contextPath }}/static/css/highlight.css">
     <link rel="stylesheet" type="text/css" href="{{ .contextPath }}/static/css/markdown_demo.css">
-    <link rel="stylesheet" type="text/css" href="{{ .contextPath }}/static/css/float.css"/>
     <title>{{ $data.Name }}</title>
     <style>
         html, body {
@@ -57,6 +57,8 @@
 </body>
 </html>
 <script type="text/javascript" src="{{ .contextPath }}/static/js/jquery.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/body.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/float.js"></script>
 <script type="text/javascript" src="{{ .contextPath }}/static/js/lodash.js"></script>
 <script type="text/javascript" src="{{ .contextPath }}/static/js/bootstrap.js"></script>
 <script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it.js"></script>
@@ -73,8 +75,6 @@
 <script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_toc_done_right.js"></script>
 <script type="text/javascript" src="{{ .contextPath }}/static/js/highlight.js"></script>
 <script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_demo.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/body.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/float.js"></script>
 <script type="text/javascript">
     ;
     $(function () {
