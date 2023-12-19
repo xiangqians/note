@@ -71,7 +71,7 @@ func noteView(request *http.Request, writer http.ResponseWriter, session *sessio
 	switch note.Type {
 	case filetype.Md:
 		templateName = fmt.Sprintf("%s/md/view", table)
-		file, err := os.Open(util_os.Path(dataDir, table, fmt.Sprintf("%d", id)))
+		file, err := os.Open(util_os.Path(DataDir, table, fmt.Sprintf("%d", id)))
 		if err == nil {
 			defer file.Close()
 			bytes, err := io.ReadAll(file)

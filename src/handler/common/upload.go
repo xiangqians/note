@@ -216,7 +216,7 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 	}
 
 	// 数据目录
-	dataDir := util_os.Path(dataDir, table)
+	dataDir := util_os.Path(DataDir, table)
 	fileInfo, err := os.Stat(dataDir)
 	// 数据目录不存在或者不是文件目录，则创建数据目录
 	if (err != nil && !os.IsExist(err)) || !fileInfo.IsDir() {

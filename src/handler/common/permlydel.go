@@ -30,6 +30,6 @@ func PermlyDel(request *http.Request, writer http.ResponseWriter, session *sessi
 	}
 
 	// 删除物理文件
-	err = os.Remove(util_os.Path(dataDir, table, fmt.Sprintf("%d", id)))
+	err = os.Remove(util_os.Path(DataDir, table, fmt.Sprintf("%d", id)))
 	return RedirectList(table, nil, err)
 }

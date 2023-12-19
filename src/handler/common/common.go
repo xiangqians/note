@@ -10,8 +10,8 @@ import (
 	"strings"
 )
 
-// 数据目录
-var dataDir = model.Ini.Data.Dir
+// DataDir 数据目录
+var DataDir = model.Ini.Data.Dir
 
 func NotFound(err any) (string, model.Response) {
 	return "404", model.Response{Msg: util_string.String(err)}

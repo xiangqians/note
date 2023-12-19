@@ -12,6 +12,8 @@ CREATE TABLE `system` -- 系统信息表
     `current_sign_in_time` INTEGER     DEFAULT 0,  -- 当前登录时间（时间戳，单位s）
     `upd_time`             INTEGER     DEFAULT 0   -- 修改时间（时间戳，单位s）
 );
+
+-- admin
 INSERT INTO `system`(`passwd`) VALUES ('$2a$10$/rDCl5cUiEbxHD8C.rsY.ODEI8hu9tldgwHoDB15/6ec7hLlG90OC');
 
 

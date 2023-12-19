@@ -283,7 +283,7 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 	router.HandleFunc(contextPath+"/note/del", noteHandlerFunc(common.Del)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/restore", noteHandlerFunc(common.Restore)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/permlydel", noteHandlerFunc(common.PermlyDel)).Methods(http.MethodPost)
-	router.HandleFunc(contextPath+"/note/{id:[0-9]+}", noteHandlerFunc(common.Get))
+	router.HandleFunc(contextPath+"/note/{id:[0-9]+}", noteHandlerFunc(common.Get)).Methods(http.MethodGet)
 	router.HandleFunc(contextPath+"/note/{id:[0-9]+}", handlerFunc(note.Upd)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/{id:[0-9]+}/view", noteHandlerFunc(common.View))
 }

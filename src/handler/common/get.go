@@ -38,7 +38,7 @@ func Get(request *http.Request, writer http.ResponseWriter, session *session.Ses
 	name := abs.Name
 	filetype := abs.Type
 
-	file, err := os.Open(util_os.Path(dataDir, table, fmt.Sprintf("%d", id)))
+	file, err := os.Open(util_os.Path(DataDir, table, fmt.Sprintf("%d", id)))
 	if err != nil {
 		return
 	}

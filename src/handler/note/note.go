@@ -11,9 +11,11 @@ import (
 	"note/src/model"
 	"note/src/session"
 	util_filetype "note/src/util/filetype"
+	util_os "note/src/util/os"
 	util_string "note/src/util/string"
 	"note/src/util/time"
 	util_validate "note/src/util/validate"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -80,28 +82,61 @@ func Paste(request *http.Request, writer http.ResponseWriter, session *session.S
 }
 
 func Upd(request *http.Request, writer http.ResponseWriter, session *session.Session) (templateName string, response model.Response) {
+	write := func(err any) {
+		//writer.Header().Set("Content-Type", "application/json")
+		writer.Write([]byte(util_string.String(err)))
+	}
+
 	vars := mux.Vars(request)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil || id <= 0 {
+		write(err)
 		return
 	}
 
-	/*
-		db := db.Get()
-		result, err := db.Get(fmt.Sprintf("SELECT `id`, `name`, `type`, `size`, `del`, `add_time`, `upd_time` FROM `%s` WHERE `del` = 0 AND `id` = ? LIMIT 1", table), id)
-		if err != nil {
-			return
-		}
+	db := db.Get()
+	result, err := db.Get("SELECT `id`, `name`, `type`, `size`, `del`, `add_time`, `upd_time` FROM `note` WHERE `del` = 0 AND `id` = ? LIMIT 1", id)
+	if err != nil {
+		write(err)
+		return
+	}
 
+	var note model.Note
+	err = result.Scan(&note)
+	if err != nil || note.Id == 0 || note.Type != util_filetype.Md {
+		write(err)
+		return
+	}
 
-		data, err :=
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusInternalServerError)
-			return
-		}*/
+	// 数据目录
+	dataDir := util_os.Path(common.DataDir, common.TableNote)
+	fileInfo, err := os.Stat(dataDir)
+	// 数据目录不存在或者不是文件目录，则创建数据目录
+	if (err != nil && !os.IsExist(err)) || !fileInfo.IsDir() {
+		err = os.MkdirAll(dataDir, os.ModePerm)
+	}
+	if err != nil {
+		write(err)
+		return
+	}
 
-	writer.Header().Set("Content-Type", "application/json")
-	writer.Write(nil)
+	// 打开文件
+	file, err := os.OpenFile(util_os.Path(dataDir, fmt.Sprintf("%d", id)),
+		os.O_CREATE| // 创建文件，如果文件不存在的话
+			os.O_WRONLY| // 只写
+			os.O_TRUNC, // 清空文件，如果文件存在的话
+		0666)
+	if err != nil {
+		write(err)
+		return
+	}
+	defer file.Close()
+
+	content := strings.TrimSpace(request.PostFormValue("content"))
+
+	// 写入到文件
+	_, err = file.Write([]byte(content))
+	write(err)
 	return
 }
 
