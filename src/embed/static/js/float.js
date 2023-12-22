@@ -8,12 +8,8 @@ $(function () {
 
     let key = 'float'
 
-    function hasHide() {
-        return storage.getString(key) === 'hide'
-    }
-
     function display() {
-        storage.setString(key, '')
+        storage.setString(key, 'display')
         displayElements($float)
     }
 
@@ -22,7 +18,11 @@ $(function () {
         hideElements($float)
     }
 
-    if (!hasHide()) {
+    function hasDisplay() {
+        return storage.getString(key) === 'display'
+    }
+
+    if (hasDisplay()) {
         display()
     }
 
@@ -32,10 +32,10 @@ $(function () {
     $body.on('keydown', function (event) {
         // Ctrl + M，切换显示更多信息
         if (event.ctrlKey && event.key.toUpperCase() === 'M') {
-            if (hasHide()) {
-                display()
-            } else {
+            if (hasDisplay()) {
                 hide()
+            } else {
+                display()
             }
 
             // 阻止默认行为

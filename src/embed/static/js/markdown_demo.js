@@ -26632,12 +26632,13 @@
                 // 注册 markdown-it-task-lists 插件，用于解析任务列表（带有复选框的列表）
                 // .use(window.markdownitTaskLists)
                 // 注册 markdown-it-anchor 插件
-                // .use(window.markdownItAnchor, {
-                //     permalink: true, // 启用永久链接，默认为 false
-                //     permalinkBefore: true, // 永久链接元素是否在标题前面，默认为 false
-                //     permalinkClass: false, // 永久链接元素的 CSS 类，默认为 'header-anchor'
-                //     permalinkSymbol: '§' // 永久链接符号，默认为 '¶'
-                // })
+                // 注：markdown-it-anchor和markdown-it-toc-done-right 这两个插件是来生成目录
+                .use(window.markdownItAnchor, {
+                    permalink: true, // 启用永久链接，默认为 false
+                    permalinkBefore: true, // 永久链接元素是否在标题前面，默认为 false
+                    permalinkClass: false, // 永久链接元素的 CSS 类，默认为 'header-anchor'
+                    permalinkSymbol: '§' // 永久链接符号，默认为 '¶'
+                })
                 // 注册 markdown-it-toc-done-right 插件
                 .use(window.markdownItTocDoneRight, {
                     containerClass: 'toc', // 生成的容器的类名，这样最后返回来的字符串是 <nav class="toc"><nav/>
@@ -26646,6 +26647,11 @@
                     listClass: 'listClass', // li标签的样式名
                     itemClass: 'itemClass',
                     linkClass: 'linkClass', // a标签的样式名
+
+                    anchorLink: true, // 启用锚点链接
+                    anchorLinkSymbol: '', // 锚点链接的符号
+                    anchorLinkSpace: false, // 锚点链接是否添加空格
+
                     callback: function (html, ast) {
                         // 把目录单独列出来
                         let $toc = $("#toc")

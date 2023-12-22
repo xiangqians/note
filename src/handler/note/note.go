@@ -132,7 +132,7 @@ func Upd(request *http.Request, writer http.ResponseWriter, session *session.Ses
 	}
 	defer file.Close()
 
-	content := strings.TrimSpace(request.PostFormValue("content"))
+	content := request.PostFormValue("content")
 	bytes := []byte(content)
 
 	// 写入到文件
