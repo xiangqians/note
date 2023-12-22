@@ -26637,7 +26637,7 @@
                     permalink: true, // 启用永久链接，默认为 false
                     permalinkBefore: true, // 永久链接元素是否在标题前面，默认为 false
                     permalinkClass: false, // 永久链接元素的 CSS 类，默认为 'header-anchor'
-                    permalinkSymbol: '§' // 永久链接符号，默认为 '¶'
+                    permalinkSymbol: '' // § // 永久链接符号，默认为 '¶'
                 })
                 // 注册 markdown-it-toc-done-right 插件
                 .use(window.markdownItTocDoneRight, {

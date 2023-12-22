@@ -49,9 +49,10 @@ func noteView(request *http.Request, writer http.ResponseWriter, session *sessio
 		return NotFound(err)
 	}
 
+	pid := note.Pid
 	var pNote model.PNote
-	if note.Pid > 0 {
-		result, err = db.Get(getPNoteSql(), note.Pid)
+	if pid > 0 {
+		result, err = db.Get(getPNoteSql(), pid)
 		if err != nil {
 			return NotFound(err)
 		}
@@ -66,6 +67,7 @@ func noteView(request *http.Request, writer http.ResponseWriter, session *sessio
 			pNote.Names = strings.Split(pNote.NamesStr, "/")[1:]
 		}
 	}
+	pNote.Id = pid
 
 	var templateName string
 	switch note.Type {
