@@ -62,11 +62,20 @@ type PNote struct {
 	C        bool     `json:"c"`        // contain & child，是否包含子目录
 }
 
+// Stats 统计
+type Stats struct {
+	Type  string `json:"type"`  // 文件类型
+	Count int64  `json:"count"` // 文件数量
+	Size  int64  `json:"size"`  // 文件大小
+}
+
 // 注册模型
 func init() {
 	gob.Register(System{})
 	gob.Register(Image{})
 	gob.Register(Audio{})
 	gob.Register(Video{})
+	gob.Register(PNote{})
 	gob.Register(Note{})
+	gob.Register(Stats{})
 }

@@ -54,5 +54,6 @@
   "i18n.copyAddress": "Copy address",
   "i18n.copied": "Copied",
   "i18n.fileTypeUnsupportedUpload": "The file type '%s' is not supported for uploading",
-  "i18n.path": "Path"
+  "i18n.path": "Path",
+  "i18n.count": "Count"
 }
