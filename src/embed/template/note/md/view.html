@@ -58,6 +58,7 @@
 <script type="text/javascript" src="{{ .contextPath }}/static/js/jquery.js"></script>
 <script type="text/javascript" src="{{ .contextPath }}/static/js/body.js"></script>
 <script type="text/javascript" src="{{ .contextPath }}/static/js/float.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/md5.js"></script>
 <script type="text/javascript" src="{{ .contextPath }}/static/js/lodash.js"></script>
 <script type="text/javascript" src="{{ .contextPath }}/static/js/bootstrap.js"></script>
 <script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it.js"></script>
@@ -79,33 +80,52 @@
     $(function () {
         let $body = $($("body")[0])
 
-        let $editor = $("#editor");
-        let $preview = $("#preview");
+        let $editor = $("#editor")
+
+        let $textarea = $($editor.find('textarea')[0])
+        let contentHash = md5($textarea.val())
+
+        function hasChanged() {
+            return contentHash !== md5($textarea.val())
+        }
+
+        let $title = $('title')
+        let title = $title.text()
+
+        $('textarea').on('input', function () {
+            if (hasChanged()) {
+                $title.text(`* ${title}`)
+            } else {
+                $title.text(title)
+            }
+        })
+
+        let $preview = $("#preview")
 
         // 移除以 "col-xs-" 开头的class
         function removeColXsClass(index, className) {
-            return (className.match(/(^|\s)col-xs-\S+/g) || []).join(' ');
+            return (className.match(/(^|\s)col-xs-\S+/g) || []).join(' ')
         }
 
         // 按下键盘事件
         $body.on('keydown', function (event) {
             // Ctrl + E，切换编辑状态
             if (event.ctrlKey && event.key.toUpperCase() === 'E') {
-                $editor.removeClass(removeColXsClass);
-                $preview.removeClass(removeColXsClass);
+                $editor.removeClass(removeColXsClass)
+                $preview.removeClass(removeColXsClass)
 
                 // 退出编辑
                 if ($editor[0].hasAttribute('edit')) {
                     $editor.removeAttr('edit')
-                    $editor.css("display", "none");
-                    $preview.addClass("col-xs-10");
+                    $editor.css("display", "none")
+                    $preview.addClass("col-xs-10")
                 }
                 // 编辑
                 else {
                     $editor.attr('edit', '')
-                    $editor.css("display", "");
-                    $editor.addClass("col-xs-5");
-                    $preview.addClass("col-xs-5");
+                    $editor.css("display", "")
+                    $editor.addClass("col-xs-5")
+                    $preview.addClass("col-xs-5")
                 }
 
                 // 阻止默认行为
@@ -116,7 +136,6 @@
 
             // Ctrl + S，保存
             if (event.ctrlKey && event.key.toUpperCase() === 'S') {
-                let $textarea = $($editor.find('textarea')[0])
                 let content = $textarea.val()
                 let url = "{{ .contextPath }}/{{ $table }}/{{ $data.Id }}?t={{ NowUnix }}"
                 Http.post(url, {'id': "{{ $data.Id }}", 'content': content}, function (data, status, xhr) {
@@ -124,6 +143,8 @@
                         alert(data)
                         return
                     }
+                    contentHash = md5($textarea.val())
+                    $title.text(title)
                     alert('保存成功')
                     return
                 }, function (xhr, status, error) {
@@ -136,6 +157,15 @@
                 return
             }
         })
+
+        // onbeforeunload
+        window.onbeforeunload = function (event) {
+            let e = window.event || event
+            if (hasChanged()) {
+                e.returnValue = '数据发生改变！'
+                return e.returnValue
+            }
+        }
     })
     ;
 </script>
