@@ -38,7 +38,13 @@
         </tr>
         </tbody>
     </table>
-    {{ if ne $table "note"}}
+    {{ $displayReUpload := true }}
+    {{ if eq $table "note"}}
+        {{ if eq $data.Type "md" }}
+            {{ $displayReUpload = false }}
+        {{ end }}
+    {{ end  }}
+    {{ if $displayReUpload }}
     <form action="{{ .contextPath }}/{{ $table }}/upload" method="post" enctype="multipart/form-data" style="padding-top: 10px;">
         <input name="id" type="text" value="{{ $data.Id }}" hidden/>
         <input name="file" type="file"/>
