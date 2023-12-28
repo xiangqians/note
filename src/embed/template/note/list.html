@@ -21,7 +21,7 @@
 {{ if eq $table "note" }}
     {{ $c = $pNote.C }}
 {{ end }}
-<h2><span>Index of </span>{{ if eq $pNote.Id 0 }}<span>/</span>{{ if $c }}*{{ end }}{{ else }}{{ $ids := $pNote.Ids }}{{ if $ids }}{{ $len := len $ids }}{{ if gt $len 0 }}{{ $names := $pNote.Names }}{{ range $index,$id := $ids }}<span>/</span><a href='{{ $.contextPath }}/{{ $table }}?search=pid%3A%20{{ $id }}&t={{ NowUnix }}'>{{ index $names $index }}</a>{{ end }}{{ end }}{{ end }}{{ if $c }}/*{{ end }}{{ end }}</h2>
+<h2><a href='{{ $.contextPath }}/{{ $table }}?t={{ NowUnix }}'>Index</a><span> of </span>{{ if eq $pNote.Id 0 }}<span>/</span>{{ if $c }}*{{ end }}{{ else }}{{ $ids := $pNote.Ids }}{{ if $ids }}{{ $len := len $ids }}{{ if gt $len 0 }}{{ $names := $pNote.Names }}{{ range $index,$id := $ids }}<span>/</span><a href='{{ $.contextPath }}/{{ $table }}?search=pid%3A%20{{ $id }}&t={{ NowUnix }}'>{{ index $names $index }}</a>{{ end }}{{ end }}{{ end }}{{ if $c }}/*{{ end }}{{ end }}</h2>
 {{ template "common/variable" . }}
 {{ template "common/table" . }}
 </body>
