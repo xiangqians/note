@@ -26681,6 +26681,46 @@
             return window.twemoji.parse(token[idx].content);
         };
 
+        // 修改markdown-it渲染的链接
+        (function () {
+            return
+            const prefix = 'https://example.com/'
+            const defaultRender = mdHtml.renderer.rules.link_open || function (tokens, idx, options, env, self) {
+                return self.renderToken(tokens, idx, options);
+            };
+
+            mdHtml.renderer.rules.link_open = function (tokens, idx, options, env, self) {
+                const hrefIndex = tokens[idx].attrIndex('href');
+                if (hrefIndex !== -1) {
+                    const href = tokens[idx].attrs[hrefIndex][1];
+                    console.log(href)
+                    if (href.startsWith('http://') || href.startsWith('https://')) {
+                        tokens[idx].attrs[hrefIndex][1] = prefix + href;
+                    }
+                }
+                return defaultRender(tokens, idx, options, env, self);
+            };
+        })();
+
+        // 修改markdown-it渲染的图片URL
+        (function () {
+            const contextPath = variable.contextPath
+            const defaultRender = mdHtml.renderer.rules.image || function(tokens, idx, options, env, self) {
+                return self.renderToken(tokens, idx, options);
+            };
+
+            mdHtml.renderer.rules.image = function(tokens, idx, options, env, self) {
+                const srcIndex = tokens[idx].attrIndex('src');
+                if (srcIndex !== -1) {
+                    const src = tokens[idx].attrs[srcIndex][1];
+                    if (src.startsWith('/image') || src.startsWith('/audio') || src.startsWith('/video')) {
+                        tokens[idx].attrs[srcIndex][1] = contextPath + src;
+                    }
+                }
+                return defaultRender(tokens, idx, options, env, self);
+            };
+        })();
+
         // Inject line numbers for sync scroll. Notes:
 
         // - We track only headings and paragraphs on first level. That's enough.
