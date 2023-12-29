@@ -18,7 +18,7 @@ if exist %OUTPUT_DIR% (
     :REM_DEL_OUTPUT_DIR
     rd /s /q %OUTPUT_DIR%
 )
-REM 重新创建输出目录
+REM 创建输出目录
 md "%OUTPUT_DIR%"
 
 REM 拷贝资源
