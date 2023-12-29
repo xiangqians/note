@@ -31,21 +31,26 @@ func AddMdFile(request *http.Request, writer http.ResponseWriter, session *sessi
 func Paste(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
 	var pid int64 = 0
 	redirect := func(err any) (string, model.Response) {
-		return common.RedirectList(common.TableNote,
-			map[string]any{"search": fmt.Sprintf("pid: %d", pid)},
-			err)
+		return fmt.Sprintf("redirect:/%s/%d/list", common.TableNote, pid), model.Response{Msg: util_string.String(err)}
 	}
 
-	// 文件夹id
+	// 文件id
+	fromId, err := strconv.ParseInt(request.PostFormValue("fromId"), 10, 64)
+	if err != nil || fromId <= 0 {
+		return redirect(err)
+	}
+
+	// 目标文件夹id
 	toId, err := strconv.ParseInt(request.PostFormValue("toId"), 10, 64)
 	if err != nil || toId < 0 {
 		return redirect(err)
 	}
+	pid = toId
 
 	var result *db.Result
 	db := db.Get()
 
-	// 校验文件夹是否存在
+	// 校验目标文件夹是否存在
 	if toId > 0 {
 		result, err = db.Get("SELECT `id`, `type` FROM `note` WHERE `del` = 0 AND `id` = ? LIMIT 1", toId)
 		if err != nil {
@@ -56,13 +61,6 @@ func Paste(request *http.Request, writer http.ResponseWriter, session *session.S
 		if err != nil || note.Id == 0 || note.Type != util_filetype.Folder {
 			return redirect(err)
 		}
-	}
-	pid = toId
-
-	// 文件id
-	fromId, err := strconv.ParseInt(request.PostFormValue("fromId"), 10, 64)
-	if err != nil || fromId <= 0 {
-		return redirect(err)
 	}
 
 	// 校验文件是否存在
@@ -76,8 +74,7 @@ func Paste(request *http.Request, writer http.ResponseWriter, session *session.S
 		return redirect(err)
 	}
 
-	// 粘贴
-	_, err = db.Upd("UPDATE `note` SET `pid` = ? WHERE `del` = 0 AND `id` = ?", toId, fromId)
+	_, err = db.Upd("UPDATE `note` SET `pid` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", toId, time.NowUnix(), fromId)
 	return redirect(err)
 }
 

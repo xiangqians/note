@@ -83,7 +83,6 @@ func noteView(request *http.Request, writer http.ResponseWriter, session *sessio
 		}
 
 	case filetype.Pdf:
-		// 当前页
 		version := strings.TrimSpace(request.URL.Query().Get("version"))
 		if version != "v1" && version != "v2" {
 			version = "v1"

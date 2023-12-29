@@ -17,7 +17,7 @@
         {{ $pNote := .response.Data.pNote }}
         <tr>
             <td>{{ Localize "i18n.path" .language }}</td>
-            <td>{{ if eq $pNote.Id 0 }}<span>/</span>{{ else }}{{ $ids := $pNote.Ids }}{{ if $ids }}{{ $len := len $ids }}{{ if gt $len 0 }}{{ $names := $pNote.Names }}{{ range $index,$id := $ids }}<span>/</span><a href='{{ $.contextPath }}/{{ $table }}?search=pid%3A%20{{ $id }}&t={{ NowUnix }}'>{{ index $names $index }}</a>{{ end }}{{ end }}{{ end }}{{ end }}</td>
+            <td>{{ if eq $pNote.Id 0 }}<span>/</span>{{ else }}{{ $ids := $pNote.Ids }}{{ if $ids }}{{ $len := len $ids }}{{ if gt $len 0 }}{{ $names := $pNote.Names }}{{ range $index,$id := $ids }}<span>/</span><a href='{{ $.contextPath }}/{{ $table }}/{{ $id }}/list?t={{ NowUnix }}'>{{ index $names $index }}</a>{{ end }}{{ end }}{{ end }}{{ end }}</td>
         </tr>
         {{ end }}
         <tr>
@@ -45,8 +45,10 @@
         {{ end }}
     {{ end  }}
     {{ if $displayReUpload }}
-    <form action="{{ .contextPath }}/{{ $table }}/upload" method="post" enctype="multipart/form-data" style="padding-top: 10px;">
-        <input name="id" type="text" value="{{ $data.Id }}" hidden/>
+    <form action="{{ .contextPath }}/{{ $table }}/{{ $data.Id }}/reupload" method="post" enctype="multipart/form-data" style="padding-top: 10px;">
+        {{ if eq $table "note"}}
+            <input name="pid" type="text" value="{{ $data.Pid }}" hidden/>
+        {{ end }}
         <input name="file" type="file"/>
         <button type="submit">{{ Localize "i18n.reUpload" .language }}</button>
     </form>

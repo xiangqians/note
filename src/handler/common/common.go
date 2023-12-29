@@ -4,9 +4,17 @@ package common
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
+	"net/http"
 	"net/url"
+	"note/src/db"
 	"note/src/model"
+	"note/src/session"
+	util_os "note/src/util/os"
 	util_string "note/src/util/string"
+	util_time "note/src/util/time"
+	"os"
+	"strconv"
 	"strings"
 )
 
@@ -30,6 +38,57 @@ func RedirectList(table string, paramMap map[string]any, err any) (string, model
 // RedirectView 重定向到详情页
 func RedirectView(table string, id int64, err any) (string, model.Response) {
 	return fmt.Sprintf("redirect:/%s/%d/view", table, id), model.Response{Msg: util_string.String(err)}
+}
+
+func DelOrRestoreOrPermlyDel(request *http.Request, writer http.ResponseWriter, session *session.Session, table string, Type string) (string, model.Response) {
+	var pid int64 = 0
+	redirect := func(err any) (string, model.Response) {
+		if table == TableNote {
+			return fmt.Sprintf("redirect:/%s/%d/list", table, pid), model.Response{Msg: util_string.String(err)}
+		}
+		return fmt.Sprintf("redirect:/%s", table), model.Response{Msg: util_string.String(err)}
+	}
+
+	// id
+	vars := mux.Vars(request)
+	id, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil || id <= 0 {
+		return redirect(err)
+	}
+
+	db := db.Get()
+
+	// note.pid
+	if table == TableNote {
+		result, err := db.Get(fmt.Sprintf("SELECT `pid` FROM `%s` WHERE `del` IN (0, 1) AND `id` = ?", table), id)
+		if err != nil {
+			return redirect(err)
+		}
+
+		err = result.Scan(&pid)
+		if err != nil {
+			return redirect(err)
+		}
+	}
+
+	switch Type {
+	// 删除（逻辑）
+	case "del":
+		_, err = db.Del(fmt.Sprintf("UPDATE `%s` SET `del` = 1, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", table), util_time.NowUnix(), id)
+
+	// 恢复
+	case "restore":
+		_, err = db.Upd(fmt.Sprintf("UPDATE `%s` SET `del` = 0, `upd_time` = ? WHERE `del` = 1 AND `id` = ?", table), util_time.NowUnix(), id)
+
+	// 永久删除数据表记录（逻辑）
+	case "permlydel":
+		_, err = db.Del(fmt.Sprintf("UPDATE `%s` SET `name` = '', `type` = '', `size` = 0, `del` = 2, `add_time` = 0, `upd_time` = 0 WHERE `del` = 1 AND `id` = ?", table), id)
+		if err == nil {
+			// 删除物理文件
+			err = os.Remove(util_os.Path(DataDir, table, fmt.Sprintf("%d", id)))
+		}
+	}
+	return redirect(err)
 }
 
 func getPNoteSql() string {

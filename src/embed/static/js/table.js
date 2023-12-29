@@ -22,7 +22,7 @@ $(function () {
     setAccept($($upload.find('input[type="file"]')[0]))
     $ul.append($upload)
     // 【重命名】
-    let $rename = $(`<li><form id="rename" action="${variable.contextPath}/${variable.table}/rename?t=${new Date().getTime()}" method="post"><input name="id" hidden><input name="name" hidden><a href="javascript:rename.submit();">${variable.i18n.rename}</a></form></li>`)
+    let $rename = $(`<li><form id="rename" action="javascript:void(0);" method="post"><input name="name" hidden><a href="javascript:rename.submit();">${variable.i18n.rename}</a></form></li>`)
     $ul.append($rename)
     // 【复制地址】
     let $copyAddress = $(`<li><a href="javascript:void(0);">${variable.i18n.copyAddress}</a></li>`)
@@ -256,8 +256,9 @@ $(function () {
             return false
         }
 
-        $($rename.find('input[name="id"]')[0]).val(id)
-        $($rename.find('input[name="name"]')[0]).val(name)
+        let $form = $($rename.find('form')[0])
+        $form.attr('action', `${variable.contextPath}/${variable.table}/${id}/rename?t=${new Date().getTime()}`)
+        $($form.find('input[name="name"]')[0]).val(name)
         return true
     })
 

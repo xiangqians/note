@@ -3,6 +3,7 @@
 package common
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	util_filetype "note/src/util/filetype"
 	util_i18n "note/src/util/i18n"
 	util_os "note/src/util/os"
+	util_string "note/src/util/string"
 	"note/src/util/time"
 	"os"
 	"strconv"
@@ -27,11 +29,10 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 
 	// 重定向函数
 	redirect := func(err any) (string, model.Response) {
-		var paramMap map[string]any = nil
 		if table == TableNote {
-			paramMap = map[string]any{"search": fmt.Sprintf("pid: %d", pid)}
+			return fmt.Sprintf("redirect:/%s/%d/list", table, pid), model.Response{Msg: util_string.String(err)}
 		}
-		return RedirectList(table, paramMap, err)
+		return fmt.Sprintf("redirect:/%s", table), model.Response{Msg: util_string.String(err)}
 	}
 
 	// 读取上传文件
@@ -47,29 +48,16 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 		return redirect(err)
 	}
 
+	// 文件名
+	name := strings.TrimSpace(fileHeader.Filename)
+
 	// 获取文件类型
-	filetype := util_filetype.GetType(bytes)
-	switch table {
-	case TableImage:
-		if filetype != util_filetype.Ico &&
-			filetype != util_filetype.Gif &&
-			filetype != util_filetype.Jpg &&
-			filetype != util_filetype.Jpeg &&
-			filetype != util_filetype.Png &&
-			filetype != util_filetype.Webp {
-			return redirect(fmt.Sprintf(util_i18n.GetMessage("i18n.fileTypeUnsupportedUpload", session.GetLanguage()), filetype))
-		}
-	case TableNote:
-		if filetype != util_filetype.Doc &&
-			filetype != util_filetype.Pdf &&
-			filetype != util_filetype.Zip &&
-			filetype != util_filetype.TarGz {
-			return redirect(fmt.Sprintf(util_i18n.GetMessage("i18n.fileTypeUnsupportedUpload", session.GetLanguage()), filetype))
-		}
+	filetype := util_filetype.GetType(name, bytes)
+	err = validateFiletype(session, table, filetype)
+	if err != nil {
+		return redirect(err)
 	}
 
-	// 文件名
-	name := fileHeader.Filename
 	// 去除文件后缀名
 	suffix := "." + filetype
 	if strings.HasSuffix(name, suffix) {
@@ -101,7 +89,7 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 		return redirect(err)
 	}
 
-	// 校验pid
+	// 校验note.pid
 	if table == TableNote && pid > 0 {
 		result, err = db.Get("SELECT `id`, `type` FROM `note` WHERE `del` = 0 AND `id` = ? LIMIT 1", pid)
 		if err != nil {
@@ -213,4 +201,29 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 	err = db.Commit()
 
 	return redirect(err)
+}
+
+func validateFiletype(session *session.Session, table, filetype string) error {
+	switch table {
+	case TableImage:
+		if filetype != util_filetype.Ico &&
+			filetype != util_filetype.Gif &&
+			filetype != util_filetype.Jpg &&
+			filetype != util_filetype.Jpeg &&
+			filetype != util_filetype.Png &&
+			filetype != util_filetype.Webp {
+			return errors.New(fmt.Sprintf(util_i18n.GetMessage("i18n.fileTypeUnsupportedUpload", session.GetLanguage()), filetype))
+		}
+
+	case TableNote:
+		if filetype != util_filetype.Doc &&
+			filetype != util_filetype.Docx &&
+			filetype != util_filetype.Pdf &&
+			filetype != util_filetype.Zip &&
+			filetype != util_filetype.TarGz {
+			return errors.New(fmt.Sprintf(util_i18n.GetMessage("i18n.fileTypeUnsupportedUpload", session.GetLanguage()), filetype))
+		}
+	}
+
+	return nil
 }
