@@ -92,7 +92,7 @@
 
         let labels = []
         let data = []
-        let statsArr = JSON.parse(`{{ .response.Data }}`)
+        let statsArr = JSON.parse('{{ Serialize .response.Data }}')
         for (let i = 0; i < statsArr.length; i++) {
             let stats = statsArr[i]
             let type = stats.type

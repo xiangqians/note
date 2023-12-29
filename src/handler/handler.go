@@ -17,6 +17,7 @@ import (
 	"note/src/model"
 	"note/src/session"
 	"note/src/util/i18n"
+	util_json "note/src/util/json"
 	util_os "note/src/util/os"
 	util_time "note/src/util/time"
 	"os"
@@ -85,6 +86,14 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 		// i18n国际化
 		"Localize": func(name, language string) string {
 			return i18n.GetMessage(name, language)
+		},
+
+		"Serialize": func(v any) string {
+			json, err := util_json.Serialize(v, false)
+			if err != nil {
+				log.Println(v, err)
+			}
+			return json
 		},
 
 		"NowUnix": func() int64 {

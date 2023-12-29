@@ -57,7 +57,7 @@
         let pNote = null
         if (table === "note") {
             try {
-                pNote = JSON.parse(`{{ .response.Data.pNote }}`)
+                pNote = JSON.parse('{{ Serialize .response.Data.pNote }}')
             } catch (e) {
                 console.error(e)
             }
@@ -68,7 +68,7 @@
         // 分页数据
         let page = null
         try {
-            page = JSON.parse(`{{ .response.Data.page }}`)
+            page = JSON.parse('{{ Serialize .response.Data.page }}')
         } catch (e) {
             console.error(e)
         }
