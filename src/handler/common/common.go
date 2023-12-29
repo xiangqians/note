@@ -31,11 +31,6 @@ func RedirectList(table string, paramMap map[string]any, err any) (string, model
 	return name, model.Response{Msg: util_string.String(err)}
 }
 
-// 重定向到笔记列表
-func redirectNoteList(pid int64, err any) (string, model.Response) {
-	return "redirect:/note?search=pid%3A%20" + fmt.Sprintf("%d", pid), model.Response{Msg: util_string.String(err)}
-}
-
 // RedirectView 重定向到详情页
 func RedirectView(table string, id int64, err any) (string, model.Response) {
 	return fmt.Sprintf("redirect:/%s/%d/view", table, id), model.Response{Msg: util_string.String(err)}

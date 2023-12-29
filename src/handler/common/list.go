@@ -4,6 +4,7 @@ package common
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 	"note/src/db"
 	"note/src/model"
@@ -49,14 +50,6 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 			statement:  "t.`id` = ?",
 			parseValue: parseInt64Value,
 			value:      nil,
-		},
-		{
-			tables:     []string{TableNote},
-			name:       " pid:",
-			index:      -1,
-			statement:  "t.`pid` = ?",
-			parseValue: parseInt64Value,
-			value:      int64(0),
 		},
 		{
 			tables:     nil,
@@ -135,12 +128,13 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 		}
 	}
 
+	// note
 	if table == TableNote {
-		return noteList(page, columns, session)
+		return noteList(request, session, page, columns)
 	}
 
 	// html模板
-	html := func(err any) (string, model.Response) {
+	html := func(page model.Page, err any) (string, model.Response) {
 		return fmt.Sprintf("%s/list", table),
 			model.Response{Msg: session.GetMsg() + util_string.String(err), Data: map[string]any{
 				"table": table,
@@ -173,7 +167,7 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 	sql += " ORDER BY (CASE WHEN t.`upd_time` > t.`add_time` THEN t.`upd_time` ELSE t.`add_time` END) DESC"
 	result, err := db.Page(sql, current, size, values...)
 	if err != nil {
-		return html(err)
+		return html(page, err)
 	}
 
 	page.Total = result.Count()
@@ -182,56 +176,49 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 	var data any
 	switch table {
 	case TableImage, TableAudio, TableVideo:
-		var images []model.Image
-		err = result.Scan(&images)
-		data = images
+		var abss []model.Abs
+		err = result.Scan(&abss)
+		data = abss
 	}
 
 	page.Data = data
-	return html(err)
+	return html(page, err)
 }
 
-func noteList(page model.Page, columns []column, session *session.Session) (string, model.Response) {
-	var pNote model.PNote
-
+func noteList(request *http.Request, session *session.Session, page model.Page, columns []column) (string, model.Response) {
 	// html模板
-	html := func(err any) (string, model.Response) {
-		return "note/list",
+	html := func(page model.Page, pNote model.PNote, err any) (string, model.Response) {
+		return fmt.Sprintf("%s/list", TableNote),
 			model.Response{Msg: session.GetMsg() + util_string.String(err), Data: map[string]any{
-				"table": "note",
+				"table": TableNote,
 				"page":  page,
 				"pNote": pNote,
 			}}
 	}
 
-	// note.pid
+	var pNote model.PNote
+
 	var pid int64
-
-	// contain & child，是否包含子目录
-	var c bool = false
-
-	length := len(columns)
-	for i := 0; i < length; i++ {
-		if columns[i].name == " pid:" {
-			pid = columns[i].value.(int64)
-		} else if columns[i].name == " c:" {
-			c = columns[i].value.(bool)
+	if strings.HasSuffix(request.URL.Path, "/list") {
+		vars := mux.Vars(request)
+		var err error
+		pid, err = strconv.ParseInt(vars["pid"], 10, 64)
+		if err != nil || pid < 0 {
+			return html(page, pNote, err)
 		}
 	}
-	pNote.Id = pid
-	pNote.C = c
 
 	db := db.Get()
 
 	if pid > 0 {
 		result, err := db.Get(getPNoteSql(), pid)
 		if err != nil {
-			return html(err)
+			return html(page, pNote, err)
 		}
 
 		err = result.Scan(&pNote)
 		if err != nil {
-			return html(err)
+			return html(page, pNote, err)
 		}
 
 		if pNote.IdsStr != "" {
@@ -240,26 +227,43 @@ func noteList(page model.Page, columns []column, session *session.Session) (stri
 		}
 	}
 
+	pNote.Id = pid
+
+	// contain & child，是否包含子目录
+	c := false
+
+	length := len(columns)
+
 	// len 0, cap ?
 	statements := make([]string, 0, length)
 	values := make([]any, 0, length)
 
 	for i := 0; i < length; i++ {
-		if columns[i].value != nil {
-			if columns[i].name == " pid:" && c {
-				continue
-			}
+		if columns[i].value == nil {
+			continue
+		}
 
-			tables := columns[i].tables
-			for j := 0; j < len(tables); j++ {
-				if tables[j] == TableNote {
-					statements = append(statements, columns[i].statement)
-					values = append(values, columns[i].value)
-					break
-				}
+		if columns[i].name == " c:" {
+			c = columns[i].value.(bool)
+			continue
+		}
+
+		tables := columns[i].tables
+		for j := 0; j < len(tables); j++ {
+			if tables[j] == TableNote {
+				statements = append(statements, columns[i].statement)
+				values = append(values, columns[i].value)
+				break
 			}
 		}
 	}
+
+	if !c {
+		statements = append(statements, "t.`pid` = ?")
+		values = append(values, pid)
+	}
+
+	pNote.C = c
 
 	var sql string
 
@@ -331,7 +335,7 @@ func noteList(page model.Page, columns []column, session *session.Session) (stri
 
 	result, err := db.Page(sql, page.Current, page.Size, values...)
 	if err != nil {
-		return html(err)
+		return html(page, pNote, err)
 	}
 
 	page.Total = result.Count()
@@ -349,7 +353,7 @@ func noteList(page model.Page, columns []column, session *session.Session) (stri
 			}
 		}
 	}
-	return html(err)
+	return html(page, pNote, err)
 }
 
 func parseStrValue(strValue string) any {

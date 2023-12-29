@@ -45,7 +45,7 @@
                                 {{ $pid = index $ids $index }}
                             {{ end }}
                         {{ end }}
-                        <a href='{{ $.contextPath }}/{{ $table }}?search=pid%3A%20{{ $pid }}&t={{ NowUnix }}'><img src="{{ $.contextPath }}/static/image/file/back.png"></a>
+                        <a href='{{ $.contextPath }}/{{ $table }}/{{ $pid }}/list?t={{ NowUnix }}'><img src="{{ $.contextPath }}/static/image/file/back.png"></a>
                     </td>
                 </tr>
             {{ end }}
@@ -68,12 +68,12 @@
                              title="{{ $value.Type }}"
                              onerror="this.onerror=''; this.src='{{ $.contextPath }}/static/image/file/unknown.png'"></td>
                     {{ if eq $value.Type "folder" }}
-                        <td><a href='{{ $.contextPath }}/{{ $table }}?search=pid%3A%20{{ $value.Id }}&t={{ NowUnix }}'>{{ $value.Name }}</a></td>
+                        <td><a href='{{ $.contextPath }}/{{ $table }}/{{ $value.Id }}/list?t={{ NowUnix }}'>{{ $value.Name }}</a></td>
                     {{ else }}
                         <td><a href='{{ $.contextPath }}/{{ $table }}/{{ $value.Id }}/view?t={{ NowUnix }}' target="_blank">{{ $value.Name }}</a></td>
                     {{ end }}
                     {{ if $c }}
-                        <td>{{ if eq $value.Pid 0 }}<span>/</span>{{ else }}{{ $ids := $value.Pids }}{{ if $ids }}{{ $len := len $ids }}{{ if gt $len 0 }}{{ $names := $value.Pnames }}{{ range $index,$id := $ids }}<span>/</span><a href='{{ $.contextPath }}/{{ $table }}?search=pid%3A%20{{ $id }}&t={{ NowUnix }}'>{{ index $names $index }}</a>{{ end }}{{ end }}{{ end }}{{ end }}</td>
+                        <td>{{ if eq $value.Pid 0 }}<span>/</span>{{ else }}{{ $ids := $value.Pids }}{{ if $ids }}{{ $len := len $ids }}{{ if gt $len 0 }}{{ $names := $value.Pnames }}{{ range $index,$id := $ids }}<span>/</span><a href='{{ $.contextPath }}/{{ $table }}/{{ $id }}/list?t={{ NowUnix }}'>{{ index $names $index }}</a>{{ end }}{{ end }}{{ end }}{{ end }}</td>
                     {{ end }}
                     <td>{{ HumanizFileSize $value.Size }}</td>
                     <td>{{ HumanizUnix $value.AddTime $.language }}</td>
@@ -92,13 +92,13 @@
                 <!-- 数据表 -->
                 {{ $table := .response.Data.table }}
 
-                <form action="{{ .contextPath }}/{{ $table }}" method="get">
+                <form action="{{ $.path }}" method="get">
                     <input name="current" value="1" type="hidden">
                     <input name="size" value="{{ $page.Size }}" type="hidden">
                     <input name="search"
                            type="text"
                            placeholder='{{ Localize "i18n.search" .language }}'
-                           title='{{ if eq $table "note" }}id:{id}&nbsp;&nbsp;pid:{pid}&nbsp;&nbsp;c:[true | false]&nbsp;&nbsp;name:{name}&nbsp;&nbsp;type:{type}&nbsp;&nbsp;del:[true | false]{{ else }}id:{id}&nbsp;&nbsp;name:{name}&nbsp;&nbsp;type:{type}&nbsp;&nbsp;del:[true | false]{{ end }}'
+                           title='{{ if eq $table "note" }}id:{id}&nbsp;&nbsp;c:[true | false]&nbsp;&nbsp;name:{name}&nbsp;&nbsp;type:{type}&nbsp;&nbsp;del:[true | false]{{ else }}id:{id}&nbsp;&nbsp;name:{name}&nbsp;&nbsp;type:{type}&nbsp;&nbsp;del:[true | false]{{ end }}'
                            value="{{ $page.Search }}">
                     <input name="t" value="{{ NowUnix }}" type="hidden">
                 </form>
@@ -127,7 +127,7 @@
                         {{ $prev = $last }}
                     {{ end }}
                     <span>
-                        <a href="{{ $.contextPath }}/{{ $table }}?current={{ $prev }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.prev" .language }}</a>
+                        <a href="{{ $.path }}?current={{ $prev }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.prev" .language }}</a>
                     </span>
                 {{ end }}
 
@@ -139,7 +139,7 @@
                             <span>{{ $index }}</span>
                         {{ else }}
                             <span>
-                                <a href="{{ $.contextPath }}/{{ $table }}?current={{ $index }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ $index }}</a>
+                                <a href="{{ $.path }}?current={{ $index }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ $index }}</a>
                             </span>
                         {{ end }}
                     {{ end }}
@@ -150,7 +150,7 @@
                 {{ else }}
                     <span>
                         {{ $next := Increment $page.Current }}
-                        <a href="{{ $.contextPath }}/{{ $table }}?current={{ $next }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.next" .language }}</a>
+                        <a href="{{ $.path }}?current={{ $next }}&size={{ $page.Size }}&search={{ $page.Search }}&t={{ NowUnix }}">{{ Localize "i18n.next" .language }}</a>
                     </span>
                 {{ end }}
             </td>

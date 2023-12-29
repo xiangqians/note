@@ -266,23 +266,25 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 	// image
 	router.HandleFunc(contextPath+"/image", imageHandlerFunc(common.List))
 	router.HandleFunc(contextPath+"/image/upload", imageHandlerFunc(common.Upload)).Methods(http.MethodPost)
-	router.HandleFunc(contextPath+"/image/rename", imageHandlerFunc(common.Rename)).Methods(http.MethodPost)
-	router.HandleFunc(contextPath+"/image/del", imageHandlerFunc(common.Del)).Methods(http.MethodPost)
-	router.HandleFunc(contextPath+"/image/restore", imageHandlerFunc(common.Restore)).Methods(http.MethodPost)
-	router.HandleFunc(contextPath+"/image/permlydel", imageHandlerFunc(common.PermlyDel)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/reupload", imageHandlerFunc(common.ReUpload)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/rename", imageHandlerFunc(common.Rename)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/del", imageHandlerFunc(common.Del)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/restore", imageHandlerFunc(common.Restore)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/permlydel", imageHandlerFunc(common.PermlyDel)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/image/{id:[0-9]+}", imageHandlerFunc(common.Get))
 	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/view", imageHandlerFunc(common.View))
 
 	// note
 	router.HandleFunc(contextPath+"/note", noteHandlerFunc(common.List))
+	router.HandleFunc(contextPath+"/note/{pid:[0-9]+}/list", noteHandlerFunc(common.List))
 	router.HandleFunc(contextPath+"/note/addfolder", handlerFunc(note.AddFolder)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/addmdfile", handlerFunc(note.AddMdFile)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/upload", noteHandlerFunc(common.Upload)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/rename", noteHandlerFunc(common.Rename)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/paste", handlerFunc(note.Paste)).Methods(http.MethodPost)
-	router.HandleFunc(contextPath+"/note/del", noteHandlerFunc(common.Del)).Methods(http.MethodPost)
-	router.HandleFunc(contextPath+"/note/restore", noteHandlerFunc(common.Restore)).Methods(http.MethodPost)
-	router.HandleFunc(contextPath+"/note/permlydel", noteHandlerFunc(common.PermlyDel)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/note/{id:[0-9]+}/del", noteHandlerFunc(common.Del)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/note/{id:[0-9]+}/restore", noteHandlerFunc(common.Restore)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/note/{id:[0-9]+}/permlydel", noteHandlerFunc(common.PermlyDel)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/{id:[0-9]+}", noteHandlerFunc(common.Get)).Methods(http.MethodGet)
 	router.HandleFunc(contextPath+"/note/{id:[0-9]+}", handlerFunc(note.Upd)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/{id:[0-9]+}/view", noteHandlerFunc(common.View))
@@ -305,6 +307,9 @@ func handleStatic(embedFs embed.FS, router *mux.Router) {
 		handler = http.FileServer(http.FS(ioFs))
 	}
 
+	// 上下文路径
+	contextPath := model.Ini.Server.ContextPath
+
 	// 注册路由到处理器
-	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", handler))
+	router.PathPrefix(contextPath + "/static/").Handler(http.StripPrefix(contextPath+"/static/", handler))
 }
