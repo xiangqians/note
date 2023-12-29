@@ -38,7 +38,6 @@ cd ./src && go build -ldflags="-s -w" -o "${pkgPath}"
 startupPath=${OUTPUT_DIR}/startup.sh
 cat>${startupPath}<<EOF
 #!/bin/bash
-# startup.sh
 #nohup ./${pkgName} >/dev/null 2>&1 &
 ./${pkgName}
 EOF
