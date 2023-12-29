@@ -151,11 +151,14 @@ func Upd(request *http.Request, writer http.ResponseWriter, session *session.Ses
 }
 
 func add(request *http.Request, writer http.ResponseWriter, session *session.Session, Type string) (string, model.Response) {
-	// 父id
-	pid, err := strconv.ParseInt(strings.TrimSpace(request.PostFormValue("pid")), 10, 64)
+	redirect := func(pid int64, err any) (string, model.Response) {
+		return fmt.Sprintf("redirect:/note/%d/list", pid), model.Response{Msg: util_string.String(err)}
+	}
 
-	if pid < 0 {
-		return redirect(0, err)
+	// pid
+	pid, err := strconv.ParseInt(strings.TrimSpace(request.PostFormValue("pid")), 10, 64)
+	if err != nil || pid < 0 {
+		return redirect(pid, err)
 	}
 
 	// 名称
@@ -172,17 +175,15 @@ func add(request *http.Request, writer http.ResponseWriter, session *session.Ses
 
 	// 校验父id是否存在
 	if pid > 0 {
-		result, err := db.Get("SELECT `id` FROM `note` WHERE `del` = 0 AND `id` = ? LIMIT 1", pid)
+		result, err := db.Get("SELECT `id`, `type` FROM `note` WHERE `del` = 0 AND `id` = ? LIMIT 1", pid)
 		if err != nil {
 			return redirect(pid, err)
 		}
-		pid = 0
-		err = result.Scan(&pid)
-		if err != nil {
+
+		var note model.Note
+		err = result.Scan(&note)
+		if err != nil || note.Id == 0 || note.Type != util_filetype.Folder {
 			return redirect(pid, err)
-		}
-		if pid == 0 {
-			return redirect(pid, nil)
 		}
 	}
 

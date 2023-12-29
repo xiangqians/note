@@ -252,7 +252,7 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 	}
 
 	router.NotFoundHandler = handlerFunc(func(request *http.Request, writer http.ResponseWriter, session *session.Session) (name string, response model.Response) {
-		return "404", model.Response{}
+		return common.NotFound(request, writer, session, nil)
 	})
 
 	// system
@@ -280,6 +280,7 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 	router.HandleFunc(contextPath+"/note/addfolder", handlerFunc(note.AddFolder)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/addmdfile", handlerFunc(note.AddMdFile)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/upload", noteHandlerFunc(common.Upload)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/note/{id:[0-9]+}/reupload", noteHandlerFunc(common.ReUpload)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/rename", noteHandlerFunc(common.Rename)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/paste", handlerFunc(note.Paste)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/note/{id:[0-9]+}/del", noteHandlerFunc(common.Del)).Methods(http.MethodPost)

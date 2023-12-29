@@ -407,6 +407,7 @@ See https://github.com/adobe-type-tools/cmap-resources
 <script type="text/javascript" src="{{ .contextPath }}/static/pdf.js/build/pdf.js"></script>
 <script>
     ;
+    const contextPath = "{{ .contextPath }}"
     defPdfSrc = "{{ .contextPath }}/{{ $table }}/{{ $data.Id }}?t={{ NowUnix }}"
     // console.log('defPdfSrc', defPdfSrc)
     ;

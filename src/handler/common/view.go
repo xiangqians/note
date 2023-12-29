@@ -22,7 +22,7 @@ func View(request *http.Request, writer http.ResponseWriter, session *session.Se
 	vars := mux.Vars(request)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil || id <= 0 {
-		return NotFound(err)
+		return NotFound(request, writer, session, err)
 	}
 
 	switch table {
@@ -33,20 +33,20 @@ func View(request *http.Request, writer http.ResponseWriter, session *session.Se
 		return noteView(request, writer, session, table, id)
 	}
 
-	return NotFound(err)
+	return NotFound(request, writer, session, err)
 }
 
 func noteView(request *http.Request, writer http.ResponseWriter, session *session.Session, table string, id int64) (string, model.Response) {
 	db := db.Get()
 	result, err := db.Get(fmt.Sprintf("SELECT `id`, `pid`, `name`, `type`, `size`, `del`, `add_time`, `upd_time` FROM `%s` WHERE `del` = 0 AND `id` = ? LIMIT 1", table), id)
 	if err != nil {
-		return NotFound(err)
+		return NotFound(request, writer, session, err)
 	}
 
 	var note model.Note
 	err = result.Scan(&note)
 	if err != nil || note.Id == 0 || note.Type == filetype.Folder {
-		return NotFound(err)
+		return NotFound(request, writer, session, err)
 	}
 
 	pid := note.Pid
@@ -54,12 +54,12 @@ func noteView(request *http.Request, writer http.ResponseWriter, session *sessio
 	if pid > 0 {
 		result, err = db.Get(getPNoteSql(), pid)
 		if err != nil {
-			return NotFound(err)
+			return NotFound(request, writer, session, err)
 		}
 
 		err = result.Scan(&pNote)
 		if err != nil {
-			return NotFound(err)
+			return NotFound(request, writer, session, err)
 		}
 
 		if pNote.IdsStr != "" {
@@ -83,7 +83,12 @@ func noteView(request *http.Request, writer http.ResponseWriter, session *sessio
 		}
 
 	case filetype.Pdf:
-		templateName = fmt.Sprintf("%s/pdf/view", table)
+		// 当前页
+		version := strings.TrimSpace(request.URL.Query().Get("version"))
+		if version != "v1" && version != "v2" {
+			version = "v1"
+		}
+		templateName = fmt.Sprintf("%s/pdf/view/%s", table, version)
 
 	default:
 		templateName = fmt.Sprintf("%s/default/view", table)
@@ -100,13 +105,13 @@ func absView(request *http.Request, writer http.ResponseWriter, session *session
 	db := db.Get()
 	result, err := db.Get(fmt.Sprintf("SELECT `id`, `name`, `type`, `size`, `del`, `add_time`, `upd_time` FROM `%s` WHERE `del` = 0 AND `id` = ? LIMIT 1", table), id)
 	if err != nil {
-		return NotFound(err)
+		return NotFound(request, writer, session, err)
 	}
 
 	var abs model.Abs
 	err = result.Scan(&abs)
 	if err != nil || abs.Id == 0 {
-		return NotFound(err)
+		return NotFound(request, writer, session, err)
 	}
 
 	return fmt.Sprintf("%s/view", table),

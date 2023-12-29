@@ -13,10 +13,6 @@ import (
 // DataDir 数据目录
 var DataDir = model.Ini.Data.Dir
 
-func NotFound(err any) (string, model.Response) {
-	return "404", model.Response{Msg: util_string.String(err)}
-}
-
 // RedirectList 重定向到列表
 func RedirectList(table string, paramMap map[string]any, err any) (string, model.Response) {
 	name := fmt.Sprintf("redirect:/%s", table)
