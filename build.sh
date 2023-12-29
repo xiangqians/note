@@ -27,7 +27,6 @@ pkgName="note_${os}_${arch}"
 
 # 包路径
 pkgPath=${OUTPUT_DIR}/${pkgName}
-echo $pkgPath
 
 # 构建
 cd ./src && go build -ldflags="-s -w" -o "${pkgPath}"
