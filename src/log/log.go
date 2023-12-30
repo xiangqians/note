@@ -22,16 +22,15 @@ var ini = model.Ini
 
 // 初始化日志写入器
 func init() {
-	// 获取当前系统时区
-	loc, err := time.LoadLocation("")
-	if err != nil {
-		// 无法获取当前系统时区，取默认时区
-		loc, err = time.LoadLocation("Asia/Shanghai")
-	}
-
-	// 设置应用程序时区为系统时区
-	if err == nil {
-		time.Local = loc
+	// 时区
+	timeZone := ini.Sys.TimeZone
+	if timeZone != "" {
+		// 加载时区
+		loc, err := time.LoadLocation(timeZone)
+		// 设置时区
+		if err == nil {
+			time.Local = loc
+		}
 	}
 
 	// 文件写入器

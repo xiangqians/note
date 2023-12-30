@@ -6,7 +6,6 @@ import (
 	"fmt"
 	util_os "note/src/util/os"
 	"os"
-
 	// https://pkg.go.dev/gopkg.in/ini.v1
 	// https://github.com/go-ini/ini
 	pkg_ini "gopkg.in/ini.v1"
@@ -16,10 +15,16 @@ import (
 
 // 配置
 type ini struct {
+	Sys    sys    // 系统配置
 	Log    log    // 日志配置
 	Db     db     // 数据库配置
 	Data   data   // 数据配置
 	Server server // 服务配置
+}
+
+// 系统配置
+type sys struct {
+	TimeZone string // 时区
 }
 
 // 日志配置
@@ -68,6 +73,13 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+
+	// sys
+	sys, err := file.GetSection("sys")
+	if err != nil {
+		panic(err)
+	}
+	Ini.Sys.TimeZone = sys.Key("time-zone").String()
 
 	// log
 	log, err := file.GetSection("log")
