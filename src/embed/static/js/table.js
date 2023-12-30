@@ -283,7 +283,16 @@ $(function () {
                 let id = $copyAddressTr.attr('id')
                 let name = $copyAddressTr.attr('name')
                 $copyAddressTr = null
-                return `![${name}](/${variable.table}/${id})`
+                if (variable.table === 'image') {
+                    return `![${name}](/${variable.table}/${id})`
+
+                } else if (variable.table === 'audio') {
+                    return `<audio controls><source src="/${variable.table}/${id}">Your browser does not support the audio element.</audio>`
+
+                } else if (variable.table === 'video') {
+                    return `<video controls><source src="/${variable.table}/${id}">Your browser does not support the video tag.</video>`
+                }
+                return "undefined"
             }
         })
 

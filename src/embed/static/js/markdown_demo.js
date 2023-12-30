@@ -26661,6 +26661,7 @@
                     },
                     level: [1, 2, 3], // 设置生成目录的标题级别
                 })
+
             mdSrc = window.markdownit(defaults)
                 .use(abbr_plugin)
                 .use(container_plugin, "warning")
@@ -26714,7 +26715,7 @@
                 if (srcIndex !== -1) {
                     const src = tokens[idx].attrs[srcIndex][1];
                     if (src.startsWith('/image') || src.startsWith('/audio') || src.startsWith('/video')) {
-                        tokens[idx].attrs[srcIndex][1] = contextPath + src;
+                        tokens[idx].attrs[srcIndex][1] = `${contextPath}${src}?t=${new Date().getTime()}`;
                     }
                 }
                 return defaultRender(tokens, idx, options, env, self);
