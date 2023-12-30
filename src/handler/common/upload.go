@@ -52,7 +52,7 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 	name := strings.TrimSpace(fileHeader.Filename)
 
 	// 获取文件类型
-	filetype := util_filetype.GetType(name, bytes)
+	filetype := util_filetype.GetType(name)
 	err = validateFiletype(session, table, filetype)
 	if err != nil {
 		return redirect(err)
@@ -212,6 +212,25 @@ func validateFiletype(session *session.Session, table, filetype string) error {
 			filetype != util_filetype.Jpeg &&
 			filetype != util_filetype.Png &&
 			filetype != util_filetype.Webp {
+			return errors.New(fmt.Sprintf(util_i18n.GetMessage("i18n.fileTypeUnsupportedUpload", session.GetLanguage()), filetype))
+		}
+
+	case TableAudio:
+		if filetype != util_filetype.Mp3 &&
+			filetype != util_filetype.Wav &&
+			filetype != util_filetype.Flac &&
+			filetype != util_filetype.Aac &&
+			filetype != util_filetype.Ogg {
+			return errors.New(fmt.Sprintf(util_i18n.GetMessage("i18n.fileTypeUnsupportedUpload", session.GetLanguage()), filetype))
+		}
+
+	case TableVideo:
+		if filetype != util_filetype.Mp4 &&
+			filetype != util_filetype.Avi &&
+			filetype != util_filetype.Mov &&
+			filetype != util_filetype.Wmv &&
+			filetype != util_filetype.Mkv &&
+			filetype != util_filetype.Flv {
 			return errors.New(fmt.Sprintf(util_i18n.GetMessage("i18n.fileTypeUnsupportedUpload", session.GetLanguage()), filetype))
 		}
 

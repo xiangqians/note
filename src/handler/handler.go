@@ -227,7 +227,7 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 					"embed/template/common/foot2.html",          // 嵌套模板文件
 					"embed/template/common/table.html",          // 嵌套模板文件
 					"embed/template/common/variable.html",       // 嵌套模板文件
-					"embed/template/common/float.html")          // 嵌套模板文件
+					"embed/template/common/float.html") // 嵌套模板文件
 			}
 			if err != nil {
 				panic(err)
@@ -251,6 +251,18 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 	imageHandlerFunc := func(handler func(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (name string, response model.Response)) http.HandlerFunc {
 		return handlerFunc(func(request *http.Request, writer http.ResponseWriter, session *session.Session) (name string, response model.Response) {
 			return handler(request, writer, session, common.TableImage)
+		})
+	}
+
+	audioHandlerFunc := func(handler func(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (name string, response model.Response)) http.HandlerFunc {
+		return handlerFunc(func(request *http.Request, writer http.ResponseWriter, session *session.Session) (name string, response model.Response) {
+			return handler(request, writer, session, common.TableAudio)
+		})
+	}
+
+	videoHandlerFunc := func(handler func(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (name string, response model.Response)) http.HandlerFunc {
+		return handlerFunc(func(request *http.Request, writer http.ResponseWriter, session *session.Session) (name string, response model.Response) {
+			return handler(request, writer, session, common.TableVideo)
 		})
 	}
 
@@ -282,6 +294,28 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/permlydel", imageHandlerFunc(common.PermlyDel)).Methods(http.MethodPost)
 	router.HandleFunc(contextPath+"/image/{id:[0-9]+}", imageHandlerFunc(common.Get))
 	router.HandleFunc(contextPath+"/image/{id:[0-9]+}/view", imageHandlerFunc(common.View))
+
+	// audio
+	router.HandleFunc(contextPath+"/audio", audioHandlerFunc(common.List))
+	router.HandleFunc(contextPath+"/audio/upload", audioHandlerFunc(common.Upload)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/audio/{id:[0-9]+}/reupload", audioHandlerFunc(common.ReUpload)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/audio/{id:[0-9]+}/rename", audioHandlerFunc(common.Rename)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/audio/{id:[0-9]+}/del", audioHandlerFunc(common.Del)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/audio/{id:[0-9]+}/restore", audioHandlerFunc(common.Restore)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/audio/{id:[0-9]+}/permlydel", audioHandlerFunc(common.PermlyDel)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/audio/{id:[0-9]+}", audioHandlerFunc(common.Get))
+	router.HandleFunc(contextPath+"/audio/{id:[0-9]+}/view", audioHandlerFunc(common.View))
+
+	// video
+	router.HandleFunc(contextPath+"/video", videoHandlerFunc(common.List))
+	router.HandleFunc(contextPath+"/video/upload", videoHandlerFunc(common.Upload)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/video/{id:[0-9]+}/reupload", videoHandlerFunc(common.ReUpload)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/video/{id:[0-9]+}/rename", videoHandlerFunc(common.Rename)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/video/{id:[0-9]+}/del", videoHandlerFunc(common.Del)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/video/{id:[0-9]+}/restore", videoHandlerFunc(common.Restore)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/video/{id:[0-9]+}/permlydel", videoHandlerFunc(common.PermlyDel)).Methods(http.MethodPost)
+	router.HandleFunc(contextPath+"/video/{id:[0-9]+}", videoHandlerFunc(common.Get))
+	router.HandleFunc(contextPath+"/video/{id:[0-9]+}/view", videoHandlerFunc(common.View))
 
 	// note
 	router.HandleFunc(contextPath+"/note", noteHandlerFunc(common.List))

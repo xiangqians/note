@@ -56,7 +56,7 @@ func ReUpload(request *http.Request, writer http.ResponseWriter, session *sessio
 	name := strings.TrimSpace(fileHeader.Filename)
 
 	// 获取文件类型
-	filetype := util_filetype.GetType(name, bytes)
+	filetype := util_filetype.GetType(name)
 	err = validateFiletype(session, table, filetype)
 	if err != nil {
 		return redirect(err)

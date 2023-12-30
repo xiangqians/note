@@ -1,0 +1,29 @@
+<!--
+ | @author xiangqian
+ | @date 13:30 2023/12/30
+ |-->
+{{ define "video/view" }}
+{{ $table := .response.Data.table }}
+{{ $data := .response.Data.data }}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" rel="external nofollow" href="{{ .contextPath }}/static/favicon.ico">
+    <link rel="stylesheet" href="{{ .contextPath }}/static/css/body.css" type="text/css"/>
+    <link rel="stylesheet" href="{{ .contextPath }}/static/css/float.css" type="text/css"/>
+    <title>{{ $data.Name }}</title>
+</head>
+<body>
+{{ template "common/float" . }}
+{{ $type := "" }}
+<video controls>
+    <source src="{{ .contextPath }}/{{ $table }}/{{ $data.Id }}?t={{ NowUnix }}" type="{{ $type }}">
+    Your browser does not support the video tag.
+</video>
+</body>
+</html>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/jquery.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/body.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/float.js"></script>
+{{ end }}
