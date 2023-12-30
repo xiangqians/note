@@ -57,14 +57,54 @@ func Get(request *http.Request, writer http.ResponseWriter, session *session.Ses
 		return
 	}
 
+	fileSize := fileStat.Size()
+
+	// 分段获取数据
+	if table == TableAudio || table == TableVideo {
+		// 获取请求范围
+		start, end, partial := getRange(request, fileSize)
+
+		// 设置响应头
+		writer.Header().Set("Accept-Ranges", "bytes")
+		writer.Header().Set("Content-Type", contentType)
+		writer.Header().Set("Content-Length", strconv.FormatInt(end-start+1, 10))
+
+		// 如果是分段请求，则设置状态码为 206 Partial Content
+		if partial {
+			writer.WriteHeader(http.StatusPartialContent)
+		}
+
+		// 分段传输文件内容
+		http.ServeContent(writer, request, "", fileStat.ModTime(), file)
+		return
+	}
+
 	writer.WriteHeader(http.StatusOK)
 	writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.%s", url.QueryEscape(name), filetype))
 	writer.Header().Set("Content-Type", contentType)
-	writer.Header().Set("Content-Length", strconv.FormatInt(fileStat.Size(), 10))
+	writer.Header().Set("Content-Length", strconv.FormatInt(fileSize, 10))
 	//writer.Header().Set("Content-Transfer-Encoding", "binary")
 
 	file.Seek(0, 0)
 	_, err = io.Copy(writer, file)
 
 	return
+}
+
+func getRange(request *http.Request, fileSize int64) (start, end int64, partial bool) {
+	rangeHeader := request.Header.Get("Range")
+	if rangeHeader == "" {
+		return 0, fileSize - 1, false
+	}
+
+	_, err := fmt.Sscanf(rangeHeader, "bytes=%d-%d", &start, &end)
+	if err != nil {
+		return 0, 0, false
+	}
+
+	if start >= fileSize || end >= fileSize {
+		return 0, 0, false
+	}
+
+	return start, end, true
 }
