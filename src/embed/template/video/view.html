@@ -16,8 +16,7 @@
 </head>
 <body>
 {{ template "common/float" . }}
-<video controls>
-    <source src="{{ .contextPath }}/{{ $table }}/{{ $data.Id }}?t={{ NowUnix }}">
+<video src="{{ .contextPath }}/{{ $table }}/{{ $data.Id }}?t={{ NowUnix }}" controls>
     Your browser does not support the video tag.
 </video>
 </body>

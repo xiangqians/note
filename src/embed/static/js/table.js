@@ -287,10 +287,10 @@ $(function () {
                     return `![${name}](/${variable.table}/${id})`
 
                 } else if (variable.table === 'audio') {
-                    return `<audio controls><source src="/${variable.table}/${id}">Your browser does not support the audio element.</audio>`
+                    return `<audio src="/${variable.table}/${id}" controls>Your browser does not support the audio element.</audio>`
 
                 } else if (variable.table === 'video') {
-                    return `<video controls><source src="/${variable.table}/${id}">Your browser does not support the video tag.</video>`
+                    return `<video src="/${variable.table}/${id}" controls>Your browser does not support the video tag.</video>`
                 }
                 return "undefined"
             }

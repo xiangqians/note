@@ -26612,6 +26612,10 @@
         } else {
             // 创建 markdown-it 实例
             mdHtml = window.markdownit(defaults)
+                .set({
+                    // 启用HTML标签解析
+                    html: true
+                })
                 .use(abbr_plugin)
                 .use(container_plugin, "warning")
                 // 注册 markdown-it-deflist 插件，用于解析定义列表（定义术语和描述的列表）
@@ -26661,6 +26665,31 @@
                     },
                     level: [1, 2, 3], // 设置生成目录的标题级别
                 })
+                .use(function (md) {
+                    const contextPath = variable.contextPath;
+
+                    // 修改 audio.src & video.src
+                    md.inline.ruler.before('link', 'media', (state, silent) => {
+                        const tokens = state.tokens;
+                        for (let i = 0; i < tokens.length; i++) {
+                            const token = tokens[i];
+                            const type = token.type;
+                            if (type === 'html_inline') {
+                                const content = token.content
+                                let match = content.match(/<audio\s+[^>]*src="([^"]+)"[^>]*>(.*?)/)
+                                if (!(match)) {
+                                    match = content.match(/<video\s+[^>]*src="([^"]+)"[^>]*>(.*?)/)
+                                }
+                                if (match) {
+                                    const src = match[1];
+                                    if (src.startsWith('/audio') || src.startsWith('/video')) {
+                                        token.content = content.replace(/src="([^"]+)"/, `src="${contextPath}${src}?t=${new Date().getTime()}"`)
+                                    }
+                                }
+                            }
+                        }
+                    })
+                })
 
             mdSrc = window.markdownit(defaults)
                 .use(abbr_plugin)
@@ -26682,43 +26711,22 @@
             return window.twemoji.parse(token[idx].content);
         };
 
-        // 修改markdown-it渲染的链接
+        // 修改image.src
         (function () {
-            return
-            const prefix = 'https://example.com/'
-            const defaultRender = mdHtml.renderer.rules.link_open || function (tokens, idx, options, env, self) {
+            const contextPath = variable.contextPath;
+            const defaultImageRender = mdHtml.renderer.rules.image || function (tokens, idx, options, env, self) {
                 return self.renderToken(tokens, idx, options);
             };
-
-            mdHtml.renderer.rules.link_open = function (tokens, idx, options, env, self) {
-                const hrefIndex = tokens[idx].attrIndex('href');
-                if (hrefIndex !== -1) {
-                    const href = tokens[idx].attrs[hrefIndex][1];
-                    console.log(href)
-                    if (href.startsWith('http://') || href.startsWith('https://')) {
-                        tokens[idx].attrs[hrefIndex][1] = prefix + href;
-                    }
-                }
-                return defaultRender(tokens, idx, options, env, self);
-            };
-        })();
-
-        // 修改markdown-it渲染的图片URL
-        (function () {
-            const contextPath = variable.contextPath
-            const defaultRender = mdHtml.renderer.rules.image || function(tokens, idx, options, env, self) {
-                return self.renderToken(tokens, idx, options);
-            };
-
-            mdHtml.renderer.rules.image = function(tokens, idx, options, env, self) {
-                const srcIndex = tokens[idx].attrIndex('src');
+            mdHtml.renderer.rules.image = function (tokens, idx, options, env, self) {
+                const token = tokens[idx];
+                const srcIndex = token.attrIndex('src');
                 if (srcIndex !== -1) {
-                    const src = tokens[idx].attrs[srcIndex][1];
-                    if (src.startsWith('/image') || src.startsWith('/audio') || src.startsWith('/video')) {
-                        tokens[idx].attrs[srcIndex][1] = `${contextPath}${src}?t=${new Date().getTime()}`;
+                    const src = token.attrs[srcIndex][1];
+                    if (src.startsWith('/image')) {
+                        token.attrs[srcIndex][1] = `${contextPath}${src}?t=${new Date().getTime()}`;
                     }
                 }
-                return defaultRender(tokens, idx, options, env, self);
+                return defaultImageRender(tokens, idx, options, env, self);
             };
         })();
 
