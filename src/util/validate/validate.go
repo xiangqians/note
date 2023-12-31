@@ -27,7 +27,7 @@ func UserName(userName string, language string) error {
 func Passwd(passwd, language string) error {
 	// ^[a-zA-Z0-9!@#$%^&*()\-_=+]{1,20}$
 	// 1-20位长度（字母、数字、特殊字符）
-	matched, err := regexp.MatchString("^[a-zA-Z0-9!@#$%^&*()\\-_=+]{1,20}$", passwd)
+	matched, err := regexp.MatchString("^[a-zA-Z0-9!@#$%^&*()\\-_=+]{1,60}$", passwd)
 	if err != nil {
 		return err
 	}
