@@ -12,6 +12,7 @@ import (
 	"note/src/session"
 	util_filetype "note/src/util/filetype"
 	util_i18n "note/src/util/i18n"
+	util_json "note/src/util/json"
 	util_os "note/src/util/os"
 	util_string "note/src/util/string"
 	"note/src/util/time"
@@ -21,6 +22,9 @@ import (
 )
 
 func Upload(request *http.Request, writer http.ResponseWriter, session *session.Session, table string) (string, model.Response) {
+	var id int64
+	var name string
+
 	// note.pid
 	pid, _ := strconv.ParseInt(request.PostFormValue("pid"), 10, 64)
 	if pid < 0 {
@@ -32,6 +36,18 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 		if table == TableNote {
 			return fmt.Sprintf("redirect:/%s/%d/list", table, pid), model.Response{Msg: util_string.String(err)}
 		}
+
+		if strings.TrimSpace(request.PostFormValue("dataType")) == "json" {
+			response := model.Response{Msg: util_string.String(err)}
+			response.Data = map[string]any{
+				"id":   id,
+				"name": name,
+			}
+			json, _ := util_json.Serialize(response, false)
+			writer.Write([]byte(json))
+			return "", response
+		}
+
 		return fmt.Sprintf("redirect:/%s", table), model.Response{Msg: util_string.String(err)}
 	}
 
@@ -49,7 +65,7 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 	}
 
 	// 文件名
-	name := strings.TrimSpace(fileHeader.Filename)
+	name = strings.TrimSpace(fileHeader.Filename)
 
 	// 获取文件类型
 	filetype := util_filetype.GetType(name)
@@ -82,7 +98,7 @@ func Upload(request *http.Request, writer http.ResponseWriter, session *session.
 		db.Rollback()
 		return redirect(err)
 	}
-	var id int64
+	//var id int64
 	err = result.Scan(&id)
 	if err != nil {
 		db.Rollback()

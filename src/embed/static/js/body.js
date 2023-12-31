@@ -76,22 +76,18 @@ function Http() {
 }
 
 /**
- * Http POST
+ * Http Execute
  *
  * AJAX = 异步 JavaScript 和 XML（Asynchronous JavaScript and XML）。
  * 在不重载整个网页的情况下，AJAX 通过后台加载数据，并在网页上进行显示。
  *
- * @param url
- * @param data {}
- * @param success function (data, status, xhr) {}
- * @param error function (xhr, status, error) {}
+ * @param url {string} 请求地址
+ * @param type {string} 请求类型（方法）：GET | POST | PUT | DELETE
+ * @param formData {FormData}
+ * @param success {function} function (data, status, xhr) {}
+ * @param error {function} function (xhr, status, error) {}
  */
-Http.post = function (url, data, success, error) {
-    let formData = new FormData()
-    for (let key in data) {
-        formData.append(key, data[key])
-    }
-
+Http.execute = function (url, type, formData, success, error) {
     // $.ajax(url[, options])
     // $.ajax([options])
     $.ajax({
@@ -99,7 +95,7 @@ Http.post = function (url, data, success, error) {
         url: url,
 
         // 请求方法：GET | POST | PUT | DELETE
-        type: 'POST',
+        type: type,
 
         // 请求数据
         data: formData,
@@ -138,10 +134,13 @@ Http.post = function (url, data, success, error) {
         },
 
         // 请求成功回调函数
-        success: success,
+        success: success || function (data, status, xhr) {
+        },
 
         // 请求错误回调函数
-        error: error
+        error: error || function (xhr, status, error) {
+            alert(`${status}, ${error}`)
+        }
     })
 }
 

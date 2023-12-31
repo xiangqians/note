@@ -137,20 +137,22 @@
 
             // Ctrl + S，保存
             if (event.ctrlKey && event.key.toUpperCase() === 'S') {
-                let content = $textarea.val()
-                let url = "{{ .contextPath }}/{{ $table }}/{{ $data.Id }}?t={{ NowUnix }}"
-                Http.post(url, {'id': "{{ $data.Id }}", 'content': content}, function (data, status, xhr) {
-                    if (data !== "") {
-                        alert(data)
-                        return
-                    }
-                    contentHash = md5($textarea.val())
-                    $title.text(title)
-                    alert('保存成功')
-                    return
-                }, function (xhr, status, error) {
-                    alert(`${status}，${error}`)
-                })
+                if (hasChanged()) {
+                    let content = $textarea.val()
+                    let url = "{{ .contextPath }}/{{ $table }}/{{ $data.Id }}" + `?t=${new Date().getTime()}`
+                    let formData = new FormData()
+                    formData.append('id', "{{ $data.Id }}")
+                    formData.append('content', content)
+                    Http.execute(url, 'POST', formData, function (data, status, xhr) {
+                        if (data !== "") {
+                            alert(data)
+                            return
+                        }
+                        contentHash = md5($textarea.val())
+                        $title.text(title)
+                        alert('保存成功')
+                    }, undefined)
+                }
 
                 // 阻止默认行为
                 // Prevent the default handler from running.
@@ -167,6 +169,86 @@
                 return e.returnValue
             }
         }
+
+        // 前端js获取剪切板中的文本或者图片文件数据
+        // 监听paste事件，在进行粘贴的时候会触发
+        // https://developer.mozilla.org/en-US/docs/Web/API/Element/paste_event
+        document.addEventListener('paste', function (event) {
+            // 获取粘贴板数据项
+            const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+            // console.log('items', items)
+
+            // dropEffect
+            // String，默认是 none
+            // let dropEffect = clipboardData.dropEffect
+            // console.log('dropEffect', dropEffect)
+
+            // effectAllowed
+            // String，默认是 uninitialized
+            // let effectAllowed = clipboardData.effectAllowed
+            // console.log('effectAllowed', effectAllowed)
+
+            // files
+            // FileList，文件列表
+            // let files = clipboardData.files
+            // console.log('files', files)
+
+            // items
+            // DataTransferItemList，剪切板中的各项数据，Chrome有该属性，Safari没有。
+            //
+            // DataTransferItem属性：
+            // 1、kind：一般为string或者file
+            // 2、type：具体的数据类型，例如具体是哪种类型字符串或者哪种类型的文件，即MIME-Type
+            // DataTransferItem方法：
+            // 1、getAsFile：如果kind是file，可以用该方法获取到文件
+            // 2、getAsString：入参是回调函数；如果kind是string，可以用该方法获取到字符串，字符串需要用回调函数得到，回调函数的第一个参数就是剪切板中的字符串
+            //
+            // let items = clipboardData.items
+            // console.log('items', items)
+
+            // types
+            // Array，剪切板中的数据类型 该属性在Safari下比较混乱
+            // 一般types中常见的值有：text/plain（普通字符串）、text/html（带有样式的html）、Files（文件）。
+            // let types = clipboardData.types
+            // console.log('types', types)
+
+            for (let i = 0, length = items.length; i < length; i++) {
+                let item = items[i]
+                const kind = item.kind
+                const type = item.type
+                // console.log('item', item)
+                if (kind === 'file') {
+                    if (/^image\/[jpeg|png|gif|jpg]/.test(type)) {
+                        // blob 就是从剪切板获得的文件 可以进行上传或其他操作
+                        let blob = item.getAsFile()
+                        if (blob.size === 0) {
+                            continue
+                        }
+
+                        // 上传图片
+                        let url = "{{ .contextPath }}/image/upload" + `?t=${new Date().getTime()}`
+                        let formData = new FormData()
+                        formData.append('file', blob)
+                        formData.append('dataType', 'json')
+                        Http.execute(url, 'POST', formData, function (data, status, xhr) {
+                            const response = JSON.parse(data);
+                            // console.log('response', response)
+                            document.execCommand('insertText', false, `![${response.data.name}}](/image/${response.data.id})`)
+                            if (response.msg !== "") {
+                                alert(response.msg)
+                            }
+                        }, undefined)
+
+                        // 阻止默认行为
+                        // Prevent the default handler from running.
+                        event.preventDefault()
+                        return
+                    } else if (kind === 'file') {
+                        alert(`不支持粘贴此数据项类型：${type}`)
+                    }
+                }
+            }
+        })
     })
     ;
 </script>
