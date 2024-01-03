@@ -20,7 +20,7 @@ func Index(request *http.Request, writer http.ResponseWriter, session *session.S
 	}
 
 	db := db.Get()
-	result, err := db.Get("SELECT 'note' AS 'type', COUNT(`id`) AS 'count', SUM(`size`) AS 'size' FROM `note` WHERE `del` = 0" +
+	result, err := db.Get("SELECT 'note' AS 'type', COUNT(`id`) AS 'count', SUM(`size`) AS 'size' FROM `note` WHERE `del` = 0 AND `type` != 'folder'" +
 		" UNION ALL SELECT 'image' AS 'type', COUNT(`id`) AS 'count', SUM(`size`) AS 'size' FROM `image` WHERE `del` = 0" +
 		" UNION ALL SELECT 'audio' AS 'type', COUNT(`id`) AS 'count', SUM(`size`) AS 'size' FROM `audio` WHERE `del` = 0" +
 		" UNION ALL SELECT 'video' AS 'type', COUNT(`id`) AS 'count', SUM(`size`) AS 'size' FROM `video` WHERE `del` = 0")
