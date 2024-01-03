@@ -5,6 +5,7 @@ package note
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 	"note/src/db"
 	"note/src/handler/common"
@@ -13,12 +14,80 @@ import (
 	util_filetype "note/src/util/filetype"
 	util_os "note/src/util/os"
 	util_string "note/src/util/string"
-	"note/src/util/time"
+	util_time "note/src/util/time"
 	util_validate "note/src/util/validate"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
+
+func init() {
+	// 启动一个 goroutine 来执行定时任务
+	go func() {
+		for {
+			// 设定触发时间间隔
+			time.Sleep(1 * time.Minute)
+
+			startTime := time.Now()
+			log.Println("开始执行定时任务【计算目录大小】...")
+			err := calculateFolderSizeTask()
+			endTime := time.Now()
+			if err != nil {
+				log.Println("执行定时任务【计算目录大小】发生错误", err)
+			} else {
+				duration := endTime.Sub(startTime)
+				log.Println("执行定时任务【计算目录大小】完成，耗时：", duration)
+			}
+		}
+	}()
+}
+
+// 计算目录大小任务
+func calculateFolderSizeTask() error {
+	db := db.Get()
+	result, err := db.Get("SELECT `id` FROM `note` WHERE `del` = 0 AND `type` = 'folder'")
+	if err != nil {
+		return err
+	}
+
+	var notes []model.Note
+	err = result.Scan(&notes)
+	if err != nil {
+		return err
+	}
+
+	sql := "WITH RECURSIVE `tmp`(`id`, `pid`, `type`, `size`, `del`) AS (" +
+		" SELECT t.`id`, t.`pid`, t.`type`, t.`size`, t.`del`" +
+		" FROM `note` t" +
+		" WHERE t.`pid` = %d" + // 起点条件
+		" UNION ALL" +
+		" SELECT t.`id`, t.`pid`, t.`type`, t.`size`, t.`del`" +
+		" FROM `note` t" +
+		" INNER JOIN `tmp` ON t.pid = `tmp`.id)" + // 关联递归查询结果
+		" SELECT IFNULL(SUM(t.`size`), 0) FROM tmp t WHERE t.`del` = 0 AND t.`type` != 'folder'"
+
+	for _, note := range notes {
+		id := note.Id
+		result, err = db.Get(fmt.Sprintf(sql, id))
+		if err != nil {
+			return err
+		}
+
+		var size int64
+		err = result.Scan(&size)
+		if err != nil {
+			return err
+		}
+
+		_, err = db.Upd("UPDATE `note` SET `size` = ? WHERE `del` = 0 AND `id` = ?", size, id)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 func AddFolder(request *http.Request, writer http.ResponseWriter, session *session.Session) (string, model.Response) {
 	return add(request, writer, session, util_filetype.Folder)
@@ -74,7 +143,7 @@ func Paste(request *http.Request, writer http.ResponseWriter, session *session.S
 		return redirect(err)
 	}
 
-	_, err = db.Upd("UPDATE `note` SET `pid` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", toId, time.NowUnix(), fromId)
+	_, err = db.Upd("UPDATE `note` SET `pid` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", toId, util_time.NowUnix(), fromId)
 	return redirect(err)
 }
 
@@ -141,7 +210,7 @@ func Upd(request *http.Request, writer http.ResponseWriter, session *session.Ses
 
 	_, err = db.Upd("UPDATE `note` SET `size` = ?, `upd_time` = ? WHERE `del` = 0 AND `id` = ?",
 		len(bytes),
-		time.NowUnix(),
+		util_time.NowUnix(),
 		id)
 	write(err)
 	return
@@ -197,7 +266,7 @@ func add(request *http.Request, writer http.ResponseWriter, session *session.Ses
 
 	// 新id
 	if id == 0 {
-		_, id, err = db.Add("INSERT INTO `note` (`pid`, `name`, `type`, `add_time`) VALUES (?, ?, ?, ?)", pid, name, Type, time.NowUnix())
+		_, id, err = db.Add("INSERT INTO `note` (`pid`, `name`, `type`, `add_time`) VALUES (?, ?, ?, ?)", pid, name, Type, util_time.NowUnix())
 	} else
 	// 复用id
 	{
@@ -205,13 +274,9 @@ func add(request *http.Request, writer http.ResponseWriter, session *session.Ses
 			pid,
 			name,
 			Type,
-			time.NowUnix(),
+			util_time.NowUnix(),
 			id)
 	}
 
 	return redirect(pid, err)
-}
-
-func redirect(pid int64, err any) (string, model.Response) {
-	return "redirect:/note?search=pid%3A%20" + fmt.Sprintf("%d", pid), model.Response{Msg: util_string.String(err)}
 }
