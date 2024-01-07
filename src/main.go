@@ -11,7 +11,7 @@ import (
 
 	"log"
 	"net/http"
-	note_embed "note/src/embed"
+	_embed "note/src/embed"
 	"note/src/handler"
 	_ "note/src/log"
 	"note/src/model"
@@ -31,9 +31,9 @@ var templateFs embed.FS
 
 func main() {
 	// 嵌入资源
-	note_embed.I18nFs = i18nFs
-	note_embed.StaticFs = staticFs
-	note_embed.TemplateFs = templateFs
+	_embed.I18nFs = i18nFs
+	_embed.StaticFs = staticFs
+	_embed.TemplateFs = templateFs
 
 	// 创建路由器
 	router := mux.NewRouter()
