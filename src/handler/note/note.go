@@ -22,31 +22,55 @@ import (
 	"time"
 )
 
+// 内存值
+var v int64 = 1
+
+// 期望值
+var a int64
+
+// 新值
+const b int64 = 0
+
 func init() {
 	// 启动一个 goroutine 来执行定时任务
 	go func() {
 		for {
-			// 设定触发时间间隔
-			time.Sleep(1 * time.Minute)
+			// 设定检测时间间隔
+			time.Sleep(2 * time.Second)
+			if v != b {
+				// 设置期望值
+				a = v
 
-			startTime := time.Now()
-			log.Println("开始执行定时任务【计算目录大小】...")
-			err := calculateFolderSizeTask()
-			endTime := time.Now()
-			if err != nil {
-				log.Println("执行定时任务【计算目录大小】发生错误", err)
-			} else {
-				duration := endTime.Sub(startTime)
-				log.Println("执行定时任务【计算目录大小】完成，耗时：", duration)
+				startTime := time.Now()
+				log.Println("开始执行定时任务【计算目录大小】...")
+				err := calculateFolderSizeTask()
+				endTime := time.Now()
+				if err != nil {
+					log.Println("执行定时任务【计算目录大小】发生错误", err)
+				} else {
+					duration := endTime.Sub(startTime)
+					log.Println("执行定时任务【计算目录大小】完成，耗时：", duration)
+				}
+
+				// 如果内存值等于期望值，那么就将内存值更新为新值
+				if v == a {
+					v = b
+				}
 			}
 		}
 	}()
 }
 
+// TriggerCalculateFolderSizeTask 触发计算目录大小任务
+func TriggerCalculateFolderSizeTask() {
+	log.Println("==============触发计算目录大小任务================")
+	v++
+}
+
 // 计算目录大小任务
 func calculateFolderSizeTask() error {
 	db := db.Get()
-	result, err := db.Get("SELECT `id` FROM `note` WHERE `del` = 0 AND `type` = 'folder'")
+	result, err := db.Get("SELECT `id`, `del` FROM `note` WHERE `del` IN (0, 1) AND `type` = 'folder'")
 	if err != nil {
 		return err
 	}
@@ -65,11 +89,18 @@ func calculateFolderSizeTask() error {
 		" SELECT t.`id`, t.`pid`, t.`type`, t.`size`, t.`del`" +
 		" FROM `note` t" +
 		" INNER JOIN `tmp` ON t.pid = `tmp`.id)" + // 关联递归查询结果
-		" SELECT IFNULL(SUM(t.`size`), 0) FROM tmp t WHERE t.`del` = 0 AND t.`type` != 'folder'"
+		" SELECT IFNULL(SUM(t.`size`), 0) FROM tmp t WHERE t.`del` IN (%s) AND t.`type` != 'folder'"
 
 	for _, note := range notes {
 		id := note.Id
-		result, err = db.Get(fmt.Sprintf(sql, id))
+		del := note.Del
+		var dels = ""
+		if del == 0 {
+			dels = "0"
+		} else {
+			dels = "0, 1"
+		}
+		result, err = db.Get(fmt.Sprintf(sql, id, dels))
 		if err != nil {
 			return err
 		}
@@ -80,7 +111,7 @@ func calculateFolderSizeTask() error {
 			return err
 		}
 
-		_, err = db.Upd("UPDATE `note` SET `size` = ? WHERE `del` = 0 AND `id` = ?", size, id)
+		_, err = db.Upd("UPDATE `note` SET `size` = ? WHERE `del` = ? AND `id` = ?", size, del, id)
 		if err != nil {
 			return err
 		}

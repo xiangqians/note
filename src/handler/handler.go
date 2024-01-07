@@ -187,8 +187,15 @@ func handleTemplate(router *mux.Router) {
 				}
 			}
 
+			triggerCalculateFolderSizeTask := func() {
+				if request.Method == http.MethodPost && strings.HasPrefix(path, contextPath+"/note") {
+					note.TriggerCalculateFolderSizeTask()
+				}
+			}
+
 			name, response := handler(request, writer, session)
 			if name == "" {
+				triggerCalculateFolderSizeTask()
 				return
 			}
 
@@ -208,6 +215,7 @@ func handleTemplate(router *mux.Router) {
 					url += fmt.Sprintf("?t=%d", util_time.NowUnix())
 				}
 				http.Redirect(writer, request, url, http.StatusMovedPermanently)
+				triggerCalculateFolderSizeTask()
 				return
 			}
 
@@ -245,6 +253,7 @@ func handleTemplate(router *mux.Router) {
 			if err != nil {
 				panic(err)
 			}
+			triggerCalculateFolderSizeTask()
 		}
 	}
 
