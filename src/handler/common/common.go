@@ -5,11 +5,13 @@ package common
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 	"net/url"
 	"note/src/db"
 	"note/src/model"
 	"note/src/session"
+	util_i18n "note/src/util/i18n"
 	util_os "note/src/util/os"
 	util_string "note/src/util/string"
 	util_time "note/src/util/time"
@@ -74,6 +76,22 @@ func DelOrRestoreOrPermlyDel(request *http.Request, writer http.ResponseWriter, 
 	switch Type {
 	// 删除（逻辑）
 	case "del":
+		if table == TableNote {
+			result, err := db.Get("SELECT COUNT(1) FROM `note` WHERE `del` IN (0, 1) AND `pid` = ?", id)
+			if err != nil {
+				return redirect(err)
+			}
+
+			var count int64
+			err = result.Scan(&count)
+			if err != nil {
+				return redirect(err)
+			}
+
+			if count != 0 {
+				return redirect(util_i18n.GetMessage("i18n.cannotDelNonEmptyFolder", session.GetLanguage()))
+			}
+		}
 		_, err = db.Del(fmt.Sprintf("UPDATE `%s` SET `del` = 1, `upd_time` = ? WHERE `del` = 0 AND `id` = ?", table), util_time.NowUnix(), id)
 
 	// 恢复
@@ -86,6 +104,8 @@ func DelOrRestoreOrPermlyDel(request *http.Request, writer http.ResponseWriter, 
 		if err == nil {
 			// 删除物理文件
 			err = os.Remove(util_os.Path(DataDir, table, fmt.Sprintf("%d", id)))
+			log.Println(err)
+			err = nil
 		}
 	}
 	return redirect(err)
