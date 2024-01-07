@@ -11,7 +11,17 @@
         <tbody>
         <tr>
             <td>{{ Localize "i18n.name" .language }}</td>
-            <td>{{ $data.Name }}</td>
+            <td>
+                <span>{{ $data.Name }}</span>
+                <span>(</span>
+                <!--
+                 | 只有 Firefox 和 Chrome 支持 download 属性。
+                 | download 属性规定被下载的超链接目标。
+                 | 该属性也可以设置一个值来规定下载文件的名称。所允许的值没有限制，浏览器将自动检测正确的文件扩展名并添加到文件 (.lib, .pdf, .txt, .html, 等等)。
+                 |-->
+                <span><a href="{{ .contextPath }}/{{ $table }}/{{ $data.Id }}?t={{ NowUnix }}" download="{{ $data.Name }}.{{ $data.Type }}">{{ Localize "i18n.download" .language }}</a></span>
+                <span>)</span>
+            </td>
         </tr>
         {{ if eq $table "note"}}
         {{ $pNote := .response.Data.pNote }}

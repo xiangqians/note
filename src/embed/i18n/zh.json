@@ -55,5 +55,6 @@
   "i18n.copied": "已复制",
   "i18n.fileTypeUnsupportedUpload": "不支持上传 '%s' 文件类型",
   "i18n.path": "路径",
-  "i18n.count": "计数"
+  "i18n.count": "计数",
+  "i18n.typeNotCurrentlySupportedView": "该类型暂不支持查看"
 }
