@@ -3,13 +3,13 @@
 package handler
 
 import (
-	"embed"
 	"fmt"
 	"github.com/gorilla/mux"
 	pkg_template "html/template"
 	"io/fs"
 	"log"
 	"net/http"
+	"note/src/embed"
 	"note/src/handler/common"
 	"note/src/handler/index"
 	"note/src/handler/note"
@@ -25,22 +25,22 @@ import (
 )
 
 // 模式，dev、test、prod
-var mode = os.Getenv("GO_ENV_MODE")
+var mode = os.Getenv("NOTE_MODE")
 
 // 项目目录
 var projectDir, _ = os.Getwd()
 
 // Handle 注册路由到处理器
-func Handle(staticFs, templateFs embed.FS, router *mux.Router) {
+func Handle(router *mux.Router) {
 	// 处理静态资源
-	handleStatic(staticFs, router)
+	handleStatic(router)
 
 	// 处理模板
-	handleTemplate(templateFs, router)
+	handleTemplate(router)
 }
 
 // 处理模板
-func handleTemplate(templateFs embed.FS, router *mux.Router) {
+func handleTemplate(router *mux.Router) {
 	// 模板函数
 	templateFuncMap := pkg_template.FuncMap{
 		// 递增
@@ -221,13 +221,13 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 					fmt.Sprintf("%s/src/embed/template/common/variable.html", projectDir),
 					fmt.Sprintf("%s/src/embed/template/common/float.html", projectDir))
 			} else {
-				template, err = pkg_template.New(name).Funcs(templateFuncMap).ParseFS(templateFs,
+				template, err = pkg_template.New(name).Funcs(templateFuncMap).ParseFS(embed.TemplateFs,
 					fmt.Sprintf("embed/template/%s.html", name), // 主模板文件
 					"embed/template/common/foot1.html",          // 嵌套模板文件
 					"embed/template/common/foot2.html",          // 嵌套模板文件
 					"embed/template/common/table.html",          // 嵌套模板文件
 					"embed/template/common/variable.html",       // 嵌套模板文件
-					"embed/template/common/float.html") // 嵌套模板文件
+					"embed/template/common/float.html")          // 嵌套模板文件
 			}
 			if err != nil {
 				panic(err)
@@ -335,15 +335,14 @@ func handleTemplate(templateFs embed.FS, router *mux.Router) {
 }
 
 // 处理静态资源
-func handleStatic(embedFs embed.FS, router *mux.Router) {
+func handleStatic(router *mux.Router) {
 	var handler http.Handler
-
 	if mode == "dev" {
 		// 创建一个文件处理器（文件服务器），本地目录提供静态文件
 		handler = http.FileServer(http.Dir(fmt.Sprintf("%s/src/embed/static", projectDir)))
 	} else {
 		// 嵌入的静态文件
-		ioFs, err := fs.Sub(embedFs, "embed/static")
+		ioFs, err := fs.Sub(embed.StaticFs, "embed/static")
 		if err != nil {
 			panic(err)
 		}

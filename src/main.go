@@ -11,10 +11,10 @@ import (
 
 	"log"
 	"net/http"
+	note_embed "note/src/embed"
 	"note/src/handler"
 	_ "note/src/log"
 	"note/src/model"
-	util_i18n "note/src/util/i18n"
 )
 
 // 嵌入资源
@@ -30,14 +30,16 @@ var staticFs embed.FS
 var templateFs embed.FS
 
 func main() {
-	// 初始化i18n
-	util_i18n.Init(i18nFs)
+	// 嵌入资源
+	note_embed.I18nFs = i18nFs
+	note_embed.StaticFs = staticFs
+	note_embed.TemplateFs = templateFs
 
 	// 创建路由器
 	router := mux.NewRouter()
 
 	// 注册路由和相应的处理器函数
-	handler.Handle(staticFs, templateFs, router)
+	handler.Handle(router)
 
 	// 服务监听端口
 	port := model.Ini.Server.Port

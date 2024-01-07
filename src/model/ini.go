@@ -59,14 +59,9 @@ type server struct {
 
 var Ini ini
 
-// 模式，dev、test、prod
-var mode = os.Getenv("GO_ENV_MODE")
-
 func init() {
-	var source string
-	if mode == "dev" {
-		source = "E:\\workspace\\goland\\note\\res\\note.ini"
-	} else {
+	var source = os.Getenv("NOTE_INI")
+	if source == "" {
 		source = "./note.ini"
 	}
 	file, err := pkg_ini.Load(source)

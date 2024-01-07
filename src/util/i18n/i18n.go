@@ -3,8 +3,8 @@
 package i18n
 
 import (
-	"embed"
 	"fmt"
+	"note/src/embed"
 	util_json "note/src/util/json"
 	"os"
 )
@@ -14,36 +14,14 @@ const (
 	EN string = "en"
 )
 
-var zhMessageMap map[string]string
-var enMessageMap map[string]string
-
 // 模式，dev、test、prod
-var mode = os.Getenv("GO_ENV_MODE")
+var mode = os.Getenv("NOTE_MODE")
 
 // 项目目录
 var projectDir, _ = os.Getwd()
 
-func Init(fs embed.FS) {
-	// zh
-	bytes, err := fs.ReadFile("embed/i18n/zh.json")
-	if err != nil {
-		panic(err)
-	}
-	err = util_json.Deserialize(bytes, &zhMessageMap)
-	if err != nil {
-		panic(err)
-	}
-
-	// en
-	bytes, err = fs.ReadFile("embed/i18n/en.json")
-	if err != nil {
-		panic(err)
-	}
-	err = util_json.Deserialize(bytes, &enMessageMap)
-	if err != nil {
-		panic(err)
-	}
-}
+var zhMessageMap map[string]string
+var enMessageMap map[string]string
 
 func GetMessage(name, language string) string {
 	if mode == "dev" {
@@ -65,6 +43,31 @@ func GetMessage(name, language string) string {
 		err = util_json.Deserialize(bytes, &enMessageMap)
 		if err != nil {
 			panic(err)
+		}
+
+	} else {
+		// zh
+		if zhMessageMap == nil {
+			bytes, err := embed.I18nFs.ReadFile("embed/i18n/zh.json")
+			if err != nil {
+				panic(err)
+			}
+			err = util_json.Deserialize(bytes, &zhMessageMap)
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		// en
+		if enMessageMap == nil {
+			bytes, err := embed.I18nFs.ReadFile("embed/i18n/en.json")
+			if err != nil {
+				panic(err)
+			}
+			err = util_json.Deserialize(bytes, &enMessageMap)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 
