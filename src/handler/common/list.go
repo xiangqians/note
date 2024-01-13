@@ -26,7 +26,11 @@ func List(request *http.Request, writer http.ResponseWriter, session *session.Se
 	size64, _ := strconv.ParseInt(request.URL.Query().Get("size"), 10, 64)
 	size := uint8(size64)
 	if size <= 0 {
-		size = 10
+		if table == TableNote {
+			size = 50
+		} else {
+			size = 10
+		}
 	}
 	if size > 100 {
 		size = 100

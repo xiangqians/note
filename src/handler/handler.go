@@ -43,6 +43,11 @@ func Handle(router *mux.Router) {
 func handleTemplate(router *mux.Router) {
 	// 模板函数
 	templateFuncMap := pkg_template.FuncMap{
+		// 判断一个字符串是否包含另一个字符串
+		"contains": func(s, substr string) bool {
+			return strings.Contains(s, substr)
+		},
+
 		// 递增
 		"Increment": func(i any) any {
 			if i, ok := i.(int); ok {
