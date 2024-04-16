@@ -1,0 +1,47 @@
+<!--
+ | @author xiangqian
+ | @date 16:57 2024/03/03
+ |-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
+    <link rel="stylesheet" th:href="@{/static/css/body.css}" type="text/css"/>
+    <title>重置密码</title>
+</head>
+<body>
+<error th:text="${error}"></error>
+<content>
+    <left>
+        <form method="post" th:action="@{'/user/resetPasswd' + '?t=' + ${timestamp}}">
+            <input name="_method" value="PUT" type="hidden">
+            <table>
+                <tbody>
+                <tr>
+                    <td><span style="font-weight: bold;">*</span><label>原密码</label></td>
+                    <td><input name="originalPasswd" type="password" required autofocus></td>
+                </tr>
+                <tr>
+                    <td><span style="font-weight: bold;">*</span><label>新密码</label></td>
+                    <td><input name="newPasswd" type="password" required></td>
+                </tr>
+                <tr>
+                    <td><span style="font-weight: bold;">*</span><label>再次输入新密码</label></td>
+                    <td><input name="reNewPasswd" type="password" required></td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button type="submit">重置</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </form>
+    </left>
+    <right>
+    </right>
+</content>
+<div th:replace="bottom"></div>
+</body>
+</html>

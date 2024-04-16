@@ -1,0 +1,54 @@
+server:
+  servlet:
+    session:
+      # 设置会话过期时间：12h
+      timeout: PT12H
+      cookie:
+        # 设置cookie过期时间：12h
+        max-age: PT12H
+
+spring:
+  # 模板配置
+  thymeleaf:
+    # Thymeleaf的模板位置，默认值：classpath:/templates/
+    prefix: classpath:/templates/
+    # 匹配后缀
+    suffix: .html
+    # 模板模式
+    mode1: HTML5
+    # 模板编码
+    encoding: UTF-8
+
+  # 环境标识
+  profiles:
+    active: @spring.profiles.active@
+
+# mybatis-plus配置
+mybatis-plus:
+  configuration:
+    # 开启驼峰配置
+    map-underscore-to-camel-case: true
+
+    # MyBatis自动映射策略：MyBatis在将数据库查询结果映射到Java对象时的自动映射策略
+    # 在MyBatis中，有以下几种自动映射策略：
+    # 1、NONE：不启用自动映射
+    # 2、PARTIAL：只对非嵌套的 resultMap 进行自动映射
+    # 3、FULL：对所有的 resultMap 都进行自动映射
+    auto-mapping-behavior: full
+
+    # 开启打印sql配置
+    # 1、org.apache.ibatis.logging.nologging.NoLoggingImpl
+    # 2、org.apache.ibatis.logging.stdout.StdOutImpl
+    # 3、org.apache.ibatis.logging.slf4j.Slf4jImpl
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+  # 指定sql映射文件位置
+  mapper-locations: classpath:mybatis/mapper/**/*Mapper.xml
+
+  global-config:
+    # 逻辑删除配置
+    db-config:
+      # 删除前
+      logic-not-delete-value: 0
+      # 删除后
+      logic-delete-value: 1

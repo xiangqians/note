@@ -1,0 +1,124 @@
+<!--
+ | @author xiangqian
+ | @date 21:30 2024/03/04
+ |-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
+    <link rel="stylesheet" th:href="@{/static/css/body.css}" type="text/css"/>
+    <title th:text="${vo.item.name} + '项目部署记录'"></title>
+</head>
+<body>
+<table>
+    <thead>
+    <tr>
+        <td>阶段</td>
+        <td>提交信息</td>
+        <td>部署触发者</td>
+        <td>部署时间</td>
+        <td>部署状态</td>
+        <td>部署耗时</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="record : ${vo.records}"
+        th:id="${record.id}">
+        <td>
+            <a th:class="${record.pullState == 0} ? 'disabled' : null"
+               th:href="@{'/item/' + ${vo.item.id} + '/record/' + ${record.id} + '/pull?t=' + ${timestamp}}"
+               th:text="${'拉取' + (record.pullState == 0 ? '' : ' (' + T(org.xiangqian.auto.deploy.util.DateUtil).humanDurationSecond(record.getPullDuration()) + ')')}"
+               th:style="${record.pullState == 0 ? 'color: rgba(128, 128, 128, 0.2);' : (record.pullState == 1 ? 'color: rgba(128, 128, 128, 0.9);' : (record.pullState == 2 ? 'color: green;' : 'color: red;'))}"></a>
+            <span th:style="${record.buildState == 0 ? 'color: rgba(128, 128, 128, 0.2);' : (record.buildState == 1 ? 'color: rgba(128, 128, 128, 0.9);' : (record.buildState == 2 ? 'color: green;' : 'color: red;'))}">→</span>
+            <a th:class="${record.buildState == 0} ? 'disabled' : null"
+               th:href="@{'/item/' + ${vo.item.id} + '/record/' + ${record.id} + '/build?t=' + ${timestamp}}"
+               th:text="${'构建' + (record.buildState == 0 ? '' : ' (' + T(org.xiangqian.auto.deploy.util.DateUtil).humanDurationSecond(record.getBuildDuration()) + ')')}"
+               th:style="${record.buildState == 0 ? 'color: rgba(128, 128, 128, 0.2);' : (record.buildState == 1 ? 'color: rgba(128, 128, 128, 0.9);' : (record.buildState == 2 ? 'color: green;' : 'color: red;'))}"></a>
+            <span th:style="${record.packState == 0 ? 'color: rgba(128, 128, 128, 0.2);' : (record.packState == 1 ? 'color: rgba(128, 128, 128, 0.9);' : (record.packState == 2 ? 'color: green;' : 'color: red;'))}">→</span>
+            <a th:class="${record.packState == 0} ? 'disabled' : null"
+               th:href="@{'/item/' + ${vo.item.id} + '/record/' + ${record.id} + '/pack?t=' + ${timestamp}}"
+               th:text="${'压缩' + (record.packState == 0 ? '' : ' (' + T(org.xiangqian.auto.deploy.util.DateUtil).humanDurationSecond(record.getPackDuration()) + ')')}"
+               th:style="${record.packState == 0 ? 'color: rgba(128, 128, 128, 0.2);' : (record.packState == 1 ? 'color: rgba(128, 128, 128, 0.9);' : (record.packState == 2 ? 'color: green;' : 'color: red;'))}"></a>
+            <span th:style="${record.uploadState == 0 ? 'color: rgba(128, 128, 128, 0.2);' : (record.uploadState == 1 ? 'color: rgba(128, 128, 128, 0.9);' : (record.uploadState == 2 ? 'color: green;' : 'color: red;'))}">→</span>
+            <a th:class="${record.uploadState == 0} ? 'disabled' : null"
+               th:href="@{'/item/' + ${vo.item.id} + '/record/' + ${record.id} + '/upload?t=' + ${timestamp}}"
+               th:text="${'上传' + (record.uploadState == 0 ? '' : ' (' + T(org.xiangqian.auto.deploy.util.DateUtil).humanDurationSecond(record.getUploadDuration()) + ')')}"
+               th:style="${record.uploadState == 0 ? 'color: rgba(128, 128, 128, 0.2);' : (record.uploadState == 1 ? 'color: rgba(128, 128, 128, 0.9);' : (record.uploadState == 2 ? 'color: green;' : 'color: red;'))}"></a>
+            <span th:style="${record.unpackState == 0 ? 'color: rgba(128, 128, 128, 0.2);' : (record.unpackState == 1 ? 'color: rgba(128, 128, 128, 0.9);' : (record.unpackState == 2 ? 'color: green;' : 'color: red;'))}">→</span>
+            <a th:class="${record.unpackState == 0} ? 'disabled' : null"
+               th:href="@{'/item/' + ${vo.item.id} + '/record/' + ${record.id} + '/unpack?t=' + ${timestamp}}"
+               th:text="${'解压' + (record.unpackState == 0 ? '' : ' (' + T(org.xiangqian.auto.deploy.util.DateUtil).humanDurationSecond(record.getUnpackDuration()) + ')')}"
+               th:style="${record.unpackState == 0 ? 'color: rgba(128, 128, 128, 0.2);' : (record.unpackState == 1 ? 'color: rgba(128, 128, 128, 0.9);' : (record.unpackState == 2 ? 'color: green;' : 'color: red;'))}"></a>
+            <span th:style="${record.deployState == 0 ? 'color: rgba(128, 128, 128, 0.2);' : (record.deployState == 1 ? 'color: rgba(128, 128, 128, 0.9);' : (record.deployState == 2 ? 'color: green;' : 'color: red;'))}">→</span>
+            <a th:class="${record.deployState == 0} ? 'disabled' : null"
+               th:href="@{'/item/' + ${vo.item.id} + '/record/' + ${record.id} + '/deploy?t=' + ${timestamp}}"
+               th:text="${'部署' + (record.deployState == 0 ? '' : ' (' + T(org.xiangqian.auto.deploy.util.DateUtil).humanDurationSecond(record.getDeployDuration()) + ')')}"
+               th:style="${record.deployState == 0 ? 'color: rgba(128, 128, 128, 0.2);' : (record.deployState == 1 ? 'color: rgba(128, 128, 128, 0.9);' : (record.deployState == 2 ? 'color: green;' : 'color: red;'))}"></a>
+        </td>
+        <td th:with="commitMsg=${T(org.apache.commons.lang3.StringUtils).isNotEmpty(record.commitId) ? (record.commitAuthor + ' ' + record.commitTime + ' ' + record.commitMsg) : ''}" th:text="${commitMsg}"></td>
+        <td th:text="${T(org.apache.commons.lang3.StringUtils).isNotEmpty(record.userNickname) ? record.userNickname : record.userName}"></td>
+        <td th:text="${T(org.xiangqian.auto.deploy.util.DateUtil).humanSecond(record.addTime)}"></td>
+        <td th:switch="${record.state}">
+            <span th:case="1" style="color: rgba(128, 128, 128, 0.9);">部署中</span>
+            <span th:case="2" style="color: green;">部署成功</span>
+            <span th:case="3" style="color: red;">部署失败</span>
+        </td>
+        <td th:text="${T(org.xiangqian.auto.deploy.util.DateUtil).humanDurationSecond(record.getDuration())}"></td>
+        <td style="visibility: hidden;">
+        </td>
+    </tr>
+    </tbody>
+    <tfoot>
+    <tr>
+        <td colspan="6">
+            <span th:each="offset : ${vo.offsets}" th:with="disabled=${vo.offset.equals(offset)}">
+                <a th:if="${offset == null}">...</a>
+                <a th:if="${offset != null}"
+                   th:href="@{'/item/' + ${vo.item.id} + '/record/list?offset=' + ${offset} + ${vo.rows != null ? ('&rows=' + vo.rows): ''} + '&t=' + ${timestamp}}"
+                   th:text="${offset}"
+                   th:class="${disabled ? 'disabled' : ''}"
+                   th:style="${disabled ? 'color: rgba(128, 128, 128, 0.6);' : ''}"></a>
+            </span>
+        </td>
+    </tr>
+    </tfoot>
+</table>
+</body>
+<div th:replace="foot"></div>
+</html>
+<script type="text/javascript" th:src="@{/static/js/jquery.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/body.js}"></script>
+<script type="text/javascript">
+    ;
+    $(function () {
+        function Record(id, itemName) {
+            this.id = id
+            this.name = itemName
+        }
+
+        function getRecord($element) {
+            // 查找元素最近的父级<tr>元素
+            let $tr = $element.closest('tr')
+
+            let id = $tr.attr('id')
+            let itemName = $tr.attr('itemName')
+            return new Record(id, itemName)
+        }
+
+        // 删除
+        $('button[del]').click(function (event) {
+            // 获取目标<button>元素
+            let $button = $(event.currentTarget)
+
+            let record = getRecord($button)
+            if (confirm(`确定删除项目：${record.itemName} ？`)) {
+                return true
+            } else {
+                return false
+            }
+        })
+    })
+    ;
+</script>

@@ -1,0 +1,293 @@
+<!--
+ | @author xiangqian
+ | @date 14:01 2024/03/02
+ |-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
+    <link rel="stylesheet" th:href="@{/static/css/body.css}" type="text/css"/>
+    <title>/</title>
+</head>
+<body>
+<error th:text="${error}"></error>
+<content>
+    <left>
+        <h3><a th:href="@{'/note/0/list?t=' + ${timestamp}}">~</a>/<a href="javascript:void(0);">test</a>/<a href="javascript:void(0);">1</a>/<a href="javascript:void(0);">test</a>/<a href="javascript:void(0);">1平台</a><span th:text="${vo.entity.contain != null && vo.entity.contain ? '/*' : ''}"></span>
+        </h3>
+        <table>
+            <thead>
+            <tr>
+                <td>名称</td>
+                <td>类型</td>
+                <td th:if="${vo.entity.contain != null && vo.entity.contain}">路径</td>
+                <td>大小</td>
+                <td>创建时间</td>
+                <td>修改时间</td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="e : ${vo.data}" th:id="${e.id}" th:name="${e.name}" th:type="${e.type}">
+                <td><a th:text="${e.name}" th:href="@{'/note/' + ${e.id} + ${e.type == 'folder' ? '/list' : ''} + '?t=' + ${timestamp}}"></a></td>
+                <td th:text="${e.type}"></td>
+                <td th:if="${vo.entity.contain != null && vo.entity.contain}">
+                    <a th:each="p : ${e.ps}" th:text="${'/'+p.id + ',' +p.name}"></a>
+                </td>
+                <td th:text="${T(org.xiangqian.note.util.OsUtil).humanByte(e.size, 'KB')}"></td>
+                <td th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(e.addTime)}"></td>
+                <td th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(e.updTime)}"></td>
+                <td style="visibility: hidden;">
+                    <form method="post" th:action="@{'/note/' + ${e.id} + '/rename?t=' + ${timestamp}}" class="aform">
+                        <input name="_method" value="PUT" type="hidden">
+                        <input name="name" value="" type="hidden">
+                        <button type="submit" rename>重命名</button>
+                    </form>
+                    <a href="javascript:void(0);" cut="0">剪切</a>
+                    <form method="post" th:action="@{'/note/' + ${e.id} + '?t=' + ${timestamp}}" class="aform">
+                        <input name="_method" value="DELETE" type="hidden">
+                        <button type="submit" del>删除</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="5">
+                    <form method="get" th:action="@{'/note/' + ${vo.entity.pid} + '/list'}">
+                        <label>名称&nbsp;&nbsp;</label><input name="name" type="text" th:value="${vo.entity.name}">
+                        <label style="margin-left: 20px;">类型&nbsp;&nbsp;</label>
+                        <select name="type">
+                            <option></option>
+                            <option th:each="type : ${vo.types}"
+                                    th:value="${type}"
+                                    th:text="${type}"
+                                    th:selected="${type == vo.entity.type}">
+                            </option>
+                        </select>
+                        <input type="checkbox" name="contain" value="true" th:attr="checked=${vo.entity.contain != null and vo.entity.contain ? '' : null}" style="margin-left: 20px;"><label name="contain">&nbsp;包括子节点</label>
+                        <input name="t" th:value="${timestamp}" type="hidden" style="margin-left: 20px;">
+                        <button type="submit" style="margin-left: 20px;" search>搜索</button>
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="5">
+            <span th:each="offset : ${vo.offsets}" th:with="disabled=${vo.offset.equals(offset)}">
+                <a th:if="${offset == null}">...</a>
+                <a th:if="${offset != null}"
+                   th:href="@{'/note/' + ${vo.entity.pid} + '/list?name=' + ${vo.entity.name != null ? vo.entity.name : ''} + ${vo.entity.contain != null ? ('&contain=' + vo.entity.contain) : ''} +'&offset=' + ${offset} + '&t=' + ${timestamp}}"
+                   th:text="${offset}"
+                   th:class="${disabled ? 'disabled' : ''}"
+                   th:style="${disabled ? 'color: rgba(128, 128, 128, 0.6);' : ''}"></a>
+            </span>
+                </td>
+            </tr>
+            </tfoot>
+        </table>
+    </left>
+    <right>
+        <form method="post" th:action="@{'/note/' + ${vo.entity.pid} + '/addFolder?t=' + ${timestamp}}" class="aform" style="display: block; margin: 80px 10px 20px 10px;">
+            <input name="name" value="" type="hidden">
+            <button type="submit" addFolder>新建文件夹</button>
+        </form>
+        <form method="post" th:action="@{'/note/' + ${vo.entity.pid} + '/addMdFile?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
+            <input name="name" value="" type="hidden">
+            <button type="submit" addMdFile>新建Markdown文件</button>
+        </form>
+        <form method="post" th:action="@{'/note/' + ${vo.entity.pid} + '/uploadFile?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
+            <input name="file" type="file" required>
+            <button type="submit" uploadFile>上传文件</button>
+        </form>
+        <form method="post" th:action="@{'/note/' + ${vo.entity.pid} + '/paste?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
+            <input name="id" value="" type="hidden">
+            <button type="submit" class="disabled" paste>粘贴</button>
+        </form>
+    </right>
+</content>
+<div th:replace="bottom"></div>
+</body>
+</html>
+<script type="text/javascript" th:src="@{/static/js/jquery.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/body.js}"></script>
+<script type="text/javascript">
+    ;
+    $(function () {
+        function add(event, message) {
+            let name = prompt(message, '')
+
+            // cancel
+            if (name == null) {
+                return false
+            }
+
+            name = name.trim()
+            if (name === '') {
+                return false
+            }
+
+            // 获取目标元素
+            let $element = $(event.currentTarget)
+
+            // 查找元素最近的父级<form>元素
+            let $form = $element.closest('form')
+
+            // 查找input[name="name"]元素
+            let $name = $form.find('input[name="name"]')
+
+            // 设置名称
+            $name.val(name)
+
+            return true
+        }
+
+        $('button[addFolder]').click(function (event) {
+            return add(event, '新建文件夹')
+        })
+
+        $('button[addMdFile]').click(function (event) {
+            return add(event, '新建Markdown文件')
+        })
+
+        function Note(id, name, type) {
+            this.id = id
+            this.name = name
+            this.type = type
+        }
+
+        function getNote($element) {
+            // 查找元素最近的父级<tr>元素
+            let $tr = $element.closest('tr')
+
+            let id = $tr.attr('id')
+            let name = $tr.attr('name')
+            let type = $tr.attr('type')
+            return new Note(id, name, type)
+        }
+
+        // 点击文本时，选中或取消复选框
+        let $contain = $('input[name="contain"]')
+        $('label[name="contain"]').click(function (event) {
+            $contain.prop('checked', function (i, value) {
+                return !value;
+            })
+        })
+
+        // 重命名
+        $('button[rename]').click(function (event) {
+            // 获取目标元素
+            let $element = $(event.currentTarget)
+
+            let note = getNote($element)
+            let name = prompt(`重命名：${note.name} ？`, note.name)
+
+            // cancel
+            if (name == null) {
+                return false
+            }
+
+            name = name.trim()
+            if (name === '') {
+                return false
+            }
+
+            // 查找元素最近的父级<form>元素
+            let $form = $element.closest('form')
+
+            // 查找input[name="name"]元素
+            let $name = $form.find('input[name="name"]')
+
+            // 设置名称
+            $name.val(name)
+
+            return true
+        })
+
+        function setCutNote(cutNode) {
+            if (cutNode != null) {
+                cutNode = JSON.stringify(cutNode)
+            }
+            sessionStorage.setItem('cutNode', cutNode)
+        }
+
+        function getCutNote() {
+            let cutNode = sessionStorage.getItem('cutNode')
+            if (cutNode == null) {
+                return null
+            }
+            return JSON.parse(cutNode)
+        }
+
+        // 粘贴
+        let $paste = $('button[paste]')
+        $paste.click(function (event) {
+            return false
+        })
+
+        function selectCutTr(cutNode) {
+            let $trs = $('body > table tbody tr.select');
+            if ($trs.length > 0) {
+                for (let i = 0, length = $trs.length; i < length; i++) {
+                    let $tr = $($trs[i])
+                    $tr.removeClass('cut')
+
+                    let $a = $tr.find('a[cut]')
+                    $a.text('剪切')
+                    $a.attr('cut', "0")
+                }
+            }
+
+            if (cutNode != null) {
+                let $tr = $(`#${cutNode.id}`)
+                if ($tr.length > 0) {
+                    $tr.addClass('cut')
+
+                    let $a = $tr.find('a[cut]')
+                    $a.text('取消剪切')
+                    $a.attr('cut', "1")
+                }
+
+                // 启用按钮
+                $paste.removeClass('disabled')
+            } else {
+                // 禁用按钮
+                $paste.addClass('disabled')
+            }
+        }
+
+        let cutNode = getCutNote()
+        if (cutNode != null) {
+            cutTr(cutNode)
+        }
+
+        // 剪切
+        $('a[cut]').click(function (event) {
+            // 获取目标元素
+            let $element = $(event.currentTarget)
+
+            let note = null
+            if ($element.attr('cut') !== '1') {
+                note = getNote($element)
+            }
+
+            setCutNote(note)
+            selectCutTr(note)
+            return false
+        })
+
+        // 删除
+        $('button[del]').click(function (event) {
+            // 获取目标元素
+            let $element = $(event.currentTarget)
+
+            let note = getNote($element)
+            if (confirm(`确定删除${note.type === 'folder' ? '目录' : '文件'}：${note.name} ？`)) {
+                setCutNote(null)
+                return true
+            } else {
+                return false
+            }
+        })
+    })
+    ;
+</script>

@@ -1,0 +1,25 @@
+server:
+  port: 1520
+  servlet:
+    context-path: /
+
+spring:
+  # SQLite支持并发读取，但是不支持并发写入操作
+  # 数据源配置
+  datasource:
+    name: default
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:E:\tmp\note\data\database.db
+    #url: jdbc:sqlite:C:\Users\xiangqian\Desktop\tmp\note\data\database.db
+    # 指定使用的数据源
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      # 池中最大连接数（包括空闲和正在使用的连接）
+      maximum-pool-size: 5
+      # 池中最小空闲连接数量
+      minimum-idle: 1
+
+  # 模板配置
+  thymeleaf:
+    # 是否使用页面缓存
+    cache: false

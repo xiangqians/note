@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.xiangqian.note.mapper.NoteMapper">
+
+    <select id="list" resultType="org.xiangqian.note.entity.NoteEntity">
+        <choose>
+            <!-- 查询当前目录和子目录所有文件 -->
+            <when test="entity.contain != null and entity.contain">
+                <choose>
+                    <!-- 【非根节点】递归查询当前目录和子目录所有文件 -->
+                    <when test="entity.pid > 0">
+                        WITH RECURSIVE `tmp`(`id`, `pid`, `name`, `type`, `size`, `del`, `add_time`, `upd_time`) AS (
+                        SELECT n.`id`, n.`pid`, n.`name`, n.`type`, n.`size`, n.`del`, n.`add_time`, n.`upd_time`
+                        FROM `note` n
+                        <!-- 起点条件 -->
+                        WHERE n.`pid` = #{entity.pid}
+                        UNION ALL
+                        SELECT n.`id`, n.`pid`, n.`name`, n.`type`, n.`size`, n.`del`, n.`add_time`, n.`upd_time`
+                        FROM `note` n
+                        INNER JOIN `tmp` ON n.pid = `tmp`.id) <!-- 关联递归查询结果 -->
+                        SELECT n.`id`, n.`pid`, n.`name`, n.`type`, n.`size`, n.`del`, n.`add_time`, n.`upd_time`
+                    </when>
+                    <!-- 【根节点】查询整个表 -->
+                    <otherwise>
+                        SELECT n.`id`, n.`pid`, n.`name`, n.`type`, n.`size`, n.`del`, n.`add_time`, n.`upd_time`
+                    </otherwise>
+                </choose>
+                ,(CASE WHEN n10.`id` IS NULL THEN '' ELSE ',' || n10.`id` END)
+                || (CASE WHEN n9.`id` IS NULL THEN '' ELSE ',' || n9.`id`END)
+                || (CASE WHEN n8.`id` IS NULL THEN '' ELSE ',' || n8.`id`END)
+                || (CASE WHEN n7.`id` IS NULL THEN '' ELSE ',' || n7.`id`END)
+                || (CASE WHEN n6.`id` IS NULL THEN '' ELSE ',' || n6.`id`END)
+                || (CASE WHEN n5.`id` IS NULL THEN '' ELSE ',' || n5.`id`END)
+                || (CASE WHEN n4.`id` IS NULL THEN '' ELSE ',' || n4.`id`END)
+                || (CASE WHEN n3.`id` IS NULL THEN '' ELSE ',' || n3.`id`END)
+                || (CASE WHEN n2.`id` IS NULL THEN '' ELSE ',' || n2.`id`END)
+                || (CASE WHEN n1.`id` IS NULL THEN '' ELSE ',' || n1.`id`END) AS 'pids'
+                <choose>
+                    <!-- 【非根节点】递归查询当前目录和子目录所有文件 -->
+                    <when test="entity.pid > 0">
+                        FROM `tmp` n
+                    </when>
+                    <!-- 【根节点】查询整个表 -->
+                    <otherwise>
+                        FROM `note` n
+                    </otherwise>
+                </choose>
+                LEFT JOIN `note` n1 ON n1.`id` = n.`pid`
+                LEFT JOIN `note` n2 ON n2.`id` = n1.`pid`
+                LEFT JOIN `note` n3 ON n3.`id` = n2.`pid`
+                LEFT JOIN `note` n4 ON n4.`id` = n3.`pid`
+                LEFT JOIN `note` n5 ON n5.`id` = n4.`pid`
+                LEFT JOIN `note` n6 ON n6.`id` = n5.`pid`
+                LEFT JOIN `note` n7 ON n7.`id` = n6.`pid`
+                LEFT JOIN `note` n8 ON n8.`id` = n7.`pid`
+                LEFT JOIN `note` n9 ON n9.`id` = n8.`pid`
+                LEFT JOIN `note` n10 ON n10.`id` = n9.`pid`
+                WHERE n.`del` = 0
+            </when>
+            <!-- 查询当前目录 -->
+            <otherwise>
+                SELECT * FROM `note` n
+                WHERE n.`del` = 0
+                <if test="entity.pid != null">
+                    AND n.pid = #{entity.pid}
+                </if>
+            </otherwise>
+        </choose>
+        <!-- sqlite在模糊查询时大小写不敏感 -->
+        <if test="entity.name != null">
+            AND n.`name` LIKE '%' || #{entity.name} || '%'
+        </if>
+        <if test="entity.type != null">
+            AND n.`type` = #{entity.type}
+        </if>
+        GROUP BY n.`id`
+        ORDER BY n.`type`, n.`name`, (CASE WHEN n.`upd_time` > n.`add_time` THEN n.`upd_time` ELSE n.`add_time` END) DESC
+    </select>
+
+</mapper>

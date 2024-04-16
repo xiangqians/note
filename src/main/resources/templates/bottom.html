@@ -1,0 +1,18 @@
+<!--
+ | @author xiangqian
+ | @date 20:08 2023/07/10
+ |-->
+<bottom>
+    <p th:if="${session.isLoggedin}">
+        <a th:if="${'/user/resetPasswd' == servletPath}" th:href="@{'/?t=' + ${timestamp}}">返回首页</a>
+        <a th:if="${'/user/resetPasswd' != servletPath}" th:href="@{'/user/resetPasswd?t=' + ${timestamp}}">重置密码</a>
+        <span style="padding-left: 15px;"></span>
+        <a th:href="@{'/logout?t=' + ${timestamp}}">退出登录</a>
+    </p>
+    <p th:if="${session.isLoggedin}">
+        <span style="padding-left: 0px;">最近一次登录</span>
+        <span th:text="${(T(org.apache.commons.lang3.StringUtils).isNotEmpty(session.user.lastLoginIp) ? session.user.lastLoginIp : session.user.currentLoginIp)}" style="padding-left: 10px;"></span>
+        <span th:text="${session.user.lastLoginTime != 0 ? T(org.xiangqian.note.util.DateUtil).humanSecond(session.user.lastLoginTime) : T(org.xiangqian.note.util.DateUtil).humanSecond(session.user.currentLoginTime)}" style="padding-left: 10px;"></span>
+    </p>
+    <p style="font-style: italic;"><span style="padding-right: 10px;">© 2024 xiangqian</span><a href="https://github.com/xiangqians/note" target="_blank">关于</a></p>
+</bottom>
