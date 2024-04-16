@@ -3,6 +3,7 @@ package org.xiangqian.note.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.ModelAndView;
@@ -85,6 +86,11 @@ public abstract class AbsController {
 
     public static void setErrorAttribute(HttpSession session, Object value) {
         session.setAttribute(ERROR, value);
+    }
+
+    protected ModelAndView errorView(ModelAndView modelAndView) {
+        modelAndView.setViewName("error");
+        return modelAndView;
     }
 
     protected RedirectView redirectView(String url, Object vo, Object error) {

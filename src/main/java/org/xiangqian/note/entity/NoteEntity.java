@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -55,16 +56,14 @@ public class NoteEntity {
 
     public void setPids(String pids) {
         if (StringUtils.isNotEmpty(pids)) {
-            this.ps = Arrays.stream(pids.split(",")).map(pid -> {
-                NoteEntity p = new NoteEntity();
-                if (StringUtils.isNotEmpty(pid)) {
-                    p.setId(Long.parseLong(pid));
-                } else {
-                    p.setId(0L);
-                    p.setName("~");
-                }
-                return p;
-            }).collect(Collectors.toList());
+            this.ps = Arrays.stream(pids.split(","))
+                    .map(pid -> StringUtils.isNotEmpty(pid) ? Long.parseLong(pid) : null)
+                    .filter(Objects::nonNull)
+                    .map(pid -> {
+                        NoteEntity p = new NoteEntity();
+                        p.setId(pid);
+                        return p;
+                    }).collect(Collectors.toList());
         }
     }
 

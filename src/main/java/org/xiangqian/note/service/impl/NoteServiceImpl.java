@@ -15,7 +15,9 @@ import org.xiangqian.note.util.List;
 import org.xiangqian.note.util.Type;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -42,8 +44,9 @@ public class NoteServiceImpl implements NoteService {
 
     @Override
     public List<NoteEntity> list(NoteEntity vo, List list) {
+        Integer offset = list.getOffset();
         Long pid = vo.getPid();
-        if (list.getOffset().intValue() <= 0 || pid == null || pid.longValue() < 0) {
+        if (offset == null || offset.intValue() <= 0 || pid == null || pid.longValue() < 0) {
             return list;
         }
 
@@ -56,20 +59,19 @@ public class NoteServiceImpl implements NoteService {
                 Set<Long> pids = data.stream().map(NoteEntity::getPs)
                         .filter(CollectionUtils::isNotEmpty)
                         .flatMap(Collection::stream)
-                        .filter(Objects::nonNull)
                         .map(NoteEntity::getId)
                         .collect(Collectors.toSet());
                 if (CollectionUtils.isNotEmpty(pids)) {
                     // <pid, name>
-                    Map<Long, String> pidMap = mapper.selectList(new LambdaQueryWrapper<NoteEntity>().select(NoteEntity::getId, NoteEntity::getName).in(NoteEntity::getId, pids))
+                    Map<Long, String> pidMap = mapper.selectList(new LambdaQueryWrapper<NoteEntity>()
+                                    .select(NoteEntity::getId, NoteEntity::getName)
+                                    .in(NoteEntity::getId, pids))
                             .stream().collect(Collectors.toMap(NoteEntity::getId, NoteEntity::getName));
                     for (NoteEntity entity : data) {
                         java.util.List<NoteEntity> ps = entity.getPs();
                         if (CollectionUtils.isNotEmpty(ps)) {
                             for (NoteEntity p : ps) {
-                                if (p != null) {
-                                    Optional.ofNullable(pidMap.get(p.getId())).ifPresent(p::setName);
-                                }
+                                p.setName(pidMap.get(p.getId()));
                             }
                         }
                     }
@@ -77,6 +79,36 @@ public class NoteServiceImpl implements NoteService {
             }
         }
         return result;
+    }
+
+    @Override
+    public NoteEntity getById(Long id) {
+        Assert.notNull(id, "id不能为空");
+        Assert.isTrue(id.intValue() >= 0, "id不能小于0");
+        if (id.longValue() == 0) {
+            NoteEntity entity = new NoteEntity();
+            entity.setId(0L);
+            entity.setName("~");
+            entity.setType(Type.FOLDER);
+            return entity;
+        }
+
+        NoteEntity entity = mapper.getById(id);
+        if (entity != null) {
+            java.util.List<NoteEntity> ps = entity.getPs();
+            if (CollectionUtils.isNotEmpty(ps)) {
+                Set<Long> pids = ps.stream().map(NoteEntity::getId).collect(Collectors.toSet());
+                // <pid, name>
+                Map<Long, String> pidMap = mapper.selectList(new LambdaQueryWrapper<NoteEntity>()
+                                .select(NoteEntity::getId, NoteEntity::getName)
+                                .in(NoteEntity::getId, pids))
+                        .stream().collect(Collectors.toMap(NoteEntity::getId, NoteEntity::getName));
+                for (NoteEntity p : ps) {
+                    p.setName(pidMap.get(p.getId()));
+                }
+            }
+        }
+        return entity;
     }
 
     private Boolean add(NoteEntity vo) {

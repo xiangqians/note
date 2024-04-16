@@ -15,4 +15,6 @@ public interface NoteService {
 
     List<NoteEntity> list(NoteEntity vo, List list);
 
+    NoteEntity getById(Long id);
+
 }

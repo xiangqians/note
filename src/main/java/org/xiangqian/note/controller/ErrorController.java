@@ -14,8 +14,7 @@ public class ErrorController extends AbsController implements org.springframewor
 
     @RequestMapping
     public ModelAndView error(ModelAndView modelAndView) {
-        modelAndView.setViewName("error");
-        return modelAndView;
+        return errorView(modelAndView);
     }
 
 }

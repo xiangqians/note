@@ -57,10 +57,16 @@ public class NoteController extends AbsController {
     @GetMapping("/{pid}/list")
     public ModelAndView list(ModelAndView modelAndView, @PathVariable("pid") Long pid, NoteEntity vo, List list) {
         try {
+            NoteEntity p = service.getById(pid);
+            if (p == null || !Type.FOLDER.equals(p.getType())) {
+                return errorView(modelAndView);
+            }
+
             vo.setPid(pid);
             list = service.list(vo, list);
-            setVoAttribute(modelAndView, Map.of("types", Type.getSet(),
-                    "entity", vo,
+            setVoAttribute(modelAndView, Map.of("parameter", vo,
+                    "types", Type.getSet(),
+                    "p", p,
                     "offset", list.getOffset(),
                     "data", list.getData(),
                     "offsets", list.getOffsets()));
