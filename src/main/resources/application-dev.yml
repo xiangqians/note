@@ -9,8 +9,8 @@ spring:
   datasource:
     name: default
     driver-class-name: org.sqlite.JDBC
-    #url: jdbc:sqlite:E:\tmp\note\data\database.db
-    url: jdbc:sqlite:C:\Users\xiangqian\Desktop\tmp\note\data\database.db
+    url: jdbc:sqlite:E:\tmp\note\data\database.db
+    #url: jdbc:sqlite:C:\Users\xiangqian\Desktop\tmp\note\data\database.db
     # 指定使用的数据源
     type: com.zaxxer.hikari.HikariDataSource
     hikari:

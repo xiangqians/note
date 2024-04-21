@@ -31,6 +31,11 @@ public class NoteServiceImpl implements NoteService {
     private NoteMapper mapper;
 
     @Override
+    public Boolean rename(NoteEntity vo) {
+        return null;
+    }
+
+    @Override
     public Boolean addMdFile(NoteEntity vo) {
         vo.setType(Type.MD);
         return add(vo);
@@ -88,7 +93,6 @@ public class NoteServiceImpl implements NoteService {
         if (id.longValue() == 0) {
             NoteEntity entity = new NoteEntity();
             entity.setId(0L);
-            entity.setName("~");
             entity.setType(Type.FOLDER);
             return entity;
         }

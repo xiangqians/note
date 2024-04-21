@@ -9,6 +9,8 @@ import org.xiangqian.note.util.List;
  */
 public interface NoteService {
 
+    Boolean rename(NoteEntity vo);
+
     Boolean addMdFile(NoteEntity vo);
 
     Boolean addFolder(NoteEntity vo);

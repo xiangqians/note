@@ -3,10 +3,7 @@ package org.xiangqian.note.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 import org.xiangqian.note.entity.NoteEntity;
@@ -27,6 +24,19 @@ public class NoteController extends AbsController {
 
     @Autowired
     private NoteService service;
+
+    @PutMapping("/{pid}/{id}/rename")
+    public RedirectView rename(@PathVariable("pid") Long pid, NoteEntity vo) {
+        Object error = null;
+        try {
+            vo.setPid(pid);
+            service.rename(vo);
+        } catch (Exception e) {
+            log.error("", e);
+            error = e.getMessage();
+        }
+        return redirectListView(pid, null, error);
+    }
 
     @PostMapping("/{pid}/addMdFile")
     public RedirectView addMdFile(@PathVariable("pid") Long pid, NoteEntity vo) {

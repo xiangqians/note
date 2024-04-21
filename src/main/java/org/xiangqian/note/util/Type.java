@@ -16,17 +16,19 @@ public class Type {
     public static final String DOC = "doc";
     public static final String DOCX = "docx";
     public static final String PDF = "pdf";
+    public static final String HTML = "html";
     public static final String ZIP = "zip";
 
     private static final Set<String> set;
 
     static {
-        set = new LinkedHashSet<>(6, 1f);
+        set = new LinkedHashSet<>(7, 1f);
         set.add(Type.FOLDER);
         set.add(Type.MD);
         set.add(Type.DOC);
         set.add(Type.DOCX);
         set.add(Type.PDF);
+        set.add(Type.HTML);
         set.add(Type.ZIP);
     }
 

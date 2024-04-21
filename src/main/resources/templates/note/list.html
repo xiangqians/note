@@ -8,13 +8,15 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
     <link rel="stylesheet" th:href="@{/static/css/body.css}" type="text/css"/>
-    <title>/</title>
+    <title th:if="${vo.p.id == 0}">/<th:block th:if="${vo.parameter.contain != null && vo.parameter.contain}">*</th:block></title>
+    <title th:if="${vo.p.id != 0}"><th:block th:each="p : ${vo.p.ps}" th:text="${'/' + p.name}"></th:block><th:block th:text="${'/' + vo.p.name}"></th:block><th:block th:if="${vo.parameter.contain != null && vo.parameter.contain}" th:text="${'/*'}"></th:block></title>
 </head>
 <body>
 <error th:text="${error}"></error>
 <content>
     <left>
-        <h3><a th:href="@{'/note/0/list?t=' + ${timestamp}}">~</a><span th:each="p : ${vo.p.ps}">/<a th:href="@{'/note/' + ${p.id} + '/list?t=' + ${timestamp}}" th:text="${p.name}"></a></span><span th:if="${vo.p.id != 0}">/<a th:href="@{'/note/' + ${vo.p.id} + '/list?t=' + ${timestamp}}" th:text="${vo.p.name}"></a></span></h3>
+        <h3 th:if="${vo.p.id == 0}"><a th:href="@{'/note/0/list?t=' + ${timestamp}}">~</a>&nbsp;&nbsp;/<span th:if="${vo.parameter.contain != null && vo.parameter.contain}">*</span></h3>
+        <h3 th:if="${vo.p.id != 0}"><a th:href="@{'/note/0/list?t=' + ${timestamp}}">~</a>&nbsp;&nbsp;<span th:each="p : ${vo.p.ps}">/<a th:href="@{'/note/' + ${p.id} + '/list?t=' + ${timestamp}}" th:text="${p.name}"></a></span><span>/<a th:href="@{'/note/' + ${vo.p.id} + '/list?t=' + ${timestamp}}" th:text="${vo.p.name}"></a></span><span th:if="${vo.parameter.contain != null && vo.parameter.contain}">/*</span></h3>
         <table>
             <thead>
             <tr>
@@ -28,21 +30,36 @@
             </thead>
             <tbody>
             <tr th:each="e : ${vo.data}" th:id="${e.id}" th:name="${e.name}" th:type="${e.type}">
-                <td><a th:text="${e.name}" th:href="@{'/note/' + ${e.id} + ${e.type == 'folder' ? '/list' : ''} + '?t=' + ${timestamp}}"></a></td>
+                <td th:if="${e.type == 'folder'}"><a th:text="${e.name}" th:href="@{'/note/' + ${e.id} + '/list?t=' + ${timestamp}}"></a></td>
+                <td th:if="${e.type != 'folder'}">
+                    <span th:if="${e.type == 'zip'}" th:text="${e.name}"></span>
+                    <a th:if="${e.type != 'zip'}" th:text="${e.name}" th:href="@{'/note/' + ${e.id} + '?t=' + ${timestamp}}"></a>
+                </td>
                 <td th:text="${e.type}"></td>
-                <td th:if="${vo.parameter.contain != null && vo.parameter.contain}"><span th:each="p : ${e.ps}">/<a th:href="@{'/note/' + ${p.id} + '/list?t=' + ${timestamp}}" th:text="${p.name}"></a></span></td>
+                <td th:if="${vo.parameter.contain != null && vo.parameter.contain}">
+                    <span th:if="${e.pid == 0}">/</span>
+                    <span th:if="${e.pid != 0}" th:each="p : ${e.ps}">/<a th:href="@{'/note/' + ${p.id} + '/list?t=' + ${timestamp}}" th:text="${p.name}"></a></span>
+                </td>
                 <td th:text="${T(org.xiangqian.note.util.OsUtil).humanByte(e.size, 'KB')}"></td>
                 <td th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(e.addTime)}"></td>
                 <td th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(e.updTime)}"></td>
                 <td style="visibility: hidden;">
-                    <form method="post" th:action="@{'/note/' + ${e.id} + '/rename?t=' + ${timestamp}}" class="aform">
+                    <a th:if="${e.type != 'folder'}" href="javascript:void(0);" download>下载</a>
+                    <form th:if="${e.type != 'folder' && e.type != 'md'}" method="post" th:action="@{'/note/' + ${vo.p.id} + '/reUploadFile?t=' + ${timestamp}}" class="aform border">
+                        <input name="id" th:value="${e.id}" type="hidden">
+                        <input name="file" type="file" required>
+                        <button type="submit" reUpload>重新上传文件</button>
+                    </form>
+                    <form method="post" th:action="@{'/note/' + ${vo.p.id} + '/rename?t=' + ${timestamp}}" class="aform">
                         <input name="_method" value="PUT" type="hidden">
+                        <input name="id" th:value="${e.id}" type="hidden">
                         <input name="name" value="" type="hidden">
                         <button type="submit" rename>重命名</button>
                     </form>
                     <a href="javascript:void(0);" cut="0">剪切</a>
-                    <form method="post" th:action="@{'/note/' + ${e.id} + '?t=' + ${timestamp}}" class="aform">
+                    <form method="post" th:action="@{'/note/' + ${vo.p.id} + '/' + ${e.id} + '?t=' + ${timestamp}}" class="aform">
                         <input name="_method" value="DELETE" type="hidden">
+                        <input name="id" th:value="${e.id}" type="hidden">
                         <button type="submit" del>删除</button>
                     </form>
                 </td>
@@ -50,7 +67,7 @@
             </tbody>
             <tfoot>
             <tr>
-                <td colspan="5">
+                <td th:colspan="${vo.parameter.contain != null && vo.parameter.contain ? 6 : 5}">
                     <form method="get" th:action="@{'/note/' + ${vo.parameter.pid} + '/list'}">
                         <label>名称&nbsp;&nbsp;</label><input name="name" type="text" th:value="${vo.parameter.name}">
                         <label style="margin-left: 20px;">类型&nbsp;&nbsp;</label>
@@ -69,34 +86,34 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="5">
-            <span th:each="offset : ${vo.offsets}" th:with="disabled=${vo.offset.equals(offset)}">
-                <a th:if="${offset == null}">...</a>
-                <a th:if="${offset != null}"
-                   th:href="@{'/note/' + ${vo.parameter.pid} + '/list?name=' + ${vo.parameter.name != null ? vo.parameter.name : ''} + ${vo.parameter.contain != null ? ('&contain=' + vo.parameter.contain) : ''} +'&offset=' + ${offset} + '&t=' + ${timestamp}}"
-                   th:text="${offset}"
-                   th:class="${disabled ? 'disabled' : ''}"
-                   th:style="${disabled ? 'color: rgba(128, 128, 128, 0.6);' : ''}"></a>
-            </span>
+                <td th:colspan="${vo.parameter.contain != null && vo.parameter.contain ? 6 : 5}">
+                    <span th:each="offset : ${vo.offsets}" th:with="disabled=${vo.offset.equals(offset)}">
+                        <a th:if="${offset == null}">...</a>
+                        <a th:if="${offset != null}"
+                           th:href="@{'/note/' + ${vo.parameter.pid} + '/list?name=' + ${vo.parameter.name != null ? vo.parameter.name : ''} + '&type=' + ${vo.parameter.type != null ? vo.parameter.type : ''} + ${vo.parameter.contain != null ? ('&contain=' + vo.parameter.contain) : ''} +'&offset=' + ${offset} + '&t=' + ${timestamp}}"
+                           th:text="${offset}"
+                           th:class="${disabled ? 'disabled' : ''}"
+                           th:style="${disabled ? 'color: rgba(128, 128, 128, 0.6);' : ''}"></a>
+                    </span>
                 </td>
             </tr>
             </tfoot>
         </table>
     </left>
     <right>
-        <form method="post" th:action="@{'/note/' + ${vo.parameter.pid} + '/addFolder?t=' + ${timestamp}}" class="aform" style="display: block; margin: 80px 10px 20px 10px;">
+        <form method="post" th:action="@{'/note/' + ${vo.p.id} + '/addFolder?t=' + ${timestamp}}" class="aform" style="display: block; margin: 80px 10px 20px 10px;">
             <input name="name" value="" type="hidden">
             <button type="submit" addFolder>新建文件夹</button>
         </form>
-        <form method="post" th:action="@{'/note/' + ${vo.parameter.pid} + '/addMdFile?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
+        <form method="post" th:action="@{'/note/' + ${vo.p.pid} + '/addMdFile?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
             <input name="name" value="" type="hidden">
             <button type="submit" addMdFile>新建Markdown文件</button>
         </form>
-        <form method="post" th:action="@{'/note/' + ${vo.parameter.pid} + '/uploadFile?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
+        <form method="post" th:action="@{'/note/' + ${vo.p.pid} + '/uploadFile?t=' + ${timestamp}}" class="aform border" style="display: block; margin: 20px 10px 20px 10px;">
             <input name="file" type="file" required>
             <button type="submit" uploadFile>上传文件</button>
         </form>
-        <form method="post" th:action="@{'/note/' + ${vo.parameter.pid} + '/paste?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
+        <form method="post" th:action="@{'/note/' + ${vo.p.pid} + '/paste?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
             <input name="id" value="" type="hidden">
             <button type="submit" class="disabled" paste>粘贴</button>
         </form>
@@ -200,15 +217,17 @@
             return true
         })
 
+        // 设置剪切node
         function setCutNote(cutNode) {
             if (cutNode != null) {
                 cutNode = JSON.stringify(cutNode)
             }
-            sessionStorage.setItem('cutNode', cutNode)
+            localStorage.setItem('cutNode', cutNode)
         }
 
+        // 获取剪切node
         function getCutNote() {
-            let cutNode = sessionStorage.getItem('cutNode')
+            let cutNode = localStorage.getItem('cutNode')
             if (cutNode == null) {
                 return null
             }
@@ -221,35 +240,33 @@
             return false
         })
 
-        function selectCutTr(cutNode) {
-            let $trs = $('body > table tbody tr.select');
+        // 剪切<tr>
+        function cutTr(cutNode) {
+            let $tr = $(`#${cutNode.id}`)
+            $tr.addClass('cut')
+            let $a = $tr.find('a[cut]')
+            $a.attr('cut', '1')
+            $a.text('取消剪切')
+
+            // 启用按钮
+            $paste.removeClass('disabled')
+        }
+
+        // 取消剪切<tr>
+        function cancelCutTr() {
+            let $trs = $('body > content > left > table tbody tr.cut')
             if ($trs.length > 0) {
                 for (let i = 0, length = $trs.length; i < length; i++) {
                     let $tr = $($trs[i])
                     $tr.removeClass('cut')
-
                     let $a = $tr.find('a[cut]')
+                    $a.attr('cut', '0')
                     $a.text('剪切')
-                    $a.attr('cut', "0")
                 }
             }
 
-            if (cutNode != null) {
-                let $tr = $(`#${cutNode.id}`)
-                if ($tr.length > 0) {
-                    $tr.addClass('cut')
-
-                    let $a = $tr.find('a[cut]')
-                    $a.text('取消剪切')
-                    $a.attr('cut', "1")
-                }
-
-                // 启用按钮
-                $paste.removeClass('disabled')
-            } else {
-                // 禁用按钮
-                $paste.addClass('disabled')
-            }
+            // 禁用按钮
+            $paste.addClass('disabled')
         }
 
         let cutNode = getCutNote()
@@ -262,13 +279,16 @@
             // 获取目标元素
             let $element = $(event.currentTarget)
 
-            let note = null
-            if ($element.attr('cut') !== '1') {
-                note = getNote($element)
+            if ($element.attr('cut') === '1') {
+                setCutNote(null)
+                cancelCutTr()
+                return false
             }
 
+            let note = getNote($element)
             setCutNote(note)
-            selectCutTr(note)
+            cancelCutTr()
+            cutTr(note)
             return false
         })
 
