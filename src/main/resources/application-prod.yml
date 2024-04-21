@@ -6,13 +6,15 @@ server:
 spring:
   # 数据源配置
   datasource:
+    # SQLite驱动
+    # SQLite支持并发读取，但是不支持并发写入操作
     driver-class-name: org.sqlite.JDBC
     url: jdbc:sqlite:./data/database.db
     # 指定使用的数据源
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
       # 池中最大连接数（包括空闲和正在使用的连接）
-      maximum-pool-size: 5
+      maximum-pool-size: 1
       # 池中最小空闲连接数量
       minimum-idle: 1
 
@@ -20,3 +22,6 @@ spring:
   thymeleaf:
     # 是否使用页面缓存
     cache: true
+
+# 数据目录
+data-dir: ./data

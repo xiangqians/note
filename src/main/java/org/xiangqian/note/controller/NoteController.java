@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 import org.xiangqian.note.entity.NoteEntity;
@@ -25,8 +26,21 @@ public class NoteController extends AbsController {
     @Autowired
     private NoteService service;
 
-    @PutMapping("/{pid}/{id}/rename")
-    public RedirectView rename(@PathVariable("pid") Long pid, NoteEntity vo) {
+    @PutMapping("/{id}/rename")
+    public RedirectView rename(@PathVariable("id") Long id, NoteEntity vo) {
+        Object error = null;
+        try {
+            vo.setId(id);
+            service.rename(vo);
+        } catch (Exception e) {
+            log.error("", e);
+            error = e.getMessage();
+        }
+        return redirectListView(vo.getPid(), null, error);
+    }
+
+    @GetMapping("/{id}")
+    public RedirectView get(@PathVariable("pid") Long pid, NoteEntity vo) {
         Object error = null;
         try {
             vo.setPid(pid);
@@ -38,47 +52,81 @@ public class NoteController extends AbsController {
         return redirectListView(pid, null, error);
     }
 
-    @PostMapping("/{pid}/addMdFile")
-    public RedirectView addMdFile(@PathVariable("pid") Long pid, NoteEntity vo) {
+    @PostMapping("/uploadFile")
+    public RedirectView uploadFile(@RequestParam("file") MultipartFile file, NoteEntity vo) {
+
+        // private static String UPLOAD_FOLDER = "C:/uploads/"; // 上传文件存储的目录
+        //
+        //    @PostMapping("/upload")
+        //    public String uploadFile() {
+        //        if (file.isEmpty()) {
+        //            return "请选择文件上传";
+        //        }
+        //
+        //        try {
+        //            // 获取文件的字节数组并保存到指定路径
+        //            byte[] bytes = file.getBytes();
+        //            Path path = Paths.get(UPLOAD_FOLDER + file.getOriginalFilename());
+        //            Files.write(path, bytes);
+        //            return "文件上传成功";
+        //        } catch (IOException e) {
+        //            e.printStackTrace();
+        //            return "文件上传失败";
+        //        }
+        //    }
+        //}
+
         Object error = null;
         try {
-            vo.setPid(pid);
+        } catch (Exception e) {
+            log.error("", e);
+            error = e.getMessage();
+        }
+        return redirectListView(vo.getPid(), null, error);
+    }
+
+
+    @PostMapping("/addMdFile")
+    public RedirectView addMdFile(NoteEntity vo) {
+        Object error = null;
+        try {
             service.addMdFile(vo);
         } catch (Exception e) {
             log.error("", e);
             error = e.getMessage();
         }
-        return redirectListView(pid, null, error);
+        return redirectListView(vo.getPid(), null, error);
     }
 
-    @PostMapping("/{pid}/addFolder")
-    public RedirectView addFolder(@PathVariable("pid") Long pid, NoteEntity vo) {
+    @PostMapping("/addFolder")
+    public RedirectView addFolder(NoteEntity vo) {
         Object error = null;
         try {
-            vo.setPid(pid);
             service.addFolder(vo);
         } catch (Exception e) {
             log.error("", e);
             error = e.getMessage();
         }
-        return redirectListView(pid, null, error);
+        return redirectListView(vo.getPid(), null, error);
     }
 
-    @GetMapping("/{pid}/list")
-    public ModelAndView list(ModelAndView modelAndView, @PathVariable("pid") Long pid, NoteEntity vo, List list) {
+    @GetMapping("/{id}/list")
+    public ModelAndView list(ModelAndView modelAndView, @PathVariable("id") Long id, NoteEntity vo, List list) {
         try {
-            NoteEntity p = service.getById(pid);
-            if (p == null || !Type.FOLDER.equals(p.getType())) {
+            NoteEntity entity = service.getById(id);
+            if (entity == null || !Type.FOLDER.equals(entity.getType())) {
                 return errorView(modelAndView);
             }
 
-            vo.setPid(pid);
+            vo.setPid(id);
             list = service.list(vo, list);
+            vo.setId(id);
+            vo.setPid(null);
             setVoAttribute(modelAndView, Map.of("parameter", vo,
-                    "types", Type.getSet(),
-                    "p", p,
-                    "offset", list.getOffset(),
+                    "entity", entity,
                     "data", list.getData(),
+                    "types", Type.getSet(),
+                    "offset", list.getOffset(),
                     "offsets", list.getOffsets()));
         } catch (Exception e) {
             log.error("", e);
@@ -88,8 +136,8 @@ public class NoteController extends AbsController {
         return modelAndView;
     }
 
-    private RedirectView redirectListView(Long pid, Object vo, Object error) {
-        return redirectView(String.format("/note/%s/list", pid), vo, error);
+    private RedirectView redirectListView(Long id, Object vo, Object error) {
+        return redirectView(String.format("/note/%s/list", id), vo, error);
     }
 
 }

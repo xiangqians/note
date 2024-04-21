@@ -8,15 +8,15 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
     <link rel="stylesheet" th:href="@{/static/css/body.css}" type="text/css"/>
-    <title th:if="${vo.p.id == 0}">/<th:block th:if="${vo.parameter.contain != null && vo.parameter.contain}">*</th:block></title>
-    <title th:if="${vo.p.id != 0}"><th:block th:each="p : ${vo.p.ps}" th:text="${'/' + p.name}"></th:block><th:block th:text="${'/' + vo.p.name}"></th:block><th:block th:if="${vo.parameter.contain != null && vo.parameter.contain}" th:text="${'/*'}"></th:block></title>
+    <title th:if="${vo.entity.id == 0}">/<th:block th:if="${vo.parameter.contain != null && vo.parameter.contain}">*</th:block></title>
+    <title th:if="${vo.entity.id != 0}"><th:block th:each="p : ${vo.entity.ps}" th:text="${'/' + p.name}"></th:block><th:block th:text="${'/' + vo.entity.name}"></th:block><th:block th:if="${vo.parameter.contain != null && vo.parameter.contain}" th:text="${'/*'}"></th:block></title>
 </head>
 <body>
 <error th:text="${error}"></error>
 <content>
     <left>
-        <h3 th:if="${vo.p.id == 0}"><a th:href="@{'/note/0/list?t=' + ${timestamp}}">~</a>&nbsp;&nbsp;/<span th:if="${vo.parameter.contain != null && vo.parameter.contain}">*</span></h3>
-        <h3 th:if="${vo.p.id != 0}"><a th:href="@{'/note/0/list?t=' + ${timestamp}}">~</a>&nbsp;&nbsp;<span th:each="p : ${vo.p.ps}">/<a th:href="@{'/note/' + ${p.id} + '/list?t=' + ${timestamp}}" th:text="${p.name}"></a></span><span>/<a th:href="@{'/note/' + ${vo.p.id} + '/list?t=' + ${timestamp}}" th:text="${vo.p.name}"></a></span><span th:if="${vo.parameter.contain != null && vo.parameter.contain}">/*</span></h3>
+        <h3 th:if="${vo.entity.id == 0}"><a th:href="@{'/note/0/list?t=' + ${timestamp}}">~</a>&nbsp;&nbsp;/<span th:if="${vo.parameter.contain != null && vo.parameter.contain}">*</span></h3>
+        <h3 th:if="${vo.entity.id != 0}"><a th:href="@{'/note/0/list?t=' + ${timestamp}}">~</a>&nbsp;&nbsp;<span th:each="p : ${vo.entity.ps}">/<a th:href="@{'/note/' + ${p.id} + '/list?t=' + ${timestamp}}" th:text="${p.name}"></a></span><span>/<a th:href="@{'/note/' + ${vo.entity.id} + '/list?t=' + ${timestamp}}" th:text="${vo.entity.name}"></a></span><span th:if="${vo.parameter.contain != null && vo.parameter.contain}">/*</span></h3>
         <table>
             <thead>
             <tr>
@@ -45,19 +45,19 @@
                 <td th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(e.updTime)}"></td>
                 <td style="visibility: hidden;">
                     <a th:if="${e.type != 'folder'}" href="javascript:void(0);" download>下载</a>
-                    <form th:if="${e.type != 'folder' && e.type != 'md'}" method="post" th:action="@{'/note/' + ${vo.p.id} + '/reUploadFile?t=' + ${timestamp}}" class="aform border">
+                    <form th:if="${e.type != 'folder' && e.type != 'md'}" method="post" th:action="@{'/note/' + ${vo.entity.id} + '/reUploadFile?t=' + ${timestamp}}" class="aform border">
                         <input name="id" th:value="${e.id}" type="hidden">
                         <input name="file" type="file" required>
                         <button type="submit" reUpload>重新上传文件</button>
                     </form>
-                    <form method="post" th:action="@{'/note/' + ${vo.p.id} + '/rename?t=' + ${timestamp}}" class="aform">
+                    <form method="post" th:action="@{'/note/' + ${vo.entity.id} + '/rename?t=' + ${timestamp}}" class="aform">
                         <input name="_method" value="PUT" type="hidden">
                         <input name="id" th:value="${e.id}" type="hidden">
                         <input name="name" value="" type="hidden">
                         <button type="submit" rename>重命名</button>
                     </form>
                     <a href="javascript:void(0);" cut="0">剪切</a>
-                    <form method="post" th:action="@{'/note/' + ${vo.p.id} + '/' + ${e.id} + '?t=' + ${timestamp}}" class="aform">
+                    <form method="post" th:action="@{'/note/' + ${vo.entity.id} + '/' + ${e.id} + '?t=' + ${timestamp}}" class="aform">
                         <input name="_method" value="DELETE" type="hidden">
                         <input name="id" th:value="${e.id}" type="hidden">
                         <button type="submit" del>删除</button>
@@ -68,7 +68,7 @@
             <tfoot>
             <tr>
                 <td th:colspan="${vo.parameter.contain != null && vo.parameter.contain ? 6 : 5}">
-                    <form method="get" th:action="@{'/note/' + ${vo.parameter.pid} + '/list'}">
+                    <form method="get" th:action="@{'/note/' + ${vo.parameter.id} + '/list'}">
                         <label>名称&nbsp;&nbsp;</label><input name="name" type="text" th:value="${vo.parameter.name}">
                         <label style="margin-left: 20px;">类型&nbsp;&nbsp;</label>
                         <select name="type">
@@ -79,7 +79,7 @@
                                     th:selected="${type == vo.parameter.type}">
                             </option>
                         </select>
-                        <input type="checkbox" name="contain" value="true" th:attr="checked=${vo.parameter.contain != null and vo.parameter.contain ? '' : null}" style="margin-left: 20px;"><label name="contain">&nbsp;包括子节点</label>
+                        <input type="checkbox" name="contain" value="true" th:attr="checked=${vo.parameter.contain != null and vo.parameter.contain ? '' : null}" style="margin-left: 20px;"><label name="contain">&nbsp;包括子文件夹</label>
                         <input name="t" th:value="${timestamp}" type="hidden" style="margin-left: 20px;">
                         <button type="submit" style="margin-left: 20px;" search>搜索</button>
                     </form>
@@ -90,7 +90,7 @@
                     <span th:each="offset : ${vo.offsets}" th:with="disabled=${vo.offset.equals(offset)}">
                         <a th:if="${offset == null}">...</a>
                         <a th:if="${offset != null}"
-                           th:href="@{'/note/' + ${vo.parameter.pid} + '/list?name=' + ${vo.parameter.name != null ? vo.parameter.name : ''} + '&type=' + ${vo.parameter.type != null ? vo.parameter.type : ''} + ${vo.parameter.contain != null ? ('&contain=' + vo.parameter.contain) : ''} +'&offset=' + ${offset} + '&t=' + ${timestamp}}"
+                           th:href="@{'/note/' + ${vo.parameter.id} + '/list?name=' + ${vo.parameter.name != null ? vo.parameter.name : ''} + '&type=' + ${vo.parameter.type != null ? vo.parameter.type : ''} + ${vo.parameter.contain != null ? ('&contain=' + vo.parameter.contain) : ''} +'&offset=' + ${offset} + '&t=' + ${timestamp}}"
                            th:text="${offset}"
                            th:class="${disabled ? 'disabled' : ''}"
                            th:style="${disabled ? 'color: rgba(128, 128, 128, 0.6);' : ''}"></a>
@@ -101,19 +101,20 @@
         </table>
     </left>
     <right>
-        <form method="post" th:action="@{'/note/' + ${vo.p.id} + '/addFolder?t=' + ${timestamp}}" class="aform" style="display: block; margin: 80px 10px 20px 10px;">
+        <form method="post" th:action="@{'/note/' + ${vo.entity.id} + '/addFolder?t=' + ${timestamp}}" class="aform" style="display: block; margin: 80px 10px 20px 10px;">
             <input name="name" value="" type="hidden">
             <button type="submit" addFolder>新建文件夹</button>
         </form>
-        <form method="post" th:action="@{'/note/' + ${vo.p.pid} + '/addMdFile?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
+        <form method="post" th:action="@{'/note/' + ${vo.entity.pid} + '/addMdFile?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
             <input name="name" value="" type="hidden">
             <button type="submit" addMdFile>新建Markdown文件</button>
         </form>
-        <form method="post" th:action="@{'/note/' + ${vo.p.pid} + '/uploadFile?t=' + ${timestamp}}" class="aform border" style="display: block; margin: 20px 10px 20px 10px;">
+        <form method="post" th:action="@{'/note/uploadFile?t=' + ${timestamp}}" class="aform border" style="display: block; margin: 20px 10px 20px 10px;">
+            <input name="pid" th:value="${vo.entity.pid}" type="hidden">
             <input name="file" type="file" required>
             <button type="submit" uploadFile>上传文件</button>
         </form>
-        <form method="post" th:action="@{'/note/' + ${vo.p.pid} + '/paste?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
+        <form method="post" th:action="@{'/note/' + ${vo.entity.pid} + '/paste?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
             <input name="id" value="" type="hidden">
             <button type="submit" class="disabled" paste>粘贴</button>
         </form>

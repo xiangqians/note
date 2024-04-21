@@ -15,7 +15,7 @@ public class LoginController extends AbsController {
 
     @GetMapping
     public ModelAndView login(ModelAndView modelAndView) {
-        modelAndView.setViewName("login");
+        modelAndView.setViewName("user/login");
         return modelAndView;
     }
 

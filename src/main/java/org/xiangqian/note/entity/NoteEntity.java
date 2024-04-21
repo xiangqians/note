@@ -3,6 +3,7 @@ package org.xiangqian.note.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
+import org.xiangqian.note.util.Type;
 
 import java.util.Arrays;
 import java.util.List;
@@ -62,12 +63,10 @@ public class NoteEntity {
                     .map(pid -> {
                         NoteEntity p = new NoteEntity();
                         p.setId(pid);
+                        p.setType(Type.FOLDER);
                         return p;
                     }).collect(Collectors.toList());
         }
     }
-
-
-    
 
 }

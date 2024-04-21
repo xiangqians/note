@@ -5,6 +5,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.xiangqian.note.entity.NoteEntity;
@@ -27,12 +28,26 @@ import java.util.stream.Collectors;
 @Service
 public class NoteServiceImpl implements NoteService {
 
+    @Value("${data-dir}")
+    private String dataDir;
+
     @Autowired
     private NoteMapper mapper;
 
     @Override
     public Boolean rename(NoteEntity vo) {
-        return null;
+        Long id = vo.getId();
+        Assert.notNull(id, "id不能为空");
+        Assert.isTrue(id.intValue() > 0, "id必须大于0");
+
+        String name = StringUtils.trim(vo.getName());
+        Assert.isTrue(StringUtils.isNotEmpty(name), "名称不能为空");
+
+        NoteEntity updEntity = new NoteEntity();
+        updEntity.setId(id);
+        updEntity.setName(name);
+        updEntity.setUpdTime(DateUtil.toSecond(LocalDateTime.now()));
+        return mapper.updateById(updEntity) > 0;
     }
 
     @Override
