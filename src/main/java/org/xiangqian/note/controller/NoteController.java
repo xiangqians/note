@@ -13,6 +13,7 @@ import org.xiangqian.note.service.NoteService;
 import org.xiangqian.note.util.List;
 import org.xiangqian.note.util.Type;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -53,8 +54,22 @@ public class NoteController extends AbsController {
         return modelAndView;
     }
 
-    @GetMapping("/{id}/view/{version}")
-    public ModelAndView getViewById(ModelAndView modelAndView, @PathVariable(name = "id") Long id, @PathVariable(name = "version", required = false) String version) {
+    @GetMapping("/{id}/view")
+    public ModelAndView getViewById(ModelAndView modelAndView, @PathVariable(name = "id") Long id) {
+        return getViewV1ById(modelAndView, id);
+    }
+
+    @GetMapping("/{id}/view/v1")
+    public ModelAndView getViewV1ById(ModelAndView modelAndView, @PathVariable(name = "id") Long id) {
+        return getViewById(modelAndView, id, "v1");
+    }
+
+    @GetMapping("/{id}/view/v2")
+    public ModelAndView getViewV2ById(ModelAndView modelAndView, @PathVariable(name = "id") Long id) {
+        return getViewById(modelAndView, id, "v2");
+    }
+
+    private ModelAndView getViewById(ModelAndView modelAndView, Long id, String version) {
         try {
             return service.getViewById(modelAndView, id, version);
         } catch (Exception e) {
@@ -64,23 +79,13 @@ public class NoteController extends AbsController {
     }
 
     @GetMapping(value = "/{id}/stream")
-    public ResponseEntity<Resource> getStreamById(@PathVariable("id") Long id) {
-        try {
-            return service.getStreamById(id);
-        } catch (Exception e) {
-            log.error("", e);
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Resource> getStreamById(@PathVariable("id") Long id) throws Exception {
+        return service.getStreamById(id);
     }
 
     @GetMapping("/{id}/download")
-    public ResponseEntity<Resource> download(@PathVariable("id") Long id) {
-        try {
-            return service.download(id);
-        } catch (Exception e) {
-            log.error("", e);
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Resource> download(@PathVariable("id") Long id) throws IOException {
+        return service.download(id);
     }
 
     @DeleteMapping("/del")

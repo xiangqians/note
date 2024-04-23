@@ -60,7 +60,7 @@ public class NoteEntity {
     @TableField(exist = false)
     private MultipartFile file;
 
-    // 文件内容（md文件）
+    // 文件内容（md、html文件内容）
     @TableField(exist = false)
     private String content;
 

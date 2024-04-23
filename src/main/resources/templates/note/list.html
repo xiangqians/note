@@ -44,15 +44,18 @@
                 <td th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(e.addTime)}"></td>
                 <td th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(e.updTime)}"></td>
                 <td style="visibility: hidden;">
-                    <a th:if="${e.type != 'folder'}" href="javascript:void(0);" download>下载</a>
-                    <form th:if="${e.type != 'folder' && e.type != 'md'}" method="post" enctype="multipart/form-data" th:action="@{'/note/' + ${vo.entity.id} + '/reUploadFile?t=' + ${timestamp}}" class="aform border">
-                        <input name="id" th:value="${e.id}" type="hidden">
-                        <input name="file" type="file" required>
-                        <button type="submit" reUploadFile>重新上传文件</button>
-                    </form>
-                    <form method="post" th:action="@{'/note/' + ${vo.entity.id} + '/rename?t=' + ${timestamp}}" class="aform">
+                    <a th:if="${e.type != 'folder' && e.type != 'md'}" th:href="@{'/note/' + ${e.id} + '/download?t=' + ${timestamp}}" download>下载</a>
+                    <form th:if="${e.type != 'folder' && e.type != 'md'}" method="post" enctype="multipart/form-data" th:action="@{'/note/reUpload?t=' + ${timestamp}}" class="aform border">
                         <input name="_method" value="PUT" type="hidden">
                         <input name="id" th:value="${e.id}" type="hidden">
+                        <input name="pid" th:value="${vo.entity.id}" type="hidden">
+                        <input name="file" type="file" required>
+                        <button type="submit" reUpload>重新上传文件</button>
+                    </form>
+                    <form method="post" th:action="@{'/note/rename?t=' + ${timestamp}}" class="aform">
+                        <input name="_method" value="PUT" type="hidden">
+                        <input name="id" th:value="${e.id}" type="hidden">
+                        <input name="pid" th:value="${vo.entity.id}" type="hidden">
                         <input name="name" value="" type="hidden">
                         <button type="submit" rename>重命名</button>
                     </form>
@@ -106,18 +109,19 @@
             <input name="name" value="" type="hidden">
             <button type="submit" addFolder>新建文件夹</button>
         </form>
-        <form method="post" th:action="@{'/note/addMdFile?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
+        <form method="post" th:action="@{'/note/addMd?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
             <input name="pid" th:value="${vo.entity.id}" type="hidden">
             <input name="name" value="" type="hidden">
             <button type="submit" addMdFile>新建Markdown文件</button>
         </form>
-        <form method="post" enctype="multipart/form-data" th:action="@{'/note/uploadFile?t=' + ${timestamp}}" class="aform border" style="display: block; margin: 20px 10px 20px 10px;">
+        <form method="post" enctype="multipart/form-data" th:action="@{'/note/upload?t=' + ${timestamp}}" class="aform border" style="display: block; margin: 20px 10px 20px 10px;">
             <input name="pid" th:value="${vo.entity.id}" type="hidden">
             <input name="file" type="file" required>
-            <button type="submit" uploadFile>上传文件</button>
+            <button type="submit" upload>上传文件</button>
         </form>
-        <form method="post" th:action="@{'/note/' + ${vo.entity.id} + '/paste?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
+        <form method="post" th:action="@{'/note/paste?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
             <input name="id" value="" type="hidden">
+            <input name="pid" th:value="${vo.entity.id}" type="hidden">
             <button type="submit" class="disabled" paste>粘贴</button>
         </form>
     </right>

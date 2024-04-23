@@ -1,16 +1,26 @@
 package org.xiangqian.note.service.impl;
 
+import com.aspose.words.Document;
+import com.aspose.words.SaveFormat;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
+import org.xiangqian.note.controller.AbsController;
 import org.xiangqian.note.entity.NoteEntity;
 import org.xiangqian.note.mapper.NoteMapper;
 import org.xiangqian.note.service.NoteService;
@@ -18,11 +28,16 @@ import org.xiangqian.note.util.DateUtil;
 import org.xiangqian.note.util.List;
 import org.xiangqian.note.util.Type;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author xiangqian
@@ -35,7 +50,6 @@ public class NoteServiceImpl extends AbsService implements NoteService {
     @Autowired
     private NoteMapper mapper;
 
-    /*
     @Override
     public List<NoteEntity> list(NoteEntity vo, List list) {
         Integer offset = list.getOffset();
@@ -76,84 +90,6 @@ public class NoteServiceImpl extends AbsService implements NoteService {
     }
 
     @Override
-    public ModelAndView getViewById(ModelAndView modelAndView, Long id, String version) throws IOException {
-        NoteEntity entity = verifyId(id);
-        String name = switch (entity.getType()) {
-            case Type.MD -> "md";
-            case Type.DOC, Type.DOCX, Type.PDF -> "pdf";
-            case Type.HTML -> "html";
-            default -> null;
-        };
-
-        if (name != null) {
-            if (StringUtils.equalsAny(entity.getType(), Type.MD, Type.HTML)) {
-                String content = null;
-                File file = getPath(entity.getId()).toFile();
-                if (file.exists()) {
-                    content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-                }
-                entity.setContent(content);
-            }
-            AbsController.setVoAttribute(modelAndView, entity);
-
-            version = StringUtils.trim(version);
-            if (StringUtils.isEmpty(version)) {
-                version = "v1";
-            }
-            modelAndView.setViewName(String.format("note/%s/view/%s", name, version));
-
-            return modelAndView;
-        }
-        return AbsController.errorView(modelAndView);
-    }
-
-    @Override
-    public ResponseEntity<Resource> getStreamById(Long id) throws Exception {
-        NoteEntity entity = verifyId(id);
-
-        Path path = null;
-        String type = entity.getType();
-        MediaType contentType = null;
-        switch (type) {
-            case Type.DOC, Type.DOCX -> {
-                Document doc = new Document(new FileInputStream(getPath(id).toFile()));
-                File file = getTmpPath().toFile();
-                if (!file.exists()) {
-                    file.mkdirs();
-                }
-
-                // 全面支持DOC, DOCX, OOXML, RTF HTML, OpenDocument, PDF, EPUB, XPS, SWF 相互转换
-                path = getTmpPath(id);
-                doc.save(new FileOutputStream(path.toFile()), SaveFormat.PDF);
-                contentType = MediaType.APPLICATION_PDF;
-            }
-            case Type.PDF -> {
-                path = getPath(id);
-                contentType = MediaType.APPLICATION_PDF;
-
-            }
-            case Type.HTML -> {
-                path = getPath(id);
-                contentType = MediaType.APPLICATION_PDF;
-            }
-            default -> new IllegalArgumentException(String.format("不支持获取 %s 文件类型流", type));
-        }
-
-        // 读取文件
-        byte[] bytes = Files.readAllBytes(path);
-
-        // 将文件数据转换为资源
-        ByteArrayResource resource = new ByteArrayResource(bytes);
-
-        // 构建响应头
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentLength(resource.contentLength());
-        headers.setContentType(contentType);
-
-        return new ResponseEntity<>(resource, headers, HttpStatus.OK);
-    }
-
-    @Override
     public NoteEntity getById(Long id) {
         Assert.notNull(id, "id不能为空");
         Assert.isTrue(id.longValue() >= 0, "id不能小于0");
@@ -183,55 +119,131 @@ public class NoteServiceImpl extends AbsService implements NoteService {
     }
 
     @Override
-    public ResponseEntity<Resource> download(Long id) throws IOException {
+    public ModelAndView getViewById(ModelAndView modelAndView, Long id, String version) throws IOException {
         NoteEntity entity = verifyId(id);
-        Assert.isTrue(!Type.FOLDER.equals(entity.getType()), "不支持下载文件夹");
+
+        String name = switch (entity.getType()) {
+            case Type.MD -> "md";
+            case Type.DOC, Type.DOCX, Type.PDF -> "pdf";
+            case Type.HTML -> "html";
+            default -> null;
+        };
+        if (name == null) {
+            return AbsController.errorView(modelAndView);
+        }
+
+        if (StringUtils.equalsAny(entity.getType(), Type.MD, Type.HTML)) {
+            String content = null;
+            Path path = getPath(entity.getId());
+            if (Files.exists(path)) {
+                content = Files.readString(path, StandardCharsets.UTF_8);
+            }
+            entity.setContent(content);
+        }
+        AbsController.setVoAttribute(modelAndView, entity);
+
+        modelAndView.setViewName(String.format("note/%s/view/%s", name, version));
+
+        return modelAndView;
+    }
+
+    @Override
+    public ResponseEntity<Resource> getStreamById(Long id) throws Exception {
+        if (id == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // 查库
+        NoteEntity entity = null;
+        if (id.longValue() > 0) {
+            entity = mapper.selectById(id);
+        }
+        if (entity == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Path path = null;
+        MediaType contentType = null;
+        switch (entity.getType()) {
+            case Type.DOC, Type.DOCX -> {
+                InputStream inputStream = null;
+                OutputStream outputStream = null;
+                try {
+                    inputStream = new FileInputStream(getPath(id).toFile());
+                    Document document = new Document(inputStream);
+
+                    // 支持DOC, DOCX, OOXML, RTF HTML, OpenDocument, PDF, EPUB, XPS, SWF 相互转换
+                    path = getTmpPath(id, true);
+                    outputStream = new FileOutputStream(path.toFile());
+                    document.save(outputStream, SaveFormat.PDF);
+                } finally {
+                    IOUtils.closeQuietly(outputStream, inputStream);
+                }
+                contentType = MediaType.APPLICATION_PDF;
+            }
+            case Type.PDF -> {
+                path = getPath(id);
+                contentType = MediaType.APPLICATION_PDF;
+
+            }
+            case Type.HTML -> {
+                path = getPath(id);
+                contentType = MediaType.TEXT_HTML;
+            }
+        }
+        if (path == null || !Files.exists(path)) {
+            return ResponseEntity.notFound().build();
+        }
 
         // 读取文件
+        byte[] bytes = Files.readAllBytes(path);
+
+        // 将文件数据转换为资源
+        ByteArrayResource resource = new ByteArrayResource(bytes);
+
+        // 响应头
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentLength(resource.contentLength());
+        headers.setContentType(contentType);
+
+        // 响应
+        return new ResponseEntity<>(resource, headers, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<Resource> download(Long id) throws IOException {
+        if (id == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // 查库
+        NoteEntity entity = null;
+        if (id.longValue() > 0) {
+            entity = mapper.selectById(id);
+        }
+        if (entity == null || Type.FOLDER.equals(entity.getType())) {
+            return ResponseEntity.notFound().build();
+        }
+
         Path path = getPath(id);
+        if (!Files.exists(path)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // 读取文件
         byte[] data = Files.readAllBytes(path);
 
         // 将文件数据转换为资源
         ByteArrayResource resource = new ByteArrayResource(data);
 
-        // 构建响应头
+        // 响应头
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s", URLEncoder.encode(entity.getName() + "." + entity.getType(), StandardCharsets.UTF_8)));
         headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
         headers.add(HttpHeaders.CONTENT_LENGTH, String.valueOf(resource.contentLength()));
 
-        // 返回响应实体
-        return ResponseEntity.<Resource>ok()
-                .headers(headers)
-                .body(resource);
-
-        //        return new ResponseEntity<>(streamingResponseBody, headers, HttpStatus.OK);
-    }
-     */
-
-    @Override
-    public List<NoteEntity> list(NoteEntity vo, List list) {
-        return null;
-    }
-
-    @Override
-    public NoteEntity getById(Long id) {
-        return null;
-    }
-
-    @Override
-    public ModelAndView getViewById(ModelAndView modelAndView, Long id, String version) throws IOException {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<Resource> getStreamById(Long id) throws Exception {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<Resource> download(Long id) throws IOException {
-        return null;
+        // 响应
+        return new ResponseEntity<>(resource, headers, HttpStatus.OK);
     }
 
     @Override
@@ -344,18 +356,12 @@ public class NoteServiceImpl extends AbsService implements NoteService {
         entity.setAddTime(DateUtil.toSecond(LocalDateTime.now()));
         if (vo.getId() == null) {
             mapper.insert(entity);
-
         } else {
             entity.setId(vo.getId());
             mapper.updateById(entity);
         }
 
-        File dataDirFile = getPath().toFile();
-        if (!dataDirFile.exists()) {
-            dataDirFile.mkdirs();
-        }
-
-        Path path = getPath(entity.getId());
+        Path path = getPath(entity.getId(), true);
         Files.write(path, bytes);
         return true;
     }

@@ -56,10 +56,10 @@ public class IavServiceImpl extends AbsService implements IavService {
         // 读取文件
         byte[] bytes = Files.readAllBytes(path);
 
-        // 将文件数据转换为字节数组资源
+        // 将文件数据转换为资源
         ByteArrayResource resource = new ByteArrayResource(bytes);
 
-        // 构建响应头
+        // 响应头
         HttpHeaders headers = new HttpHeaders();
         headers.setContentLength(resource.contentLength());
         headers.set(HttpHeaders.CONTENT_TYPE, entity.getType());
