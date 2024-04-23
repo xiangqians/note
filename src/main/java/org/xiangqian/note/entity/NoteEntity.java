@@ -3,6 +3,7 @@ package org.xiangqian.note.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import org.xiangqian.note.util.Type;
 
 import java.util.Arrays;
@@ -54,6 +55,14 @@ public class NoteEntity {
     // 包括子节点
     @TableField(exist = false)
     private Boolean contain;
+
+    // 上传文件
+    @TableField(exist = false)
+    private MultipartFile file;
+
+    // 文件内容（md文件）
+    @TableField(exist = false)
+    private String content;
 
     public void setPids(String pids) {
         if (StringUtils.isNotEmpty(pids)) {

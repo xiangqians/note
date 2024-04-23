@@ -4,6 +4,11 @@ server:
     context-path: /
 
 spring:
+  servlet:
+    multipart:
+      max-request-size: 1GB
+      max-file-size: 1GB
+
   # 数据源配置
   datasource:
     # SQLite驱动
@@ -22,6 +27,3 @@ spring:
   thymeleaf:
     # 是否使用页面缓存
     cache: true
-
-# 数据目录
-data-dir: ./data

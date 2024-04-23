@@ -4,13 +4,18 @@ server:
     context-path: /
 
 spring:
+  servlet:
+    multipart:
+      max-request-size: 1GB
+      max-file-size: 1GB
+
   # 数据源配置
   datasource:
     # SQLite驱动
     # SQLite支持并发读取，但是不支持并发写入操作
     driver-class-name: org.sqlite.JDBC
-    #url: jdbc:sqlite:E:\tmp\note\data\database.db
     url: jdbc:sqlite:C:\Users\xiangqian\Desktop\tmp\note\data\database.db
+    #url: jdbc:sqlite:E:\tmp\note\data\database.db
     # 指定使用的数据源
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
@@ -23,6 +28,3 @@ spring:
   thymeleaf:
     # 是否使用页面缓存
     cache: false
-
-# 数据目录
-data-dir: C:\Users\xiangqian\Desktop\tmp\note\data

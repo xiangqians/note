@@ -3,7 +3,6 @@ package org.xiangqian.note.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.ModelAndView;
@@ -72,7 +71,7 @@ public abstract class AbsController {
         session.setAttribute(USER, user);
     }
 
-    protected void setVoAttribute(ModelAndView modelAndView, Object value) {
+    public static void setVoAttribute(ModelAndView modelAndView, Object value) {
         modelAndView.addObject(VO, value);
     }
 
@@ -80,7 +79,7 @@ public abstract class AbsController {
         session.setAttribute(VO, value);
     }
 
-    protected void setErrorAttribute(ModelAndView modelAndView, Object value) {
+    public static void setErrorAttribute(ModelAndView modelAndView, Object value) {
         modelAndView.addObject(ERROR, value);
     }
 
@@ -88,12 +87,12 @@ public abstract class AbsController {
         session.setAttribute(ERROR, value);
     }
 
-    protected ModelAndView errorView(ModelAndView modelAndView) {
+    public static ModelAndView errorView(ModelAndView modelAndView) {
         modelAndView.setViewName("error");
         return modelAndView;
     }
 
-    protected RedirectView redirectView(String url, Object vo, Object error) {
+    public static RedirectView redirectView(String url, Object vo, Object error) {
         HttpSession session = getSession();
         setVoAttribute(session, vo);
         setErrorAttribute(session, error);

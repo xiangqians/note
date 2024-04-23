@@ -30,7 +30,7 @@ CREATE TABLE `iav` -- image、audio、video信息表
 (
     `id`       INTEGER PRIMARY KEY AUTOINCREMENT, -- id
     `name`     VARCHAR(64) DEFAULT '',            -- 名称
-    `type`     VARCHAR(32) DEFAULT '',            -- 类型
+    `type`     VARCHAR(64) DEFAULT '',            -- 类型
     `size`     INTEGER     DEFAULT 0,             -- 大小，单位：byte
     `del`      TINYINT     DEFAULT 0,             -- 删除标识，0-正常，1-删除
     `add_time` INTEGER     DEFAULT 0,             -- 创建时间（时间戳，单位s）

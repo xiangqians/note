@@ -2,9 +2,10 @@ package org.xiangqian.note.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 import org.xiangqian.note.entity.NoteEntity;
@@ -25,90 +26,6 @@ public class NoteController extends AbsController {
 
     @Autowired
     private NoteService service;
-
-    @PutMapping("/{id}/rename")
-    public RedirectView rename(@PathVariable("id") Long id, NoteEntity vo) {
-        Object error = null;
-        try {
-            vo.setId(id);
-            service.rename(vo);
-        } catch (Exception e) {
-            log.error("", e);
-            error = e.getMessage();
-        }
-        return redirectListView(vo.getPid(), null, error);
-    }
-
-    @GetMapping("/{id}")
-    public RedirectView get(@PathVariable("pid") Long pid, NoteEntity vo) {
-        Object error = null;
-        try {
-            vo.setPid(pid);
-            service.rename(vo);
-        } catch (Exception e) {
-            log.error("", e);
-            error = e.getMessage();
-        }
-        return redirectListView(pid, null, error);
-    }
-
-    @PostMapping("/uploadFile")
-    public RedirectView uploadFile(@RequestParam("file") MultipartFile file, NoteEntity vo) {
-
-        // private static String UPLOAD_FOLDER = "C:/uploads/"; // 上传文件存储的目录
-        //
-        //    @PostMapping("/upload")
-        //    public String uploadFile() {
-        //        if (file.isEmpty()) {
-        //            return "请选择文件上传";
-        //        }
-        //
-        //        try {
-        //            // 获取文件的字节数组并保存到指定路径
-        //            byte[] bytes = file.getBytes();
-        //            Path path = Paths.get(UPLOAD_FOLDER + file.getOriginalFilename());
-        //            Files.write(path, bytes);
-        //            return "文件上传成功";
-        //        } catch (IOException e) {
-        //            e.printStackTrace();
-        //            return "文件上传失败";
-        //        }
-        //    }
-        //}
-
-        Object error = null;
-        try {
-        } catch (Exception e) {
-            log.error("", e);
-            error = e.getMessage();
-        }
-        return redirectListView(vo.getPid(), null, error);
-    }
-
-
-    @PostMapping("/addMdFile")
-    public RedirectView addMdFile(NoteEntity vo) {
-        Object error = null;
-        try {
-            service.addMdFile(vo);
-        } catch (Exception e) {
-            log.error("", e);
-            error = e.getMessage();
-        }
-        return redirectListView(vo.getPid(), null, error);
-    }
-
-    @PostMapping("/addFolder")
-    public RedirectView addFolder(NoteEntity vo) {
-        Object error = null;
-        try {
-            service.addFolder(vo);
-        } catch (Exception e) {
-            log.error("", e);
-            error = e.getMessage();
-        }
-        return redirectListView(vo.getPid(), null, error);
-    }
 
     @GetMapping("/{id}/list")
     public ModelAndView list(ModelAndView modelAndView, @PathVariable("id") Long id, NoteEntity vo, List list) {
@@ -134,6 +51,120 @@ public class NoteController extends AbsController {
         }
         modelAndView.setViewName("note/list");
         return modelAndView;
+    }
+
+    @GetMapping("/{id}/view/{version}")
+    public ModelAndView getViewById(ModelAndView modelAndView, @PathVariable(name = "id") Long id, @PathVariable(name = "version", required = false) String version) {
+        try {
+            return service.getViewById(modelAndView, id, version);
+        } catch (Exception e) {
+            log.error("", e);
+            return errorView(modelAndView);
+        }
+    }
+
+    @GetMapping(value = "/{id}/stream")
+    public ResponseEntity<Resource> getStreamById(@PathVariable("id") Long id) {
+        try {
+            return service.getStreamById(id);
+        } catch (Exception e) {
+            log.error("", e);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/{id}/download")
+    public ResponseEntity<Resource> download(@PathVariable("id") Long id) {
+        try {
+            return service.download(id);
+        } catch (Exception e) {
+            log.error("", e);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/del")
+    public RedirectView delById(NoteEntity vo) {
+        Object error = null;
+        try {
+            service.delById(vo.getId());
+        } catch (Exception e) {
+            log.error("", e);
+            error = e.getMessage();
+        }
+        return redirectListView(vo.getPid(), null, error);
+    }
+
+    @PutMapping("/rename")
+    public RedirectView rename(NoteEntity vo) {
+        Object error = null;
+        try {
+            service.rename(vo);
+        } catch (Exception e) {
+            log.error("", e);
+            error = e.getMessage();
+        }
+        return redirectListView(vo.getPid(), null, error);
+    }
+
+    @PutMapping("/paste")
+    public RedirectView paste(NoteEntity vo) {
+        Object error = null;
+        try {
+            service.paste(vo);
+        } catch (Exception e) {
+            log.error("", e);
+            error = e.getMessage();
+        }
+        return redirectListView(vo.getPid(), null, error);
+    }
+
+    @PutMapping("/reUpload")
+    public RedirectView reUpload(NoteEntity vo) {
+        Object error = null;
+        try {
+            service.reUpload(vo);
+        } catch (Exception e) {
+            log.error("", e);
+            error = e.getMessage();
+        }
+        return redirectListView(vo.getPid(), null, error);
+    }
+
+    @PostMapping("/upload")
+    public RedirectView upload(NoteEntity vo) {
+        Object error = null;
+        try {
+            service.upload(vo);
+        } catch (Exception e) {
+            log.error("", e);
+            error = e.getMessage();
+        }
+        return redirectListView(vo.getPid(), null, error);
+    }
+
+    @PostMapping("/addMd")
+    public RedirectView addMd(NoteEntity vo) {
+        Object error = null;
+        try {
+            service.addMd(vo);
+        } catch (Exception e) {
+            log.error("", e);
+            error = e.getMessage();
+        }
+        return redirectListView(vo.getPid(), null, error);
+    }
+
+    @PostMapping("/addFolder")
+    public RedirectView addFolder(NoteEntity vo) {
+        Object error = null;
+        try {
+            service.addFolder(vo);
+        } catch (Exception e) {
+            log.error("", e);
+            error = e.getMessage();
+        }
+        return redirectListView(vo.getPid(), null, error);
     }
 
     private RedirectView redirectListView(Long id, Object vo, Object error) {

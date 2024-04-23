@@ -1,0 +1,255 @@
+<!--
+ | @author xiangqian
+ | @date 20:27 2023/12/16
+ |-->
+{{ define "note/md/view" }}
+{{ $table := .response.Data.table }}
+{{ $data := .response.Data.data }}
+{{ $pNote := .response.Data.pNote }}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" rel="external nofollow" href="{{ .contextPath }}/static/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="{{ .contextPath }}/static/css/float.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ .contextPath }}/static/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="{{ .contextPath }}/static/css/highlight.css">
+    <link rel="stylesheet" type="text/css" href="{{ .contextPath }}/static/css/markdown_demo.css">
+    <title>{{ $data.Name }}</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .toc {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    </style>
+<body>
+{{ template "common/variable" . }}
+<div class="full-height" style="padding-top: 15px; padding-bottom: 15px;">
+    <!-- 编辑页 -->
+    <div id="editor" class="full-height" style="display: none;">
+        <textarea class="source full-height" style="resize: none;">{{ $data.Content }}</textarea>
+    </div>
+
+    <!-- 渲染页 -->
+    <div id="preview" class="col-xs-10 full-height">
+        <div class="result-html full-height"></div>
+    </div>
+
+    <!-- 目录 -->
+    <div class="col-xs-2 full-height">
+        <div id="toc" class="full-height"></div>
+    </div>
+</div>
+{{ template "common/float" . }}
+</body>
+</html>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/jquery.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/body.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/float.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/md5.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/lodash.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/bootstrap.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/twemoji.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_emoji.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_sub.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_sup.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_ins.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_mark.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_footnote.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_deflist.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_task_lists.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_anchor.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_toc_done_right.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/highlight.js"></script>
+<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_demo.js"></script>
+<script type="text/javascript">
+    ;
+    $(function () {
+        let $body = $($("body")[0])
+
+        let $editor = $("#editor")
+
+        let $textarea = $($editor.find('textarea')[0])
+        let contentHash = md5($textarea.val())
+
+        function hasChanged() {
+            return contentHash !== md5($textarea.val())
+        }
+
+        let $title = $('title')
+        let title = $title.text()
+
+        $('textarea').on('input', function () {
+            if (hasChanged()) {
+                $title.text(`* ${title}`)
+            } else {
+                $title.text(title)
+            }
+        })
+
+        let $preview = $("#preview")
+
+        // 移除以 "col-xs-" 开头的class
+        function removeColXsClass(index, className) {
+            return (className.match(/(^|\s)col-xs-\S+/g) || []).join(' ')
+        }
+
+        // 按下键盘事件
+        $body.on('keydown', function (event) {
+            // Ctrl + E，切换编辑状态
+            if (event.ctrlKey && event.key.toUpperCase() === 'E') {
+                $editor.removeClass(removeColXsClass)
+                $preview.removeClass(removeColXsClass)
+
+                // 退出编辑
+                if ($editor[0].hasAttribute('edit')) {
+                    $editor.removeAttr('edit')
+                    $editor.css("display", "none")
+                    $preview.addClass("col-xs-10")
+                }
+                // 编辑
+                else {
+                    $editor.attr('edit', '')
+                    $editor.css("display", "")
+                    $editor.addClass("col-xs-5")
+                    $preview.addClass("col-xs-5")
+                }
+
+                // 阻止默认行为
+                // Prevent the default handler from running.
+                event.preventDefault()
+                return
+            }
+
+            // Ctrl + S，保存
+            if (event.ctrlKey && event.key.toUpperCase() === 'S') {
+                if (hasChanged()) {
+                    let content = $textarea.val()
+                    let url = "{{ .contextPath }}/{{ $table }}/{{ $data.Id }}" + `?t=${new Date().getTime()}`
+                    let formData = new FormData()
+                    formData.append('id', "{{ $data.Id }}")
+                    formData.append('content', content)
+                    Http.execute(url, 'POST', formData, function (data, status, xhr) {
+                        if (data !== "") {
+                            alert(data)
+                            return
+                        }
+                        contentHash = md5($textarea.val())
+                        $title.text(title)
+                        alert('保存成功')
+                    }, undefined)
+                }
+
+                // 阻止默认行为
+                // Prevent the default handler from running.
+                event.preventDefault()
+                return
+            }
+        })
+
+        // onbeforeunload
+        window.onbeforeunload = function (event) {
+            let e = window.event || event
+            if (hasChanged()) {
+                e.returnValue = '数据发生改变！'
+                return e.returnValue
+            }
+        }
+
+        // 前端js获取剪切板中的文本或者图片文件数据
+        // 监听paste事件，在进行粘贴的时候会触发
+        // https://developer.mozilla.org/en-US/docs/Web/API/Element/paste_event
+        document.addEventListener('paste', function (event) {
+            // 获取粘贴板数据项
+            const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+            // console.log('items', items)
+
+            // dropEffect
+            // String，默认是 none
+            // let dropEffect = clipboardData.dropEffect
+            // console.log('dropEffect', dropEffect)
+
+            // effectAllowed
+            // String，默认是 uninitialized
+            // let effectAllowed = clipboardData.effectAllowed
+            // console.log('effectAllowed', effectAllowed)
+
+            // files
+            // FileList，文件列表
+            // let files = clipboardData.files
+            // console.log('files', files)
+
+            // items
+            // DataTransferItemList，剪切板中的各项数据，Chrome有该属性，Safari没有。
+            //
+            // DataTransferItem属性：
+            // 1、kind：一般为string或者file
+            // 2、type：具体的数据类型，例如具体是哪种类型字符串或者哪种类型的文件，即MIME-Type
+            // DataTransferItem方法：
+            // 1、getAsFile：如果kind是file，可以用该方法获取到文件
+            // 2、getAsString：入参是回调函数；如果kind是string，可以用该方法获取到字符串，字符串需要用回调函数得到，回调函数的第一个参数就是剪切板中的字符串
+            //
+            // let items = clipboardData.items
+            // console.log('items', items)
+
+            // types
+            // Array，剪切板中的数据类型 该属性在Safari下比较混乱
+            // 一般types中常见的值有：text/plain（普通字符串）、text/html（带有样式的html）、Files（文件）。
+            // let types = clipboardData.types
+            // console.log('types', types)
+
+            for (let i = 0, length = items.length; i < length; i++) {
+                let item = items[i]
+                const kind = item.kind
+                const type = item.type
+                // console.log('item', item)
+                if (kind === 'file') {
+                    if (/^image\/[jpeg|png|gif|jpg]/.test(type)) {
+                        // blob 就是从剪切板获得的文件 可以进行上传或其他操作
+                        let blob = item.getAsFile()
+                        if (blob.size === 0) {
+                            continue
+                        }
+
+                        // 上传图片
+                        let url = "{{ .contextPath }}/image/upload" + `?t=${new Date().getTime()}`
+                        let formData = new FormData()
+                        formData.append('file', blob)
+                        formData.append('dataType', 'json')
+                        Http.execute(url, 'POST', formData, function (data, status, xhr) {
+                            const response = JSON.parse(data);
+                            // console.log('response', response)
+                            document.execCommand('insertText', false, `![${response.data.name}}](/image/${response.data.id})`)
+                            if (response.msg !== "") {
+                                alert(response.msg)
+                            }
+                        }, undefined)
+
+                        // 阻止默认行为
+                        // Prevent the default handler from running.
+                        event.preventDefault()
+                        return
+                    } else if (kind === 'file') {
+                        alert(`不支持粘贴此数据项类型：${type}`)
+                    }
+                }
+            }
+        })
+    })
+    ;
+</script>
+{{ end }}
