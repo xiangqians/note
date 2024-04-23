@@ -119,7 +119,7 @@ public class NoteServiceImpl extends AbsService implements NoteService {
     }
 
     @Override
-    public ModelAndView getViewById(ModelAndView modelAndView, Long id, String version) throws IOException {
+    public ModelAndView getViewById(ModelAndView modelAndView, Long id) throws IOException {
         NoteEntity entity = verifyId(id);
 
         String name = switch (entity.getType()) {
@@ -142,7 +142,7 @@ public class NoteServiceImpl extends AbsService implements NoteService {
         }
         AbsController.setVoAttribute(modelAndView, entity);
 
-        modelAndView.setViewName(String.format("note/%s/view/%s", name, version));
+        modelAndView.setViewName(String.format("note/%s/view", name));
 
         return modelAndView;
     }

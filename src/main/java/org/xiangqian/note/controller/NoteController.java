@@ -56,22 +56,8 @@ public class NoteController extends AbsController {
 
     @GetMapping("/{id}/view")
     public ModelAndView getViewById(ModelAndView modelAndView, @PathVariable(name = "id") Long id) {
-        return getViewV1ById(modelAndView, id);
-    }
-
-    @GetMapping("/{id}/view/v1")
-    public ModelAndView getViewV1ById(ModelAndView modelAndView, @PathVariable(name = "id") Long id) {
-        return getViewById(modelAndView, id, "v1");
-    }
-
-    @GetMapping("/{id}/view/v2")
-    public ModelAndView getViewV2ById(ModelAndView modelAndView, @PathVariable(name = "id") Long id) {
-        return getViewById(modelAndView, id, "v2");
-    }
-
-    private ModelAndView getViewById(ModelAndView modelAndView, Long id, String version) {
         try {
-            return service.getViewById(modelAndView, id, version);
+            return service.getViewById(modelAndView, id);
         } catch (Exception e) {
             log.error("", e);
             return errorView(modelAndView);

@@ -18,7 +18,7 @@ public interface NoteService {
 
     NoteEntity getById(Long id);
 
-    ModelAndView getViewById(ModelAndView modelAndView, Long id, String version) throws IOException;
+    ModelAndView getViewById(ModelAndView modelAndView, Long id) throws IOException;
 
     ResponseEntity<Resource> getStreamById(Long id) throws Exception;
 
