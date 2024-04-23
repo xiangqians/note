@@ -90,7 +90,20 @@
             AND n.`type` = #{entity.type}
         </if>
         GROUP BY n.`id`
-        ORDER BY n.`type`, n.`name`, (CASE WHEN n.`upd_time` > n.`add_time` THEN n.`upd_time` ELSE n.`add_time` END) DESC
+        ORDER BY
+        (CASE n.`type`
+        WHEN 'folder' THEN 1
+        WHEN 'md' THEN 2
+        WHEN 'doc' THEN 3
+        WHEN 'docx' THEN 4
+        WHEN 'pdf' THEN 5
+        WHEN 'html' THEN 6
+        WHEN 'zip' THEN 7
+        <!-- 其他类型排序规则 -->
+        ELSE 8
+        END),
+        n.`name`,
+        (CASE WHEN n.`upd_time` > n.`add_time` THEN n.`upd_time` ELSE n.`add_time` END) DESC
     </select>
 
 </mapper>
