@@ -205,7 +205,19 @@ public class NoteServiceImpl extends AbsService implements NoteService {
                                     if (ps == null) {
                                         ps = new ArrayList<>(names.size());
                                     }
-                                    ps.add(new NoteEntity(tmpPath));
+                                    NoteEntity p = new NoteEntity(tmpPath);
+                                    String url = null;
+                                    if (CollectionUtils.isNotEmpty(ps)) {
+                                        NoteEntity prevP = ps.get(ps.size() - 1);
+                                        url = prevP.getUrl();
+                                        int index = url.length() - "/view".length();
+                                        url = url.substring(0, index) + "/" + name + url.substring(index);
+                                    }
+                                    if (url == null) {
+                                        url = String.format("/note/%s/%s/view", id, name);
+                                    }
+                                    p.setUrl(url);
+                                    ps.add(p);
                                     break;
                                 }
                                 tmpPath = null;

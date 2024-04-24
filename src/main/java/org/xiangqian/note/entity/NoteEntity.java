@@ -61,6 +61,10 @@ public class NoteEntity implements Comparable<NoteEntity> {
     @TableField(exist = false)
     private String content;
 
+    // 笔记访问地址
+    @TableField(exist = false)
+    private String url;
+
     // 子节点
     @TableField(exist = false)
     private List<NoteEntity> children;

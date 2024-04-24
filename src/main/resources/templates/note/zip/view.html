@@ -22,8 +22,7 @@
     </style>
 </head>
 <body>
-<h3>Index of ~/java-local/jdk/11.0.2+7</h3>
-<!--<h3><a th:href="@{'/note/0/list?t=' + ${timestamp}}">~</a>&nbsp;&nbsp;<span th:each="p : ${vo.entity.ps}">/<a th:href="@{'/note/' + ${p.id} + '/list?t=' + ${timestamp}}" th:text="${p.name}"></a></span><span>/<a th:href="@{'/note/' + ${vo.entity.id} + '/list?t=' + ${timestamp}}" th:text="${vo.entity.name}"></a></span><span th:if="${vo.parameter.contain != null && vo.parameter.contain}">/*</span></h3>-->
+<h3>Index of&nbsp;&nbsp;<a th:href="@{'/note/' + ${vo.id} + '/view?t=' + ${timestamp}}">~</a><span th:if="${vo.ps == null}">/</span><span th:each="p : ${vo.ps}">/<a th:href="@{${p.url} + '?t=' + ${timestamp}}" th:text="${p.name}"></a></span></h3>
 <table>
     <thead>
     <tr>
