@@ -48,7 +48,7 @@ public class NoteController extends AbsController {
             setVoAttribute(modelAndView, Map.of("parameter", vo,
                     "entity", entity,
                     "data", list.getData(),
-                    "types", Set.of(Type.FOLDER, Type.MD, Type.DOC, Type.DOCX, Type.PDF, Type.HTML, Type.ZIP),
+                    "types", java.util.List.of(Type.FOLDER, Type.MD, Type.DOC, Type.DOCX, Type.PDF, Type.HTML, Type.ZIP),
                     "offset", list.getOffset(),
                     "offsets", list.getOffsets()));
         } catch (Exception e) {
