@@ -1,0 +1,44 @@
+<!--
+ | @author xiangqian
+ | @date 21:36 2024/04/23
+ |-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
+    <title th:text="${vo.name}"></title>
+    <style>
+        body a {
+            padding: 0;
+            margin: 0;
+            /* 去掉<a>标签文本下划线 */
+            text-decoration: none;
+        }
+
+        table tbody tr td {
+            padding-right: 20px;
+        }
+    </style>
+</head>
+<body>
+<h3>Index of ~/java-local/jdk/11.0.2+7</h3>
+<!--<h3><a th:href="@{'/note/0/list?t=' + ${timestamp}}">~</a>&nbsp;&nbsp;<span th:each="p : ${vo.entity.ps}">/<a th:href="@{'/note/' + ${p.id} + '/list?t=' + ${timestamp}}" th:text="${p.name}"></a></span><span>/<a th:href="@{'/note/' + ${vo.entity.id} + '/list?t=' + ${timestamp}}" th:text="${vo.entity.name}"></a></span><span th:if="${vo.parameter.contain != null && vo.parameter.contain}">/*</span></h3>-->
+<table>
+    <thead>
+    <tr>
+        <td>Name</td>
+        <td>Size</td>
+        <td>Last modified</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="e : ${vo.children}">
+        <td><a th:href="${e.name + '/view?t=' + timestamp}" th:text="${e.name + (e.type == 'folder' ? '/' : '')}"></a></td>
+        <td th:text="${e.type == 'folder' ? '-' : T(org.xiangqian.note.util.OsUtil).humanByte(e.size, 'KB')}"></td>
+        <td th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(e.updTime)}"></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

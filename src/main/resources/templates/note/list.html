@@ -32,8 +32,7 @@
             <tr th:each="e : ${vo.data}" th:id="${e.id}" th:name="${e.name}" th:type="${e.type}">
                 <td th:if="${e.type == 'folder'}"><a th:text="${e.name}" th:href="@{'/note/' + ${e.id} + '/list?t=' + ${timestamp}}"></a></td>
                 <td th:if="${e.type != 'folder'}">
-                    <span th:if="${e.type == 'zip'}" th:text="${e.name}"></span>
-                    <a th:if="${e.type != 'zip'}" th:text="${e.name}" th:href="@{'/note/' + ${e.id} + '/view?t=' + ${timestamp}}" target="_blank"></a>
+                    <a th:text="${e.name}" th:href="@{'/note/' + ${e.id} + '/view?t=' + ${timestamp}}" target="_blank"></a>
                 </td>
                 <td th:text="${e.type}"></td>
                 <td th:if="${vo.parameter.contain != null && vo.parameter.contain}">

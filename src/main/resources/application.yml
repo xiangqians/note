@@ -8,6 +8,17 @@ server:
         max-age: PT12H
 
 spring:
+  mvc:
+    pathmatch:
+      # 路径匹配策略
+      # 1、path_pattern_parser
+      #   PathPatternParser 在 jmh 基准测试下，有 6~8 倍吞吐量提升，降低 30%~40%空间分配率。
+      #   PathPatternParser 兼容 AntPathMatcher语法，并支持更多类型的路径模式。
+      #   PathPatternParser "**" 多段匹配的支持仅允许在模式末尾使用。
+      # 2、ant_path_matcher
+      #   AntPathMatcher
+      matching-strategy: ant_path_matcher
+
   # 模板配置
   thymeleaf:
     # Thymeleaf的模板位置，默认值：classpath:/templates/

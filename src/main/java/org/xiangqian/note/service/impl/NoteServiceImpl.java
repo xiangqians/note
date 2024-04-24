@@ -3,6 +3,8 @@ package org.xiangqian.note.service.impl;
 import com.aspose.words.Document;
 import com.aspose.words.SaveFormat;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -33,11 +35,13 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * @author xiangqian
@@ -119,32 +123,128 @@ public class NoteServiceImpl extends AbsService implements NoteService {
     }
 
     @Override
-    public ModelAndView getViewById(ModelAndView modelAndView, Long id) throws IOException {
-        NoteEntity entity = verifyId(id);
+    public Object getViewById(ModelAndView modelAndView, Long id, java.util.List<String> names) {
+        try {
+            NoteEntity entity = verifyId(id);
 
-        String name = switch (entity.getType()) {
-            case Type.MD -> "md";
-            case Type.DOC, Type.DOCX, Type.PDF -> "pdf";
-            case Type.HTML -> "html";
-            default -> null;
-        };
-        if (name == null) {
+            String type = entity.getType();
+            String model = switch (type) {
+                case Type.MD -> "md";
+                case Type.DOC, Type.DOCX, Type.PDF -> "pdf";
+                case Type.HTML -> "html";
+                case Type.ZIP -> "zip";
+                default -> null;
+            };
+            if (model == null) {
+                return AbsController.errorView(modelAndView);
+            }
+
+            if (StringUtils.equalsAny(type, Type.MD, Type.HTML)) {
+                String content = null;
+                Path path = getPath(id);
+                if (Files.exists(path)) {
+                    content = Files.readString(path, StandardCharsets.UTF_8);
+                }
+                entity.setContent(content);
+
+            } else if (Type.ZIP.equals(type)) {
+                Path path = getPath(id);
+                if (Files.exists(path)) {
+                    Path tmpPath = getTmpPath(id);
+                    if (!Files.exists(tmpPath)) {
+                        Files.createDirectories(tmpPath);
+
+                        ZipFile zip = new ZipFile(path.toFile());
+                        Enumeration<? extends ZipEntry> entries = zip.entries();
+                        Stack<Path1> stack = new Stack<>();
+                        while (entries.hasMoreElements()) {
+                            ZipEntry entry = entries.nextElement();
+                            Path entryPath = Paths.get(tmpPath.toString(), entry.getName());
+                            if (entry.isDirectory()) {
+                                Files.createDirectories(entryPath);
+                                stack.push(new Path1(entryPath, entry.getLastModifiedTime()));
+                            } else {
+                                OutputStream outputStream = Files.newOutputStream(entryPath);
+                                zip.getInputStream(entry).transferTo(outputStream);
+                                Files.setLastModifiedTime(entryPath, entry.getLastModifiedTime());
+                            }
+                        }
+
+                        while (!stack.empty()) {
+                            Path1 path1 = stack.pop();
+                            Files.setLastModifiedTime(path1.getPath(), path1.getLastModified());
+                        }
+                    }
+
+                    java.util.List<NoteEntity> ps = null;
+                    if (CollectionUtils.isNotEmpty(names)) {
+                        for (String name : names) {
+                            if (tmpPath == null || !Files.isDirectory(tmpPath)) {
+                                break;
+                            }
+
+                            // 获取目录下的子文件夹
+                            Iterator<Path> iterator = Files.list(tmpPath).iterator();
+                            while (iterator.hasNext()) {
+                                tmpPath = iterator.next();
+                                if (tmpPath.getFileName().toString().equals(name)) {
+                                    if (ps == null) {
+                                        ps = new ArrayList<>(names.size());
+                                    }
+                                    ps.add(new NoteEntity(tmpPath));
+                                    break;
+                                }
+                                tmpPath = null;
+                            }
+                        }
+                    }
+
+                    if (CollectionUtils.isNotEmpty(ps)) {
+                        entity.setPs(ps);
+                    }
+
+                    if (tmpPath != null) {
+                        if (Files.isDirectory(tmpPath)) {
+                            java.util.List<NoteEntity> children = new ArrayList<>(16);
+
+                            // 获取目录下的子文件夹
+                            Iterator<Path> iterator = Files.list(tmpPath).iterator();
+                            while (iterator.hasNext()) {
+                                tmpPath = iterator.next();
+                                children.add(new NoteEntity(tmpPath));
+                            }
+
+                            Collections.sort(children);
+                            entity.setChildren(children);
+                        } else {
+                            entity = new NoteEntity(tmpPath);
+
+                            // 读取文件内容
+                            String content = Files.readString(tmpPath, StandardCharsets.UTF_8);
+                            entity.setContent(content);
+
+                            model = "text";
+                        }
+                    }
+                }
+            }
+
+            AbsController.setVoAttribute(modelAndView, entity);
+
+            modelAndView.setViewName(String.format("note/%s/view", model));
+
+            return modelAndView;
+        } catch (Exception e) {
+            log.error("", e);
             return AbsController.errorView(modelAndView);
         }
+    }
 
-        if (StringUtils.equalsAny(entity.getType(), Type.MD, Type.HTML)) {
-            String content = null;
-            Path path = getPath(entity.getId());
-            if (Files.exists(path)) {
-                content = Files.readString(path, StandardCharsets.UTF_8);
-            }
-            entity.setContent(content);
-        }
-        AbsController.setVoAttribute(modelAndView, entity);
-
-        modelAndView.setViewName(String.format("note/%s/view", name));
-
-        return modelAndView;
+    @Data
+    @AllArgsConstructor
+    static class Path1 {
+        private Path path;
+        private FileTime lastModified;
     }
 
     @Override

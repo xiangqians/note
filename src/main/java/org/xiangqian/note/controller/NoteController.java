@@ -1,6 +1,8 @@
 package org.xiangqian.note.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +16,10 @@ import org.xiangqian.note.util.List;
 import org.xiangqian.note.util.Type;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author xiangqian
@@ -43,7 +48,7 @@ public class NoteController extends AbsController {
             setVoAttribute(modelAndView, Map.of("parameter", vo,
                     "entity", entity,
                     "data", list.getData(),
-                    "types", Type.getSet(),
+                    "types", Set.of(Type.FOLDER, Type.MD, Type.DOC, Type.DOCX, Type.PDF, Type.HTML, Type.ZIP),
                     "offset", list.getOffset(),
                     "offsets", list.getOffsets()));
         } catch (Exception e) {
@@ -54,14 +59,15 @@ public class NoteController extends AbsController {
         return modelAndView;
     }
 
-    @GetMapping("/{id}/view")
-    public ModelAndView getViewById(ModelAndView modelAndView, @PathVariable(name = "id") Long id) {
-        try {
-            return service.getViewById(modelAndView, id);
-        } catch (Exception e) {
-            log.error("", e);
-            return errorView(modelAndView);
+    @GetMapping("/{id}/**/view")
+    public Object getViewById(HttpServletRequest request, ModelAndView modelAndView, @PathVariable(name = "id") Long id) {
+        String path = request.getServletPath();
+        path = path.substring(String.format("/note/%s", id).length(), path.length() - "/view".length());
+        java.util.List<String> names = null;
+        if (StringUtils.isNotEmpty(path)) {
+            names = Arrays.stream(path.split("/")).filter(StringUtils::isNotEmpty).collect(Collectors.toList());
         }
+        return service.getViewById(modelAndView, id, names);
     }
 
     @GetMapping(value = "/{id}/stream")
