@@ -15,13 +15,14 @@ public class Type {
     private static final Map<String, String> map = new HashMap<>(64, 1f);
 
     public static final String FOLDER = "folder";
-    public static final String MD = "md";
+    public static final String MD = "md"; // Markdown
     public static final String DOC = "doc";
     public static final String DOCX = "docx";
     public static final String PDF = "pdf";
     public static final String HTML = "html"; // HTML
     public static final String ZIP = "zip";
 
+    // text
     public static final String XML = "xml"; // XML
     public static final String SVG = "svg"; // SVG
     public static final String CSS = "css"; // CSS
@@ -45,6 +46,13 @@ public class Type {
     public static final String LICENSE = "license"; // LICENSE
     public static final String CMD = "cmd"; // CMD
     public static final String SH = "sh"; // Shell
+    public static final String DOCKERFILE = "dockerfile"; // Dockerfile
+    public static final String IML = "iml"; // IntelliJ IDEA项目文件，是一种XML格式的文件
+    public static final String FTL = "ftl"; // FreeMarker模板文件，包含HTML代码
+
+    // image
+    public static final String PNG = "png";
+    public static final String JPG = "jpg";
 
     static {
         set(MD, "md", "markdown");
@@ -77,6 +85,12 @@ public class Type {
         set(LICENSE, "license");
         set(CMD, "cmd");
         set(SH, "sh");
+        set(DOCKERFILE, "dockerfile");
+        set(IML, "iml");
+        set(FTL, "ftl");
+
+        set(PNG, "png");
+        set(JPG, "jpg");
     }
 
     /**

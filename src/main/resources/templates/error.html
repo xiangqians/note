@@ -2,17 +2,18 @@
  | @author xiangqian
  | @date 14:01 2024/03/02
  |-->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
-    <link rel="stylesheet" th:href="@{/static/css/body.css}" type="text/css"/>
-    <title>所请求的资源未找到</title>
+    <link rel="stylesheet" th:href="@{/static/css/body.css}" type="text/css" />
+    <title th:if="${error != null}">Internal Server Error</title>
+    <title th:if="${error == null}">所请求的资源未找到</title>
 </head>
 <body>
-<h3>所请求的资源未找到</h3>
+<p th:if="${error != null}" th:text="${error}"></p>
+<h3 th:if="${error == null}">所请求的资源未找到</h3>
 <a th:href="@{'/?t=' + ${timestamp}}">返回首页</a>
 <div th:replace="bottom"></div>
 </body>

@@ -32,6 +32,7 @@ import org.xiangqian.note.util.Type;
 
 import java.io.*;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,6 +42,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 /**
@@ -154,25 +156,37 @@ public class NoteServiceImpl extends AbsService implements NoteService {
                     if (!Files.exists(tmpPath)) {
                         Files.createDirectories(tmpPath);
 
-                        ZipFile zip = new ZipFile(path.toFile());
-                        Enumeration<? extends ZipEntry> entries = zip.entries();
-                        Stack<Path1> stack = new Stack<>();
-                        while (entries.hasMoreElements()) {
-                            ZipEntry entry = entries.nextElement();
-                            Path entryPath = Paths.get(tmpPath.toString(), entry.getName());
-                            if (entry.isDirectory()) {
-                                Files.createDirectories(entryPath);
-                                stack.push(new Path1(entryPath, entry.getLastModifiedTime()));
-                            } else {
-                                OutputStream outputStream = Files.newOutputStream(entryPath);
-                                zip.getInputStream(entry).transferTo(outputStream);
-                                Files.setLastModifiedTime(entryPath, entry.getLastModifiedTime());
+                        try {
+                            ZipFile zip = null;
+                            try {
+                                zip = new ZipFile(path.toFile(), StandardCharsets.UTF_8);
+                            } catch (ZipException e) {
+                                // java.util.zip.ZipException: invalid CEN header (bad entry name)
+                                zip = new ZipFile(path.toFile(), Charset.forName("GBK"));
                             }
-                        }
 
-                        while (!stack.empty()) {
-                            Path1 path1 = stack.pop();
-                            Files.setLastModifiedTime(path1.getPath(), path1.getLastModified());
+                            Enumeration<? extends ZipEntry> entries = zip.entries();
+                            Stack<Path1> stack = new Stack<>();
+                            while (entries.hasMoreElements()) {
+                                ZipEntry entry = entries.nextElement();
+                                Path entryPath = Paths.get(tmpPath.toString(), entry.getName());
+                                if (entry.isDirectory()) {
+                                    Files.createDirectories(entryPath);
+                                    stack.push(new Path1(entryPath, entry.getLastModifiedTime()));
+                                } else {
+                                    OutputStream outputStream = Files.newOutputStream(entryPath);
+                                    zip.getInputStream(entry).transferTo(outputStream);
+                                    Files.setLastModifiedTime(entryPath, entry.getLastModifiedTime());
+                                }
+                            }
+
+                            while (!stack.empty()) {
+                                Path1 path1 = stack.pop();
+                                Files.setLastModifiedTime(path1.getPath(), path1.getLastModified());
+                            }
+                        } catch (Exception e) {
+                            Files.delete(tmpPath);
+                            throw e;
                         }
                     }
 
@@ -252,7 +266,7 @@ public class NoteServiceImpl extends AbsService implements NoteService {
             return modelAndView;
         } catch (Exception e) {
             log.error("", e);
-            return AbsController.errorView(modelAndView);
+            return AbsController.errorView(modelAndView, e.getMessage());
         }
     }
 
