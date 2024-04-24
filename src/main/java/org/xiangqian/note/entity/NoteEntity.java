@@ -74,16 +74,19 @@ public class NoteEntity implements Comparable<NoteEntity> {
     private MultipartFile file;
 
     public NoteEntity(Path path) throws IOException {
-        this.name = path.getFileName().toString();
+        this.name = StringUtils.trim(path.getFileName().toString());
         if (Files.isDirectory(path)) {
             this.type = Type.FOLDER;
         } else {
-            int index = name.lastIndexOf(".");
-            if (index != -1 && (index + 1) < name.length()) {
-                // 文件后缀名
-                String suffix = StringUtils.trim(name.substring(index + 1).toLowerCase());
-                this.type = Type.suffixOf(suffix);
+            int index = this.name.lastIndexOf(".");
+            // 文件后缀名
+            String suffix = null;
+            if (index != -1 && (index + 1) < this.name.length()) {
+                suffix = StringUtils.trim(this.name.substring(index + 1)).toLowerCase();
+            } else {
+                suffix = this.name.trim().toLowerCase();
             }
+            this.type = Type.suffixOf(suffix);
         }
         this.size = Files.size(path);
         this.updTime = Files.getLastModifiedTime(path).toMillis() / 1000;

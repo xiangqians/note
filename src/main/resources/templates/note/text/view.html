@@ -11,7 +11,8 @@
     <title th:text="${vo.name}"></title>
 </head>
 <body>
-<pre><code th:text="${vo.content}"></code></pre>
+<h3 th:if="${vo.type == null}">不支持查看</h3>
+<pre th:if="${vo.type != null}"><code th:text="${vo.content}"></code></pre>
 </body>
 </html>
 <script th:if="${vo.type != null}" type="text/javascript" th:src="@{/static/js/jquery.js}"></script>
@@ -19,7 +20,7 @@
 <script th:if="${vo.type != null}" th:inline="javascript">
     ;
     $(function () {
-        /* 将Thymeleaf变量赋值给JavaScript变量 */
+        // 将Thymeleaf变量赋值给JavaScript变量
         const type = /*[[ ${vo.type} ]]*/''
 
         let language = null
@@ -31,6 +32,14 @@
             language = 'ruby'
         } else if (type === 'rs') {
             language = 'rust'
+        } else if (type === 'gitignore') {
+            language = 'git'
+        } else if (type === 'license') {
+            language = 'plaintext'
+        } else if (type === 'cmd') {
+            language = 'cmd'
+        } else if (type === 'sh') {
+            language = 'bash'
         } else {
             language = type
         }

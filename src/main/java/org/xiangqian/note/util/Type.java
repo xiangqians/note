@@ -38,47 +38,65 @@ public class Type {
     public static final String SWIFT = "swift"; // Swift
     public static final String RS = "rs"; // Rust
     public static final String SQL = "sql"; // SQL
+    public static final String PROPERTIES = "properties";
     public static final String YAML = "yaml"; // YAML
     public static final String JSON = "json"; // JSON
+    public static final String GITIGNORE = "gitignore"; // .gitignore
+    public static final String LICENSE = "license"; // LICENSE
+    public static final String CMD = "cmd"; // CMD
+    public static final String SH = "sh"; // Shell
 
     static {
-        add(MD, "md", "markdown");
-        add(DOC, "doc");
-        add(DOCX, "docx");
-        add(PDF, "pdf");
-        add(HTML, "html");
-        add(ZIP, "zip");
+        set(MD, "md", "markdown");
+        set(DOC, "doc");
+        set(DOCX, "docx");
+        set(PDF, "pdf");
+        set(HTML, "html");
+        set(ZIP, "zip");
 
-        add(XML, "xml");
-        add(SVG, "svg");
-        add(CSS, "css");
-        add(JS, "js");
-        add(TS, "ts");
-        add(JAVA, "java");
-        add(C, "c");
-        add(CPP, "cpp");
-        add(CS, "cs");
-        add(PY, "py");
-        add(PHP, "php");
-        add(RB, "rb");
-        add(GO, "go");
-        add(SWIFT, "swift");
-        add(RS, "rs");
-        add(SQL, "sql");
-        add(YAML, "yaml", "yml");
-        add(JSON, "json");
+        set(XML, "xml");
+        set(SVG, "svg");
+        set(CSS, "css");
+        set(JS, "js");
+        set(TS, "ts");
+        set(JAVA, "java");
+        set(C, "c");
+        set(CPP, "cpp");
+        set(CS, "cs");
+        set(PY, "py");
+        set(PHP, "php");
+        set(RB, "rb");
+        set(GO, "go");
+        set(SWIFT, "swift");
+        set(RS, "rs");
+        set(SQL, "sql");
+        set(PROPERTIES, "properties");
+        set(YAML, "yaml", "yml");
+        set(JSON, "json");
+        set(GITIGNORE, "gitignore");
+        set(LICENSE, "license");
+        set(CMD, "cmd");
+        set(SH, "sh");
     }
 
     /**
+     * 设置文件类型后缀名集
+     *
      * @param type     文件类型
      * @param suffixes 文件后缀名集
      */
-    private static void add(String type, String... suffixes) {
+    private static void set(String type, String... suffixes) {
         for (String suffix : suffixes) {
             map.put(suffix, type);
         }
     }
 
+    /**
+     * 根据文件后缀名获取文件类型
+     *
+     * @param suffix 文件后缀名
+     * @return
+     */
     public static String suffixOf(String suffix) {
         return map.get(suffix);
     }

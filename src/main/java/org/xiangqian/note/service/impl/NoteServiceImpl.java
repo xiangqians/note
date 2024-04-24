@@ -219,11 +219,27 @@ public class NoteServiceImpl extends AbsService implements NoteService {
                         } else {
                             entity = new NoteEntity(tmpPath);
 
-                            // 读取文件内容
-                            String content = Files.readString(tmpPath, StandardCharsets.UTF_8);
-                            entity.setContent(content);
-
-                            model = "text";
+                            type = entity.getType();
+                            if (type != null) {
+                                switch (type) {
+                                    case Type.DOC, Type.DOCX -> {
+                                        model = "pdf";
+                                    }
+                                    case Type.PDF -> {
+                                        model = "pdf";
+                                    }
+                                    case Type.ZIP -> {
+                                    }
+                                    default -> {
+                                        // 读取文件内容
+                                        String content = Files.readString(tmpPath, StandardCharsets.UTF_8);
+                                        entity.setContent(content);
+                                        model = "text";
+                                    }
+                                }
+                            } else {
+                                model = "text";
+                            }
                         }
                     }
                 }
