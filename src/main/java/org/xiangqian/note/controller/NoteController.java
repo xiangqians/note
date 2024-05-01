@@ -33,10 +33,17 @@ public class NoteController extends AbsController {
     @Autowired
     private NoteService service;
 
+    @ResponseBody
+    @PutMapping("/{id}/content")
+    public Boolean updContentById(@PathVariable(name = "id") Long id, NoteEntity vo) throws Exception {
+        vo.setId(id);
+        return service.updContentById(vo);
+    }
+
     @GetMapping("/{id}/list")
     public ModelAndView list(ModelAndView modelAndView, @PathVariable("id") Long id, NoteEntity vo, @RequestParam(value = "offset", required = false) Integer offset) {
         try {
-            NoteEntity entity =((NoteServiceImpl) service).getById1(id);
+            NoteEntity entity = ((NoteServiceImpl) service).getById1(id);
             if (entity == null || !Type.FOLDER.equals(entity.getType())) {
                 return errorView(modelAndView);
             }
@@ -57,14 +64,9 @@ public class NoteController extends AbsController {
     }
 
     @GetMapping("/{id}/**/view")
-    public Object getViewById(HttpServletRequest request, ModelAndView modelAndView, @PathVariable(name = "id") Long id) {
-        try {
-            List<String> names = getNames(request, String.format("/note/%s", id), "/view");
-            return service.getViewById(modelAndView, id, names);
-        } catch (Exception e) {
-            log.error("", e);
-            return AbsController.errorView(modelAndView );
-        }
+    public Object getViewById(HttpServletRequest request, ModelAndView modelAndView, @PathVariable(name = "id") Long id) throws Exception {
+        List<String> names = getNames(request, String.format("/note/%s", id), "/view");
+        return service.getViewById(modelAndView, id, names);
     }
 
     @GetMapping(value = "/{id}/**/stream")

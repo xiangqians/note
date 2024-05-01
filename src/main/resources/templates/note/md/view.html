@@ -2,21 +2,16 @@
  | @author xiangqian
  | @date 20:27 2023/12/16
  |-->
-{{ define "note/md/view" }}
-{{ $table := .response.Data.table }}
-{{ $data := .response.Data.data }}
-{{ $pNote := .response.Data.pNote }}
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <link rel="shortcut icon" rel="external nofollow" href="{{ .contextPath }}/static/favicon.ico">
+    <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="{{ .contextPath }}/static/css/float.css"/>
-    <link rel="stylesheet" type="text/css" href="{{ .contextPath }}/static/css/bootstrap.css">
-    <link rel="stylesheet" type="text/css" href="{{ .contextPath }}/static/css/highlight.css">
-    <link rel="stylesheet" type="text/css" href="{{ .contextPath }}/static/css/markdown_demo.css">
-    <title>{{ $data.Name }}</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/css/bootstrap.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/static/css/highlight.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/static/css/markdown.css}">
+    <title th:text="${vo.name + '.' + vo.type}"></title>
     <style>
         html, body {
             height: 100%;
@@ -34,13 +29,26 @@
             font-size: 14px;
             line-height: 1.5;
         }
+
+        /* button禁用状态样式 */
+        button.disabled {
+            /* 降低按钮透明度 */
+            opacity: 0.5;
+            /* 设置光标样式为禁用状态 */
+            cursor: not-allowed;
+            /* 禁止按钮点击事件 */
+            pointer-events: none;
+        }
     </style>
 <body>
-{{ template "common/variable" . }}
-<div class="full-height" style="padding-top: 15px; padding-bottom: 15px;">
+<div style="padding-left: 15px; padding-top: 10px; height: 4%;">
+    <button edit="0">编辑</button>
+    <button class="disabled" style="margin-left: 5px;" save>保存</button>
+</div>
+<div style="padding-top: 15px; padding-bottom: 15px; height: 96%;">
     <!-- 编辑页 -->
     <div id="editor" class="full-height" style="display: none;">
-        <textarea class="source full-height" style="resize: none;">{{ $data.Content }}</textarea>
+        <textarea class="source full-height" style="resize: none;" th:text="${vo.content}"></textarea>
     </div>
 
     <!-- 渲染页 -->
@@ -53,111 +61,111 @@
         <div id="toc" class="full-height"></div>
     </div>
 </div>
-{{ template "common/float" . }}
 </body>
 </html>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/jquery.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/body.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/float.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/md5.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/lodash.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/bootstrap.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/twemoji.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_emoji.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_sub.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_sup.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_ins.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_mark.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_footnote.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_deflist.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_task_lists.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_anchor.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_it_toc_done_right.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/highlight.js"></script>
-<script type="text/javascript" src="{{ .contextPath }}/static/js/markdown_demo.js"></script>
-<script type="text/javascript">
+<script type="text/javascript" th:src="@{/static/js/jquery.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/body.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/md5.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/lodash.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/bootstrap.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/markdown_it.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/twemoji.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/markdown_it_emoji.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/markdown_it_sub.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/markdown_it_sup.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/markdown_it_ins.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/markdown_it_mark.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/markdown_it_footnote.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/markdown_it_deflist.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/markdown_it_task_lists.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/markdown_it_anchor.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/markdown_it_toc_done_right.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/highlight.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/markdown.js}"></script>
+<script th:inline="javascript">
     ;
+    window.contextPath = /*[[@{/}]]*/
+    if (window.contextPath === '/') {
+        window.contextPath = ''
+    }
     $(function () {
-        let $body = $($("body")[0])
-
-        let $editor = $("#editor")
-
-        let $textarea = $($editor.find('textarea')[0])
-        let contentHash = md5($textarea.val())
-
-        function hasChanged() {
-            return contentHash !== md5($textarea.val())
-        }
-
-        let $title = $('title')
-        let title = $title.text()
-
-        $('textarea').on('input', function () {
-            if (hasChanged()) {
-                $title.text(`* ${title}`)
-            } else {
-                $title.text(title)
-            }
-        })
-
-        let $preview = $("#preview")
-
         // 移除以 "col-xs-" 开头的class
         function removeColXsClass(index, className) {
             return (className.match(/(^|\s)col-xs-\S+/g) || []).join(' ')
         }
 
-        // 按下键盘事件
-        $body.on('keydown', function (event) {
-            // Ctrl + E，切换编辑状态
-            if (event.ctrlKey && event.key.toUpperCase() === 'E') {
-                $editor.removeClass(removeColXsClass)
-                $preview.removeClass(removeColXsClass)
+        let $editor = $("#editor")
+        let $preview = $("#preview")
 
-                // 退出编辑
-                if ($editor[0].hasAttribute('edit')) {
-                    $editor.removeAttr('edit')
-                    $editor.css("display", "none")
-                    $preview.addClass("col-xs-10")
-                }
-                // 编辑
-                else {
-                    $editor.attr('edit', '')
-                    $editor.css("display", "")
-                    $editor.addClass("col-xs-5")
-                    $preview.addClass("col-xs-5")
-                }
+        // 编辑
+        $('button[edit]').click(function (event) {
+            $editor.removeClass(removeColXsClass)
+            $preview.removeClass(removeColXsClass)
 
-                // 阻止默认行为
-                // Prevent the default handler from running.
-                event.preventDefault()
-                return
+            // 获取目标元素
+            let $element = $(event.currentTarget)
+            let value = $element.attr('edit')
+            if ("1" === value) {
+                $editor.removeAttr('edit')
+                $editor.css("display", "none")
+                $preview.addClass("col-xs-10")
+
+                $element.attr('edit', '0')
+                $element.text('编辑')
+            } else {
+                $editor.attr('edit', '')
+                $editor.css("display", "")
+                $editor.addClass("col-xs-5")
+                $preview.addClass("col-xs-5")
+
+                $element.attr('edit', '1')
+                $element.text('退出编辑')
             }
+        })
 
-            // Ctrl + S，保存
-            if (event.ctrlKey && event.key.toUpperCase() === 'S') {
-                if (hasChanged()) {
-                    let content = $textarea.val()
-                    let url = "{{ .contextPath }}/{{ $table }}/{{ $data.Id }}" + `?t=${new Date().getTime()}`
-                    let formData = new FormData()
-                    formData.append('id', "{{ $data.Id }}")
-                    formData.append('content', content)
-                    Http.execute(url, 'POST', formData, function (data, status, xhr) {
-                        if (data !== "") {
-                            alert(data)
-                            return
-                        }
-                        contentHash = md5($textarea.val())
-                        $title.text(title)
-                        alert('保存成功')
-                    }, undefined)
+        let $title = $('title')
+        let title = $title.text()
+
+        let $textarea = $($editor.find('textarea')[0])
+        function getContent() {
+            return $textarea.val()
+        }
+
+        let hash = md5(getContent())
+        // console.log(hash)
+
+        function hasChanged() {
+            return hash !== md5(getContent())
+        }
+
+        // 保存
+        let $save = $('button[save]')
+        $save.click(function (event) {
+            const id = /*[[${vo.id}]]*/
+            let url = `${window.contextPath}/note/${id}/content?t=${new Date().getTime()}`
+            console.log(url)
+            let formData = new FormData()
+            formData.append('content', getContent())
+            http(url, 'PUT', formData, function (data, status, xhr) {
+                // console.log(data)
+                if (data) {
+                    hash = md5(getContent())
+                    $title.text(title)
+                    $save.addClass('disabled')
+                    alert('保存成功')
+                    return
                 }
+                alert('保存失败')
+            }, undefined)
+        })
 
-                // 阻止默认行为
-                // Prevent the default handler from running.
-                event.preventDefault()
-                return
+        $('textarea').on('input', function () {
+            if (hasChanged()) {
+                $title.text(`* ${title}`)
+                $save.removeClass('disabled')
+            } else {
+                $title.text(title)
+                $save.addClass('disabled')
             }
         })
 
@@ -169,7 +177,12 @@
                 return e.returnValue
             }
         }
+    })
+    ;
 
+
+    $(function () {
+return
         // 前端js获取剪切板中的文本或者图片文件数据
         // 监听paste事件，在进行粘贴的时候会触发
         // https://developer.mozilla.org/en-US/docs/Web/API/Element/paste_event

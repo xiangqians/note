@@ -57,6 +57,30 @@ public class NoteServiceImpl extends AbsService implements NoteService {
     private NoteMapper mapper;
 
     @Override
+    public Boolean updContentById(NoteEntity vo) throws IOException {
+        Long id = vo.getId();
+        NoteEntity entity = getById(id);
+        if (entity == null) {
+            return false;
+        }
+
+        Path path = getPath(id.toString());
+        String content = vo.getContent();
+        if (content == null) {
+            content = "";
+        }
+        Files.write(path, content.getBytes(UTF_8), StandardOpenOption.TRUNCATE_EXISTING);
+
+        long size = Files.size(path);
+
+        NoteEntity updEntity = new NoteEntity();
+        updEntity.setId(id);
+        updEntity.setSize(size);
+        updEntity.setUpdTime(DateUtil.toSecond(LocalDateTime.now()));
+        return mapper.updateById(updEntity) > 0;
+    }
+
+    @Override
     public org.xiangqian.note.util.List<NoteEntity> list(NoteEntity vo, Integer offset) {
         if (offset == null) {
             offset = 1;
@@ -262,26 +286,30 @@ public class NoteServiceImpl extends AbsService implements NoteService {
         }
 
         if (StringUtils.equalsAny(type, Type.XLS, Type.XLSX)) {
-            List<Path> tmpPaths = getPathsByNames(getTmpPath(id.toString()), names);
-            Path tmpPath = tmpPaths.get(tmpPaths.size() - 1);
-            if (tmpPath == null || !Files.exists(tmpPath) || Files.isDirectory(tmpPath)) {
-                return notFound();
-            }
-
-            type = Type.pathOf(tmpPath);
-            if (Type.HTML.equals(type)) {
-                return ok(tmpPath, MediaType.TEXT_HTML);
-            }
-
-            if (Type.CSS.equals(type)) {
-                return ok(tmpPath, TEXT_CSS);
-            }
-
-            return notFound();
+            return getXlsDocumentStream(getTmpPath(id.toString()), names);
         }
 
         if (Type.PDF.equals(type)) {
             return ok(path, MediaType.APPLICATION_PDF);
+        }
+
+        return notFound();
+    }
+
+    private ResponseEntity<Resource> getXlsDocumentStream(Path path, List<String> names) throws Exception {
+        List<Path> paths = getPathsByNames(path, names);
+        path = paths.get(paths.size() - 1);
+        if (path == null || !Files.exists(path) || Files.isDirectory(path)) {
+            return notFound();
+        }
+
+        String type = Type.pathOf(path);
+        if (Type.HTML.equals(type)) {
+            return ok(path, MediaType.TEXT_HTML);
+        }
+
+        if (Type.CSS.equals(type)) {
+            return ok(path, TEXT_CSS);
         }
 
         return notFound();
@@ -462,84 +490,97 @@ public class NoteServiceImpl extends AbsService implements NoteService {
         Long id = entity.getId();
         Path path = getPath(id.toString());
         if (!Files.exists(path)) {
-            AbsController.setVoAttribute(modelAndView, entity);
-            modelAndView.setViewName("note/zip/view");
-            return modelAndView;
+            return zipView(modelAndView, entity, null);
         }
 
-        List<Path> tmpPaths = getZipTmpPathsById(entity, names);
-        Path tmpPath = tmpPaths.get(tmpPaths.size() - 1);
-        String view = null;
-        if (tmpPath != null) {
-            if (Files.isDirectory(tmpPath)) {
-                List<NoteEntity> childList = new ArrayList<>(16);
+        Path zipPath = getPath(id.toString());
+        Path dirPath = getTmpPath(id.toString());
+        unzipIfNotDecompressed(zipPath, dirPath);
+        List<Path> paths = getPathsByNames(dirPath, names);
+        path = paths.get(paths.size() - 1);
 
-                // 获取目录下的子文件夹
-                Iterator<Path> iterator = Files.list(tmpPath).iterator();
-                while (iterator.hasNext()) {
-                    tmpPath = iterator.next();
-                    childList.add(new NoteEntity(tmpPath));
-                }
-
-                Collections.sort(childList);
-
-                entity.setChildList(new org.xiangqian.note.util.List<>(childList));
-
-                view = "zip";
-            } else {
-                entity = new NoteEntity(tmpPath);
-                entity.setId(id);
-                String type = entity.getType();
-                if (Type.isText(type)) {
-                    // 读取文件内容
-                    String content = Files.readString(tmpPath, UTF_8);
-                    entity.setContent(content);
-
-                    view = "zip/text";
-
-                } else if (Type.isDocument(type)) {
-                    if (StringUtils.equalsAny(type, Type.DOC, Type.DOCX)) {
-                        view = "zip/pdf";
-                    } else if (StringUtils.equalsAny(type, Type.XLS, Type.XLSX)) {
-                        Path newTmpPath = getTmpPath(id + "_" + Md5Util.encryptHex(tmpPaths.stream().map(Path::getFileName).map(Path::toString).collect(Collectors.joining("/"))));
-                        Path htmlPath = convertXlsToHtml(id, tmpPath, newTmpPath);
-                        if (htmlPath != null) {
-                            // 读取文件内容
-                            String content = Files.readString(htmlPath, UTF_8);
-                            entity.setContent(content);
-                        }
-                        view = "zip/html";
-                    } else if (Type.PDF.equals(type)) {
-                        view = "zip/pdf";
-                    } else {
-                        view = "zip/unsupported";
-                    }
-                } else if (Type.isImage(type)) {
-                    view = "zip/image";
-                } else {
-                    view = "zip/unsupported";
-                }
-            }
-        } else {
-            view = "zip";
-        }
-
-        int size = tmpPaths.size();
+        int size = paths.size();
         if (size > 1) {
             List<NoteEntity> ps = new ArrayList<>(size);
             int index = 1;
             while (index < size) {
-                tmpPath = tmpPaths.get(index++);
-                if (tmpPath == null) {
+                Path path1 = paths.get(index++);
+                if (path1 == null) {
                     break;
                 }
-                ps.add(new NoteEntity(tmpPath));
+                ps.add(new NoteEntity(path1));
             }
             entity.setPs(ps);
         }
 
+        if (path == null) {
+            return zipView(modelAndView, entity, null);
+        }
+
+        if (Files.isDirectory(path)) {
+            List<NoteEntity> childList = new ArrayList<>(16);
+
+            // 获取目录下的子文件夹
+            Iterator<Path> iterator = Files.list(path).iterator();
+            while (iterator.hasNext()) {
+                path = iterator.next();
+                childList.add(new NoteEntity(path));
+            }
+
+            Collections.sort(childList);
+
+            entity.setChildList(new org.xiangqian.note.util.List<>(childList));
+
+            return zipView(modelAndView, entity, null);
+        }
+
+        entity = new NoteEntity(path);
+        entity.setId(id);
+        String type = entity.getType();
+        if (Type.isText(type)) {
+            // 读取文件内容
+            String content = Files.readString(path, UTF_8);
+            entity.setContent(content);
+            return zipView(modelAndView, entity, "text");
+        }
+
+        if (Type.isDocument(type)) {
+            if (StringUtils.equalsAny(type, Type.DOC, Type.DOCX, Type.PDF)) {
+                return zipView(modelAndView, entity, "pdf");
+            }
+
+            if (StringUtils.equalsAny(type, Type.XLS, Type.XLSX)) {
+                Path newTmpPath = getTmpPath(id + "_" + Md5Util.encryptHex(paths.stream().map(Path::getFileName).map(Path::toString).collect(Collectors.joining("/"))));
+                Path htmlPath = convertXlsToHtml(id, path, newTmpPath);
+                if (htmlPath != null) {
+                    // 读取文件内容
+                    String content = Files.readString(htmlPath, UTF_8);
+                    entity.setContent(content);
+                }
+                return zipView(modelAndView, entity, "html");
+            }
+
+            return zipView(modelAndView, entity, "unsupported");
+        }
+
+        if (Type.isImage(type)) {
+            return zipView(modelAndView, entity, "image");
+        }
+
+        return zipView(modelAndView, entity, "unsupported");
+    }
+
+    private ModelAndView zipView(ModelAndView modelAndView, NoteEntity entity, String subview) {
         AbsController.setVoAttribute(modelAndView, entity);
-        modelAndView.setViewName(String.format("note/%s/view", view));
+
+        String view = null;
+        if (subview != null) {
+            view = String.format("note/zip/%s/view", subview);
+        } else {
+            view = "note/zip/view";
+        }
+        modelAndView.setViewName(view);
+
         return modelAndView;
     }
 

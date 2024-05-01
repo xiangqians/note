@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>markdown-it demo 2</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/highlight.css">
+    <link rel="stylesheet" href="css/markdown.css">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .toc {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* button禁用状态样式 */
+        button.disabled {
+            /* 降低按钮透明度 */
+            opacity: 0.5;
+            /* 设置光标样式为禁用状态 */
+            cursor: not-allowed;
+            /* 禁止按钮点击事件 */
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+<div style="padding-left: 15px; padding-top: 10px; height: 4%;">
+    <button edit="0">编辑</button>
+    <button class="disabled" style="margin-left: 5px;" save>保存</button>
+</div>
+<div style="padding-top: 15px; padding-bottom: 15px; height: 96%;">
+    <!-- 编辑页 -->
+    <div id="editor" class="full-height" style="display: none;">
+        <textarea class="source full-height" style="resize: none;">---
+__Advertisement :)__
+
+- __[pica](https://nodeca.github.io/pica/demo/)__ - high quality and fast image
+  resize in browser.
+- __[babelfish](https://github.com/nodeca/babelfish/)__ - developer friendly
+  i18n with plurals support and easy syntax.
+
+You will like those projects!
+
+---
+
+# h1 Heading 8-)
+## h2 Heading
+### h3 Heading
+#### h4 Heading
+##### h5 Heading
+###### h6 Heading
+
+## Horizontal Rules
+
+___
+
+---
+
+***
+
+
+## Typographic replacements
+
+Enable typographer option to see result.
+
+(c) (C) (r) (R) (tm) (TM) (p) (P) +-
+
+test.. test... test..... test?..... test!....
+
+!!!!!! ???? ,,  -- ---
+
+&quot;Smartypants, double quotes&quot; and 'single quotes'
+
+
+## Emphasis
+
+**This is bold text**
+
+__This is bold text__
+
+*This is italic text*
+
+_This is italic text_
+
+~~Strikethrough~~
+
+
+## Blockquotes
+
+
+&gt; Blockquotes can also be nested...
+&gt;&gt; ...by using additional greater-than signs right next to each other...
+&gt; &gt; &gt; ...or with spaces between arrows.
+
+
+## Lists
+
+Unordered
+
++ Create a list by starting a line with `+`, `-`, or `*`
++ Sub-lists are made by indenting 2 spaces:
+  - Marker character change forces new list start:
+    * Ac tristique libero volutpat at
+    + Facilisis in pretium nisl aliquet
+    - Nulla volutpat aliquam velit
++ Very easy!
+
+Ordered
+
+1. Lorem ipsum dolor sit amet
+2. Consectetur adipiscing elit
+3. Integer molestie lorem at massa
+
+
+1. You can use sequential numbers...
+1. ...or keep all the numbers as `1.`
+
+Start numbering with offset:
+
+57. foo
+1. bar
+
+
+## Code
+
+Inline `code`
+
+Indented code
+
+    // Some comments
+    line 1 of code
+    line 2 of code
+    line 3 of code
+
+
+Block code &quot;fences&quot;
+
+```
+Sample text here...
+```
+
+Syntax highlighting
+
+``` js
+var foo = function (bar) {
+  return bar++;
+};
+
+console.log(foo(5));
+```
+
+## Tables
+
+| Option | Description |
+| ------ | ----------- |
+| data   | path to data files to supply the data that will be passed into templates. |
+| engine | engine to be used for processing templates. Handlebars is the default. |
+| ext    | extension to be used for dest files. |
+
+Right aligned columns
+
+| Option | Description |
+| ------:| -----------:|
+| data   | path to data files to supply the data that will be passed into templates. |
+| engine | engine to be used for processing templates. Handlebars is the default. |
+| ext    | extension to be used for dest files. |
+
+
+## Links
+
+[link text](http://dev.nodeca.com)
+
+[link with title](http://nodeca.github.io/pica/demo/ &quot;title text!&quot;)
+
+Autoconverted link https://github.com/nodeca/pica (enable linkify to see)
+
+
+## Images
+
+![Minion](image/markdown/minion.png)
+![Stormtroopocat](image/markdown/stormtroopocat.png &quot;The Stormtroopocat&quot;)
+
+Like links, Images also have a footnote style syntax
+
+![Alt text][id]
+
+With a reference later in the document defining the URL location:
+
+[id]: image/markdown/dojocat.png  &quot;The Dojocat&quot;
+
+
+## Plugins
+
+The killer feature of `markdown-it` is very effective support of
+[syntax plugins](https://www.npmjs.org/browse/keyword/markdown-it-plugin).
+
+
+### [Emojies](https://github.com/markdown-it/markdown-it-emoji)
+
+&gt; Classic markup: :wink: :cry: :laughing: :yum:
+&gt;
+&gt; Shortcuts (emoticons): :-) :-( 8-) ;)
+
+see [how to change output](https://github.com/markdown-it/markdown-it-emoji#change-output) with twemoji.
+
+
+### [Subscript](https://github.com/markdown-it/markdown-it-sub) / [Superscript](https://github.com/markdown-it/markdown-it-sup)
+
+- 19^th^
+- H~2~O
+
+
+### [\&lt;ins&gt;](https://github.com/markdown-it/markdown-it-ins)
+
+++Inserted text++
+
+
+### [\&lt;mark&gt;](https://github.com/markdown-it/markdown-it-mark)
+
+==Marked text==
+
+
+### [Footnotes](https://github.com/markdown-it/markdown-it-footnote)
+
+Footnote 1 link[^first].
+
+Footnote 2 link[^second].
+
+Inline footnote^[Text of inline footnote] definition.
+
+Duplicated footnote reference[^second].
+
+[^first]: Footnote **can have markup**
+
+    and multiple paragraphs.
+
+[^second]: Footnote text.
+
+
+### [Definition lists](https://github.com/markdown-it/markdown-it-deflist)
+
+Term 1
+
+:   Definition 1
+with lazy continuation.
+
+Term 2 with *inline markup*
+
+:   Definition 2
+
+        { some code, part of Definition 2 }
+
+    Third paragraph of definition 2.
+
+_Compact style:_
+
+Term 1
+  ~ Definition 1
+
+Term 2
+  ~ Definition 2a
+  ~ Definition 2b
+
+
+### [Abbreviations](https://github.com/markdown-it/markdown-it-abbr)
+
+This is HTML abbreviation example.
+
+It converts &quot;HTML&quot;, but keep intact partial entries like &quot;xxxHTMLyyy&quot; and so on.
+
+*[HTML]: Hyper Text Markup Language
+
+### [Custom containers](https://github.com/markdown-it/markdown-it-container)
+
+::: warning
+*here be dragons*
+:::
+</textarea>
+    </div>
+
+    <!-- 渲染页 -->
+    <div id="preview" class="col-xs-10 full-height">
+        <div class="result-html full-height"></div>
+    </div>
+
+    <!-- 目录 -->
+    <div class="col-xs-2 full-height">
+        <div id="toc" class="full-height"></div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/md5.js"></script>
+<script type="text/javascript" src="js/lodash.js"></script>
+<script type="text/javascript" src="js/bootstrap.js"></script>
+<script type="text/javascript" src="js/markdown_it.js"></script>
+<script type="text/javascript" src="js/twemoji.js"></script>
+<script type="text/javascript" src="js/markdown_it_emoji.js"></script>
+<script type="text/javascript" src="js/markdown_it_sub.js"></script>
+<script type="text/javascript" src="js/markdown_it_sup.js"></script>
+<script type="text/javascript" src="js/markdown_it_ins.js"></script>
+<script type="text/javascript" src="js/markdown_it_mark.js"></script>
+<script type="text/javascript" src="js/markdown_it_footnote.js"></script>
+<script type="text/javascript" src="js/markdown_it_deflist.js"></script>
+<script type="text/javascript" src="js/markdown_it_task_lists.js"></script>
+<script type="text/javascript" src="js/markdown_it_anchor.js"></script>
+<script type="text/javascript" src="js/markdown_it_toc_done_right.js"></script>
+<script type="text/javascript" src="js/highlight.js"></script>
+<script type="text/javascript" src="js/markdown.js"></script>
+<script type="text/javascript">
+    ;
+    window.contextPath = ''
+    $(function () {
+        // 移除以 "col-xs-" 开头的class
+        function removeColXsClass(index, className) {
+            return (className.match(/(^|\s)col-xs-\S+/g) || []).join(' ')
+        }
+
+        let $editor = $("#editor")
+        let $preview = $("#preview")
+
+        // 编辑
+        $('button[edit]').click(function (event) {
+            $editor.removeClass(removeColXsClass)
+            $preview.removeClass(removeColXsClass)
+
+            // 获取目标元素
+            let $element = $(event.currentTarget)
+            let value = $element.attr('edit')
+            if ("1" === value) {
+                $editor.removeAttr('edit')
+                $editor.css("display", "none")
+                $preview.addClass("col-xs-10")
+
+                $element.attr('edit', '0')
+                $element.text('编辑')
+            } else {
+                $editor.attr('edit', '')
+                $editor.css("display", "")
+                $editor.addClass("col-xs-5")
+                $preview.addClass("col-xs-5")
+
+                $element.attr('edit', '1')
+                $element.text('退出编辑')
+            }
+        })
+
+        let $title = $('title')
+        let title = $title.text()
+
+        let $textarea = $($editor.find('textarea')[0])
+        function getContent() {
+            return $textarea.val()
+        }
+
+        let hash = md5(getContent())
+        // console.log(hash)
+
+        function hasChanged() {
+            return hash !== md5(getContent())
+        }
+
+        // 保存
+        let $save = $('button[save]')
+        $save.click(function (event) {
+            hash = md5(getContent())
+            $title.text(title)
+            $save.addClass('disabled')
+            alert('保存成功')
+        })
+
+        $('textarea').on('input', function () {
+            if (hasChanged()) {
+                $title.text(`* ${title}`)
+                $save.removeClass('disabled')
+            } else {
+                $title.text(title)
+                $save.addClass('disabled')
+            }
+        })
+
+        // onbeforeunload
+        window.onbeforeunload = function (event) {
+            let e = window.event || event
+            if (hasChanged()) {
+                e.returnValue = '数据发生改变！'
+                return e.returnValue
+            }
+        }
+    })
+    ;
+</script>

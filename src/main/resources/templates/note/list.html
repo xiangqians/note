@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
-    <link rel="stylesheet" th:href="@{/static/css/body.css}" type="text/css"/>
+    <link rel="stylesheet" th:href="@{/static/css/body.css}" type="text/css">
     <title th:if="${vo.entity.id == 0}">/<th:block th:if="${vo.parameter.contain != null && vo.parameter.contain}">*</th:block></title>
     <title th:if="${vo.entity.id != 0}"><th:block th:each="p : ${vo.entity.ps}" th:text="${'/' + p.name}"></th:block><th:block th:text="${'/' + vo.entity.name}"></th:block><th:block th:if="${vo.parameter.contain != null && vo.parameter.contain}" th:text="${'/*'}"></th:block></title>
 </head>
@@ -122,10 +122,6 @@
             <input name="id" value="" type="hidden">
             <input name="pid" th:value="${vo.entity.id}" type="hidden">
             <button type="submit" class="disabled" paste>粘贴</button>
-        </form>
-        <form method="post" th:action="@{'/?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
-            <input name="_method" value="PUT" type="hidden">
-            <button type="submit" delTmpDir>删除临时目录</button>
         </form>
     </right>
 </content>

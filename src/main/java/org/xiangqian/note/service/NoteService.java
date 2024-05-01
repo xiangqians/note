@@ -14,6 +14,8 @@ import java.util.List;
  */
 public interface NoteService {
 
+    Boolean updContentById(NoteEntity vo) throws IOException;
+
     org.xiangqian.note.util.List<NoteEntity> list(NoteEntity vo, Integer offset);
 
     Object getViewById(ModelAndView modelAndView, Long id, List<String> names) throws Exception;
