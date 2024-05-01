@@ -14,7 +14,7 @@ spring:
     # SQLite驱动
     # SQLite支持并发读取，但是不支持并发写入操作
     driver-class-name: org.sqlite.JDBC
-    url: jdbc:sqlite:./data/database.db
+    url: jdbc:sqlite:${NOTE_DATASOURCE:./data/database.db}
     # 指定使用的数据源
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
