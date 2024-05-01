@@ -733,7 +733,7 @@ public class NoteServiceImpl extends AbsService implements NoteService {
         }
 
         Path path = getPath(entity.getId().toString(), true);
-        Files.write(path, bytes);
+        Files.write(path, bytes, StandardOpenOption.TRUNCATE_EXISTING);
         return true;
     }
 
@@ -783,7 +783,7 @@ public class NoteServiceImpl extends AbsService implements NoteService {
         if (id == null || id.longValue() <= 0) {
             return null;
         }
-        return mapper.getById(id);
+        return mapper.selectById(id);
     }
 
     public NoteEntity getById1(Long id) {

@@ -26682,7 +26682,7 @@
                                 }
                                 if (match) {
                                     const src = match[1];
-                                    if (src.startsWith('/audio') || src.startsWith('/video')) {
+                                    if (src.startsWith('/iav')) {
                                         token.content = content.replace(/src="([^"]+)"/, `src="${contextPath}${src}?t=${new Date().getTime()}"`)
                                     }
                                 }
@@ -26722,7 +26722,7 @@
                 const srcIndex = token.attrIndex('src');
                 if (srcIndex !== -1) {
                     const src = token.attrs[srcIndex][1];
-                    if (src.startsWith('/image')) {
+                    if (src.startsWith('/iav')) {
                         token.attrs[srcIndex][1] = `${contextPath}${src}?t=${new Date().getTime()}`;
                     }
                 }

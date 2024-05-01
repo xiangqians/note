@@ -119,7 +119,7 @@ public class Type {
         set(CER, "cer");
 
         set(PNG, "png");
-        set(JPG, "jpg");
+        set(JPG, "jpg", "jpeg");
         set(GIF, "gif");
         set(WEBP, "webp");
         set(ICO, "ico");
@@ -148,17 +148,13 @@ public class Type {
     }
 
     /**
-     * 根据Path获取文件类型
+     * 根据文件名获取文件类型
      *
-     * @param path
+     * @param name 文件名
      * @return
      */
-    public static String pathOf(Path path) {
-        if (Files.isDirectory(path)) {
-            return Type.FOLDER;
-        }
-
-        String name = StringUtils.trim(path.getFileName().toString());
+    public static String nameOf(String name) {
+        name = StringUtils.trim(name);
         String suffix = null;
         int index = name.lastIndexOf(".");
         if (index != -1 && (index + 1) < name.length()) {
@@ -167,6 +163,19 @@ public class Type {
             suffix = name.trim().toLowerCase();
         }
         return Type.suffixOf(suffix);
+    }
+
+    /**
+     * 根据Path获取文件类型
+     *
+     * @param path 文件路径
+     * @return
+     */
+    public static String pathOf(Path path) {
+        if (Files.isDirectory(path)) {
+            return Type.FOLDER;
+        }
+        return nameOf(path.getFileName().toString());
     }
 
     /**

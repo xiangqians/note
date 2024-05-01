@@ -169,20 +169,6 @@
             }
         })
 
-        // onbeforeunload
-        window.onbeforeunload = function (event) {
-            let e = window.event || event
-            if (hasChanged()) {
-                e.returnValue = '数据发生改变！'
-                return e.returnValue
-            }
-        }
-    })
-    ;
-
-
-    $(function () {
-return
         // 前端js获取剪切板中的文本或者图片文件数据
         // 监听paste事件，在进行粘贴的时候会触发
         // https://developer.mozilla.org/en-US/docs/Web/API/Element/paste_event
@@ -227,10 +213,10 @@ return
 
             for (let i = 0, length = items.length; i < length; i++) {
                 let item = items[i]
+                console.log('item', item)
                 const kind = item.kind
-                const type = item.type
-                // console.log('item', item)
                 if (kind === 'file') {
+                    const type = item.type
                     if (/^image\/[jpeg|png|gif|jpg]/.test(type)) {
                         // blob 就是从剪切板获得的文件 可以进行上传或其他操作
                         let blob = item.getAsFile()
@@ -239,30 +225,35 @@ return
                         }
 
                         // 上传图片
-                        let url = "{{ .contextPath }}/image/upload" + `?t=${new Date().getTime()}`
+                        let url = `${window.contextPath}/iav/upload?t=${new Date().getTime()}`
                         let formData = new FormData()
-                        formData.append('file', blob)
-                        formData.append('dataType', 'json')
-                        Http.execute(url, 'POST', formData, function (data, status, xhr) {
-                            const response = JSON.parse(data);
-                            // console.log('response', response)
-                            document.execCommand('insertText', false, `![${response.data.name}}](/image/${response.data.id})`)
-                            if (response.msg !== "") {
-                                alert(response.msg)
-                            }
+                        let fileName = type.replace('/', '.')
+                        formData.append('file', blob, fileName)
+                        console.log(url, formData)
+                        http(url, 'POST', formData, function (data, status, xhr) {
+                            console.log(data)
+                            document.execCommand('insertText', false, `![${data.name}](/iav/${data.id}/stream)`)
                         }, undefined)
 
                         // 阻止默认行为
                         // Prevent the default handler from running.
                         event.preventDefault()
                         return
-                    } else if (kind === 'file') {
+                    } else {
                         alert(`不支持粘贴此数据项类型：${type}`)
                     }
                 }
             }
         })
+
+        // onbeforeunload
+        window.onbeforeunload = function (event) {
+            let e = window.event || event
+            if (hasChanged()) {
+                e.returnValue = '数据发生改变！'
+                return e.returnValue
+            }
+        }
     })
     ;
 </script>
-{{ end }}
