@@ -24,7 +24,7 @@ public interface NoteService {
 
     ResponseEntity<Resource> download(Long id) throws IOException;
 
-    Boolean delById(Long id);
+    Boolean delById(Long id) throws IOException;
 
     Boolean rename(NoteEntity vo);
 

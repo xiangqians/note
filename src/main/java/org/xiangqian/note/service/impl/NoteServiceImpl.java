@@ -9,6 +9,8 @@ import org.apache.commons.io.file.PathUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -36,7 +38,6 @@ import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.FileTime;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -51,10 +52,12 @@ import java.util.zip.ZipFile;
  */
 @Slf4j
 @Service
-public class NoteServiceImpl extends AbsService implements NoteService {
+public class NoteServiceImpl extends AbsService implements NoteService, ApplicationRunner, Runnable {
 
     @Autowired
     private NoteMapper mapper;
+
+    private final Object lock = new Object();
 
     @Override
     public Boolean updContentById(NoteEntity vo) throws IOException {
@@ -79,7 +82,13 @@ public class NoteServiceImpl extends AbsService implements NoteService {
         updEntity.setId(id);
         updEntity.setSize(size);
         updEntity.setUpdTime(DateUtil.toSecond(LocalDateTime.now()));
-        return mapper.updateById(updEntity) > 0;
+        boolean result = mapper.updateById(updEntity) > 0;
+        if (result) {
+            synchronized (lock) {
+                lock.notify();
+            }
+        }
+        return result;
     }
 
     @Override
@@ -202,7 +211,7 @@ public class NoteServiceImpl extends AbsService implements NoteService {
     }
 
     @Override
-    public Boolean delById(Long id) {
+    public Boolean delById(Long id) throws IOException {
         NoteEntity entity = verifyId(id);
         if (Type.FOLDER.equals(entity.getType())) {
             NoteEntity child = mapper.selectOne(new LambdaQueryWrapper<NoteEntity>()
@@ -211,7 +220,17 @@ public class NoteServiceImpl extends AbsService implements NoteService {
                     .last("LIMIT 1"));
             Assert.isNull(child, "无法删除非空文件夹");
         }
-        return mapper.deleteById(id) > 0;
+
+        boolean result = mapper.deleteById(id) > 0;
+        if (result && !Type.FOLDER.equals(entity.getType())) {
+            PathUtils.deleteFile(getPath(id.toString()));
+        }
+        if (result) {
+            synchronized (lock) {
+                lock.notify();
+            }
+        }
+        return result;
     }
 
     @Override
@@ -241,7 +260,13 @@ public class NoteServiceImpl extends AbsService implements NoteService {
         entity.setId(id);
         entity.setPid(pid);
         entity.setUpdTime(DateUtil.toSecond(LocalDateTime.now()));
-        return mapper.updateById(entity) > 0;
+        boolean result = mapper.updateById(entity) > 0;
+        if (result) {
+            synchronized (lock) {
+                lock.notify();
+            }
+        }
+        return result;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -269,6 +294,49 @@ public class NoteServiceImpl extends AbsService implements NoteService {
     public Boolean addFolder(NoteEntity vo) {
         vo.setType(Type.FOLDER);
         return add(vo);
+    }
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        new Thread(this).start();
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                long startTime = System.currentTimeMillis();
+                log.debug("开始执行【计算目录大小任务】...");
+
+                List<NoteEntity> entities = mapper.selectList(new LambdaQueryWrapper<NoteEntity>()
+                        .select(NoteEntity::getId)
+                        .eq(NoteEntity::getType, Type.FOLDER));
+                if (CollectionUtils.isEmpty(entities)) {
+                    return;
+                }
+
+                for (NoteEntity entity : entities) {
+                    Long id = entity.getId();
+                    Long size = mapper.getSizeById(id);
+
+                    NoteEntity updEntity = new NoteEntity();
+                    updEntity.setId(id);
+                    updEntity.setSize(size);
+                    mapper.updateById(updEntity);
+                }
+
+                long endTime = System.currentTimeMillis();
+                log.debug("执行【计算目录大小任务】完成，耗时：{}ms", endTime - startTime);
+
+                synchronized (lock) {
+                    log.debug("【计算目录大小任务】沉睡");
+                    lock.wait();
+                    log.debug("【计算目录大小任务】醒来");
+                }
+            } catch (Exception e) {
+                log.error("执行【计算目录大小任务】发生异常", e);
+            }
+        }
     }
 
     private ResponseEntity<Resource> getDocumentStreamById(NoteEntity entity, List<String> names) throws Exception {
@@ -739,6 +807,10 @@ public class NoteServiceImpl extends AbsService implements NoteService {
         Path path = getPath(entity.getId().toString(), true);
         // 将内容写入文件（覆盖），如果文件不存在则创建
         Files.write(path, bytes);
+
+        synchronized (lock) {
+            lock.notify();
+        }
         return true;
     }
 
@@ -785,10 +857,12 @@ public class NoteServiceImpl extends AbsService implements NoteService {
     }
 
     private NoteEntity getById(Long id) {
-        if (id == null || id.longValue() <= 0) {
-            return null;
-        }
-        return mapper.selectById(id);
+//        if (id == null || id.longValue() <= 0) {
+//            return null;
+//        }
+//        return mapper.selectById(id);
+
+        return getById1(id);
     }
 
     public NoteEntity getById1(Long id) {
@@ -818,5 +892,6 @@ public class NoteServiceImpl extends AbsService implements NoteService {
         }
         return entity;
     }
+
 
 }

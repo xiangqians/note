@@ -13,6 +13,14 @@ import org.xiangqian.note.util.List;
 @Mapper
 public interface NoteMapper extends BaseMapper<NoteEntity> {
 
+    /**
+     * 根据id获取目录文件大小
+     *
+     * @param id
+     * @return
+     */
+    Long getSizeById(@Param("id") Long id);
+
     NoteEntity getById(@Param("id") Long id);
 
     List<NoteEntity> list(@Param("entity") NoteEntity entity, @Param("list") List list);
