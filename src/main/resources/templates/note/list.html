@@ -59,9 +59,10 @@
                         <button type="submit" rename>重命名</button>
                     </form>
                     <a href="javascript:void(0);" cut="0">剪切</a>
-                    <form method="post" th:action="@{'/note/' + ${vo.entity.id} + '/' + ${child.id} + '?t=' + ${timestamp}}" class="aform">
+                    <form method="post" th:action="@{'/note/del?t=' + ${timestamp}}" class="aform">
                         <input name="_method" value="DELETE" type="hidden">
                         <input name="id" th:value="${child.id}" type="hidden">
+                        <input name="pid" th:value="${vo.entity.id}" type="hidden">
                         <button type="submit" del>删除</button>
                     </form>
                 </td>
@@ -119,6 +120,7 @@
             <button type="submit" upload>上传文件</button>
         </form>
         <form method="post" th:action="@{'/note/paste?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
+            <input name="_method" value="PUT" type="hidden">
             <input name="id" value="" type="hidden">
             <input name="pid" th:value="${vo.entity.id}" type="hidden">
             <button type="submit" class="disabled" paste>粘贴</button>
@@ -243,7 +245,21 @@
         // 粘贴
         let $paste = $('button[paste]')
         $paste.click(function (event) {
-            return false
+            // 获取目标元素
+            let $element = $(event.currentTarget)
+
+            // 查找元素最近的父级<form>元素
+            let $form = $element.closest('form')
+
+            // 查找input[name="id"]元素
+            let $id = $form.find('input[name="id"]')
+
+            // 设置id
+            let cutNode = getCutNote()
+            $id.val(cutNode.id)
+
+            setCutNote(null)
+            return true
         })
 
         // 剪切<tr>

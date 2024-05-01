@@ -69,7 +69,9 @@ public class NoteServiceImpl extends AbsService implements NoteService {
         if (content == null) {
             content = "";
         }
-        Files.write(path, content.getBytes(UTF_8), StandardOpenOption.TRUNCATE_EXISTING);
+
+        // 将内容写入文件（覆盖），如果文件不存在则创建
+        Files.write(path, content.getBytes(UTF_8));
 
         long size = Files.size(path);
 
@@ -202,7 +204,7 @@ public class NoteServiceImpl extends AbsService implements NoteService {
     @Override
     public Boolean delById(Long id) {
         NoteEntity entity = verifyId(id);
-        if (Type.FOLDER.equals(entity)) {
+        if (Type.FOLDER.equals(entity.getType())) {
             NoteEntity child = mapper.selectOne(new LambdaQueryWrapper<NoteEntity>()
                     .select(NoteEntity::getId)
                     .eq(NoteEntity::getPid, id)
