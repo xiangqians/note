@@ -212,6 +212,10 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot-dependencies.version}</version>
+                <configuration>
+                    <!-- 将 system 范围的依赖打包到可执行 JAR 文件中 -->
+                    <includeSystemScope>true</includeSystemScope>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
