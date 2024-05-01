@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
-    <title th:text="${vo.name}"></title>
+    <title th:text="${vo.name + '.' + vo.type}"></title>
     <style>
         .internal {
             width: 100%;

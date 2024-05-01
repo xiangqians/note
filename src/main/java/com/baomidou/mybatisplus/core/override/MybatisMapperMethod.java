@@ -71,7 +71,14 @@ public class MybatisMapperMethod {
                 break;
             }
             case SELECT:
-                if (method.returnsVoid() && method.hasResultHandler()) {
+                /**
+                 * List
+                 * @author xiangqian
+                 * @date 23:40 2024/03/06
+                 */
+                if (org.xiangqian.note.util.List.class.isAssignableFrom(method.getReturnType())) {
+                    result = executeForList(sqlSession, args);
+                } else if (method.returnsVoid() && method.hasResultHandler()) {
                     executeWithResultHandler(sqlSession, args);
                     result = null;
                 } else if (method.returnsMany()) {
@@ -81,16 +88,8 @@ public class MybatisMapperMethod {
                 } else if (method.returnsCursor()) {
                     result = executeForCursor(sqlSession, args);
                 } else {
-                    /**
-                     * List
-                     * @author xiangqian
-                     * @date 23:40 2024/03/06
-                     */
-                    if (org.xiangqian.note.util.List.class.isAssignableFrom(method.getReturnType())) {
-                        result = executeForList(sqlSession, args);
-                    }
                     // IPage
-                    else if (IPage.class.isAssignableFrom(method.getReturnType())) {
+                    if (IPage.class.isAssignableFrom(method.getReturnType())) {
                         result = executeForIPage(sqlSession, args);
                     }
                     //

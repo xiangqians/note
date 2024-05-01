@@ -1,0 +1,44 @@
+<!--
+ | @author xiangqian
+ | @date 21:00 2024/04/28
+ |-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
+    <title th:text="${vo.name}"></title>
+    <style>
+        .internal {
+            width: 100%;
+            height: 100%;
+        }
+
+        .container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+    </style>
+</head>
+<body>
+<embed class="internal container" th:title="${vo.name}" type="application/pdf">
+</body>
+</html>
+<script type="text/javascript" th:src="@{/static/js/jquery.js}"></script>
+<script th:inline="javascript">
+    ;
+    $(function () {
+        let contextPath = /*[[@{/}]]*/
+        let url = contextPath + 'note/' + /*[[${vo.id}]]*/
+        /*[# th:each="p : ${vo.ps}"]*/
+            url += '/' + /*[[${p.name}]]*/
+        /*[/]*/
+        url += '/stream?t=' + Math.floor(new Date().getTime() / 1000)
+        // console.log(url)
+        $('embed').attr('src', url)
+    })
+    ;
+</script>

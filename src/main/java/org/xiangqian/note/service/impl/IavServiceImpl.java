@@ -46,7 +46,7 @@ public class IavServiceImpl extends AbsService implements IavService {
         }
 
         // 文件路径
-        Path path = getPath(id);
+        Path path = getPath(id.toString());
 
         // 判断文件是否存在
         if (!Files.exists(path)) {
@@ -76,17 +76,20 @@ public class IavServiceImpl extends AbsService implements IavService {
             return null;
         }
 
+        String contentType = file.getContentType();
+
         // 获取上传文件字节数组
         byte[] bytes = file.getBytes();
 
+
         IavEntity entity = new IavEntity();
         entity.setName(StringUtils.trim(file.getOriginalFilename()));
-        entity.setType(file.getContentType());
+        entity.setType(null);
         entity.setSize(bytes.length + 0L);
         entity.setAddTime(DateUtil.toSecond(LocalDateTime.now()));
         mapper.insert(entity);
 
-        Path path = getPath(entity.getId(), true);
+        Path path = getPath(entity.getId().toString(), true);
         Files.write(path, bytes);
 
         return entity;

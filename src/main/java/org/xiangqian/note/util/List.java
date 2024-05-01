@@ -4,36 +4,51 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
 
+import java.util.AbstractCollection;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 
 /**
  * @author xiangqian
  * @date 22:33 2024/03/04
  */
 @Data
-public class List<T> {
+public class List<T> extends AbstractCollection<T> {
 
     // 索引值，从1开始
+    @Setter(AccessLevel.NONE)
     private Integer offset;
 
     // 行数
     @Setter(AccessLevel.NONE)
     private Integer rows;
 
-    // 数据列表
-    private java.util.List<T> data;
+    // 数据集
+    private Collection<T> data;
 
     // 索引集
     private java.util.List<Integer> offsets;
 
-    public List() {
-        this(1, 10);
+    public List(Integer offset) {
+        this.offset = offset;
+        this.rows = 10;
+        this.data = Collections.emptyList();
+        this.offsets = Collections.emptyList();
     }
 
-    public List(Integer offset, Integer rows) {
-        this.offset = offset;
-        this.rows = rows;
-        this.offsets = Collections.emptyList();
+    public List(Collection<T> data) {
+        this.data = data;
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return data.iterator();
+    }
+
+    @Override
+    public int size() {
+        return data.size();
     }
 
 }

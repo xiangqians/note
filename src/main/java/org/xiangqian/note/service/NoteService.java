@@ -4,9 +4,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.ModelAndView;
 import org.xiangqian.note.entity.NoteEntity;
-import org.xiangqian.note.util.List;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author xiangqian
@@ -14,13 +14,11 @@ import java.io.IOException;
  */
 public interface NoteService {
 
-    List<NoteEntity> list(NoteEntity vo, List list);
+    org.xiangqian.note.util.List<NoteEntity> list(NoteEntity vo, Integer offset);
 
-    NoteEntity getById(Long id);
+    Object getViewById(ModelAndView modelAndView, Long id, List<String> names) throws Exception;
 
-    Object getViewById(ModelAndView modelAndView, Long id, java.util.List<String> names);
-
-    ResponseEntity<Resource> getStreamById(Long id) throws Exception;
+    ResponseEntity<Resource> getStreamById(Long id, List<String> names) throws Exception;
 
     ResponseEntity<Resource> download(Long id) throws IOException;
 

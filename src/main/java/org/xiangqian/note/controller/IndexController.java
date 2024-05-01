@@ -22,7 +22,7 @@ public class IndexController extends AbsController {
 
     @RequestMapping
     public ModelAndView index(ModelAndView modelAndView) {
-        return noteController.list(modelAndView, 0L, new NoteEntity(), new List());
+        return noteController.list(modelAndView, 0L, new NoteEntity(), 1);
     }
 
 }

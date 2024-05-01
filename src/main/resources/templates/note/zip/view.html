@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
-    <title th:text="${vo.name}"></title>
+    <title th:text="${vo.name + '.' + vo.type}"></title>
     <style>
         body a {
             padding: 0;
@@ -22,7 +22,7 @@
     </style>
 </head>
 <body>
-<h3>Index of&nbsp;&nbsp;<a th:href="@{'/note/' + ${vo.id} + '/view?t=' + ${timestamp}}">~</a><span th:if="${vo.ps == null}">/</span><span th:each="p : ${vo.ps}">/<a th:href="@{${p.url} + '?t=' + ${timestamp}}" th:text="${p.name}"></a></span></h3>
+<h3>Index of&nbsp;&nbsp;<a th:href="@{'/note/' + ${vo.id} + '/view?t=' + ${timestamp}}">~</a><span th:if="${vo.ps == null}">/</span><span th:each="p : ${vo.ps}" th:with="key='/' + ${T(org.xiangqian.note.util.Md5Util).encryptHex(p.name)}">/<a th:href="@{${key}}" th:text="${p.name}"></a></span></h3>
 <table>
     <thead>
     <tr>
@@ -32,12 +32,47 @@
     </tr>
     </thead>
     <tbody>
-    <tr th:each="e : ${vo.children}">
-        <td><a th:href="${e.name + '/view?t=' + timestamp}" th:text="${e.name + (e.type == 'folder' ? '/' : '')}"></a></td>
-        <td th:text="${e.type == 'folder' ? '-' : T(org.xiangqian.note.util.OsUtil).humanByte(e.size, 'KB')}"></td>
-        <td th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(e.updTime)}"></td>
+    <tr th:each="child : ${vo.childList != null ? vo.childList.data : null}">
+        <td><a th:href="${'/' + child.name + '/view?t=' + timestamp}" th:text="${child.name + (child.type == 'folder' ? '/' : '')}"></a></td>
+        <td th:text="${child.type == 'folder' ? '-' : T(org.xiangqian.note.util.FileUtil).humanByte(child.size, 'KB')}"></td>
+        <td th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(child.updTime)}"></td>
     </tr>
     </tbody>
 </table>
 </body>
 </html>
+<script type="text/javascript" th:src="@{/static/js/jquery.js}"></script>
+<script th:inline="javascript">
+    ;
+    $(function () {
+        let key = null
+        let name = null
+        let contextPath = /*[[@{/}]]*/
+        let baseUrl = '/note/' + /*[[${vo.id}]]*/
+        let map = new Map()
+        /*[# th:each="p : ${vo.ps}"]*/
+            key = contextPath + /*[[${T(org.xiangqian.note.util.Md5Util).encryptHex(p.name)}]]*/
+            name = /*[[${p.name}]]*/
+            baseUrl += '/' + name
+            map.set(key, baseUrl + '/view?t=' + Math.floor(new Date().getTime() / 1000))
+        /*[/]*/
+        // console.log(map)
+
+        let $aArr = $('h3 a')
+        for(let i = 0, length = $aArr.length; i < length; i++){
+            let $a = $($aArr[i])
+            let key = $a.attr('href')
+            let value = map.get(key)
+            if(value != null){
+                $a.attr('href', value)
+            }
+        }
+
+        $aArr = $('table tbody tr td a')
+        for(let i = 0, length = $aArr.length; i < length; i++){
+            let $a = $($aArr[i])
+            let href = $a.attr('href')
+            $a.attr('href', baseUrl + href)
+        }
+    })
+</script>

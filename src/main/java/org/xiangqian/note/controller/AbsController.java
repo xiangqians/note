@@ -88,11 +88,6 @@ public abstract class AbsController {
     }
 
     public static ModelAndView errorView(ModelAndView modelAndView) {
-        return errorView(modelAndView, null);
-    }
-
-    public static ModelAndView errorView(ModelAndView modelAndView, Object error) {
-        setErrorAttribute(modelAndView, error);
         modelAndView.setViewName("error");
         return modelAndView;
     }

@@ -47,6 +47,22 @@ public class NoteEntity implements Comparable<NoteEntity> {
     // 大小，单位：byte
     private Long size;
 
+    // 文本内容
+    @TableField(exist = false)
+    private String content;
+
+    // 包括子节点
+    @TableField(exist = false)
+    private Boolean contain;
+
+    // 子节点集
+    @TableField(exist = false)
+    private org.xiangqian.note.util.List<NoteEntity> childList;
+
+    // 上传文件
+    @TableField(exist = false)
+    private MultipartFile file;
+
     // 删除标识，0-正常，1-删除
     @TableLogic
     private Integer del;
@@ -57,41 +73,9 @@ public class NoteEntity implements Comparable<NoteEntity> {
     // 修改时间（时间戳，单位s）
     private Long updTime;
 
-    // 文件文本内容
-    @TableField(exist = false)
-    private String content;
-
-    // 笔记访问地址
-    @TableField(exist = false)
-    private String url;
-
-    // 子节点
-    @TableField(exist = false)
-    private List<NoteEntity> children;
-
-    // 包括子节点
-    @TableField(exist = false)
-    private Boolean contain;
-
-    // 上传文件
-    @TableField(exist = false)
-    private MultipartFile file;
-
     public NoteEntity(Path path) throws IOException {
         this.name = StringUtils.trim(path.getFileName().toString());
-        if (Files.isDirectory(path)) {
-            this.type = Type.FOLDER;
-        } else {
-            int index = this.name.lastIndexOf(".");
-            // 文件后缀名
-            String suffix = null;
-            if (index != -1 && (index + 1) < this.name.length()) {
-                suffix = StringUtils.trim(this.name.substring(index + 1)).toLowerCase();
-            } else {
-                suffix = this.name.trim().toLowerCase();
-            }
-            this.type = Type.suffixOf(suffix);
-        }
+        this.type = Type.pathOf(path);
         this.size = Files.size(path);
         this.updTime = Files.getLastModifiedTime(path).toMillis() / 1000;
     }

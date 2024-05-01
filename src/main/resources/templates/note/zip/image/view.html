@@ -1,0 +1,30 @@
+<!--
+ | @author xiangqian
+ | @date 21:57 2024/04/24
+ |-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
+    <title th:text="${vo.name}"></title>
+</head>
+<body>
+<img th:alt="${vo.name}">
+</body>
+</html>
+<script type="text/javascript" th:src="@{/static/js/jquery.js}"></script>
+<script th:inline="javascript">
+    ;
+    $(function () {
+        let contextPath = /*[[@{/}]]*/
+        let url = contextPath + 'note/' + /*[[${vo.id}]]*/
+        /*[# th:each="p : ${vo.ps}"]*/
+            url += '/' + /*[[${p.name}]]*/
+        /*[/]*/
+        url += '/stream?t=' + Math.floor(new Date().getTime() / 1000)
+        // console.log(url)
+        $('img').attr('src', url)
+    })
+    ;
+</script>

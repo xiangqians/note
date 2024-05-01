@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
  * @date 11:49 2024/03/09
  */
 @Slf4j
-public class OsUtil {
+public class FileUtil {
 
     /**
      * 人性化字节

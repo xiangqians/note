@@ -12,13 +12,13 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 import org.xiangqian.note.entity.NoteEntity;
 import org.xiangqian.note.service.NoteService;
-import org.xiangqian.note.util.List;
+import org.xiangqian.note.service.impl.NoteServiceImpl;
 import org.xiangqian.note.util.Type;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -34,23 +34,20 @@ public class NoteController extends AbsController {
     private NoteService service;
 
     @GetMapping("/{id}/list")
-    public ModelAndView list(ModelAndView modelAndView, @PathVariable("id") Long id, NoteEntity vo, List list) {
+    public ModelAndView list(ModelAndView modelAndView, @PathVariable("id") Long id, NoteEntity vo, @RequestParam(value = "offset", required = false) Integer offset) {
         try {
-            NoteEntity entity = service.getById(id);
+            NoteEntity entity =((NoteServiceImpl) service).getById1(id);
             if (entity == null || !Type.FOLDER.equals(entity.getType())) {
                 return errorView(modelAndView);
             }
 
             vo.setPid(id);
-            list = service.list(vo, list);
+            entity.setChildList(service.list(vo, offset));
             vo.setId(id);
             vo.setPid(null);
             setVoAttribute(modelAndView, Map.of("parameter", vo,
                     "entity", entity,
-                    "data", list.getData(),
-                    "types", java.util.List.of(Type.FOLDER, Type.MD, Type.DOC, Type.DOCX, Type.PDF, Type.HTML, Type.ZIP),
-                    "offset", list.getOffset(),
-                    "offsets", list.getOffsets()));
+                    "types", java.util.List.of(Type.FOLDER, Type.MD, Type.DOC, Type.DOCX, Type.PDF, Type.HTML, Type.ZIP)));
         } catch (Exception e) {
             log.error("", e);
             setErrorAttribute(modelAndView, e.getMessage());
@@ -61,18 +58,19 @@ public class NoteController extends AbsController {
 
     @GetMapping("/{id}/**/view")
     public Object getViewById(HttpServletRequest request, ModelAndView modelAndView, @PathVariable(name = "id") Long id) {
-        String path = request.getServletPath();
-        path = path.substring(String.format("/note/%s", id).length(), path.length() - "/view".length());
-        java.util.List<String> names = null;
-        if (StringUtils.isNotEmpty(path)) {
-            names = Arrays.stream(path.split("/")).filter(StringUtils::isNotEmpty).collect(Collectors.toList());
+        try {
+            List<String> names = getNames(request, String.format("/note/%s", id), "/view");
+            return service.getViewById(modelAndView, id, names);
+        } catch (Exception e) {
+            log.error("", e);
+            return AbsController.errorView(modelAndView );
         }
-        return service.getViewById(modelAndView, id, names);
     }
 
-    @GetMapping(value = "/{id}/stream")
-    public ResponseEntity<Resource> getStreamById(@PathVariable("id") Long id) throws Exception {
-        return service.getStreamById(id);
+    @GetMapping(value = "/{id}/**/stream")
+    public ResponseEntity<Resource> getStreamById(HttpServletRequest request, @PathVariable("id") Long id) throws Exception {
+        List<String> names = getNames(request, String.format("/note/%s", id), "/stream");
+        return service.getStreamById(id, names);
     }
 
     @GetMapping("/{id}/download")
@@ -166,6 +164,15 @@ public class NoteController extends AbsController {
 
     private RedirectView redirectListView(Long id, Object vo, Object error) {
         return redirectView(String.format("/note/%s/list", id), vo, error);
+    }
+
+    private List<String> getNames(HttpServletRequest request, String prefix, String suffix) {
+        String path = request.getServletPath();
+        path = path.substring(prefix.length(), path.length() - suffix.length());
+        if (StringUtils.isEmpty(path)) {
+            return null;
+        }
+        return Arrays.stream(path.split("/")).filter(StringUtils::isNotEmpty).collect(Collectors.toList());
     }
 
 }

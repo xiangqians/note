@@ -29,39 +29,39 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="e : ${vo.data}" th:id="${e.id}" th:name="${e.name}" th:type="${e.type}">
-                <td th:if="${e.type == 'folder'}"><a th:text="${e.name}" th:href="@{'/note/' + ${e.id} + '/list?t=' + ${timestamp}}"></a></td>
-                <td th:if="${e.type != 'folder'}">
-                    <a th:text="${e.name}" th:href="@{'/note/' + ${e.id} + '/view?t=' + ${timestamp}}" target="_blank"></a>
+            <tr th:each="child : ${vo.entity.childList}" th:id="${child.id}" th:name="${child.name}" th:type="${child.type}">
+                <td th:if="${child.type == 'folder'}"><a th:text="${child.name}" th:href="@{'/note/' + ${child.id} + '/list?t=' + ${timestamp}}"></a></td>
+                <td th:if="${child.type != 'folder'}">
+                    <a th:text="${child.name}" th:href="@{'/note/' + ${child.id} + '/view?t=' + ${timestamp}}" target="_blank"></a>
                 </td>
-                <td th:text="${e.type}"></td>
+                <td th:text="${child.type}"></td>
                 <td th:if="${vo.parameter.contain != null && vo.parameter.contain}">
-                    <span th:if="${e.pid == 0}">/</span>
-                    <span th:if="${e.pid != 0}" th:each="p : ${e.ps}">/<a th:href="@{'/note/' + ${p.id} + '/list?t=' + ${timestamp}}" th:text="${p.name}"></a></span>
+                    <span th:if="${child.pid == 0}">/</span>
+                    <span th:if="${child.pid != 0}" th:each="p : ${child.ps}">/<a th:href="@{'/note/' + ${p.id} + '/list?t=' + ${timestamp}}" th:text="${p.name}"></a></span>
                 </td>
-                <td th:text="${T(org.xiangqian.note.util.OsUtil).humanByte(e.size, 'KB')}"></td>
-                <td th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(e.addTime)}"></td>
-                <td th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(e.updTime)}"></td>
+                <td th:text="${T(org.xiangqian.note.util.FileUtil).humanByte(child.size, 'KB')}"></td>
+                <td th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(child.addTime)}"></td>
+                <td th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(child.updTime)}"></td>
                 <td style="visibility: hidden;">
-                    <a th:if="${e.type != 'folder' && e.type != 'md'}" th:href="@{'/note/' + ${e.id} + '/download?t=' + ${timestamp}}" download>下载</a>
-                    <form th:if="${e.type != 'folder' && e.type != 'md'}" method="post" enctype="multipart/form-data" th:action="@{'/note/reUpload?t=' + ${timestamp}}" class="aform border">
+                    <a th:if="${child.type != 'folder' && child.type != 'md'}" th:href="@{'/note/' + ${child.id} + '/download?t=' + ${timestamp}}" download>下载</a>
+                    <form th:if="${child.type != 'folder' && child.type != 'md'}" method="post" enctype="multipart/form-data" th:action="@{'/note/reUpload?t=' + ${timestamp}}" class="aform border">
                         <input name="_method" value="PUT" type="hidden">
-                        <input name="id" th:value="${e.id}" type="hidden">
+                        <input name="id" th:value="${child.id}" type="hidden">
                         <input name="pid" th:value="${vo.entity.id}" type="hidden">
                         <input name="file" type="file" required>
                         <button type="submit" reUpload>重新上传文件</button>
                     </form>
                     <form method="post" th:action="@{'/note/rename?t=' + ${timestamp}}" class="aform">
                         <input name="_method" value="PUT" type="hidden">
-                        <input name="id" th:value="${e.id}" type="hidden">
+                        <input name="id" th:value="${child.id}" type="hidden">
                         <input name="pid" th:value="${vo.entity.id}" type="hidden">
                         <input name="name" value="" type="hidden">
                         <button type="submit" rename>重命名</button>
                     </form>
                     <a href="javascript:void(0);" cut="0">剪切</a>
-                    <form method="post" th:action="@{'/note/' + ${vo.entity.id} + '/' + ${e.id} + '?t=' + ${timestamp}}" class="aform">
+                    <form method="post" th:action="@{'/note/' + ${vo.entity.id} + '/' + ${child.id} + '?t=' + ${timestamp}}" class="aform">
                         <input name="_method" value="DELETE" type="hidden">
-                        <input name="id" th:value="${e.id}" type="hidden">
+                        <input name="id" th:value="${child.id}" type="hidden">
                         <button type="submit" del>删除</button>
                     </form>
                 </td>
@@ -89,7 +89,7 @@
             </tr>
             <tr>
                 <td th:colspan="${vo.parameter.contain != null && vo.parameter.contain ? 6 : 5}">
-                    <span th:each="offset : ${vo.offsets}" th:with="disabled=${vo.offset.equals(offset)}">
+                    <span th:each="offset : ${vo.entity.childList.offsets}" th:with="disabled=${vo.entity.childList.offset.equals(offset)}">
                         <a th:if="${offset == null}">...</a>
                         <a th:if="${offset != null}"
                            th:href="@{'/note/' + ${vo.parameter.id} + '/list?name=' + ${vo.parameter.name != null ? vo.parameter.name : ''} + '&type=' + ${vo.parameter.type != null ? vo.parameter.type : ''} + '&contain=' + ${vo.parameter.contain != null ? vo.parameter.contain : ''} +'&offset=' + ${offset} + '&t=' + ${timestamp}}"
@@ -122,6 +122,10 @@
             <input name="id" value="" type="hidden">
             <input name="pid" th:value="${vo.entity.id}" type="hidden">
             <button type="submit" class="disabled" paste>粘贴</button>
+        </form>
+        <form method="post" th:action="@{'/?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
+            <input name="_method" value="PUT" type="hidden">
+            <button type="submit" delTmpDir>删除临时目录</button>
         </form>
     </right>
 </content>
