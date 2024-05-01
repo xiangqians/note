@@ -201,7 +201,7 @@
             let $element = $(event.currentTarget)
 
             let note = getNote($element)
-            let name = prompt(`重命名：${note.name} ？`, note.name)
+            let name = prompt('重命名：' + note.name + ' ？', note.name)
 
             // cancel
             if (name == null) {
@@ -264,7 +264,7 @@
 
         // 剪切<tr>
         function cutTr(cutNode) {
-            let $tr = $(`#${cutNode.id}`)
+            let $tr = $('#' + cutNode.id)
             $tr.addClass('cut')
             let $a = $tr.find('a[cut]')
             $a.attr('cut', '1')
@@ -320,7 +320,7 @@
             let $element = $(event.currentTarget)
 
             let note = getNote($element)
-            if (confirm(`确定删除${note.type === 'folder' ? '目录' : '文件'}：${note.name} ？`)) {
+            if (confirm('确定删除' + (note.type === 'folder' ? '目录' : '文件') + '：' + note.name + ' ？')) {
                 setCutNote(null)
                 return true
             } else {

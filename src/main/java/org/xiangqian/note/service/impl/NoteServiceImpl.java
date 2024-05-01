@@ -456,7 +456,8 @@ public class NoteServiceImpl extends AbsService implements NoteService {
 
                     String content = Files.readString(indexPath, UTF_8);
                     content = propertyPlaceholderHelper.replacePlaceholders(content, placeholderResolver);
-                    Files.write(indexPath, content.getBytes(UTF_8), StandardOpenOption.TRUNCATE_EXISTING);
+                    // 将内容写入文件（覆盖），如果文件不存在则创建
+                    Files.write(indexPath, content.getBytes(UTF_8));
 
                     // 获取files目录下所有html文件
                     List<Path> htmlPaths = Files.list(filesPath)
@@ -475,7 +476,8 @@ public class NoteServiceImpl extends AbsService implements NoteService {
                                 content = Files.readString(htmlPath, UTF_8);
                                 content = propertyPlaceholderHelper.replacePlaceholders(content, placeholderResolver);
                                 content = content.replace(key, placeholderPrefix);
-                                Files.write(htmlPath, content.getBytes(UTF_8), StandardOpenOption.TRUNCATE_EXISTING);
+                                // 将内容写入文件（覆盖），如果文件不存在则创建
+                                Files.write(htmlPath, content.getBytes(UTF_8));
                             }
                         }
                     }
@@ -735,7 +737,8 @@ public class NoteServiceImpl extends AbsService implements NoteService {
         }
 
         Path path = getPath(entity.getId().toString(), true);
-        Files.write(path, bytes, StandardOpenOption.TRUNCATE_EXISTING);
+        // 将内容写入文件（覆盖），如果文件不存在则创建
+        Files.write(path, bytes);
         return true;
     }
 

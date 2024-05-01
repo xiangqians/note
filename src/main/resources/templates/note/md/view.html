@@ -142,7 +142,7 @@
         let $save = $('button[save]')
         $save.click(function (event) {
             const id = /*[[${vo.id}]]*/
-            let url = `${window.contextPath}/note/${id}/content?t=${new Date().getTime()}`
+            let url = window.contextPath + '/note/' + id + '/content?t=' + new Date().getTime()
             console.log(url)
             let formData = new FormData()
             formData.append('content', getContent())
@@ -161,7 +161,7 @@
 
         $('textarea').on('input', function () {
             if (hasChanged()) {
-                $title.text(`* ${title}`)
+                $title.text('*' + title)
                 $save.removeClass('disabled')
             } else {
                 $title.text(title)
@@ -225,14 +225,14 @@
                         }
 
                         // 上传图片
-                        let url = `${window.contextPath}/iav/upload?t=${new Date().getTime()}`
+                        let url = window.contextPath + '/iav/upload?t=' + new Date().getTime()
                         let formData = new FormData()
                         let fileName = type.replace('/', '.')
                         formData.append('file', blob, fileName)
                         console.log(url, formData)
                         http(url, 'POST', formData, function (data, status, xhr) {
                             console.log(data)
-                            document.execCommand('insertText', false, `![${data.name}](/iav/${data.id}/stream)`)
+                            document.execCommand('insertText', false, '![' + data.name + '](/iav/' + data.id + '/stream)')
                         }, undefined)
 
                         // 阻止默认行为
@@ -240,7 +240,7 @@
                         event.preventDefault()
                         return
                     } else {
-                        alert(`不支持粘贴此数据项类型：${type}`)
+                        alert('不支持粘贴此数据项类型：' + type)
                     }
                 }
             }
