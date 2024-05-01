@@ -1,5 +1,5 @@
 #!/bin/bash
-JAR=auto-deploy-prod-2024.02.jar
+JAR=note-prod-2024.04.jar
 PROCESS=`jps | grep $JAR | awk '{print $1}'`
 if [ -z "$PROCESS" ]; then
     echo "Process not found"
