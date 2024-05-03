@@ -15,6 +15,8 @@ public interface IavService {
 
     ResponseEntity<Resource> getStreamById(Long id) throws IOException;
 
+    IavEntity getById(Long id);
+
     IavEntity upload(MultipartFile file) throws IOException;
 
 }

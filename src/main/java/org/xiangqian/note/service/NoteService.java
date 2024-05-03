@@ -18,9 +18,11 @@ public interface NoteService {
 
     org.xiangqian.note.util.List<NoteEntity> list(NoteEntity vo, Integer offset);
 
-    Object getViewById(ModelAndView modelAndView, Long id, List<String> names) throws Exception;
+    ModelAndView getViewById(ModelAndView modelAndView, Long id, List<String> names) throws Exception;
 
     ResponseEntity<Resource> getStreamById(Long id, List<String> names) throws Exception;
+
+    NoteEntity getById(Long id, boolean isGetPs);
 
     ResponseEntity<Resource> download(Long id) throws IOException;
 

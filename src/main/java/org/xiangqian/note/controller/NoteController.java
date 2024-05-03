@@ -12,7 +12,6 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 import org.xiangqian.note.entity.NoteEntity;
 import org.xiangqian.note.service.NoteService;
-import org.xiangqian.note.service.impl.NoteServiceImpl;
 import org.xiangqian.note.util.Type;
 
 import java.io.IOException;
@@ -43,7 +42,7 @@ public class NoteController extends AbsController {
     @GetMapping("/{id}/list")
     public ModelAndView list(ModelAndView modelAndView, @PathVariable("id") Long id, NoteEntity vo, @RequestParam(value = "offset", required = false) Integer offset) {
         try {
-            NoteEntity entity = ((NoteServiceImpl) service).getById1(id);
+            NoteEntity entity = service.getById(id, true);
             if (entity == null || !Type.FOLDER.equals(entity.getType())) {
                 return errorView(modelAndView);
             }
@@ -64,7 +63,7 @@ public class NoteController extends AbsController {
     }
 
     @GetMapping("/{id}/**/view")
-    public Object getViewById(HttpServletRequest request, ModelAndView modelAndView, @PathVariable(name = "id") Long id) throws Exception {
+    public ModelAndView getViewById(HttpServletRequest request, ModelAndView modelAndView, @PathVariable(name = "id") Long id) throws Exception {
         List<String> names = getNames(request, String.format("/note/%s", id), "/view");
         return service.getViewById(modelAndView, id, names);
     }

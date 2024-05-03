@@ -1,12 +1,13 @@
 package org.xiangqian.note.service.impl;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.xiangqian.note.service.GetNoteService;
 import org.xiangqian.note.service.IavService;
 import org.xiangqian.note.service.NoteService;
 
@@ -23,63 +24,53 @@ import java.nio.file.Paths;
 public abstract class AbsService {
 
     protected final MediaType IMAGE_WEBP = MediaType.valueOf("image/webp");
-    protected final MediaType TEXT_CSS = MediaType.valueOf("text/css");
     protected final MediaType IMAGE_X_ICON = MediaType.valueOf("image/x-icon");
+    protected final MediaType TEXT_CSS = MediaType.valueOf("text/css");
 
     protected final java.nio.charset.Charset UTF_8 = java.nio.charset.Charset.forName("UTF-8");
     protected final java.nio.charset.Charset GBK = java.nio.charset.Charset.forName("GBK");
 
-    private String dataDir;
+    // 数据路径
+    private final Path dataPath;
 
-    @Value("${spring.datasource.url}")
-    public void setUrl(String url) {
+    // 临时路径
+    private final Path tmpPath;
+
+    protected AbsService(Environment environment) throws IOException {
+        String name = null;
+        if (this instanceof NoteService || this instanceof GetNoteService) {
+            name = "note";
+        } else if (this instanceof IavService) {
+            name = "iav";
+        } else {
+            throw new IllegalArgumentException(this.getClass().toString());
+        }
+
+        // 数据路径
+        String url = environment.getProperty("spring.datasource.url");
         File file = new File(url.trim().substring("jdbc:sqlite:".length()));
-        file = file.getParentFile();
-        dataDir = file.getPath();
+        Path path = file.getParentFile().toPath().resolve(name);
+        createDirectoriesIfNotExist(path);
+        this.dataPath = path;
+
+        // 临时路径
+        path = Paths.get("tmp", name);
+        createDirectoriesIfNotExist(path);
+        this.tmpPath = path;
+    }
+
+    private void createDirectoriesIfNotExist(Path path) throws IOException {
+        if (!Files.exists(path)) {
+            Files.createDirectories(path);
+        }
+    }
+
+    protected Path getDataPath(String name) throws IOException {
+        return dataPath.resolve(name);
     }
 
     protected Path getTmpPath(String name) throws IOException {
-        return getTmpPath(name, false);
-    }
-
-    protected Path getTmpPath(String name, boolean makeParentDirIfNotExist) throws IOException {
-        return getPath(getParentDirName() + "tmp", name, makeParentDirIfNotExist);
-    }
-
-    protected Path getPath(String name) throws IOException {
-        return getPath(name, false);
-    }
-
-    protected Path getPath(String name, boolean makeParentDirIfNotExist) throws IOException {
-        return getPath(getParentDirName(), name, makeParentDirIfNotExist);
-    }
-
-    private String getParentDirName() {
-        if (this instanceof NoteService) {
-            return "note";
-        }
-        if (this instanceof IavService) {
-            return "iav";
-        }
-        throw new IllegalArgumentException(this.getClass().toString());
-    }
-
-    /**
-     * 获取文件路径
-     *
-     * @param name                    文件/目录名称
-     * @param parentDirName           父目录名称
-     * @param makeParentDirIfNotExist 如果父目录不存在，则创建
-     * @return
-     */
-    private Path getPath(String parentDirName, String name, boolean makeParentDirIfNotExist) throws IOException {
-        if (makeParentDirIfNotExist) {
-            Path path = Paths.get(dataDir, parentDirName);
-            if (!Files.exists(path)) {
-                Files.createDirectories(path);
-            }
-        }
-        return Paths.get(dataDir, parentDirName, name);
+        return tmpPath.resolve(name);
     }
 
     protected ResponseEntity<Resource> notFound() {

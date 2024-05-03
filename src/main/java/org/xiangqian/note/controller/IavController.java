@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.xiangqian.note.entity.IavEntity;
 import org.xiangqian.note.service.IavService;
+import org.xiangqian.note.util.Response;
 
 import java.io.IOException;
 
@@ -31,8 +32,13 @@ public class IavController {
 
     @ResponseBody
     @PostMapping("/upload")
-    public IavEntity upload(@RequestParam("file") MultipartFile file) throws IOException {
-        return service.upload(file);
+    public Response<IavEntity> upload(@RequestParam("file") MultipartFile file) {
+        try {
+            return Response.ok(service.upload(file));
+        } catch (Exception e) {
+            log.error("", e);
+            return Response.error(e.getMessage());
+        }
     }
 
 }

@@ -2,10 +2,8 @@ package org.xiangqian.note.service.impl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -33,6 +31,10 @@ public class IavServiceImpl extends AbsService implements IavService {
     @Autowired
     private IavMapper mapper;
 
+    protected IavServiceImpl(Environment environment) throws IOException {
+        super(environment);
+    }
+
     @Override
     public ResponseEntity<Resource> getStreamById(Long id) throws IOException {
         IavEntity entity = getById(id);
@@ -41,34 +43,41 @@ public class IavServiceImpl extends AbsService implements IavService {
         }
 
         // 文件路径
-        Path path = getPath(id.toString());
+        Path path = getDataPath(id.toString());
         // 判断文件是否存在
         if (!Files.exists(path)) {
             return notFound();
         }
 
         String type = entity.getType();
-        if (Type.PNG.equals(type)) {
-            return ok(path, MediaType.IMAGE_PNG);
+        switch (type) {
+            case Type.PNG -> {
+                return ok(path, MediaType.IMAGE_PNG);
+            }
+            case Type.JPG -> {
+                return ok(path, MediaType.IMAGE_JPEG);
+            }
+            case Type.GIF -> {
+                return ok(path, MediaType.IMAGE_GIF);
+            }
+            case Type.WEBP -> {
+                return ok(path, IMAGE_WEBP);
+            }
+            case Type.ICO -> {
+                return ok(path, IMAGE_X_ICON);
+            }
+            default -> {
+                return notFound();
+            }
         }
+    }
 
-        if (Type.JPG.equals(type)) {
-            return ok(path, MediaType.IMAGE_JPEG);
+    @Override
+    public IavEntity getById(Long id) {
+        if (id == null || id.longValue() <= 0) {
+            return null;
         }
-
-        if (Type.GIF.equals(type)) {
-            return ok(path, MediaType.IMAGE_GIF);
-        }
-
-        if (Type.WEBP.equals(type)) {
-            return ok(path, IMAGE_WEBP);
-        }
-
-        if (Type.ICO.equals(type)) {
-            return ok(path, IMAGE_X_ICON);
-        }
-
-        return notFound();
+        return mapper.selectById(id);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -77,21 +86,21 @@ public class IavServiceImpl extends AbsService implements IavService {
         // 判断上传文件是否有效
         Assert.isTrue(file != null && !file.isEmpty(), "无效的上传文件");
 
-        // 文件名称
+        // 判断文件名称是否有效
         String name = StringUtils.trim(file.getOriginalFilename());
         Assert.isTrue(StringUtils.isNotEmpty(name), "上传文件名称不能为空");
 
-        // 文件后缀名
-        String suffix = null;
         // 文件类型
         String type = null;
+        // 文件后缀名
+        String suffix = null;
         int index = name.lastIndexOf(".");
         if (index >= 0 && (index + 1) < name.length()) {
             suffix = StringUtils.trim(name.substring(index + 1).toLowerCase());
             type = Type.suffixOf(suffix);
             name = name.substring(0, index);
         }
-        Assert.isTrue(Type.isImage(type), String.format("不支持上传 %s 文件类型", suffix));
+        Assert.isTrue(Type.isImage(type), String.format("不支持上传 %s 文件类型，请选择 png、jpg、gif、webp、ico 文件类型上传", file.getOriginalFilename()));
 
         // 获取上传文件字节数组
         byte[] bytes = file.getBytes();
@@ -103,19 +112,12 @@ public class IavServiceImpl extends AbsService implements IavService {
         entity.setAddTime(DateUtil.toSecond(LocalDateTime.now()));
         mapper.insert(entity);
 
-        Path path = getPath(entity.getId().toString(), true);
+        Path path = getDataPath(entity.getId().toString());
 
         // 将内容写入文件（覆盖），如果文件不存在则创建
         Files.write(path, bytes);
 
         return entity;
-    }
-
-    private IavEntity getById(Long id) {
-        if (id == null || id.longValue() <= 0) {
-            return null;
-        }
-        return mapper.selectById(id);
     }
 
 }
