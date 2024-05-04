@@ -10,4 +10,12 @@ import org.xiangqian.note.entity.IavEntity;
  */
 @Mapper
 public interface IavMapper extends BaseMapper<IavEntity> {
+
+    /**
+     * 获取已删除的id，以复用
+     *
+     * @return
+     */
+    Long getDeledId();
+
 }

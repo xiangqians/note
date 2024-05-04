@@ -14,6 +14,13 @@ import org.xiangqian.note.util.List;
 public interface NoteMapper extends BaseMapper<NoteEntity> {
 
     /**
+     * 获取已删除的id，以复用
+     *
+     * @return
+     */
+    Long getDeledId();
+
+    /**
      * 根据id获取目录文件大小
      *
      * @param id

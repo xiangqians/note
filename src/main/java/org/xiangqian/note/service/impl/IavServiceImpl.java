@@ -43,33 +43,27 @@ public class IavServiceImpl extends AbsService implements IavService {
         }
 
         // 文件路径
-        Path path = getDataPath(id.toString());
+        Path path = getPath(id.toString());
         // 判断文件是否存在
         if (!Files.exists(path)) {
             return notFound();
         }
 
         String type = entity.getType();
-        switch (type) {
-            case Type.PNG -> {
-                return ok(path, MediaType.IMAGE_PNG);
-            }
-            case Type.JPG -> {
-                return ok(path, MediaType.IMAGE_JPEG);
-            }
-            case Type.GIF -> {
-                return ok(path, MediaType.IMAGE_GIF);
-            }
-            case Type.WEBP -> {
-                return ok(path, IMAGE_WEBP);
-            }
-            case Type.ICO -> {
-                return ok(path, IMAGE_X_ICON);
-            }
-            default -> {
-                return notFound();
-            }
+        MediaType contentType = switch (type) {
+            case Type.PNG -> MediaType.IMAGE_PNG;
+            case Type.JPG -> MediaType.IMAGE_JPEG;
+            case Type.GIF -> MediaType.IMAGE_GIF;
+            case Type.WEBP -> IMAGE_WEBP;
+            case Type.ICO -> IMAGE_X_ICON;
+            default -> null;
+        };
+
+        if (contentType == null) {
+            return notFound();
         }
+
+        return ok(path, contentType);
     }
 
     @Override
@@ -110,9 +104,19 @@ public class IavServiceImpl extends AbsService implements IavService {
         entity.setType(type);
         entity.setSize(bytes.length + 0L);
         entity.setAddTime(DateUtil.toSecond(LocalDateTime.now()));
-        mapper.insert(entity);
 
-        Path path = getDataPath(entity.getId().toString());
+        // 获取已删除的id，以复用
+        Long deledId = mapper.getDeledId();
+        if (deledId != null) {
+            entity.setId(deledId);
+            entity.setDel(0);
+            entity.setUpdTime(0L);
+            mapper.updateById(entity);
+        } else {
+            mapper.insert(entity);
+        }
+
+        Path path = getPath(entity.getId().toString());
 
         // 将内容写入文件（覆盖），如果文件不存在则创建
         Files.write(path, bytes);

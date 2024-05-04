@@ -1,5 +1,6 @@
 package org.xiangqian.note.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -21,6 +22,7 @@ import java.nio.file.Paths;
  * @author xiangqian
  * @date 20:35 2024/04/23
  */
+@Slf4j
 public abstract class AbsService {
 
     protected final MediaType IMAGE_WEBP = MediaType.valueOf("image/webp");
@@ -30,8 +32,8 @@ public abstract class AbsService {
     protected final java.nio.charset.Charset UTF_8 = java.nio.charset.Charset.forName("UTF-8");
     protected final java.nio.charset.Charset GBK = java.nio.charset.Charset.forName("GBK");
 
-    // 数据路径
-    private final Path dataPath;
+    // 路径
+    private final Path path;
 
     // 临时路径
     private final Path tmpPath;
@@ -46,17 +48,19 @@ public abstract class AbsService {
             throw new IllegalArgumentException(this.getClass().toString());
         }
 
-        // 数据路径
+        // 路径
         String url = environment.getProperty("spring.datasource.url");
         File file = new File(url.trim().substring("jdbc:sqlite:".length()));
         Path path = file.getParentFile().toPath().resolve(name);
         createDirectoriesIfNotExist(path);
-        this.dataPath = path;
+        this.path = path;
+        log.debug("path {}", path.toAbsolutePath());
 
         // 临时路径
         path = Paths.get("tmp", name);
         createDirectoriesIfNotExist(path);
         this.tmpPath = path;
+        log.debug("tmpPath {}", path.toAbsolutePath());
     }
 
     private void createDirectoriesIfNotExist(Path path) throws IOException {
@@ -65,8 +69,8 @@ public abstract class AbsService {
         }
     }
 
-    protected Path getDataPath(String name) throws IOException {
-        return dataPath.resolve(name);
+    protected Path getPath(String name) throws IOException {
+        return path.resolve(name);
     }
 
     protected Path getTmpPath(String name) throws IOException {

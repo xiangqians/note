@@ -2,6 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.xiangqian.note.mapper.NoteMapper">
 
+    <select id="getDeledId" resultType="java.lang.Long">
+        SELECT `id` FROM `note` WHERE `del` = 1 LIMIT 1
+    </select>
+
     <select id="getSizeById" resultType="Long">
         WITH RECURSIVE `tmp`(`id`, `pid`, `name`, `type`, `size`, `del`, `add_time`, `upd_time`) AS (
         SELECT n.`id`, n.`pid`, n.`name`, n.`type`, n.`size`, n.`del`, n.`add_time`, n.`upd_time`
