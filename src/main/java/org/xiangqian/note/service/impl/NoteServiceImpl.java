@@ -104,7 +104,7 @@ public class NoteServiceImpl extends AbsService implements NoteService, Applicat
         list = mapper.list(vo, list);
         if (BooleanUtils.isTrue(vo.getContain())) {
             if (CollectionUtils.isNotEmpty(list)) {
-                Set<Long> pids = ((List<NoteEntity>) list).stream().map(NoteEntity::getPs)
+                Set<Long> pids = ((org.xiangqian.note.util.List<NoteEntity>) list).stream().map(NoteEntity::getPs)
                         .filter(CollectionUtils::isNotEmpty)
                         .flatMap(Collection::stream)
                         .map(NoteEntity::getId)
@@ -115,7 +115,7 @@ public class NoteServiceImpl extends AbsService implements NoteService, Applicat
                                     .select(NoteEntity::getId, NoteEntity::getName)
                                     .in(NoteEntity::getId, pids))
                             .stream().collect(Collectors.toMap(NoteEntity::getId, NoteEntity::getName));
-                    for (NoteEntity entity : (List<NoteEntity>) list) {
+                    for (NoteEntity entity : (org.xiangqian.note.util.List<NoteEntity>) list) {
                         List<NoteEntity> ps = entity.getPs();
                         if (CollectionUtils.isNotEmpty(ps)) {
                             for (NoteEntity p : ps) {
