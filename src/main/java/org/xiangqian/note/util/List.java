@@ -32,7 +32,7 @@ public class List<T> extends AbstractCollection<T> {
 
     public List(Integer offset) {
         this.offset = offset;
-        this.rows = 10;
+        this.rows = 50;
         this.data = Collections.emptyList();
         this.offsets = Collections.emptyList();
     }
