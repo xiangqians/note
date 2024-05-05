@@ -2,6 +2,31 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.xiangqian.note.mapper.IavMapper">
 
+    <update id="updById">
+        UPDATE `iav`
+        <set>
+            <if test="entity.name != null">
+                `name` = #{entity.name},
+            </if>
+            <if test="entity.type != null">
+                `type` = #{entity.type},
+            </if>
+            <if test="entity.size != null">
+                `size` = #{entity.size},
+            </if>
+            <if test="entity.del != null">
+                `del` = #{entity.del},
+            </if>
+            <if test="entity.addTime != null">
+                `add_time` = #{entity.addTime},
+            </if>
+            <if test="entity.updTime != null">
+                `upd_time` = #{entity.updTime},
+            </if>
+        </set>
+        WHERE id = #{entity.id}
+    </update>
+
     <select id="getDeledId" resultType="java.lang.Long">
         SELECT `id` FROM `iav` WHERE `del` = 1 LIMIT 1
     </select>

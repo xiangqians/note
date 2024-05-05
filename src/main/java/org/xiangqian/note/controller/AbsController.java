@@ -96,7 +96,7 @@ public abstract class AbsController {
         HttpSession session = getSession();
         setVoAttribute(session, vo);
         setErrorAttribute(session, error);
-        url += (url.contains("?") ? "&" : "?") + "t=" + DateUtil.toSecond(LocalDateTime.now());
+        url += "?t=" + DateUtil.toSecond(LocalDateTime.now());
         return new RedirectView(url);
     }
 

@@ -2,6 +2,7 @@ package org.xiangqian.note.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.xiangqian.note.entity.IavEntity;
 
 /**
@@ -10,6 +11,8 @@ import org.xiangqian.note.entity.IavEntity;
  */
 @Mapper
 public interface IavMapper extends BaseMapper<IavEntity> {
+
+    Integer updById(@Param("entity") IavEntity entity);
 
     /**
      * 获取已删除的id，以复用

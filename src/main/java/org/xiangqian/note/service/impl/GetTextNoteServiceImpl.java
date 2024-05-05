@@ -28,17 +28,17 @@ public class GetTextNoteServiceImpl extends AbsGetNoteService {
     @Override
     public ModelAndView getView(ModelAndView modelAndView, NoteEntity entity, List<String> names) throws Exception {
         String type = entity.getType();
-        switch (type) {
-            case Type.MD -> {
-                return view(modelAndView, entity, "md");
-            }
-            case Type.HTML -> {
-                return view(modelAndView, entity, "html");
-            }
-            default -> {
-                return AbsController.errorView(modelAndView);
-            }
+        String name = switch (type) {
+            case Type.MD -> "md";
+            case Type.HTML -> "html";
+            default -> null;
+        };
+
+        if (name == null) {
+            return AbsController.errorView(modelAndView);
         }
+
+        return view(modelAndView, entity, name);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class GetTextNoteServiceImpl extends AbsGetNoteService {
 
     private ModelAndView view(ModelAndView modelAndView, NoteEntity entity, String name) throws IOException {
         Long id = entity.getId();
-        Path path = getDataPath(id.toString());
+        Path path = getPath(id.toString());
         if (Files.exists(path)) {
             String content = Files.readString(path, UTF_8);
             entity.setContent(content);

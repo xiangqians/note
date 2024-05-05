@@ -68,7 +68,7 @@ public class NoteServiceImpl extends AbsService implements NoteService, Applicat
             return false;
         }
 
-        Path path = getDataPath(id.toString());
+        Path path = getPath(id.toString());
         String content = vo.getContent();
         if (content == null) {
             content = "";
@@ -79,17 +79,16 @@ public class NoteServiceImpl extends AbsService implements NoteService, Applicat
 
         long size = Files.size(path);
 
-        NoteEntity updEntity = new NoteEntity();
-        updEntity.setId(id);
-        updEntity.setSize(size);
-        updEntity.setUpdTime(DateUtil.toSecond(LocalDateTime.now()));
-        boolean result = mapper.updateById(updEntity) > 0;
-        if (result) {
-            synchronized (lock) {
-                lock.notify();
-            }
+        entity = new NoteEntity();
+        entity.setId(id);
+        entity.setSize(size);
+        entity.setUpdTime(DateUtil.toSecond(LocalDateTime.now()));
+        int affectedRows = mapper.updateById(entity);
+        if (affectedRows > 0) {
+            trigger();
+            return true;
         }
-        return result;
+        return false;
     }
 
     @Override
@@ -205,21 +204,17 @@ public class NoteServiceImpl extends AbsService implements NoteService, Applicat
     @Override
     public ResponseEntity<Resource> download(Long id) throws IOException {
         if (id == null) {
-            return ResponseEntity.notFound().build();
+            return notFound();
         }
 
-        // 查库
-        NoteEntity entity = null;
-        if (id.longValue() > 0) {
-            entity = mapper.selectById(id);
-        }
+        NoteEntity entity = getById(id, false);
         if (entity == null || Type.FOLDER.equals(entity.getType())) {
-            return ResponseEntity.notFound().build();
+            return notFound();
         }
 
-        Path path = getDataPath(id.toString());
+        Path path = getPath(id.toString());
         if (!Files.exists(path)) {
-            return ResponseEntity.notFound().build();
+            return notFound();
         }
 
         // 读取文件
@@ -230,7 +225,7 @@ public class NoteServiceImpl extends AbsService implements NoteService, Applicat
 
         // 响应头
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s", URLEncoder.encode(entity.getName() + "." + entity.getType(), UTF_8)));
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s", URLEncoder.encode(String.format("%s.%s", entity.getName(), entity.getType()), UTF_8)));
         headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
         headers.add(HttpHeaders.CONTENT_LENGTH, String.valueOf(resource.contentLength()));
 
@@ -249,16 +244,16 @@ public class NoteServiceImpl extends AbsService implements NoteService, Applicat
             Assert.isNull(child, "无法删除非空文件夹");
         }
 
-        boolean result = mapper.deleteById(id) > 0;
-        if (result && !Type.FOLDER.equals(entity.getType())) {
-            PathUtils.deleteFile(getDataPath(id.toString()));
+        // 注：
+        // 逻辑删除，并不删除物理文件，在id没有被复用前，都可恢复
+
+        int affectedRows = mapper.deleteById(id);
+        if (affectedRows > 0) {
+            trigger();
+            return true;
         }
-        if (result) {
-            synchronized (lock) {
-                lock.notify();
-            }
-        }
-        return result;
+
+        return false;
     }
 
     @Override
@@ -288,20 +283,21 @@ public class NoteServiceImpl extends AbsService implements NoteService, Applicat
         entity.setId(id);
         entity.setPid(pid);
         entity.setUpdTime(DateUtil.toSecond(LocalDateTime.now()));
-        boolean result = mapper.updateById(entity) > 0;
-        if (result) {
-            synchronized (lock) {
-                lock.notify();
-            }
+
+        int affectedRows = mapper.updateById(entity);
+        if (affectedRows > 0) {
+            trigger();
+            return true;
         }
-        return result;
+
+        return false;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Boolean reUpload(NoteEntity vo) throws IOException {
-        NoteEntity entity = verifyId(vo.getId());
-        Assert.isTrue(!Type.FOLDER.equals(entity.getType()) && !Type.MD.equals(entity.getType()), "id不能是文件夹类型或者Markdown文件类型");
+        NoteEntity entity = getById(vo.getId(), false);
+        Assert.isTrue(entity != null && !StringUtils.equalsAny(entity.getType(), Type.FOLDER, Type.MD), "id不能是文件夹类型或者Markdown文件类型");
         return uploadOrReUpload(vo);
     }
 
@@ -312,14 +308,16 @@ public class NoteServiceImpl extends AbsService implements NoteService, Applicat
         return uploadOrReUpload(vo);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public Boolean addMd(NoteEntity vo) {
+    public Boolean addMd(NoteEntity vo) throws IOException {
         vo.setType(Type.MD);
         return add(vo);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public Boolean addFolder(NoteEntity vo) {
+    public Boolean addFolder(NoteEntity vo) throws IOException {
         vo.setType(Type.FOLDER);
         return add(vo);
     }
@@ -370,15 +368,18 @@ public class NoteServiceImpl extends AbsService implements NoteService, Applicat
     private Boolean uploadOrReUpload(NoteEntity vo) throws IOException {
         // 文件
         MultipartFile file = vo.getFile();
-        Assert.isTrue(!file.isEmpty(), "上传文件不能为空");
+
+        // 判断上传文件是否有效
+        Assert.isTrue(file != null && !file.isEmpty(), "无效的上传文件");
 
         // 文件名称
         String name = StringUtils.trim(file.getOriginalFilename());
         Assert.isTrue(StringUtils.isNotEmpty(name), "上传文件名称不能为空");
-        // 文件后缀名
-        String suffix = null;
+
         // 文件类型
         String type = null;
+        // 文件后缀名
+        String suffix = null;
         int index = name.lastIndexOf(".");
         if (index >= 0 && (index + 1) < name.length()) {
             suffix = StringUtils.trim(name.substring(index + 1).toLowerCase());
@@ -398,70 +399,109 @@ public class NoteServiceImpl extends AbsService implements NoteService, Applicat
 
         byte[] bytes = file.getBytes();
 
+        int affectedRows = 0;
+
         NoteEntity entity = new NoteEntity();
         entity.setPid(pid);
         entity.setName(name);
         entity.setType(type);
         entity.setSize(bytes.length + 0L);
-        if (vo.getId() == null) {
-            entity.setAddTime(DateUtil.toSecond(LocalDateTime.now()));
-            mapper.insert(entity);
-        } else {
-            entity.setId(vo.getId());
-            entity.setUpdTime(DateUtil.toSecond(LocalDateTime.now()));
-            mapper.updateById(entity);
-        }
 
-        Path path = getDataPath(entity.getId().toString());
+        Long id = vo.getId();
+        if (id != null) {
+            entity.setId(id);
+            entity.setUpdTime(DateUtil.toSecond(LocalDateTime.now()));
+            affectedRows = mapper.updateById(entity);
+        } else {
+            entity.setAddTime(DateUtil.toSecond(LocalDateTime.now()));
+
+            // 获取已删除的id，以复用
+            Long deledId = mapper.getDeledId();
+            if (deledId != null) {
+                entity.setId(deledId);
+                entity.setDel(0);
+                entity.setUpdTime(0L);
+                affectedRows = mapper.updById(entity);
+            } else {
+                affectedRows = mapper.insert(entity);
+            }
+        }
+        id = entity.getId();
+
+        Path path = getPath(id.toString());
         // 将内容写入文件（覆盖），如果文件不存在则创建
         Files.write(path, bytes);
 
-        synchronized (lock) {
-            lock.notify();
-        }
-        return true;
+        trigger();
+
+        return affectedRows > 0;
     }
 
-    private Boolean add(NoteEntity vo) {
+    private Boolean add(NoteEntity vo) throws IOException {
         String name = StringUtils.trim(vo.getName());
         Assert.isTrue(StringUtils.isNotEmpty(name), "名称不能为空");
 
         Long pid = vo.getPid();
         verifyPid(pid);
 
-        NoteEntity addEntity = new NoteEntity();
-        addEntity.setPid(pid);
-        addEntity.setName(name);
-        addEntity.setType(vo.getType());
-        addEntity.setAddTime(DateUtil.toSecond(LocalDateTime.now()));
-        return mapper.insert(addEntity) > 0;
+        NoteEntity entity = new NoteEntity();
+        entity.setPid(pid);
+        entity.setName(name);
+        entity.setType(vo.getType());
+        entity.setSize(0L);
+        entity.setAddTime(DateUtil.toSecond(LocalDateTime.now()));
+
+        int affectedRows = 0;
+
+        // 获取已删除的id，以复用
+        Long deledId = mapper.getDeledId();
+        if (deledId != null) {
+            entity.setId(deledId);
+            entity.setDel(0);
+            entity.setUpdTime(0L);
+            affectedRows = mapper.updById(entity);
+        } else {
+            affectedRows = mapper.insert(entity);
+        }
+
+        if (affectedRows > 0) {
+            Path path = getPath(entity.getId().toString());
+            PathUtils.deleteFile(path);
+            return true;
+        }
+
+        return false;
     }
 
-    private NoteEntity verifyId(Long id) {
-        Assert.notNull(id, "id不能为空");
-
-        NoteEntity entity = null;
-        if (id.longValue() > 0) {
-            entity = mapper.selectById(id);
-        }
-        Assert.notNull(entity, "id不存在");
-
+    /**
+     * 校验pid
+     *
+     * @param pid
+     */
+    private NoteEntity verifyPid(Long pid) {
+        NoteEntity entity = getById(pid, false);
+        Assert.isTrue(entity != null && Type.FOLDER.equals(entity.getType()), "pid不存在");
         return entity;
     }
 
-    private void verifyPid(Long pid) {
-        Assert.notNull(pid, "pid不能为空");
+    /**
+     * 校验id
+     *
+     * @param id
+     */
+    private NoteEntity verifyId(Long id) {
+        NoteEntity entity = getById(id, false);
+        Assert.isTrue(entity != null, "id不存在");
+        return entity;
+    }
 
-        // 根节点
-        if (pid.longValue() == 0) {
-            return;
+    /**
+     * 触发【计算目录大小任务】
+     */
+    private void trigger() {
+        synchronized (lock) {
+            lock.notify();
         }
-
-        NoteEntity entity = null;
-        if (pid.longValue() > 0) {
-            entity = mapper.selectById(pid);
-        }
-        Assert.isTrue(entity != null && Type.FOLDER.equals(entity.getType()), "pid不存在");
     }
 
 }

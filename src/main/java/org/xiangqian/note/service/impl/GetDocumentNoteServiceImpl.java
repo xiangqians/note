@@ -47,7 +47,7 @@ public class GetDocumentNoteServiceImpl extends AbsGetNoteService {
     @Override
     public ResponseEntity<Resource> getStream(NoteEntity entity, List<String> names) throws Exception {
         Long id = entity.getId();
-        Path path = getDataPath(id.toString());
+        Path path = getPath(id.toString());
         if (!Files.exists(path)) {
             return notFound();
         }
@@ -82,7 +82,7 @@ public class GetDocumentNoteServiceImpl extends AbsGetNoteService {
 
     private ModelAndView getXlsDocumentView(ModelAndView modelAndView, NoteEntity entity) throws Exception {
         Long id = entity.getId();
-        Path htmlPath = convertXlsToHtml(String.format("/note/%s", id), getDataPath(id.toString()), getTmpPath(id.toString()));
+        Path htmlPath = convertXlsToHtml(String.format("/note/%s", id), getPath(id.toString()), getTmpPath(id.toString()));
         if (htmlPath != null) {
             String content = Files.readString(htmlPath, UTF_8);
             entity.setContent(content);

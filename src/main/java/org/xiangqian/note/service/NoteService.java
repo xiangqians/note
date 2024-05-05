@@ -36,8 +36,8 @@ public interface NoteService {
 
     Boolean upload(NoteEntity vo) throws IOException;
 
-    Boolean addMd(NoteEntity vo);
+    Boolean addMd(NoteEntity vo) throws IOException;
 
-    Boolean addFolder(NoteEntity vo);
+    Boolean addFolder(NoteEntity vo) throws IOException;
 
 }

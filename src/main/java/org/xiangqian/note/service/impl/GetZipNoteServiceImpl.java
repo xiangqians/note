@@ -43,7 +43,7 @@ public class GetZipNoteServiceImpl extends AbsGetNoteService {
     @Override
     public ModelAndView getView(ModelAndView modelAndView, NoteEntity entity, List<String> names) throws Exception {
         Long id = entity.getId();
-        Path dataPath = getDataPath(id.toString());
+        Path dataPath = getPath(id.toString());
         if (!Files.exists(dataPath)) {
             return view(modelAndView, entity, null);
         }
@@ -132,7 +132,7 @@ public class GetZipNoteServiceImpl extends AbsGetNoteService {
     @Override
     public ResponseEntity<Resource> getStream(NoteEntity entity, List<String> names) throws Exception {
         Long id = entity.getId();
-        Path dataPath = getDataPath(id.toString());
+        Path dataPath = getPath(id.toString());
         if (!Files.exists(dataPath)) {
             return notFound();
         }

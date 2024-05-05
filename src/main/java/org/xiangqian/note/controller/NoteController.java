@@ -12,6 +12,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 import org.xiangqian.note.entity.NoteEntity;
 import org.xiangqian.note.service.NoteService;
+import org.xiangqian.note.util.Response;
 import org.xiangqian.note.util.Type;
 
 import java.io.IOException;
@@ -34,9 +35,14 @@ public class NoteController extends AbsController {
 
     @ResponseBody
     @PutMapping("/{id}/content")
-    public Boolean updContentById(@PathVariable(name = "id") Long id, NoteEntity vo) throws Exception {
-        vo.setId(id);
-        return service.updContentById(vo);
+    public Response<Boolean> updContentById(@PathVariable(name = "id") Long id, NoteEntity vo) throws Exception {
+        try {
+            vo.setId(id);
+            return Response.ok(service.updContentById(vo));
+        } catch (Exception e) {
+            log.error("", e);
+            return Response.error(e.getMessage());
+        }
     }
 
     @GetMapping("/{id}/list")

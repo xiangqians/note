@@ -146,16 +146,19 @@
             console.log(url)
             let formData = new FormData()
             formData.append('content', getContent())
-            http(url, 'PUT', formData, function (data, status, xhr) {
-                // console.log(data)
-                if (data) {
+            http(url, 'PUT', formData, function (response, status, xhr) {
+                // console.log(response)
+                let code = response.code
+                if (code === 'ok') {
                     hash = md5(getContent())
                     $title.text(title)
                     $save.addClass('disabled')
                     alert('保存成功')
                     return
                 }
-                alert('保存失败')
+
+                let msg = response.msg
+                alert('保存失败 ' + msg)
             }, undefined)
         })
 
@@ -230,9 +233,16 @@
                         let fileName = type.replace('/', '.')
                         formData.append('file', blob, fileName)
                         console.log(url, formData)
-                        http(url, 'POST', formData, function (data, status, xhr) {
-                            console.log(data)
-                            document.execCommand('insertText', false, '![' + data.name + '](/iav/' + data.id + '/stream)')
+                        http(url, 'POST', formData, function (response, status, xhr) {
+                            console.log(response)
+                            let code = response.code
+                            if (code === 'ok') {
+                                let iav = response.data
+                                document.execCommand('insertText', false, '![' + iav.name + '](/iav/' + iav.id + '/stream)')
+                                return
+                            }
+                            let msg = response.msg
+                            alert(msg)
                         }, undefined)
 
                         // 阻止默认行为

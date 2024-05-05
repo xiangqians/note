@@ -13,6 +13,8 @@ import org.xiangqian.note.util.List;
 @Mapper
 public interface NoteMapper extends BaseMapper<NoteEntity> {
 
+    Integer updById(@Param("entity") NoteEntity entity);
+
     /**
      * 获取已删除的id，以复用
      *

@@ -111,7 +111,7 @@ public class IavServiceImpl extends AbsService implements IavService {
             entity.setId(deledId);
             entity.setDel(0);
             entity.setUpdTime(0L);
-            mapper.updateById(entity);
+            mapper.updById(entity);
         } else {
             mapper.insert(entity);
         }
