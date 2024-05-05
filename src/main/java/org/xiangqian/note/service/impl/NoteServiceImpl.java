@@ -34,10 +34,7 @@ import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -296,7 +293,8 @@ public class NoteServiceImpl extends AbsService implements NoteService, Applicat
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Boolean reUpload(NoteEntity vo) throws IOException {
-        NoteEntity entity = getById(vo.getId(), false);
+        Long id = vo.getId();
+        NoteEntity entity = getById(id, false);
         Assert.isTrue(entity != null && !StringUtils.equalsAny(entity.getType(), Type.FOLDER, Type.MD), "id不能是文件夹类型或者Markdown文件类型");
         return uploadOrReUpload(vo);
     }
@@ -434,7 +432,12 @@ public class NoteServiceImpl extends AbsService implements NoteService, Applicat
 
         trigger();
 
-        return affectedRows > 0;
+        if (affectedRows > 0) {
+            delTmpPath(id);
+            return true;
+        }
+
+        return false;
     }
 
     private Boolean add(NoteEntity vo) throws IOException {
@@ -465,12 +468,36 @@ public class NoteServiceImpl extends AbsService implements NoteService, Applicat
         }
 
         if (affectedRows > 0) {
-            Path path = getPath(entity.getId().toString());
-            PathUtils.deleteFile(path);
+            delPath(entity.getId());
+            delTmpPath(entity.getId());
             return true;
         }
 
         return false;
+    }
+
+    private void delTmpPath(Long id) throws IOException {
+        String name = id.toString();
+        Path tmpPath = getTmpPath(name);
+        PathUtils.delete(tmpPath);
+
+        Path pTmpPath = tmpPath.getParent();
+        if (Files.exists(pTmpPath)) {
+            // 获取目录下的子文件夹
+            Iterator<Path> iterator = Files.list(pTmpPath).iterator();
+            while (iterator.hasNext()) {
+                tmpPath = iterator.next();
+                if (tmpPath.getFileName().toString().startsWith(name + "_")) {
+                    PathUtils.delete(tmpPath);
+                }
+            }
+        }
+    }
+
+    private void delPath(Long id) throws IOException {
+        String name = id.toString();
+        Path path = getPath(name);
+        PathUtils.delete(path);
     }
 
     /**
