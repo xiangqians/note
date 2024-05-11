@@ -147,7 +147,8 @@
         <!-- 其他类型排序规则 -->
         ELSE 8
         END),
-        (CASE WHEN CAST(n.`name` AS INTEGER) > 0 THEN CAST(n.`name` AS INTEGER) ELSE (n.`name` + 10000) END),
+        (CASE WHEN CAST(n.`name` AS INTEGER) > 0 THEN CAST(n.`name` AS INTEGER) ELSE 0 END),
+        n.`name`,
         (CASE WHEN n.`upd_time` > n.`add_time` THEN n.`upd_time` ELSE n.`add_time` END) DESC
     </select>
 
