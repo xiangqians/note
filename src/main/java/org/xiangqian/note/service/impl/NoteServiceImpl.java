@@ -276,6 +276,10 @@ public class NoteServiceImpl extends AbsService implements NoteService, Applicat
         Long pid = vo.getPid();
         verifyPid(pid);
 
+        if (id.equals(pid)) {
+            return true;
+        }
+
         NoteEntity entity = new NoteEntity();
         entity.setId(id);
         entity.setPid(pid);
