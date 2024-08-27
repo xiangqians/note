@@ -1,0 +1,5 @@
+spring:
+  # 模板配置
+  thymeleaf:
+    # 是否使用页面缓存
+    cache: false

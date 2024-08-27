@@ -1,13 +1,41 @@
 server:
+  # 应用端口
+  port: 58080
   servlet:
+    # 上下文路径
+    context-path: /
+    # 会话配置
     session:
-      # 设置会话过期时间：12h
+      # 设置会话过期时间为12h
       timeout: PT12H
       cookie:
-        # 设置cookie过期时间：12h
+        # 设置cookie过期时间为12h
         max-age: PT12H
 
 spring:
+  servlet:
+    multipart:
+      # 单个上传文件最大允许大小
+      max-file-size: 1GB
+      # 整个请求最大允许大小（包括所有文件和表单数据）
+      max-request-size: 1GB
+      # 文件大小阈值，超过这个阈值的文件会被写入到临时文件中，而不是直接保存在内存中
+      # 这可以帮助控制内存的使用，特别是在处理大文件时，防止大文件导致内存消耗过大
+      file-size-threshold: 10MB
+
+  # 数据源配置
+  datasource:
+    # SQLite驱动（注意：SQLite支持并发读取，但是不支持并发写入操作）
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:${NOTE_DATASOURCE_URL:./data/database.db}
+    # 数据源类型
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      # 池中最大连接数（包括空闲和正在使用的连接）
+      maximum-pool-size: 1
+      # 池中最小空闲连接数量
+      minimum-idle: 1
+
   mvc:
     pathmatch:
       # 路径匹配策略
@@ -34,10 +62,12 @@ spring:
   profiles:
     active: @spring.profiles.active@
 
-# mybatis-plus配置
-mybatis-plus:
+# MyBatis配置
+mybatis:
+  # Mapper XML 文件路径，用于指定 MyBatis 的 Mapper 文件位置，多个文件用逗号分隔
+  mapper-locations: classpath:mybatis/mapper/**/*Mapper.xml
   configuration:
-    # 开启驼峰配置
+    # 开启驼峰命名转换，将数据库下划线列名转为驼峰式命名
     map-underscore-to-camel-case: true
 
     # MyBatis自动映射策略：MyBatis在将数据库查询结果映射到Java对象时的自动映射策略
@@ -45,21 +75,16 @@ mybatis-plus:
     # 1、NONE：不启用自动映射
     # 2、PARTIAL：只对非嵌套的 resultMap 进行自动映射
     # 3、FULL：对所有的 resultMap 都进行自动映射
-    auto-mapping-behavior: full
+    auto-mapping-behavior: FULL
 
-    # 开启打印sql配置
+    # 日志配置
     # 1、org.apache.ibatis.logging.nologging.NoLoggingImpl
+    #   含义：不记录任何日志信息。当使用这个实现时，MyBatis 将完全禁止日志记录，不输出任何与 SQL 执行相关的信息。
+    #   使用场景：生产环境中通常使用，可以减少日志输出对性能的影响。
     # 2、org.apache.ibatis.logging.stdout.StdOutImpl
+    #   含义：将日志信息输出到控制台（标准输出流）。
+    #   使用场景：用于开发和调试阶段，可以直接在控制台上查看 MyBatis 生成的 SQL 语句和相关调试信息。
     # 3、org.apache.ibatis.logging.slf4j.Slf4jImpl
+    #   含义：将日志信息输出到 SLF4J 日志框架中。
+    #   使用场景：结合 SLF4J 接口和具体的日志实现（如 Logback、Log4j 等），可以将 MyBatis 的日志集成到应用程序的整体日志管理中。
     log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
-
-  # 指定sql映射文件位置
-  mapper-locations: classpath:mybatis/mapper/**/*Mapper.xml
-
-  global-config:
-    # 逻辑删除配置
-    db-config:
-      # 删除前
-      logic-not-delete-value: 0
-      # 删除后
-      logic-delete-value: 1

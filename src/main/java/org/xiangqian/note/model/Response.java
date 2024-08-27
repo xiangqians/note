@@ -1,4 +1,4 @@
-package org.xiangqian.note.util;
+package org.xiangqian.note.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

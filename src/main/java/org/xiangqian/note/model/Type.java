@@ -1,4 +1,4 @@
-package org.xiangqian.note.util;
+package org.xiangqian.note.model;
 
 import org.apache.commons.lang3.StringUtils;
 

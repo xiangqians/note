@@ -1,9 +1,5 @@
 package org.xiangqian.note.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,18 +19,15 @@ import java.util.Objects;
  * @date 21:33 2024/02/29
  */
 @Data
-@TableName("user")
 @NoArgsConstructor
 public class UserEntity implements UserDetails {
 
     private static final long serialVersionUID = 1L;
 
     // 用户id
-    @TableId(type = IdType.AUTO)
-    private Long id;
+    private Integer id;
 
     // 用户名
-    @TableField("`name`")
     private String name;
 
     // 昵称
@@ -44,15 +37,12 @@ public class UserEntity implements UserDetails {
     private String passwd;
 
     // 原密码
-    @TableField(exist = false)
     private String originalPasswd;
 
     // 新密码
-    @TableField(exist = false)
     private String newPasswd;
 
     // 再次输入新密码
-    @TableField(exist = false)
     private String reNewPasswd;
 
     // 是否已锁定，0-否，1-是

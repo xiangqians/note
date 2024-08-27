@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 import org.xiangqian.note.entity.UserEntity;
@@ -17,19 +16,24 @@ import org.xiangqian.note.service.UserService;
  */
 @Slf4j
 @Controller
-@RequestMapping("/user")
 public class UserController extends AbsController {
 
     @Autowired
     private UserService service;
 
-    @GetMapping("/resetPasswd")
+    @GetMapping("/login")
+    public ModelAndView login(ModelAndView modelAndView) {
+        modelAndView.setViewName("user/login");
+        return modelAndView;
+    }
+
+    @GetMapping("/user/resetPasswd")
     public ModelAndView resetPasswd(ModelAndView modelAndView) {
         modelAndView.setViewName("user/resetPasswd");
         return modelAndView;
     }
 
-    @PutMapping("/resetPasswd")
+    @PutMapping("/user/resetPasswd")
     public RedirectView resetPasswd(UserEntity vo) {
         try {
             service.resetPasswd(vo);

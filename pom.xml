@@ -28,8 +28,8 @@
         <!-- 3.1.1 GA -->
         <spring-boot-dependencies.version>3.1.1</spring-boot-dependencies.version>
 
-        <!-- mybatis-plus -->
-        <mybatis-plus.version>3.5.3.1</mybatis-plus.version>
+        <!-- mybatis -->
+        <mybatis.version>3.0.3</mybatis.version>
 
         <!-- aspose
          | windows-amd64
@@ -139,10 +139,11 @@
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
 
+        <!-- MyBatis Starter -->
         <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
-            <version>${mybatis-plus.version}</version>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>${mybatis.version}</version>
         </dependency>
 
         <dependency>

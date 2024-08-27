@@ -1,10 +1,10 @@
-package org.xiangqian.note.configuration;
+package org.xiangqian.note.config;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +21,9 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -50,7 +53,12 @@ import java.util.List;
 @EnableMethodSecurity(prePostEnabled = true, // 开启预处理验证
         jsr250Enabled = true, // 启用JSR250注解支持
         securedEnabled = true) // 启用 {@link org.springframework.security.access.annotation.Secured} 注解支持
-public class SecurityConfiguration implements WebMvcConfigurer {
+public class SecurityConfig implements WebMvcConfigurer, UserDetailsService {
+
+    @Autowired
+    private UserMapper userMapper;
+
+    private ThreadLocal<UserEntity> threadLocal = new ThreadLocal<>();
 
     // 处理静态资源
     @Override
@@ -58,9 +66,40 @@ public class SecurityConfiguration implements WebMvcConfigurer {
         registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
     }
 
-    @Bean
-    public ThreadLocal<UserEntity> userEntityThreadLocal() {
-        return new ThreadLocal<>();
+    @Override
+    public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
+        UserEntity entity = null;
+        userName = StringUtils.trim(userName);
+        if (StringUtils.isNotEmpty(userName)) {
+            entity = userMapper.getByName(userName);
+        }
+        if (entity == null) {
+            throw new UsernameNotFoundException(userName);
+        }
+
+        // 将用户信息设置到线程本地
+        threadLocal.set(entity);
+
+        // 未被锁定
+        if (entity.isNonLocked()) {
+            // 未被限时锁定
+            if (entity.isNonLimitedTimeLocked()) {
+                // 用户连续错误登陆超过3次，则归零
+                if (entity.getDeny() >= 3) {
+                    UserEntity updEntity = new UserEntity();
+                    updEntity.setId(entity.getId());
+                    updEntity.setDeny(0);
+                    userMapper.updById(updEntity);
+                    entity.setDeny(0);
+                }
+            }
+            // 限时锁定
+            else {
+                entity.setLocked(1);
+            }
+        }
+
+        return entity;
     }
 
     @Bean
@@ -113,13 +152,9 @@ public class SecurityConfiguration implements WebMvcConfigurer {
             @Autowired
             private UserMapper mapper;
 
-            @Autowired
-            @Qualifier("userEntityThreadLocal")
-            private ThreadLocal<UserEntity> userEntityThreadLocal;
-
             @Override
             public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
-                userEntityThreadLocal.remove();
+                threadLocal.remove();
 
                 // 获取已授权用户信息
                 UserEntity entity = (UserEntity) authentication.getPrincipal();
@@ -149,7 +184,7 @@ public class SecurityConfiguration implements WebMvcConfigurer {
                 updEntity.setCurrentLoginIp(request.getRemoteHost());
                 updEntity.setCurrentLoginTime(DateUtil.toSecond(LocalDateTime.now()));
                 updEntity.setUpdTime(DateUtil.toSecond(LocalDateTime.now()));
-                mapper.updateById(updEntity);
+                mapper.updById(updEntity);
 
                 // 更新会话中的用户信息
                 entity.setDeny(updEntity.getDeny());
@@ -174,14 +209,10 @@ public class SecurityConfiguration implements WebMvcConfigurer {
             @Autowired
             private UserMapper mapper;
 
-            @Autowired
-            @Qualifier("userEntityThreadLocal")
-            private ThreadLocal<UserEntity> userEntityThreadLocal;
-
             @Override
             public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-                UserEntity entity = userEntityThreadLocal.get();
-                userEntityThreadLocal.remove();
+                UserEntity entity = threadLocal.get();
+                threadLocal.remove();
 
                 // 获取会话
                 HttpSession session = request.getSession(true);
@@ -196,7 +227,7 @@ public class SecurityConfiguration implements WebMvcConfigurer {
                         updEntity.setId(entity.getId());
                         updEntity.setDeny(entity.getDeny() + 1);
                         updEntity.setUpdTime(DateUtil.toSecond(LocalDateTime.now()));
-                        mapper.updateById(updEntity);
+                        mapper.updById(updEntity);
                         if (updEntity.getDeny() == 2) {
                             error = "已连续两次输错密码，如连续输错三次，用户将被锁定";
                         }
