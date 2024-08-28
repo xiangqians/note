@@ -14,13 +14,13 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 public class MyBatisConfig {
 
     /**
-     * 注册分页、延迟加载列表拦截器
+     * 注册延迟加载列表拦截器
      *
      * @return
      */
     @Bean
-    public Interceptor mybatisInterceptor() {
-        return new MybatisInterceptor();
+    public Interceptor mybatisLazyListInterceptor() {
+        return new MybatisLazyListInterceptor();
     }
 
 }

@@ -12,11 +12,11 @@ import org.xiangqian.note.model.LazyList;
 @Mapper
 public interface UserMapper {
 
-    Boolean add(UserEntity entity);
+    Boolean add(UserEntity userEntity);
 
     Boolean delById(Long id);
 
-    Boolean updById(UserEntity entity);
+    Boolean updById(UserEntity userEntity);
 
     UserEntity getById(Long id);
 

@@ -16,14 +16,16 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.xiangqian.note.model.LazyList;
-import org.xiangqian.note.model.Page;
 
 import java.lang.reflect.Method;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
- * 分页、延迟加载列表拦截器
+ * 延迟加载列表拦截器
  *
  * @author xiangqian
  * @date 21:48 2024/07/15
@@ -34,7 +36,7 @@ import java.util.*;
         // 拦截 Executor 类的 query 方法，参数为 MappedStatement.class、Object.class、RowBounds.class、ResultHandler.class、CacheKey.class 和 BoundSql.class
         @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class}),
 })
-public class MybatisInterceptor implements Interceptor {
+public class MybatisLazyListInterceptor implements Interceptor {
 
     /**
      * 拦截目标对象的方法执行
@@ -103,21 +105,15 @@ public class MybatisInterceptor implements Interceptor {
      * @throws Throwable
      */
     private Object query(Invocation invocation, Executor executor, MappedStatement mappedStatement, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey cacheKey, BoundSql boundSql) throws Throwable {
-        // 获取参数中的 Page/LazyList 实例
-        Page<?> page = null;
+        // 获取参数中的 LazyList 实例
         LazyList<?> lazyList = null;
         if (parameter != null) {
             if (parameter instanceof LazyList) {
-                page = (Page) parameter;
-            } else if (parameter instanceof Page) {
                 lazyList = (LazyList) parameter;
             } else if (parameter instanceof Map) {
                 Map parameterMap = (Map) parameter;
                 for (Object value : parameterMap.values()) {
-                    if (value instanceof Page) {
-                        page = (Page) value;
-                        break;
-                    } else if (value instanceof LazyList) {
+                    if (value instanceof LazyList) {
                         lazyList = (LazyList) value;
                         break;
                     }
@@ -125,54 +121,16 @@ public class MybatisInterceptor implements Interceptor {
             }
         }
 
-        // 分页查询
-        if (page != null) {
-            return page(page, executor, mappedStatement, parameter, rowBounds, resultHandler, cacheKey, boundSql);
-        }
         // 延迟加载列表查询
-        else if (lazyList != null) {
-            return lazyList(lazyList, executor, mappedStatement, parameter, rowBounds, resultHandler, cacheKey, boundSql);
+        if (lazyList != null) {
+            return query(lazyList, executor, mappedStatement, parameter, rowBounds, resultHandler, cacheKey, boundSql);
         }
 
         // 继续执行下一个拦截器
         return invocation.proceed();
     }
 
-    private Object page(Page<?> page, Executor executor, MappedStatement mappedStatement, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey cacheKey, BoundSql boundSql) throws SQLException {
-        // 获取绑定 SQL
-        if (boundSql == null) {
-            boundSql = mappedStatement.getBoundSql(parameter);
-        }
-
-        // 查询总数
-        MappedStatement countMappedStatement = getCountMappedStatement(mappedStatement, boundSql);
-        List list = executor.query(countMappedStatement, parameter, rowBounds, resultHandler);
-        int total = (Integer) list.get(0);
-        page.setTotal(total);
-
-        // 当前页
-        int current = page.getCurrent();
-        // 页数量
-        int size = page.getSize();
-        // 最大页数
-        int number = total / size;
-        if (total % size > 0) {
-            number += 1;
-        }
-
-        // 查询分页数据
-        if (current <= number) {
-            int offset = (current - 1) * size;
-            int rows = size;
-            MappedStatement listMappedStatement = getListMappedStatement(mappedStatement, parameter, boundSql, offset, rows);
-            list = executor.query(listMappedStatement, parameter, rowBounds, resultHandler);
-            page.setData(list);
-        }
-
-        return List.of(page);
-    }
-
-    private Object lazyList(LazyList<?> lazyList, Executor executor, MappedStatement mappedStatement, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey cacheKey, BoundSql boundSql) throws SQLException {
+    private Object query(LazyList<?> lazyList, Executor executor, MappedStatement mappedStatement, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey cacheKey, BoundSql boundSql) throws SQLException {
         // 获取绑定 SQL
         if (boundSql == null) {
             boundSql = mappedStatement.getBoundSql(parameter);
@@ -198,25 +156,6 @@ public class MybatisInterceptor implements Interceptor {
         lazyList.setData(list);
 
         return List.of(lazyList);
-    }
-
-    private MappedStatement getCountMappedStatement(MappedStatement mappedStatement, BoundSql boundSql) {
-        String countMappedStatementId = mappedStatement.getId() + "_count";
-
-        String sql = boundSql.getSql();
-        String countSql = "SELECT COUNT(*) FROM (" + sql + ") total";
-
-        ResultMap resultMap = null;
-        String resultMapId = "java.lang.Integer";
-        Configuration configuration = mappedStatement.getConfiguration();
-        if (configuration.hasResultMap(resultMapId)) {
-            resultMap = configuration.getResultMap(resultMapId);
-        } else {
-            resultMap = new ResultMap.Builder(configuration, resultMapId, Integer.class, Collections.emptyList()).build();
-            configuration.addResultMap(resultMap);
-        }
-
-        return createMappedStatement(mappedStatement, countMappedStatementId, countSql, boundSql.getParameterMappings(), resultMap);
     }
 
     /**

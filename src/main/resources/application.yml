@@ -88,3 +88,6 @@ mybatis:
     #   含义：将日志信息输出到 SLF4J 日志框架中。
     #   使用场景：结合 SLF4J 接口和具体的日志实现（如 Logback、Log4j 等），可以将 MyBatis 的日志集成到应用程序的整体日志管理中。
     log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+# 是否启用用户注册功能
+enable-user-register: ${NOTE_ENABLE_USER_REGISTER:true}

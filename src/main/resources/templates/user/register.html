@@ -1,6 +1,6 @@
 <!--
  | @author xiangqian
- | @date 14:01 2024/03/02
+ | @date 18:17 2024/08/27
  |-->
 <!DOCTYPE html>
 <html lang="en">
@@ -8,26 +8,30 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
     <link rel="stylesheet" th:href="@{/static/css/body.css}" type="text/css" />
-    <title>登录</title>
+    <title>注册</title>
 </head>
 <body>
 <error th:text="${error}"></error>
 <content>
     <left>
-        <form method="post" th:action="@{'/login?t=' + ${timestamp}}">
+        <form method="post" th:action="@{'/user/register?t=' + ${timestamp}}">
             <table>
                 <tbody>
                 <tr>
                     <td><span style="font-weight: bold;">*</span><label>用户名</label></td>
-                    <td><input name="username" type="text" value="" required autofocus></td>
+                    <td><input name="name" type="text" value="" required autofocus></td>
+                </tr>
+                <tr>
+                    <td><span style="font-weight: bold;"></span><label>昵称</label></td>
+                    <td><input name="nickname" type="text" value="" required autofocus></td>
                 </tr>
                 <tr>
                     <td><span style="font-weight: bold;">*</span><label>密码</label></td>
-                    <td><input name="password" type="password" required></td>
+                    <td><input name="passwd" type="password" required></td>
                 </tr>
                 <tr>
                     <td colspan="2">
-                        <button type="submit">登录</button><a th:if="${enableUserRegister}" th:href="@{'/user/register?t=' + ${timestamp}}" style="margin-left: 15px;">注册</a>
+                        <button type="submit">注册</button><a th:href="@{'/user/login?t=' + ${timestamp}}" style="margin-left: 15px;">登录</a>
                     </td>
                 </tr>
                 </tbody>

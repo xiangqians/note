@@ -1,13 +1,17 @@
 package org.xiangqian.note.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 import org.xiangqian.note.entity.UserEntity;
+import org.xiangqian.note.model.Vo;
 import org.xiangqian.note.service.UserService;
 
 /**
@@ -19,12 +23,40 @@ import org.xiangqian.note.service.UserService;
 public class UserController extends AbsController {
 
     @Autowired
-    private UserService service;
+    private UserService userService;
 
-    @GetMapping("/login")
+    // 是否开启用户注册
+    private boolean enableUserRegister;
+
+    @Value("${enable-user-register}")
+    public void setEnableUserRegister(Boolean enableUserRegister) {
+        this.enableUserRegister = BooleanUtils.isTrue(enableUserRegister);
+    }
+
+    @GetMapping("/user/login")
     public ModelAndView login(ModelAndView modelAndView) {
+        add(modelAndView, "enableUserRegister", enableUserRegister);
         modelAndView.setViewName("user/login");
         return modelAndView;
+    }
+
+    @GetMapping("/user/register")
+    public Object register(ModelAndView modelAndView) {
+        if (!enableUserRegister) {
+            return redirectView("/user/login", null);
+        }
+
+        modelAndView.setViewName("user/register");
+        return modelAndView;
+    }
+
+    @PostMapping("/user/register")
+    public RedirectView register(UserEntity userEntity) {
+        if (!enableUserRegister) {
+            return redirectView("/user/login", null);
+        }
+
+        return redirectView("/user/login", new Vo().add("user", userEntity));
     }
 
     @GetMapping("/user/resetPasswd")
@@ -36,11 +68,11 @@ public class UserController extends AbsController {
     @PutMapping("/user/resetPasswd")
     public RedirectView resetPasswd(UserEntity vo) {
         try {
-            service.resetPasswd(vo);
-            return redirectView("/", null, null);
+            userService.resetPasswd(vo);
+            return redirectView("/", null);
         } catch (Exception e) {
             log.error("", e);
-            return redirectView("/user/resetPasswd", null, e.getMessage());
+            return redirectView("/user/resetPasswd", new Vo(e.getMessage()));
         }
     }
 

@@ -112,14 +112,14 @@ public class SecurityConfig implements WebMvcConfigurer, UserDetailsService {
                 .authorizeHttpRequests((authorize) -> authorize
                         // 放行静态资源
                         .requestMatchers("/static/**").permitAll()
-                        // 放行/login
-                        .requestMatchers("/login").permitAll()
+                        // 放行登录、注册
+                        .requestMatchers("/user/login", "/user/register").permitAll()
                         // 其他请求需要授权
                         .anyRequest().authenticated())
                 // 自定义表单登录
                 .formLogin(configurer -> configurer
                         // 自定义登录页面
-                        .loginPage("/login")
+                        .loginPage("/user/login")
                         // 登录成功处理器
                         .successHandler(authenticationSuccessHandler)
                         // 登录失败处理器
@@ -137,7 +137,7 @@ public class SecurityConfig implements WebMvcConfigurer, UserDetailsService {
                         // 当达到最大会话数时剔除旧登录
                         .sessionRegistry(sessionRegistry)
                         // 会话过期后跳转的URL
-                        .expiredUrl("/login"))
+                        .expiredUrl("/user/login"))
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .csrf(AbstractHttpConfigurer::disable);
         return http.build();
@@ -249,7 +249,7 @@ public class SecurityConfig implements WebMvcConfigurer, UserDetailsService {
                 AbsController.setVoAttribute(session, entity);
 
                 // 重定向到登录页
-                response.sendRedirect("/login");
+                response.sendRedirect("/user/login");
             }
         };
     }
@@ -300,7 +300,7 @@ public class SecurityConfig implements WebMvcConfigurer, UserDetailsService {
         registry.addInterceptor(new HandlerInterceptor() {
             @Override
             public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-                if ("/login".equals(request.getServletPath()) && AbsController.getLoggedinAttribute(request.getSession(true))) {
+                if ("/user/login".equals(request.getServletPath()) && AbsController.getLoggedinAttribute(request.getSession(true))) {
                     // 已登录，重定向到首页
                     response.sendRedirect("/");
                     // 不继续执行后续的拦截器
