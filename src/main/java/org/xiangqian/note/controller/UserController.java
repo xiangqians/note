@@ -25,38 +25,13 @@ public class UserController extends AbsController {
     @Autowired
     private UserService userService;
 
-    // 是否开启用户注册
-    private boolean enableUserRegister;
-
-    @Value("${enable-user-register}")
-    public void setEnableUserRegister(Boolean enableUserRegister) {
-        this.enableUserRegister = BooleanUtils.isTrue(enableUserRegister);
-    }
-
     @GetMapping("/user/login")
     public ModelAndView login(ModelAndView modelAndView) {
-        add(modelAndView, "enableUserRegister", enableUserRegister);
+//        add(modelAndView, "info", "信息！信息！信息！信息！")
+//                .add("warn", "警告！警告！警告！")
+//                .add("error", "错误！错误！错误！错误！");
         modelAndView.setViewName("user/login");
         return modelAndView;
-    }
-
-    @GetMapping("/user/register")
-    public Object register(ModelAndView modelAndView) {
-        if (!enableUserRegister) {
-            return redirectView("/user/login", null);
-        }
-
-        modelAndView.setViewName("user/register");
-        return modelAndView;
-    }
-
-    @PostMapping("/user/register")
-    public RedirectView register(UserEntity userEntity) {
-        if (!enableUserRegister) {
-            return redirectView("/user/login", null);
-        }
-
-        return redirectView("/user/login", new Vo().add("user", userEntity));
     }
 
     @GetMapping("/user/resetPasswd")
@@ -72,7 +47,7 @@ public class UserController extends AbsController {
             return redirectView("/", null);
         } catch (Exception e) {
             log.error("", e);
-            return redirectView("/user/resetPasswd", new Vo(e.getMessage()));
+            return redirectView("/user/resetPasswd", Vo.error(e.getMessage()));
         }
     }
 

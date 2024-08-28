@@ -195,8 +195,8 @@ public class SecurityConfig implements WebMvcConfigurer, UserDetailsService {
                 entity.setUpdTime(updEntity.getUpdTime());
 
                 // 添加用户信息到会话
-                AbsController.setLoggedinAttribute(session, true);
-                AbsController.setUserAttribute(session, entity);
+                 setLoggedinAttribute(session, true);
+//                AbsController.setUserAttribute(session, entity);
 
                 super.onAuthenticationSuccess(request, response, authentication);
             }
@@ -241,12 +241,12 @@ public class SecurityConfig implements WebMvcConfigurer, UserDetailsService {
                 } else {
                     error = exception.getMessage();
                 }
-                AbsController.setErrorAttribute(session, error);
+//                AbsController.setErrorAttribute(session, error);
 
                 // 将用户信息vo存储到session
                 entity = new UserEntity();
                 entity.setName(request.getParameter("username"));
-                AbsController.setVoAttribute(session, entity);
+//                AbsController.setVoAttribute(session, entity);
 
                 // 重定向到登录页
                 response.sendRedirect("/user/login");
@@ -267,7 +267,7 @@ public class SecurityConfig implements WebMvcConfigurer, UserDetailsService {
             @Override
             public void sessionCreated(HttpSessionEvent event) {
                 HttpSession session = event.getSession();
-                AbsController.setLoggedinAttribute(session, false);
+                setLoggedinAttribute(session, false);
             }
         });
         return servletListenerRegistrationBean;
@@ -300,7 +300,7 @@ public class SecurityConfig implements WebMvcConfigurer, UserDetailsService {
         registry.addInterceptor(new HandlerInterceptor() {
             @Override
             public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-                if ("/user/login".equals(request.getServletPath()) && AbsController.getLoggedinAttribute(request.getSession(true))) {
+                if ("/user/login".equals(request.getServletPath()) && getLoggedinAttribute(request.getSession(true))) {
                     // 已登录，重定向到首页
                     response.sendRedirect("/");
                     // 不继续执行后续的拦截器
@@ -312,4 +312,18 @@ public class SecurityConfig implements WebMvcConfigurer, UserDetailsService {
         });
     }
 
+    // 【session域】是否已登陆
+    public static final String IS_LOGGEDIN = "isLoggedin";
+
+    public static boolean getLoggedinAttribute(HttpSession session) {
+        Object isLoggedin = session.getAttribute(IS_LOGGEDIN);
+        if (isLoggedin instanceof Boolean) {
+            return (boolean) isLoggedin;
+        }
+        return false;
+    }
+
+    public static void setLoggedinAttribute(HttpSession session, boolean loggedin) {
+        session.setAttribute(IS_LOGGEDIN, loggedin);
+    }
 }

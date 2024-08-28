@@ -8,35 +8,32 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
     <link rel="stylesheet" th:href="@{/static/css/body.css}" type="text/css" />
+    <link rel="stylesheet" th:href="@{/static/css/top.css}" type="text/css" />
     <title>登录</title>
 </head>
 <body>
-<error th:text="${error}"></error>
-<content>
-    <left>
-        <form method="post" th:action="@{'/login?t=' + ${timestamp}}">
-            <table>
-                <tbody>
-                <tr>
-                    <td><span style="font-weight: bold;">*</span><label>用户名</label></td>
-                    <td><input name="username" type="text" value="" required autofocus></td>
-                </tr>
-                <tr>
-                    <td><span style="font-weight: bold;">*</span><label>密码</label></td>
-                    <td><input name="password" type="password" required></td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <button type="submit">登录</button><a th:if="${enableUserRegister}" th:href="@{'/user/register?t=' + ${timestamp}}" style="margin-left: 15px;">注册</a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </form>
-    </left>
-    <right>
-    </right>
-</content>
+<div th:replace="top"></div>
+<left>
+    <form method="post" th:action="@{'/login?t=' + ${timestamp}}">
+        <table>
+            <tbody>
+            <tr style="display: none;">
+                <td><span style="font-weight: bold;">*</span><label>用户名</label></td>
+                <td><input name="username" type="text" value="admin" required></td>
+            </tr>
+            <tr>
+                <td><span style="font-weight: bold;">*</span><label>密码</label></td>
+                <td><input name="password" type="password" required autofocus></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button type="submit">登录</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
+</left>
 <div th:replace="bottom"></div>
 </body>
 </html>

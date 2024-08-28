@@ -8,18 +8,29 @@ import java.util.HashMap;
  */
 public class Vo extends HashMap<String, Object> {
 
-    public Vo(Object error) {
+    private Vo() {
         super(8, 1f);
-        put("error", error);
-    }
-
-    public Vo() {
-        this(null);
     }
 
     public Vo add(String name, Object value) {
         put(name, value);
         return this;
+    }
+
+    public static Vo none() {
+        return new Vo();
+    }
+
+    public static Vo info(Object value) {
+        return new Vo().add("info", value);
+    }
+
+    public static Vo warn(Object value) {
+        return new Vo().add("warn", value);
+    }
+
+    public static Vo error(Object value) {
+        return new Vo().add("error", value);
     }
 
 }

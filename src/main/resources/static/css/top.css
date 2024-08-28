@@ -1,0 +1,21 @@
+/**
+ * @author xiangqian
+ * @date 20:02 2023/07/10
+ */
+body > top > info {
+    padding-bottom: 10px;
+    display: block;
+    color: rgb(0, 200, 0);
+}
+
+body > top > warn {
+    padding-bottom: 10px;
+    display: block;
+    color: rgb(200, 200, 0);
+}
+
+body > top > error {
+    padding-bottom: 10px;
+    display: block;
+    color: rgb(200, 0, 0);
+}

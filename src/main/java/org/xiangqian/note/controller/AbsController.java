@@ -18,10 +18,6 @@ import java.util.Map;
  */
 public abstract class AbsController {
 
-    // 【session域】是否已登陆
-    public static final String IS_LOGGEDIN = "isLoggedin";
-
-    // 【request域】
     private static final String VO = "vo";
 
     // 在每个请求之前设置ModelAndView值
@@ -35,7 +31,7 @@ public abstract class AbsController {
         }
 
         if (vo == null) {
-            vo = new Vo();
+            vo = Vo.none();
         }
 
         vo.add("contextPath", request.getContextPath())
@@ -46,23 +42,11 @@ public abstract class AbsController {
         modelAndView.addObject(VO, vo);
     }
 
-    protected final Vo add(ModelAndView modelAndView, String name, Object value) {
+    public static Vo add(ModelAndView modelAndView, String name, Object value) {
         Map<String, Object> map = modelAndView.getModel();
         Vo vo = (Vo) map.get(VO);
         vo.add(name, value);
         return vo;
-    }
-
-    public static boolean getLoggedinAttribute(HttpSession session) {
-        Object isLoggedin = session.getAttribute(IS_LOGGEDIN);
-        if (isLoggedin instanceof Boolean) {
-            return (boolean) isLoggedin;
-        }
-        return false;
-    }
-
-    public static void setLoggedinAttribute(HttpSession session, boolean loggedin) {
-        session.setAttribute(IS_LOGGEDIN, loggedin);
     }
 
     public static ModelAndView errorView(ModelAndView modelAndView) {
