@@ -13,18 +13,18 @@ public class SecurityUtil {
 
     public static UserEntity getUser() {
         Authentication authentication = getAuthentication();
-        if (isLoggedin(authentication)) {
+        if (isLoggedIn(authentication)) {
             return (UserEntity) authentication.getPrincipal();
         }
         return null;
     }
 
-    public static boolean isLoggedin() {
+    public static boolean isLoggedIn() {
         Authentication authentication = getAuthentication();
-        return isLoggedin(authentication);
+        return isLoggedIn(authentication);
     }
 
-    public static boolean isLoggedin(Authentication authentication) {
+    public static boolean isLoggedIn(Authentication authentication) {
         // 匿名用户（表示用户未登录）
         if (authentication instanceof AnonymousAuthenticationToken) {
             return false;
@@ -39,12 +39,12 @@ public class SecurityUtil {
         return false;
     }
 
-    public static void setAuthentication(Authentication authentication) {
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
-
     public static Authentication getAuthentication() {
         return SecurityContextHolder.getContext().getAuthentication();
+    }
+
+    public static void setAuthentication(Authentication authentication) {
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
 }

@@ -24,68 +24,65 @@ public class UserEntity implements UserDetails {
 
     private static final long serialVersionUID = 1L;
 
-    // 用户id
+    /**
+     * 用户id
+     */
     private Integer id;
 
-    // 用户名
+    /**
+     * 用户名
+     */
     private String name;
 
-    // 昵称
-    private String nickname;
-
-    // 密码
+    /**
+     * 密码
+     */
     private String passwd;
 
-    // 原密码
-    private String originalPasswd;
-
-    // 新密码
+    /**
+     * 新密码
+     */
     private String newPasswd;
 
-    // 再次输入新密码
-    private String reNewPasswd;
-
-    // 是否已锁定，0-否，1-是
+    /**
+     * 是否已锁定（0-否，1-是）
+     */
     private Integer locked;
 
-    // 用户连续错误登陆次数，超过3次则锁定用户
+    /**
+     * 连续错误登陆次数，超过3次则锁定用户
+     */
     private Integer deny;
 
-    // 上一次登录ip
-    private String lastLoginIp;
+    /**
+     * 上一次登录主机
+     */
+    private String lastLoginHost;
 
-    // 上一次登录时间（时间戳，单位s）
+    /**
+     * 上一次登录时间戳（单位s）
+     */
     private Long lastLoginTime;
 
-    // 当前次登录ip
-    private String currentLoginIp;
+    /**
+     * 当前登录主机
+     */
+    private String currentLoginHost;
 
-    // 当前登录时间（时间戳，单位s）
+    /**
+     * 当前登录时间戳（单位s）
+     */
     private Long currentLoginTime;
 
-    // 创建时间（时间戳，单位s）
+    /**
+     * 创建时间戳（单位s）
+     */
     private Long addTime;
 
-    // 修改时间（时间戳，单位s）
+    /**
+     * 修改时间戳（单位s）
+     */
     private Long updTime;
-
-    @Override
-    public boolean equals(Object object) {
-        if (this == object) {
-            return true;
-        }
-
-        if (object == null || getClass() != object.getClass()) {
-            return false;
-        }
-
-        return Objects.equals(name, ((UserEntity) object).name);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name);
-    }
 
     /**
      * 是否未被锁定
@@ -144,7 +141,7 @@ public class UserEntity implements UserDetails {
      */
     @Override
     public boolean isAccountNonLocked() {
-        return isNonLocked();
+        return isNonLocked() && isNonLimitedTimeLocked();
     }
 
     /**
@@ -187,6 +184,24 @@ public class UserEntity implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.emptySet();
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+
+        return Objects.equals(name, ((UserEntity) object).name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
     }
 
 }

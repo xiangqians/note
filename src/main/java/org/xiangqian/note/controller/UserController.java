@@ -1,12 +1,9 @@
 package org.xiangqian.note.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
@@ -25,29 +22,28 @@ public class UserController extends AbsController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/user/login")
+    @GetMapping("/login")
     public ModelAndView login(ModelAndView modelAndView) {
-//        add(modelAndView, "info", "信息！信息！信息！信息！")
-//                .add("warn", "警告！警告！警告！")
-//                .add("error", "错误！错误！错误！错误！");
         modelAndView.setViewName("user/login");
         return modelAndView;
     }
 
-    @GetMapping("/user/resetPasswd")
+    @GetMapping("/resetPasswd")
     public ModelAndView resetPasswd(ModelAndView modelAndView) {
         modelAndView.setViewName("user/resetPasswd");
         return modelAndView;
     }
 
-    @PutMapping("/user/resetPasswd")
-    public RedirectView resetPasswd(UserEntity vo) {
+    @PutMapping("/resetPasswd")
+    public RedirectView resetPasswd(UserEntity userEntity) {
         try {
-            userService.resetPasswd(vo);
-            return redirectView("/", null);
+            if (userService.resetPasswd(userEntity)) {
+                return redirectView("/resetPasswd", Vo.info("重置密码成功。"));
+            }
+            return redirectView("/resetPasswd", Vo.error("重置密码失败。"));
         } catch (Exception e) {
             log.error("", e);
-            return redirectView("/user/resetPasswd", Vo.error(e.getMessage()));
+            return redirectView("/resetPasswd", Vo.error(e.getMessage()));
         }
     }
 

@@ -1,9 +1,7 @@
 package org.xiangqian.note.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 import org.xiangqian.note.entity.UserEntity;
-import org.xiangqian.note.model.LazyList;
 
 /**
  * @author xiangqian
@@ -12,13 +10,7 @@ import org.xiangqian.note.model.LazyList;
 @Mapper
 public interface UserMapper {
 
-    Boolean add(UserEntity userEntity);
-
-    Boolean delById(Long id);
-
     Boolean updById(UserEntity userEntity);
-
-    UserEntity getById(Long id);
 
     UserEntity getByName(String name);
 

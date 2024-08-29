@@ -3,11 +3,12 @@ package org.xiangqian.note.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 import org.xiangqian.note.model.Vo;
 import org.xiangqian.note.util.DateUtil;
-import org.xiangqian.note.util.ServletUtil;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -18,11 +19,11 @@ import java.util.Map;
  */
 public abstract class AbsController {
 
-    private static final String VO = "vo";
+    public static final String VO = "vo";
 
     // 在每个请求之前设置ModelAndView值
     @ModelAttribute
-    public final void addObject(ModelAndView modelAndView, HttpServletRequest request, HttpSession session) {
+    public final void modelAttribute(ModelAndView modelAndView, HttpServletRequest request, HttpSession session) {
         Vo vo = null;
         Object value = session.getAttribute(VO);
         if (value instanceof Vo) {
@@ -42,20 +43,16 @@ public abstract class AbsController {
         modelAndView.addObject(VO, vo);
     }
 
-    public static Vo add(ModelAndView modelAndView, String name, Object value) {
+    static Vo add(ModelAndView modelAndView, String name, Object value) {
         Map<String, Object> map = modelAndView.getModel();
         Vo vo = (Vo) map.get(VO);
         vo.add(name, value);
         return vo;
     }
 
-    public static ModelAndView errorView(ModelAndView modelAndView) {
-        modelAndView.setViewName("error");
-        return modelAndView;
-    }
-
-    public static RedirectView redirectView(String url, Vo vo) {
-        HttpSession session = ServletUtil.getSession();
+    static RedirectView redirectView(String url, Vo vo) {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        HttpSession session = request.getSession();
         session.setAttribute(VO, vo);
         url += "?t=" + DateUtil.toSecond(LocalDateTime.now());
         return new RedirectView(url);

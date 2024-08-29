@@ -8,6 +8,6 @@ import org.xiangqian.note.entity.UserEntity;
  */
 public interface UserService {
 
-    Boolean resetPasswd(UserEntity vo);
+    Boolean resetPasswd(UserEntity userEntity);
 
 }

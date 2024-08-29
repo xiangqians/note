@@ -1,7 +1,3 @@
-<!--
- | @author xiangqian
- | @date 14:01 2024/03/02
- |-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,11 +7,10 @@
     <link rel="stylesheet" th:href="@{/static/css/top.css}" type="text/css" />
     <link rel="stylesheet" th:href="@{/static/css/center.css}" type="text/css" />
     <link rel="stylesheet" th:href="@{/static/css/bottom.css}" type="text/css" />
-    <title>所请求的资源未找到</title>
+    <title>首页</title>
 </head>
 <body>
-<h3>所请求的资源未找到</h3>
-<a th:href="@{'/?t=' + ${vo.timestamp}}">返回首页</a>
+<div th:replace="top"></div>
 <div th:replace="bottom"></div>
 </body>
 </html>

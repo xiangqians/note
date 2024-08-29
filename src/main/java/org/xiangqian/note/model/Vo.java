@@ -25,10 +25,6 @@ public class Vo extends HashMap<String, Object> {
         return new Vo().add("info", value);
     }
 
-    public static Vo warn(Object value) {
-        return new Vo().add("warn", value);
-    }
-
     public static Vo error(Object value) {
         return new Vo().add("error", value);
     }

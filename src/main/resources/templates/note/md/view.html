@@ -260,7 +260,7 @@
         window.onbeforeunload = function (event) {
             let e = window.event || event
             if (hasChanged()) {
-                e.returnValue = '数据发生改变！'
+                e.returnValue = '数据发生改变。'
                 return e.returnValue
             }
         }

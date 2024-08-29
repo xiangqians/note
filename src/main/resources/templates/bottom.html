@@ -3,16 +3,15 @@
  | @date 20:08 2023/07/10
  |-->
 <bottom>
-    <p th:if="${session.isLoggedin}">
-        <a th:if="${'/user/resetPasswd' == servletPath}" th:href="@{'/?t=' + ${timestamp}}">返回首页</a>
-        <a th:if="${'/user/resetPasswd' != servletPath}" th:href="@{'/user/resetPasswd?t=' + ${timestamp}}">重置密码</a>
-        <span style="padding-left: 15px;"></span>
-        <a th:href="@{'/logout?t=' + ${timestamp}}">退出登录</a>
+    <th:block th:if="${session.isLoggedIn}">
+    <p>
+        <a th:if="${'/resetPasswd' == vo.servletPath}" th:href="@{'/?t=' + ${vo.timestamp}}" style="margin-right: 15px;">返回首页</a><a th:if="${'/resetPasswd' != vo.servletPath}" th:href="@{'/resetPasswd?t=' + ${vo.timestamp}}" style="margin-right: 15px;">重置密码</a><a th:href="@{'/logout?t=' + ${vo.timestamp}}">退出登录</a>
     </p>
-    <p th:if="${session.isLoggedin}">
-        <span style="padding-left: 0px;">最近一次登录</span>
-        <span th:text="${(T(org.apache.commons.lang3.StringUtils).isNotEmpty(session.user.lastLoginIp) ? session.user.lastLoginIp : session.user.currentLoginIp)}" style="padding-left: 10px;"></span>
-        <span th:text="${session.user.lastLoginTime != 0 ? T(org.xiangqian.note.util.DateUtil).humanSecond(session.user.lastLoginTime) : T(org.xiangqian.note.util.DateUtil).humanSecond(session.user.currentLoginTime)}" style="padding-left: 10px;"></span>
+    <th:block th:with="lastLoginHost=${session.user.lastLoginHost},lastLoginTime=${session.user.lastLoginTime}">
+    <p th:if="${(T(org.apache.commons.lang3.StringUtils).isNotEmpty(lastLoginHost)) and lastLoginTime != 0}">
+        <span style="margin-left: 0px;margin-right: 10px;">上次登录</span><span th:text="${lastLoginHost}" style="margin-right: 10px;"></span><span th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(lastLoginTime)}"></span>
     </p>
-    <p style="font-style: italic;"><span style="padding-right: 10px;">© 2024 xiangqian</span><a href="https://github.com/xiangqians/note" target="_blank">关于</a></p>
+    </th:block>
+    </th:block>
+    <p style="font-style: italic;">© 2024 xiangqian<a href="https://github.com/xiangqians/note" style="margin-left: 15px;" target="_blank">关于</a></p>
 </bottom>

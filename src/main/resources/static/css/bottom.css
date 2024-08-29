@@ -1,0 +1,9 @@
+/**
+ * @author xiangqian
+ * @date 17:28 2024/08/28
+ */
+
+body > bottom {
+    display: block;
+    padding-top: 15px;
+}

@@ -4,14 +4,17 @@
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` -- 用户信息表
 (
-    `id`       INTEGER PRIMARY KEY AUTOINCREMENT, -- 主键
-    `name`     TEXT    DEFAULT '',                -- 用户名
-    `passwd`   TEXT    DEFAULT '',                -- 密码
-    `locked`   INTEGER DEFAULT 0,                 -- 是否已锁定，0-否，1-是
-    `deny`     INTEGER DEFAULT 0,                 -- 连续错误登陆次数，超过3次则锁定用户
-    `history`  TEXT    DEFAULT '',                -- 登录历史（[{"ip": "localhost", "time": 1671614960}]）
-    `add_time` INTEGER DEFAULT 0,                 -- 创建时间戳（单位s）
-    `upd_time` INTEGER DEFAULT 0                  -- 修改时间戳（单位s）
+    `id`                 INTEGER PRIMARY KEY AUTOINCREMENT, -- 主键
+    `name`               TEXT    DEFAULT '',                -- 用户名
+    `passwd`             TEXT    DEFAULT '',                -- 密码
+    `locked`             INTEGER DEFAULT 0,                 -- 是否已锁定（0-否，1-是）
+    `deny`               INTEGER DEFAULT 0,                 -- 连续错误登陆次数，超过3次则锁定用户
+    `last_login_host`    TEXT    DEFAULT '',                -- 上一次登录主机
+    `last_login_time`    INTEGER DEFAULT 0,                 -- 上一次登录时间戳（单位s）
+    `current_login_host` TEXT    DEFAULT '',                -- 当前登录主机
+    `current_login_time` INTEGER DEFAULT 0,                 -- 当前登录时间戳（单位s）
+    `add_time`           INTEGER DEFAULT 0,                 -- 创建时间戳（单位s）
+    `upd_time`           INTEGER DEFAULT 0                  -- 修改时间戳（单位s）
 );
 
 -- SELECT STRFTIME('%s', 'now') AS '当前时间戳（单位s）';

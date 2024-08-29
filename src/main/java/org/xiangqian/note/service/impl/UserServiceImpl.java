@@ -31,31 +31,33 @@ public class UserServiceImpl implements UserService {
     private SessionRegistry sessionRegistry;
 
     @Autowired
-    private UserMapper mapper;
+    private UserMapper userMapper;
 
     @Override
-    public Boolean resetPasswd(UserEntity vo) {
-        UserEntity entity = SecurityUtil.getUser();
+    public Boolean resetPasswd(UserEntity userEntity) {
+        // 校验密码
+        String passwd = userEntity.getPasswd();
+        Assert.isTrue(StringUtils.isNotEmpty(passwd), "密码不能为空。");
+        Assert.isTrue(passwd.length() <= 128, "密码长度不能大于128个字符。");
 
-        Integer id = entity.getId();
-        Assert.notNull(id, "用户id为空");
+        // 校验新密码
+        String newPasswd = userEntity.getNewPasswd();
+        Assert.isTrue(StringUtils.isNotEmpty(newPasswd), "新密码不能为空。");
+        Assert.isTrue(newPasswd.length() <= 128, "新密码长度不能大于128个字符。");
 
-        String originalPasswd = StringUtils.trim(vo.getOriginalPasswd());
-        Assert.isTrue(StringUtils.isNotEmpty(originalPasswd), "原密码不能为空");
+        // 校验原密码是否正确
+        UserEntity securityUserEntity = SecurityUtil.getUser();
+        Assert.isTrue(passwordEncoder.matches(passwd, securityUserEntity.getPassword()), "密码不正确。");
 
-        String newPasswd = StringUtils.trim(vo.getNewPasswd());
-        String reNewPasswd = StringUtils.trim(vo.getReNewPasswd());
-        Assert.isTrue(StringUtils.equals(newPasswd, reNewPasswd), "新密码两次输入不一致");
-
-        Assert.isTrue(passwordEncoder.matches(originalPasswd, entity.getPassword()), "原密码不正确");
-
-        UserEntity updEntity = new UserEntity();
-        updEntity.setId(id);
-        updEntity.setPasswd(passwordEncoder.encode(newPasswd));
-        if (mapper.updById(updEntity)) {
-            expireNow(entity.getName());
+        // 更新密码
+        UserEntity updUserEntity = new UserEntity();
+        updUserEntity.setId(securityUserEntity.getId());
+        updUserEntity.setPasswd(passwordEncoder.encode(newPasswd));
+        if (userMapper.updById(updUserEntity)) {
+            expireNow(securityUserEntity.getName());
             return true;
         }
+
         return false;
     }
 
@@ -65,10 +67,10 @@ public class UserServiceImpl implements UserService {
      * @param name {@link UserEntity#getName()}
      */
     private void expireNow(String name) {
-        UserEntity entity = new UserEntity();
-        entity.setName(name);
+        UserEntity userEntity = new UserEntity();
+        userEntity.setName(name);
 
-        List<SessionInformation> sessions = sessionRegistry.getAllSessions(entity,
+        List<SessionInformation> sessions = sessionRegistry.getAllSessions(userEntity,
                 // 是否包括过期的会话
                 false);
         if (CollectionUtils.isNotEmpty(sessions)) {

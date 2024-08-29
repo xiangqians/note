@@ -2,10 +2,9 @@
  | @author xiangqian
  | @date 16:26 2024/08/28
  |-->
-<th:block th:with="info=${vo.get('info')},warn=${vo.get('warn')},error=${vo.get('error')}">
-<top th:if="${info != null or warn != null or error != null}">
+<th:block th:with="info=${vo.get('info')},error=${vo.get('error')}">
+<top th:if="${info != null or error != null}">
     <info th:if="${info != null}" th:text="${info}"></info>
-    <warn th:if="${warn != null}" th:text="${warn}"></warn>
     <error th:if="${error != null}" th:text="${error}"></error>
 </top>
 </th:block>
