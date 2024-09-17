@@ -200,11 +200,29 @@
     </dependencyManagement>
 
     <build>
-        <finalName>${name}-${spring.profiles.active}-${project.version}</finalName>
+        <finalName>${project.name}-${spring.profiles.active}-${project.version}</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
+
+                <!-- filtering 标签用于控制 Maven 是否对资源文件进行过滤。
+                 | 资源过滤指的是在构建过程中将资源文件中的占位符替换为实际的值，这些占位符通常是在 pom.xml 中定义的属性。
+                 |-->
                 <filtering>true</filtering>
+
+                <includes>
+                    <include>*.yml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>mybatis/**</include>
+                    <include>static/**</include>
+                    <include>templates/**</include>
+                    <include>logback-spring.xml</include>
+                </includes>
             </resource>
         </resources>
         <plugins>

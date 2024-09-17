@@ -17,8 +17,6 @@ CREATE TABLE `user` -- 用户信息表
     `upd_time`           INTEGER DEFAULT 0                  -- 修改时间戳（单位s）
 );
 
--- SELECT STRFTIME('%s', 'now') AS '当前时间戳（单位s）';
-
 INSERT INTO `user`(`name`, `passwd`, `add_time`)
 VALUES ('admin', '$2a$10$ZsS2bA7B7AQtIBBpW7xz3OIw3FWU0CnXX7HZMi6vBNt9ZNcA2RNGG', 1671614960);
 
