@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,7 +24,7 @@ import java.util.List;
  */
 @Slf4j
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService, ApplicationRunner {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -37,24 +39,29 @@ public class UserServiceImpl implements UserService {
     public Boolean resetPasswd(UserEntity userEntity) {
         // 校验密码
         String passwd = userEntity.getPasswd();
-        Assert.isTrue(StringUtils.isNotEmpty(passwd), "密码不能为空。");
-        Assert.isTrue(passwd.length() <= 128, "密码长度不能大于128个字符。");
+        Assert.isTrue(StringUtils.isNotEmpty(passwd), "密码不能为空");
+        Assert.isTrue(passwd.length() <= 128, "密码长度不能大于128个字符");
 
         // 校验新密码
         String newPasswd = userEntity.getNewPasswd();
-        Assert.isTrue(StringUtils.isNotEmpty(newPasswd), "新密码不能为空。");
-        Assert.isTrue(newPasswd.length() <= 128, "新密码长度不能大于128个字符。");
+        Assert.isTrue(StringUtils.isNotEmpty(newPasswd), "新密码不能为空");
+        Assert.isTrue(newPasswd.length() <= 128, "新密码长度不能大于128个字符");
 
-        // 校验原密码是否正确
+        // 获取当前已通过身份验证用户
         UserEntity securityUserEntity = SecurityUtil.getUser();
-        Assert.isTrue(passwordEncoder.matches(passwd, securityUserEntity.getPassword()), "密码不正确。");
+
+        // 校验密码是否正确
+        Assert.isTrue(passwordEncoder.matches(passwd, securityUserEntity.getPassword()), "密码不正确");
+
+        // 用户名
+        String name = securityUserEntity.getName();
 
         // 更新密码
         UserEntity updUserEntity = new UserEntity();
-        updUserEntity.setId(securityUserEntity.getId());
+        updUserEntity.setName(name);
         updUserEntity.setPasswd(passwordEncoder.encode(newPasswd));
-        if (userMapper.updById(updUserEntity)) {
-            expireNow(securityUserEntity.getName());
+        if (userMapper.updByName(updUserEntity)) {
+            expireNow(name);
             return true;
         }
 
@@ -76,6 +83,20 @@ public class UserServiceImpl implements UserService {
         if (CollectionUtils.isNotEmpty(sessions)) {
             sessions.forEach(SessionInformation::expireNow);
         }
+    }
+
+    /**
+     * 每次启动成功重置连续错误登陆次数
+     *
+     * @param args
+     * @throws Exception
+     */
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        UserEntity updUserEntity = new UserEntity();
+        updUserEntity.setName("admin");
+        updUserEntity.setDeny(0);
+        userMapper.updByName(updUserEntity);
     }
 
 }

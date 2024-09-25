@@ -7,14 +7,14 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
-    <link rel="stylesheet" th:href="@{/static/css/style.css}" type="text/css" />
+    <link rel="stylesheet" th:href="@{/static/css/body.css}" type="text/css" />
     <title>登录</title>
 </head>
 <body>
 <div th:replace="top"></div>
 <center>
     <left>
-        <form method="post" th:action="@{'/login?t=' + ${timestamp}}">
+        <form method="post" th:action="@{'/login?t=' + ${vo.timestamp}}">
             <table>
                 <tbody>
                 <tr style="display: none;">

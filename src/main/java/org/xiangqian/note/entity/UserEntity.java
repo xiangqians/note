@@ -1,7 +1,6 @@
 package org.xiangqian.note.entity;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.xiangqian.note.util.DateUtil;
@@ -19,15 +18,9 @@ import java.util.Objects;
  * @date 21:33 2024/02/29
  */
 @Data
-@NoArgsConstructor
 public class UserEntity implements UserDetails {
 
     private static final long serialVersionUID = 1L;
-
-    /**
-     * 用户id
-     */
-    private Integer id;
 
     /**
      * 用户名
@@ -43,11 +36,6 @@ public class UserEntity implements UserDetails {
      * 新密码
      */
     private String newPasswd;
-
-    /**
-     * 是否已锁定（0-否，1-是）
-     */
-    private Integer locked;
 
     /**
      * 连续错误登陆次数，超过3次则锁定用户
@@ -85,32 +73,11 @@ public class UserEntity implements UserDetails {
     private Long updTime;
 
     /**
-     * 是否未被锁定
+     * 获取已被锁定时间（单位s）
      *
      * @return
      */
-    public boolean isNonLocked() {
-        return locked == 0;
-    }
-
-    /**
-     * 是否未被限时锁定
-     *
-     * @return
-     */
-    public boolean isNonLimitedTimeLocked() {
-        // 连续输错密码小于3次
-        return deny < 3
-                // 锁定24小时
-                || Duration.ofSeconds(DateUtil.toSecond(LocalDateTime.now()) - updTime).toHours() >= 24;
-    }
-
-    /**
-     * 获取已被限时锁定时间（单位s）
-     *
-     * @return
-     */
-    public long getLimitedTimeLockedTime() {
+    public long getLockedTime() {
         return Duration.ofHours(24).toSeconds() - (DateUtil.toSecond(LocalDateTime.now()) - updTime);
     }
 
@@ -141,7 +108,10 @@ public class UserEntity implements UserDetails {
      */
     @Override
     public boolean isAccountNonLocked() {
-        return isNonLocked() && isNonLimitedTimeLocked();
+        // 连续输错密码小于3次
+        return deny < 3
+                // 锁定24小时
+                || Duration.ofSeconds(DateUtil.toSecond(LocalDateTime.now()) - updTime).toHours() >= 24;
     }
 
     /**

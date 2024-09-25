@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
-    <link rel="stylesheet" th:href="@{/static/css/style.css}" type="text/css">
+    <link rel="stylesheet" th:href="@{/static/css/body.css}" type="text/css">
     <title th:if="${vo.entity.id == 0}">/<th:block th:if="${vo.parameter.contain != null && vo.parameter.contain}">*</th:block></title>
     <title th:if="${vo.entity.id != 0}"><th:block th:each="p : ${vo.entity.ps}" th:text="${'/' + p.name}"></th:block><th:block th:text="${'/' + vo.entity.name}"></th:block><th:block th:if="${vo.parameter.contain != null && vo.parameter.contain}" th:text="${'/*'}"></th:block></title>
 </head>

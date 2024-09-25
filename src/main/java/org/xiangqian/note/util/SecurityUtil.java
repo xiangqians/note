@@ -11,40 +11,29 @@ import org.xiangqian.note.entity.UserEntity;
  */
 public class SecurityUtil {
 
+    /**
+     * 获取当前已通过身份验证用户
+     *
+     * @return
+     */
     public static UserEntity getUser() {
-        Authentication authentication = getAuthentication();
-        if (isLoggedIn(authentication)) {
-            return (UserEntity) authentication.getPrincipal();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            return null;
         }
-        return null;
-    }
 
-    public static boolean isLoggedIn() {
-        Authentication authentication = getAuthentication();
-        return isLoggedIn(authentication);
-    }
-
-    public static boolean isLoggedIn(Authentication authentication) {
         // 匿名用户（表示用户未登录）
         if (authentication instanceof AnonymousAuthenticationToken) {
-            return false;
+            return null;
         }
 
-        // 用户已通过身份验证（已登录）
-        if (authentication != null && authentication.isAuthenticated()) {
-            return true;
+        // 已通过身份验证用户（已登录）
+        if (authentication.isAuthenticated()) {
+            return (UserEntity) authentication.getPrincipal();
         }
 
-        // 用户未登录
-        return false;
-    }
-
-    public static Authentication getAuthentication() {
-        return SecurityContextHolder.getContext().getAuthentication();
-    }
-
-    public static void setAuthentication(Authentication authentication) {
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        return null;
     }
 
 }

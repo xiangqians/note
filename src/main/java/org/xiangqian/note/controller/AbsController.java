@@ -19,9 +19,15 @@ import java.util.Map;
  */
 public abstract class AbsController {
 
-    public static final String VO = "vo";
+    private static final String VO = "vo";
 
-    // 在每个请求之前设置ModelAndView值
+    /**
+     * 在每个请求之前设置ModelAndView值
+     *
+     * @param modelAndView
+     * @param request
+     * @param session
+     */
     @ModelAttribute
     public final void modelAttribute(ModelAndView modelAndView, HttpServletRequest request, HttpSession session) {
         Vo vo = null;
@@ -43,19 +49,23 @@ public abstract class AbsController {
         modelAndView.addObject(VO, vo);
     }
 
-    static Vo add(ModelAndView modelAndView, String name, Object value) {
+    public static Vo add(ModelAndView modelAndView, String name, Object value) {
         Map<String, Object> map = modelAndView.getModel();
         Vo vo = (Vo) map.get(VO);
         vo.add(name, value);
         return vo;
     }
 
-    static RedirectView redirectView(String url, Vo vo) {
+    public static RedirectView redirectView(String url, Vo vo) {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         HttpSession session = request.getSession();
-        session.setAttribute(VO, vo);
+        setVo(session, vo);
         url += "?t=" + DateUtil.toSecond(LocalDateTime.now());
         return new RedirectView(url);
+    }
+
+    public static void setVo(HttpSession session, Vo vo) {
+        session.setAttribute(VO, vo);
     }
 
 }

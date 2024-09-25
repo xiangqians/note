@@ -10,7 +10,7 @@ import org.xiangqian.note.entity.UserEntity;
 @Mapper
 public interface UserMapper {
 
-    Boolean updById(UserEntity userEntity);
+    Boolean updByName(UserEntity userEntity);
 
     UserEntity getByName(String name);
 

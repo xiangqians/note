@@ -49,8 +49,14 @@ import java.time.LocalDateTime;
 @Configuration(proxyBeanMethods = false)
 public class SecurityConfig implements WebMvcConfigurer {
 
+    /**
+     * 是否已登录字段名
+     */
     private final String IS_LOGGED_IN = "isLoggedIn";
 
+    /**
+     * 本地线程用户数据
+     */
     private final ThreadLocal<UserEntity> threadLocal = new ThreadLocal<>();
 
     /**
@@ -69,13 +75,13 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                    AuthenticationFailureHandler authenticationFailureHandler,
                                                    SessionRegistry sessionRegistry) throws Exception {
         http
-                // http授权请求配置
+                // http授权请求
                 .authorizeHttpRequests((authorize) -> authorize
-                        // 放行静态资源请求
+                        // 允许未经授权访问静态资源请求
                         .requestMatchers("/static/**").permitAll()
-                        // 放行登录请求
+                        // 允许未经授权访问登录请求
                         .requestMatchers("/login").permitAll()
-                        // 其他请求需要授权
+                        // 其他请求需要授权才能访问
                         .anyRequest().authenticated())
                 // 自定义表单登录
                 .formLogin(configurer -> configurer
@@ -148,18 +154,17 @@ public class SecurityConfig implements WebMvcConfigurer {
 
                 // 更新数据库用户信息
                 UserEntity updUserEntity = new UserEntity();
-                updUserEntity.setId(userEntity.getId());
+                updUserEntity.setName(userEntity.getName());
                 updUserEntity.setDeny(0);
                 updUserEntity.setLastLoginHost(userEntity.getCurrentLoginHost());
                 updUserEntity.setLastLoginTime(userEntity.getCurrentLoginTime());
                 updUserEntity.setCurrentLoginHost(request.getRemoteHost());
                 updUserEntity.setCurrentLoginTime(DateUtil.toSecond(LocalDateTime.now()));
                 updUserEntity.setUpdTime(DateUtil.toSecond(LocalDateTime.now()));
-                userMapper.updById(updUserEntity);
+                userMapper.updByName(updUserEntity);
 
                 // 更新会话中用户信息
                 userEntity.setDeny(updUserEntity.getDeny());
-                userEntity.setDeny(0);
                 userEntity.setLastLoginHost(updUserEntity.getLastLoginHost());
                 userEntity.setLastLoginTime(updUserEntity.getLastLoginTime());
                 userEntity.setCurrentLoginHost(updUserEntity.getCurrentLoginHost());
@@ -195,17 +200,17 @@ public class SecurityConfig implements WebMvcConfigurer {
                 if (exception instanceof BadCredentialsException) {
                     if (userEntity != null) {
                         UserEntity updUserEntity = new UserEntity();
-                        updUserEntity.setId(userEntity.getId());
+                        updUserEntity.setName(userEntity.getName());
 
                         int deny = userEntity.getDeny();
-                        if (userEntity.getLimitedTimeLockedTime() <= 0) {
+                        if (userEntity.getLockedTime() <= 0) {
                             deny = 0;
                         }
                         deny += 1;
                         updUserEntity.setDeny(deny);
 
                         updUserEntity.setUpdTime(DateUtil.toSecond(LocalDateTime.now()));
-                        userMapper.updById(updUserEntity);
+                        userMapper.updByName(updUserEntity);
                         if (deny == 2) {
                             error = "已连续两次输错密码，如连续输错三次，系统将被锁定";
                         }
@@ -216,17 +221,13 @@ public class SecurityConfig implements WebMvcConfigurer {
                 }
                 // 锁定异常
                 else if (exception instanceof LockedException) {
-                    if (userEntity != null && userEntity.isNonLocked() && !userEntity.isNonLimitedTimeLocked()) {
-                        error = String.format("系统已被锁定（%s后解锁）", DateUtil.humanDurationSecond(userEntity.getLimitedTimeLockedTime()));
-                    } else {
-                        error = "系统已被锁定";
-                    }
+                    error = String.format("系统已被锁定（%s后解锁）", DateUtil.humanDurationSecond(userEntity.getLockedTime()));
                 } else {
                     error = exception.getMessage();
                 }
 
                 HttpSession session = request.getSession(true);
-                session.setAttribute(AbsController.VO, Vo.error(error));
+                AbsController.setVo(session, Vo.error(error));
 
                 super.onAuthenticationFailure(request, response, exception);
             }
@@ -237,10 +238,12 @@ public class SecurityConfig implements WebMvcConfigurer {
     public ServletListenerRegistrationBean<HttpSessionListener> httpSessionListener() {
         ServletListenerRegistrationBean<HttpSessionListener> servletListenerRegistrationBean = new ServletListenerRegistrationBean<>();
         servletListenerRegistrationBean.setListener(new HttpSessionListener() {
-            // 设置会话默认属性
+            // 当发生创建 Session 事件时
             @Override
             public void sessionCreated(HttpSessionEvent event) {
                 HttpSession session = event.getSession();
+
+                // 设置会话默认属性
                 session.setAttribute(IS_LOGGED_IN, false);
             }
         });
@@ -252,8 +255,8 @@ public class SecurityConfig implements WebMvcConfigurer {
      * <input type="hidden" name="_method" value="PUT">
      * <button type="submit">提交</button>
      * </form>
-     * 由于HTML表单只支持GET和POST请求方法，因此需要进行一些额外的处理来实现PUT和DELETE请求
-     * 配置过滤器 {@link HiddenHttpMethodFilter} 来解析这个名为 _method 的隐藏字段，并将请求方法修改为PUT或DELETE
+     * 由于 HTML 表单只支持 GET 和 POST 请求方法，因此需要进行一些额外的处理来实现 PUT 和 DELETE 请求
+     * 配置过滤器 {@link HiddenHttpMethodFilter} 来解析这个名为 _method 的隐藏字段，并将请求方法修改为 PUT 或 DELETE
      *
      * @return
      */
