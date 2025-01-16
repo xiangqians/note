@@ -172,7 +172,8 @@
         <span>|</span>
         <form class="nowrap" method="post" enctype="multipart/form-data" th:action="@{'/note/upload?t=' + ${timestamp}}">
             <input name="pid" th:value="${parentEntity.id}" type="hidden">
-            <input name="file" type="file" accept=".pdf,.zip" required>
+            <button for="upload" type="button" onclick="document.getElementById('upload').click();">选择文件</button>
+            <input id="upload" name="file" type="file" accept="application/pdf,application/zip" style="display: none;">
             <button type="submit" upload>上传PDF/ZIP文件</button>
         </form>
         <span>|</span>
@@ -220,7 +221,10 @@
                 <form th:if="${child.type == 'pdf' || child.type == 'zip'}" method="post" enctype="multipart/form-data" th:action="@{'/note/' + ${child.id} + '/reUpload?t=' + ${timestamp}}" class="nowrap">
                     <input name="_method" value="PUT" type="hidden">
                     <input name="pid" th:value="${parentEntity.id}" type="hidden">
-                    <input name="file" type="file" th:accept="${'.' + child.type}" required>
+                    <button th:for="'reUpload' + ${child.id}" type="button" th:onclick="'document.getElementById(\'' + 'reUpload' + ${child.id} + '\').click();'">选择文件</button>
+                    <input th:id="'reUpload' + ${child.id}" name="file" type="file"
+                           th:attr="accept=${child.type == 'pdf' ? 'application/pdf' : (child.type == 'zip' ? 'application/zip' : '')}"
+                           style="display: none;">
                     <button type="submit" reUpload>重新上传文件</button>
                 </form>
                 <span th:if="${child.type == 'pdf' || child.type == 'zip'}">|</span>
@@ -293,6 +297,67 @@
 <script type="text/javascript">
     ;
     $(function () {
+
+        // 变化事件监听器
+        function changeEventListener(event) {
+            let inputElement = event.target;
+            // console.log(inputElement);
+            let files = inputElement.files;
+            // console.log(files);
+
+            // 获取 input 元素的上一个兄弟节点
+            let $buttonElement = $(inputElement).prev();
+
+            if (files.length > 0) {
+                let name = files[0].name;
+                // console.log('已选择文件：' + files[0].name);
+
+                // 显示选中文件名
+                $buttonElement.text(name);
+            }else{
+                $buttonElement.text('选中文件');
+            }
+        }
+
+        // 表单提交事件监听器
+        function submitEventListener(event) {
+            // 获取form内的文件输入框
+            let inputElement = $(this).find("input[type='file']")[0];
+            // console.log(inputElement);
+
+            let files = inputElement.files;
+            // console.log(files);
+
+            if (files.length === 0) {
+                alert("请选择文件");
+
+                // 阻止表单提交
+                event.preventDefault();
+            }
+        }
+
+        function addEventListener($inputElement) {
+            // 监听变化事件
+            $inputElement.change(changeEventListener);
+
+            // 获取当前 <input> 元素的最近父 <form> 元素。
+            let $formElement = $inputElement.closest('form');
+
+            // 监听表单提交事件
+            $formElement.submit(submitEventListener);
+        }
+
+        // 上传文件
+        addEventListener($('#upload'));
+        // 重新上传文件
+        // 获取所有 id 以 'reUpload' 开头的元素
+        let reUploadElements = $('[id^="reUpload"]');
+        // console.log(reUploadElements);
+        for (let i = 0, length = reUploadElements.length; i < length; i++) {
+            addEventListener($(reUploadElements[i]));
+        }
+
+
         // 粘贴
         let $paste = $('button[paste]');
         $paste.click(function (event) {
