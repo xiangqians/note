@@ -30,94 +30,10 @@
 
         <!-- mybatis -->
         <mybatis.version>3.0.3</mybatis.version>
-
-        <!-- aspose
-         | windows-amd64
-         | windows-i586
-         | linux-amd64
-         | linux-armv6
-         | linux-armv6hf
-         | linux-i586
-         | android-aarch64
-         | android-armv6
-         | solaris-amd64
-         | solaris-i586
-         | macosx-universal
-         |-->
-        <aspose.os>windows-amd64</aspose.os>
-        <aspose-words.version>23.1</aspose-words.version>
-        <aspose-gluegen-rt.version>2.3.2</aspose-gluegen-rt.version>
-        <aspose-jogl-all.version>2.3.2</aspose-jogl-all.version>
-        <aspose-cells.version>23.1</aspose-cells.version>
     </properties>
 
     <dependencies>
-        <!-- @aspose::start -->
-        <dependency>
-            <groupId>com.aspose</groupId>
-            <artifactId>aspose-cells</artifactId>
-            <version>${aspose-cells.version}</version>
-            <systemPath>${project.basedir}/lib/aspose-cells-${aspose-cells.version}.jar</systemPath>
-            <scope>system</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.aspose</groupId>
-            <artifactId>aspose-words</artifactId>
-            <version>${aspose-words.version}</version>
-            <systemPath>${project.basedir}/lib/aspose-words-${aspose-words.version}.jar</systemPath>
-            <scope>system</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.aspose</groupId>
-            <artifactId>aspose-gluegen-rt</artifactId>
-            <version>${aspose-gluegen-rt.version}</version>
-            <systemPath>${project.basedir}/lib/gluegen-rt-${aspose-gluegen-rt.version}.jar</systemPath>
-            <scope>system</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.aspose</groupId>
-            <artifactId>aspose-gluegen-rt-main</artifactId>
-            <version>${aspose-gluegen-rt.version}</version>
-            <systemPath>${project.basedir}/lib/gluegen-rt-main-${aspose-gluegen-rt.version}.jar</systemPath>
-            <scope>system</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.aspose</groupId>
-            <artifactId>aspose-gluegen-rt-natives</artifactId>
-            <version>${aspose-gluegen-rt.version}</version>
-            <systemPath>
-                ${project.basedir}/lib/gluegen-rt-${aspose-gluegen-rt.version}-natives-${aspose.os}.jar
-            </systemPath>
-            <scope>system</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.aspose</groupId>
-            <artifactId>aspose-jogl-all</artifactId>
-            <version>${aspose-jogl-all.version}</version>
-            <systemPath>${project.basedir}/lib/jogl-all-${aspose-jogl-all.version}.jar</systemPath>
-            <scope>system</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.aspose</groupId>
-            <artifactId>aspose-jogl-all-main</artifactId>
-            <version>${aspose-jogl-all.version}</version>
-            <systemPath>${project.basedir}/lib/jogl-all-main-${aspose-jogl-all.version}.jar</systemPath>
-            <scope>system</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.aspose</groupId>
-            <artifactId>aspose-jogl-all-natives</artifactId>
-            <version>${aspose-jogl-all.version}</version>
-            <systemPath>
-                ${project.basedir}/lib/jogl-all-${aspose-jogl-all.version}-natives-${aspose.os}.jar
-            </systemPath>
-            <scope>system</scope>
-        </dependency>
-        <!-- @aspose::end -->
-
+        <!-- 安全 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -129,17 +45,19 @@
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
+        <!-- Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- 切面 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
 
-        <!-- MyBatis Starter -->
+        <!-- MyBatis -->
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
@@ -171,6 +89,12 @@
             <artifactId>commons-codec</artifactId>
         </dependency>
         <!-- @apache-commons::end -->
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>junit</groupId>
@@ -231,10 +155,6 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot-dependencies.version}</version>
-                <configuration>
-                    <!-- 将 system 范围的依赖打包到可执行 JAR 文件中 -->
-                    <includeSystemScope>true</includeSystemScope>
-                </configuration>
                 <executions>
                     <execution>
                         <goals>

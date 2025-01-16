@@ -2,9 +2,7 @@
  | @author xiangqian
  | @date 16:26 2024/08/28
  |-->
-<th:block th:with="info=${vo.get('info')},error=${vo.get('error')}">
-<top th:if="${info != null or error != null}">
-    <info th:if="${info != null}" th:text="${info}"></info>
-    <error th:if="${error != null}" th:text="${error}"></error>
+<!-- 没有消息就是最好的消息 -->
+<top th:if="${message != null}">
+    <message th:text="${message}"></message>
 </top>
-</th:block>

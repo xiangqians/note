@@ -7,326 +7,376 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
-    <link rel="stylesheet" th:href="@{/static/css/body.css}" type="text/css">
-    <title th:if="${vo.entity.id == 0}">/<th:block th:if="${vo.parameter.contain != null && vo.parameter.contain}">*</th:block></title>
-    <title th:if="${vo.entity.id != 0}"><th:block th:each="p : ${vo.entity.ps}" th:text="${'/' + p.name}"></th:block><th:block th:text="${'/' + vo.entity.name}"></th:block><th:block th:if="${vo.parameter.contain != null && vo.parameter.contain}" th:text="${'/*'}"></th:block></title>
+    <link rel="stylesheet" th:href="@{/static/custom/body.css}" type="text/css" />
+    <title>笔记</title>
+    <style>
+        form {
+            /* 使元素在水平方向上排列（像 inline 元素），同时也具备设置宽高和其他块级布局属性的能力（像 block 元素） */
+            display: inline-block;
+        }
+
+        form input[type="file"] {
+            /* 文件输入框的宽度 */
+            width: 175px;
+        }
+
+        /* form button[submit] 标签可用状态下样式 */
+        form button[type="submit"] {
+            /* 去除元素背景 */
+            background: none;
+            /* 去除元素边框 */
+            border: none;
+            /* 按钮文字颜色 */
+            color: blue;
+            /* 去除文本的装饰效果（如下划线、上划线、删除线等） */
+            text-decoration: none;
+            /* 去除内边距 */
+            padding: 0;
+            /* 继承父元素的字体样式 */
+            font: inherit;
+        }
+
+        /* button[submit] 标签禁用状态下样式 */
+        form button[type="submit"]:disabled {
+            /* 设置字体为灰色 */
+            color: gray;
+        }
+
+        table {
+            /* 设置为行内元素 */
+            display: inline-table;
+            /* 将表格的单元格边框合并为单一的边框 */
+            border-collapse: collapse;
+        }
+
+        /* 表头每个单元格样式 */
+        table thead td {
+            /* 设置单元格的高度 */
+            height: 50px;
+            /* 设置字体加粗 */
+            font-weight: bold;
+            /* 左侧内边距 */
+            padding-left: 10px;
+            /* 右侧内边距 */
+            padding-right: 40px;
+            /* 设置了元素的底部边框为 2 像素宽（2px）的实线（solid），颜色为浅灰色（#CCCCCC） */
+            border-bottom: 2px solid #CCCCCC;
+        }
+
+        /* 表格内容主体偶数行背景颜色 */
+        table tbody tr:nth-child(even) {
+            /* 背景颜色 */
+            background-color: #f9f9f9;
+        }
+
+        /* 表格内容主体每行中的每个单元格 */
+        table tbody tr td {
+            /* 高度 */
+            height: 30px;
+            /* 设置了元素的底部边框为 1 像素宽（1px）的实线（solid），颜色为浅灰色（#CCCCCC） */
+            border-bottom: 1px solid #CCCCCC;
+            /* 上、右、下、左内边距 */
+            padding: 10px;
+        }
+
+        /* 表格内容主体每行中的最后一个单元格样式 */
+        table tbody tr td:last-child {
+            /* 背景颜色 */
+            background-color: white;
+            /* 设置元素的下边框为无（即移除下边框） */
+            border-bottom: none;
+            /* 设置上、右、下、左内边距（元素内容区域与边框之间的距离）为 0 个像素，即清除所有内边距 */
+            padding: 0px;
+            /* 设置上、右、下、左外边距（元素与其相邻元素或页面边界之间的距离）为 0 个像素，即清除所有外边距 */
+            margin: 0px;
+        }
+
+        /* 表格内容主体每行中的最后一个单元格中的第一层子元素样式 */
+        table tbody tr td:last-child > * {
+            /* 上外边距 */
+            margin-top: 8px;
+            /* 左外边距 */
+            margin-left: 15px;
+        }
+
+        /* 表格内容主体每行鼠标经过显示背景颜色 */
+        table tbody tr:hover {
+            /* 背景颜色 */
+            background-color: #CCCCCC;
+        }
+
+        /* 表尾每行中的每个单元格样式 */
+        table tfoot tr td {
+            padding-top: 10px;
+            padding-bottom: 10px;
+            padding-right: 10px;
+        }
+
+        /* 表尾 form input 样式 */
+        table tfoot form input[type="text"] {
+            width: 100px;
+        }
+
+        /* 表尾 form 中第一层子元素样式 */
+        table tfoot form > * {
+            padding-top: 10px;
+            padding-bottom: 10px;
+            padding-right: 15px;
+        }
+
+        /* 设置表单元素都在同一行，避免自动换行 */
+        .nowrap {
+            white-space: nowrap;
+        }
+
+        /* 操作行 */
+        .operation {
+            /* 使元素在水平方向上排列（像 inline 元素），同时也具备设置宽高和其他块级布局属性的能力（像 block 元素） */
+            /*display: inline-block;*/
+            /* 设置背景颜色 */
+            background-color: #F5F5F5;
+        }
+
+        /* 设置第一层所有子元素的样式 */
+        .operation > * {
+            /* 上间距 右间距 下间距 左间距 */
+            margin: 10px 10px 10px 10px;
+        }
+
+        table tbody tr.cut {
+            color: gray;
+        }
+    </style>
 </head>
 <body>
-<p th:if="${error != null}" th:text="${error}"></p>
-<content>
-    <left>
-        <h3 th:if="${vo.entity.id == 0}">Index of&nbsp;&nbsp;<a th:href="@{'/note/0/list?t=' + ${timestamp}}">~</a>/<span th:if="${vo.parameter.contain != null && vo.parameter.contain}">*</span></h3>
-        <h3 th:if="${vo.entity.id != 0}">Index of&nbsp;&nbsp;<a th:href="@{'/note/0/list?t=' + ${timestamp}}">~</a><span th:each="p : ${vo.entity.ps}">/<a th:href="@{'/note/' + ${p.id} + '/list?t=' + ${timestamp}}" th:text="${p.name}"></a></span><span>/<a th:href="@{'/note/' + ${vo.entity.id} + '/list?t=' + ${timestamp}}" th:text="${vo.entity.name}"></a></span><span th:if="${vo.parameter.contain != null && vo.parameter.contain}">/*</span></h3>
-        <table>
-            <thead>
-            <tr>
-                <td>名称</td>
-                <td>类型</td>
-                <td th:if="${vo.parameter.contain != null && vo.parameter.contain}">路径</td>
-                <td>大小</td>
-                <td>创建时间</td>
-                <td>修改时间</td>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="child : ${vo.entity.childList}" th:id="${child.id}" th:name="${child.name}" th:type="${child.type}">
-                <td th:if="${child.type == 'folder'}"><a th:text="${child.name}" th:href="@{'/note/' + ${child.id} + '/list?t=' + ${timestamp}}"></a></td>
-                <td th:if="${child.type != 'folder'}">
-                    <a th:text="${child.name}" th:href="@{'/note/' + ${child.id} + '/view?t=' + ${timestamp}}" target="_blank"></a>
-                </td>
-                <td th:text="${child.type}"></td>
-                <td th:if="${vo.parameter.contain != null && vo.parameter.contain}">
-                    <span th:if="${child.pid == 0}">/</span>
-                    <span th:if="${child.pid != 0}" th:each="p : ${child.ps}">/<a th:href="@{'/note/' + ${p.id} + '/list?t=' + ${timestamp}}" th:text="${p.name}"></a></span>
-                </td>
-                <td th:text="${T(org.xiangqian.note.util.FileUtil).humanByte(child.size, 'KB')}"></td>
-                <td th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(child.addTime)}"></td>
-                <td th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(child.updTime)}"></td>
-                <td style="visibility: hidden;">
-                    <a th:if="${child.type != 'folder' && child.type != 'md'}" th:href="@{'/note/' + ${child.id} + '/download?t=' + ${timestamp}}" download>下载</a>
-                    <form th:if="${child.type != 'folder' && child.type != 'md'}" method="post" enctype="multipart/form-data" th:action="@{'/note/reUpload?t=' + ${timestamp}}" class="aform border">
-                        <input name="_method" value="PUT" type="hidden">
-                        <input name="id" th:value="${child.id}" type="hidden">
-                        <input name="pid" th:value="${vo.entity.id}" type="hidden">
-                        <input name="file" type="file" required>
-                        <button type="submit" reUpload>重新上传文件</button>
-                    </form>
-                    <form method="post" th:action="@{'/note/rename?t=' + ${timestamp}}" class="aform">
-                        <input name="_method" value="PUT" type="hidden">
-                        <input name="id" th:value="${child.id}" type="hidden">
-                        <input name="pid" th:value="${vo.entity.id}" type="hidden">
-                        <input name="name" value="" type="hidden">
-                        <button type="submit" rename>重命名</button>
-                    </form>
-                    <a href="javascript:void(0);" cut="0">剪切</a>
-                    <form method="post" th:action="@{'/note/del?t=' + ${timestamp}}" class="aform">
-                        <input name="_method" value="DELETE" type="hidden">
-                        <input name="id" th:value="${child.id}" type="hidden">
-                        <input name="pid" th:value="${vo.entity.id}" type="hidden">
-                        <button type="submit" del>删除</button>
-                    </form>
-                </td>
-            </tr>
-            </tbody>
-            <tfoot>
-            <tr>
-                <td th:colspan="${vo.parameter.contain != null && vo.parameter.contain ? 6 : 5}">
-                    <form method="get" th:action="@{'/note/' + ${vo.parameter.id} + '/list'}">
-                        <label>名称&nbsp;&nbsp;</label><input name="name" type="text" th:value="${vo.parameter.name}">
-                        <label style="margin-left: 20px;">类型&nbsp;&nbsp;</label>
-                        <select name="type">
-                            <option></option>
-                            <option th:each="type : ${vo.types}"
-                                    th:value="${type}"
-                                    th:text="${type}"
-                                    th:selected="${type == vo.parameter.type}">
-                            </option>
-                        </select>
-                        <input type="checkbox" name="contain" value="true" th:attr="checked=${vo.parameter.contain != null and vo.parameter.contain ? '' : null}" style="margin-left: 20px;"><label name="contain">&nbsp;包括子文件夹</label>
-                        <input name="t" th:value="${timestamp}" type="hidden" style="margin-left: 20px;">
-                        <button type="submit" style="margin-left: 20px;" search>搜索</button>
-                    </form>
-                </td>
-            </tr>
-            <tr>
-                <td th:colspan="${vo.parameter.contain != null && vo.parameter.contain ? 6 : 5}">
-                    <span th:each="offset : ${vo.entity.childList.offsets}" th:with="disabled=${vo.entity.childList.offset.equals(offset)}">
-                        <a th:if="${offset == null}">...</a>
-                        <a th:if="${offset != null}"
-                           th:href="@{'/note/' + ${vo.parameter.id} + '/list?name=' + ${vo.parameter.name != null ? vo.parameter.name : ''} + '&type=' + ${vo.parameter.type != null ? vo.parameter.type : ''} + '&contain=' + ${vo.parameter.contain != null ? vo.parameter.contain : ''} +'&offset=' + ${offset} + '&t=' + ${timestamp}}"
-                           th:text="${offset}"
-                           th:class="${disabled ? 'disabled' : ''}"
-                           th:style="${disabled ? 'color: rgba(128, 128, 128, 0.6);' : ''}"></a>
-                    </span>
-                </td>
-            </tr>
-            </tfoot>
-        </table>
-    </left>
-    <right>
-        <form method="post" th:action="@{'/note/addFolder?t=' + ${timestamp}}" class="aform" style="display: block; margin: 80px 10px 20px 10px;">
-            <input name="pid" th:value="${vo.entity.id}" type="hidden">
-            <input name="name" value="" type="hidden">
+<div th:replace="top"></div>
+<center th:with="include=${entity.include != null && entity.include},isParentListEmpty=${#lists.isEmpty(parentList)}">
+    <h3>&nbsp;&nbsp;<a th:href="@{'/note/0/list?t=' + ${timestamp}}">~</a>
+        <span th:if="${isParentListEmpty}">/<th:block th:if="${include}">*</th:block></span>
+        <span th:if="${not isParentListEmpty}"><th:block th:each="parent : ${parentList}">/<a th:href="@{'/note/' + ${parent.id} + '/list?t=' + ${timestamp}}" th:text="${parent.name}"></a></th:block><th:block th:if="${include}">/*</th:block></span>
+    </h3>
+    <div class="operation">
+        <a th:href="@{'/note/' + ${parentEntity.id} + '/sort?t=' + ${timestamp}}" target="_blank">修改排序规则</a>
+        <span>|</span>
+        <form method="post" th:action="@{'/note/folder?t=' + ${timestamp}}">
+            <input name="pid" th:value="${parentEntity.id}" type="hidden">
+            <input name="name" value="" type="hidden" prompt-message="新建文件夹">
             <button type="submit" addFolder>新建文件夹</button>
         </form>
-        <form method="post" th:action="@{'/note/addMd?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
-            <input name="pid" th:value="${vo.entity.id}" type="hidden">
-            <input name="name" value="" type="hidden">
-            <button type="submit" addMdFile>新建Markdown文件</button>
+        <span>|</span>
+        <form method="post" th:action="@{'/note/md?t=' + ${timestamp}}">
+            <input name="pid" th:value="${parentEntity.id}" type="hidden">
+            <input name="name" value="" type="hidden" prompt-message="新建MD文件">
+            <button type="submit" addMdFile>新建MD文件</button>
         </form>
-        <form method="post" enctype="multipart/form-data" th:action="@{'/note/upload?t=' + ${timestamp}}" class="aform border" style="display: block; margin: 20px 10px 20px 10px;">
-            <input name="pid" th:value="${vo.entity.id}" type="hidden">
-            <input name="file" type="file" required>
-            <button type="submit" upload>上传文件</button>
+        <span>|</span>
+        <form class="nowrap" method="post" enctype="multipart/form-data" th:action="@{'/note/upload?t=' + ${timestamp}}">
+            <input name="pid" th:value="${parentEntity.id}" type="hidden">
+            <input name="file" type="file" accept=".pdf,.zip" required>
+            <button type="submit" upload>上传PDF/ZIP文件</button>
         </form>
-        <form method="post" th:action="@{'/note/paste?t=' + ${timestamp}}" class="aform" style="display: block; margin: 20px 10px 20px 10px;">
+        <span>|</span>
+        <form method="post" th:action="@{'/note/paste?t=' + ${timestamp}}">
             <input name="_method" value="PUT" type="hidden">
             <input name="id" value="" type="hidden">
-            <input name="pid" th:value="${vo.entity.id}" type="hidden">
-            <button type="submit" class="disabled" paste>粘贴</button>
+            <input name="pid" th:value="${parentEntity.id}" type="hidden">
+            <button type="submit" paste disabled>粘贴</button>
         </form>
-    </right>
-</content>
+    </div>
+    <table>
+        <thead>
+        <tr>
+            <td>名称</td>
+            <td>类型</td>
+            <td th:if="${include}">路径</td>
+            <td>大小</td>
+            <td>创建时间</td>
+            <td>修改时间</td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="child : ${childList}" th:id="${child.id}">
+            <td th:if="${child.type == 'folder'}"><a th:text="${child.name}" th:href="@{'/note/' + ${child.id} + '/list?t=' + ${timestamp}}"></a></td>
+            <td th:if="${child.type != 'folder'}">
+                <a th:text="${child.name}" th:href="@{'/note/' + ${child.id} + '/view?t=' + ${timestamp}}" target="_blank"></a>
+            </td>
+            <td th:switch="${child.type}">
+                <th:block th:case="'folder'">文件夹</th:block>
+                <th:block th:case="'md'">MD文件</th:block>
+                <th:block th:case="'pdf'">PDF文件</th:block>
+                <th:block th:case="'zip'">ZIP文件</th:block>
+                <th:block th:case="*" th:text="${child.type}"></th:block>
+            </td>
+            <td th:if="${include}">
+                <span th:if="${child.pid == 0}">/</span>
+                <span th:if="${child.pid != 0}" th:each="parent : ${child.parentList}">/<a th:href="@{'/note/' + ${parent.id} + '/list?t=' + ${timestamp}}" th:text="${parent.name}"></a></span>
+            </td>
+            <td th:text="${T(org.xiangqian.note.util.FileUtil).humanSize(child.size)}"></td>
+            <td th:text="${T(org.xiangqian.note.util.TimeUtil).human(child.createTime)}"></td>
+            <td th:text="${T(org.xiangqian.note.util.TimeUtil).human(child.updateTime)}"></td>
+            <td style="visibility: hidden;">
+                <a th:if="${child.type != 'folder'}" th:href="@{'/note/' + ${child.id} + '/download?t=' + ${timestamp}}" download>下载</a>
+                <span th:if="${child.type != 'folder'}">|</span>
+                <form th:if="${child.type == 'pdf' || child.type == 'zip'}" method="post" enctype="multipart/form-data" th:action="@{'/note/' + ${child.id} + '/reUpload?t=' + ${timestamp}}" class="nowrap">
+                    <input name="_method" value="PUT" type="hidden">
+                    <input name="pid" th:value="${parentEntity.id}" type="hidden">
+                    <input name="file" type="file" th:accept="${'.' + child.type}" required>
+                    <button type="submit" reUpload>重新上传文件</button>
+                </form>
+                <span th:if="${child.type == 'pdf' || child.type == 'zip'}">|</span>
+                <form method="post" th:action="@{'/note/' + ${child.id} + '/rename?t=' + ${timestamp}}">
+                    <input name="_method" value="PUT" type="hidden">
+                    <input name="pid" th:value="${parentEntity.id}" type="hidden">
+                    <input name="name" value="" type="hidden" th:prompt-message="${'重命名 “' + child.name} + '”'" th:prompt-default="${child.name}">
+                    <button type="submit" rename>重命名</button>
+                </form>
+                <span>|</span>
+                <a href="javascript:void(0);" cut="0">剪切</a>
+                <span>|</span>
+                <form method="post" th:action="@{'/note/'+ ${child.id} +'?t=' + ${timestamp}}">
+                    <input name="_method" value="DELETE" type="hidden">
+                    <input name="pid" th:value="${parentEntity.id}" type="hidden">
+                    <button type="submit" th:confirm-message="${'删除' + (child.type == 'folder' ? '目录' : '文件') + ' “' + child.name + '” ？'}">删除</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr>
+            <td colspan="5">
+                <form method="get" th:action="@{'/note/' + ${entity.pid} + '/list?'}">
+                    <span><label>&nbsp;&nbsp;名称&nbsp;&nbsp;</label><input name="name" type="text" th:value="${entity.name}"></span>
+                    <span><label>内容&nbsp;&nbsp;</label><input name="content" type="text" th:value="${entity.content}"></span>
+                    <span class="nowrap">
+                        <label>类型&nbsp;&nbsp;</label>
+                        <select name="type">
+                            <option value="">所有</option>
+                            <option th:each="type : ${types}"
+                                    th:value="${type}"
+                                    th:selected="${type == entity.type}"
+                                    th:switch="${type}">
+                                    <th:block th:case="'folder'">文件夹</th:block>
+                                    <th:block th:case="'md'">MD文件</th:block>
+                                    <th:block th:case="'pdf'">PDF文件</th:block>
+                                    <th:block th:case="'zip'">ZIP文件</th:block>
+                                    <th:block th:case="*" th:text="${type}"></th:block>
+                            </option>
+                        </select>
+                    </span>
+                    <span class="nowrap"><input id="include" type="checkbox" name="include" value="true" th:attr="checked=${entity.include != null and entity.include ? '' : null}"><label for="include">&nbsp;包括子文件夹</label></span>
+                    <input name="t" th:value="${timestamp}" type="hidden">
+                    <button type="submit" search>搜索</button>
+                </form>
+            </td>
+        </tr>
+        <tr>
+            <td th:colspan="${entity.include != null && entity.include ? 6 : 5}">
+                <span th:each="page : ${childList.pages}" th:with="disabled=${childList.current.equals(page)}">
+                    <a th:if="${page == null}">...</a>
+                    <a th:if="${page != null}"
+                       th:href="@{'/note/' + ${entity.pid} + '/list?name=' + ${entity.name != null ? entity.name : ''} + '&content=' + ${entity.content != null ? entity.content : ''} + '&type=' + ${entity.type != null ? entity.type : ''} + '&include=' + ${entity.include != null ? entity.include : ''} + '&' + 'current=' + ${page} + '&t=' + ${timestamp}}"
+                       th:text="${page}"
+                       th:class="${disabled ? 'disabled' : ''}"
+                       th:style="${disabled ? 'color: rgba(128, 128, 128, 0.6);' : ''}"></a>
+                </span>
+                <span th:if="${childList.more != null && childList.more}">...</span>
+            </td>
+        </tr>
+        </tfoot>
+    </table>
+</center>
 <div th:replace="bottom"></div>
 </body>
 </html>
-<script type="text/javascript" th:src="@{/static/js/jquery.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/body.js}"></script>
+<script type="text/javascript" th:src="@{/static/jquery/jquery.js}"></script>
+<script type="text/javascript" th:src="@{/static/custom/body.js}"></script>
 <script type="text/javascript">
     ;
     $(function () {
-        function add(event, message) {
-            let name = prompt(message, '')
-
-            // cancel
-            if (name == null) {
-                return false
-            }
-
-            name = name.trim()
-            if (name === '') {
-                return false
-            }
-
-            // 获取目标元素
-            let $element = $(event.currentTarget)
-
-            // 查找元素最近的父级<form>元素
-            let $form = $element.closest('form')
-
-            // 查找input[name="name"]元素
-            let $name = $form.find('input[name="name"]')
-
-            // 设置名称
-            $name.val(name)
-
-            return true
-        }
-
-        $('button[addFolder]').click(function (event) {
-            return add(event, '新建文件夹')
-        })
-
-        $('button[addMdFile]').click(function (event) {
-            return add(event, '新建Markdown文件')
-        })
-
-        function Note(id, name, type) {
-            this.id = id
-            this.name = name
-            this.type = type
-        }
-
-        function getNote($element) {
-            // 查找元素最近的父级<tr>元素
-            let $tr = $element.closest('tr')
-
-            let id = $tr.attr('id')
-            let name = $tr.attr('name')
-            let type = $tr.attr('type')
-            return new Note(id, name, type)
-        }
-
-        // 点击文本时，选中或取消复选框
-        let $contain = $('input[name="contain"]')
-        $('label[name="contain"]').click(function (event) {
-            $contain.prop('checked', function (i, value) {
-                return !value;
-            })
-        })
-
-        // 重命名
-        $('button[rename]').click(function (event) {
-            // 获取目标元素
-            let $element = $(event.currentTarget)
-
-            let note = getNote($element)
-            let name = prompt('重命名：' + note.name + ' ？', note.name)
-
-            // cancel
-            if (name == null) {
-                return false
-            }
-
-            name = name.trim()
-            if (name === '') {
-                return false
-            }
-
-            // 查找元素最近的父级<form>元素
-            let $form = $element.closest('form')
-
-            // 查找input[name="name"]元素
-            let $name = $form.find('input[name="name"]')
-
-            // 设置名称
-            $name.val(name)
-
-            return true
-        })
-
-        // 设置剪切node
-        function setCutNote(cutNode) {
-            if (cutNode != null) {
-                cutNode = JSON.stringify(cutNode)
-            }
-            localStorage.setItem('cutNode', cutNode)
-        }
-
-        // 获取剪切node
-        function getCutNote() {
-            let cutNode = localStorage.getItem('cutNode')
-            if (cutNode == null) {
-                return null
-            }
-            return JSON.parse(cutNode)
-        }
-
         // 粘贴
-        let $paste = $('button[paste]')
+        let $paste = $('button[paste]');
         $paste.click(function (event) {
             // 获取目标元素
-            let $element = $(event.currentTarget)
+            let $element = $(event.currentTarget);
 
             // 查找元素最近的父级<form>元素
-            let $form = $element.closest('form')
+            let $form = $element.closest('form');
 
             // 查找input[name="id"]元素
-            let $id = $form.find('input[name="id"]')
+            let $input = $form.find('input[name="id"]');
 
             // 设置id
-            let cutNode = getCutNote()
-            $id.val(cutNode.id)
+            let id = localStorage.getItem('cut');
+            $input.val(id)
 
-            setCutNote(null)
-            return true
-        })
+            localStorage.setItem('cut', '');
+            return true;
+        });
 
-        // 剪切<tr>
-        function cutTr(cutNode) {
-            let $tr = $('#' + cutNode.id)
-            $tr.addClass('cut')
-            let $a = $tr.find('a[cut]')
-            $a.attr('cut', '1')
-            $a.text('取消剪切')
+        // 剪切
+        function cut($tr) {
+            if ($tr.length > 0){
+                let id = $tr.attr('id')
+                localStorage.setItem('cut', id);
 
-            // 启用按钮
-            $paste.removeClass('disabled')
-        }
+                // 查找元素最近的父级<tbody>元素
+                let $tbody = $tr.closest('tbody');
+                // $tbody.find('tr').removeClass('cut');
+                $tbody.find('tr').each(function() {
+                    $(this).removeClass('cut');
 
-        // 取消剪切<tr>
-        function cancelCutTr() {
-            let $trs = $('body > content > left > table tbody tr.cut')
-            if ($trs.length > 0) {
-                for (let i = 0, length = $trs.length; i < length; i++) {
-                    let $tr = $($trs[i])
-                    $tr.removeClass('cut')
-                    let $a = $tr.find('a[cut]')
-                    $a.attr('cut', '0')
-                    $a.text('剪切')
-                }
+                    let $a = $(this).find('a[cut]');
+                    $a.attr('cut', '0');
+                    $a.text('剪切');
+                });
+
+                $tr.addClass('cut');
+
+                let $a = $tr.find('a[cut]');
+                $a.attr('cut', '1');
+                $a.text('取消剪切');
             }
 
-            // 禁用按钮
-            $paste.addClass('disabled')
+            // 启用按钮
+            $paste.removeAttr('disabled');
         }
 
-        let cutNode = getCutNote()
-        if (cutNode != null) {
-            cutTr(cutNode)
+        // 取消剪切
+        function cancelCut($tr) {
+            localStorage.setItem('cut', '');
+
+            $tr.removeClass('cut');
+
+            // 禁用按钮
+            $paste.attr('disabled', 'disabled');
+
+            let $a = $tr.find('a[cut]');
+            $a.attr('cut', '0');
+            $a.text('剪切');
+        }
+
+        // 设置id
+        let id = localStorage.getItem('cut');
+        if (id !== '') {
+            let $tr = $('#' + id);
+            cut($tr);
         }
 
         // 剪切
         $('a[cut]').click(function (event) {
             // 获取目标元素
-            let $element = $(event.currentTarget)
+            let $a = $(event.currentTarget);
 
-            if ($element.attr('cut') === '1') {
-                setCutNote(null)
-                cancelCutTr()
-                return false
+            // 查找元素最近的父级<tr>元素
+            let $tr = $a.closest('tr');
+
+            if ($a.attr('cut') === '1') {
+                cancelCut($tr)
+                return false;
             }
 
-            let note = getNote($element)
-            setCutNote(note)
-            cancelCutTr()
-            cutTr(note)
-            return false
-        })
-
-        // 删除
-        $('button[del]').click(function (event) {
-            // 获取目标元素
-            let $element = $(event.currentTarget)
-
-            let note = getNote($element)
-            if (confirm('确定删除' + (note.type === 'folder' ? '目录' : '文件') + '：' + note.name + ' ？')) {
-                setCutNote(null)
-                return true
-            } else {
-                return false
-            }
-        })
-    })
-    ;
+            cut($tr);
+            return false;
+        });
+    });
 </script>

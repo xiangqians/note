@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 import org.xiangqian.note.entity.UserEntity;
-import org.xiangqian.note.model.Vo;
 import org.xiangqian.note.service.UserService;
+import org.xiangqian.note.util.Model;
 
 /**
  * @author xiangqian
@@ -20,7 +20,7 @@ import org.xiangqian.note.service.UserService;
 public class UserController extends AbsController {
 
     @Autowired
-    private UserService userService;
+    private UserService service;
 
     @GetMapping("/login")
     public ModelAndView login(ModelAndView modelAndView) {
@@ -28,22 +28,22 @@ public class UserController extends AbsController {
         return modelAndView;
     }
 
-    @GetMapping("/resetPasswd")
-    public ModelAndView resetPasswd(ModelAndView modelAndView) {
-        modelAndView.setViewName("user/resetPasswd");
+    @GetMapping("/resetPassword")
+    public ModelAndView resetPassword(ModelAndView modelAndView) {
+        modelAndView.setViewName("user/reset-password");
         return modelAndView;
     }
 
-    @PutMapping("/resetPasswd")
-    public RedirectView resetPasswd(UserEntity userEntity) {
+    @PutMapping("/resetPassword")
+    public RedirectView resetPassword(UserEntity entity) {
         try {
-            if (userService.resetPasswd(userEntity)) {
-                return redirectView("/resetPasswd", Vo.info("重置密码成功。"));
+            if (service.resetPassword(entity)) {
+                return redirectView("/resetPassword", null);
             }
-            return redirectView("/resetPasswd", Vo.error("重置密码失败。"));
+            return redirectView("/resetPassword", Model.of(MESSAGE, "重置密码失败"));
         } catch (Exception e) {
             log.error("", e);
-            return redirectView("/resetPasswd", Vo.error(e.getMessage()));
+            return redirectView("/resetPassword", Model.of(MESSAGE, e.getMessage()));
         }
     }
 

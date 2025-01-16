@@ -2,14 +2,14 @@
  | @author xiangqian
  | @date 20:08 2023/07/10
  |-->
-<bottom>
-    <th:block th:if="${session.isLoggedIn}">
+<bottom th:with="user=${(T(org.xiangqian.note.util.SecurityUtil).getAuthenticatedUser())}">
+    <th:block th:if="${user != null}">
     <p>
-        <a th:if="${'/resetPasswd' == vo.servletPath}" th:href="@{'/?t=' + ${vo.timestamp}}" style="margin-right: 15px;">返回首页</a><a th:if="${'/resetPasswd' != vo.servletPath}" th:href="@{'/resetPasswd?t=' + ${vo.timestamp}}" style="margin-right: 15px;">重置密码</a><a th:href="@{'/logout?t=' + ${vo.timestamp}}">退出登录</a>
+        <a th:if="${servletPath == '/resetPassword'}" th:href="@{'/?t=' + ${timestamp}}" style="margin-right: 15px;">返回首页</a><a th:if="${'/resetPassword' != servletPath}" th:href="@{'/resetPassword?t=' + ${timestamp}}" style="margin-right: 15px;">重置密码</a><a th:href="@{'/logout?t=' + ${timestamp}}">退出登录</a>
     </p>
-    <th:block th:with="lastLoginHost=${session.user.lastLoginHost},lastLoginTime=${session.user.lastLoginTime}">
+    <th:block th:with="lastLoginHost=${user.lastLoginHost},lastLoginTime=${user.lastLoginTime}">
     <p th:if="${(T(org.apache.commons.lang3.StringUtils).isNotEmpty(lastLoginHost)) and lastLoginTime != 0}">
-        <span style="margin-left: 0px;margin-right: 10px;">上次登录</span><span th:text="${lastLoginHost}" style="margin-right: 10px;"></span><span th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(lastLoginTime)}"></span>
+        <span style="margin-left: 0px;margin-right: 10px;">上次登录</span><span th:text="${lastLoginHost}" style="margin-right: 10px;"></span><span th:text="${T(org.xiangqian.note.util.TimeUtil).human(lastLoginTime)}"></span>
     </p>
     </th:block>
     </th:block>

@@ -1,27 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.xiangqian.note.mapper.ImageMapper">
-    <insert id="add">
+
+    <insert id="create" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
         INSERT INTO `image`
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="name != null">`name`,</if>
             <if test="type != null">`type`,</if>
             <if test="size != null">`size`,</if>
-            <if test="del != null">`del`,</if>
-            <if test="addTime != null">`add_time`,</if>
-            <if test="updTime != null">`upd_time`,</if>
+            <if test="delete != null">`delete`,</if>
+            <if test="createTime != null">`create_time`,</if>
+            <if test="updateTime != null">`update_time`,</if>
         </trim>
         <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
             <if test="name != null">#{name},</if>
             <if test="type != null">#{type},</if>
             <if test="size != null">#{size},</if>
-            <if test="del != null">#{del},</if>
-            <if test="addTime != null">#{addTime},</if>
-            <if test="updTime != null">#{updTime},</if>
+            <if test="delete != null">#{delete},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
         </trim>
     </insert>
 
-    <update id="updById">
+    <update id="deleteById">
+        UPDATE `image` SET `delete` = 1  WHERE `id` = #{id}
+    </update>
+
+    <update id="updateById">
         UPDATE `image`
         <set>
             <if test="name != null">
@@ -33,23 +38,28 @@
             <if test="size != null">
                 `size` = #{size},
             </if>
-            <if test="del != null">
-                `del` = #{del},
+            <if test="delete != null">
+                `delete` = #{delete},
             </if>
-            <if test="addTime != null">
-                `add_time` = #{addTime},
+            <if test="createTime != null">
+                `create_time` = #{createTime},
             </if>
-            <if test="updTime != null">
-                `upd_time` = #{updTime},
+            <if test="updateTime != null">
+                `update_time` = #{updateTime},
             </if>
         </set>
-        WHERE id = #{id}
+        WHERE `delete` = 0 AND `id` = #{id}
     </update>
 
-    <select id="getDeledId" resultType="java.lang.Long">
-        SELECT `id`
+    <select id="getById" resultType="org.xiangqian.note.entity.ImageEntity">
+        SELECT `id`, `name`, `type`, `size`, `delete`, `create_time`, `update_time`
         FROM `image`
-        WHERE `del` = 1 LIMIT 1
+        WHERE `delete` = 0 AND `id` = #{id}
+        LIMIT 1
+    </select>
+
+    <select id="getDeletedId" resultType="java.lang.Long">
+        SELECT `id` FROM `image` WHERE `delete` = 1 LIMIT 1
     </select>
 
 </mapper>

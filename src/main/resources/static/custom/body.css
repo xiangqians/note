@@ -1,0 +1,79 @@
+/**
+ * @author xiangqian
+ * @date 20:02 2023/07/10
+ */
+
+body {
+    min-height: 100%;
+    padding: 5px 10px 10px 10px;
+    font-family: "Mona Sans", "Mona Sans Fallback", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    word-break: keep-all;
+    display: block;
+}
+
+/* a 标签可用状态下样式 */
+body a {
+    /* 设置上、右、下、左内边距（元素内容区域与边框之间的距离）为 0 个像素，即清除所有内边距 */
+    padding: 0px;
+    /* 设置上、右、下、左外边距（元素与其相邻元素或页面边界之间的距离）为 0 个像素，即清除所有外边距 */
+    margin: 0px;
+    /* 去除文本的装饰效果（如下划线、上划线、删除线等） */
+    text-decoration: none;
+}
+
+/* a 标签禁用状态下样式 */
+body a[disabled1] {
+    /* 使元素无法响应任何鼠标事件（包括点击、悬停、拖动等） */
+    pointer-events: none;
+    /* 设置鼠标经过或点击显示默认样式 */
+    cursor: default;
+    /* 设置字体为灰色 */
+    color: gray;
+}
+
+/* form button[submit] 标签可用状态下样式 */
+body form button[type="submit"] {
+    /* 设置鼠标经过或点击显示手势样式 */
+    cursor: pointer;
+}
+
+/* form button[submit] 标签禁用状态下样式 */
+body form button[type="submit"]:disabled {
+    /* 设置鼠标经过或点击显示默认样式 */
+    cursor: default;
+}
+
+
+body .nowrap {
+
+}
+
+body > top {
+    /* 块级元素 */
+    display: block;
+    /* 设置元素底部的内边距 */
+    padding-bottom: 10px;
+}
+
+body > top > message {
+    /* 块级元素 */
+    display: block;
+    /* 设置文本颜色 */
+    color: rgb(200, 0, 0);
+}
+
+body > center {
+    /* 块级元素 */
+    display: block;
+    /* 自动宽度 */
+    width: auto;
+    /* 自动高度 */
+    height: auto;
+    /* 文本或行内元素的左对齐 */
+    text-align: left;
+}
+
+body > bottom {
+    display: block;
+    padding-top: 15px;
+}

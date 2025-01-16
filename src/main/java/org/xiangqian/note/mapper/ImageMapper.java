@@ -4,7 +4,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.xiangqian.note.entity.ImageEntity;
 
 /**
- * 图片映射
+ * 图片映射器
  *
  * @author xiangqian
  * @date 23:30 2024/03/04
@@ -15,29 +15,29 @@ public interface ImageMapper {
     /**
      * 新增图片信息
      *
-     * @param imageEntity
+     * @param entity
      * @return
      */
-    Boolean add(ImageEntity imageEntity);
+    Boolean create(ImageEntity entity);
 
     /**
-     * 根据id更新图片信息
-     *
-     * @param imageEntity
-     * @return
-     */
-    Boolean updById(ImageEntity imageEntity);
-
-    /**
-     * 根据id删除图片信息
+     * 根据主键删除图片信息
      *
      * @param id
      * @return
      */
-    Boolean delById(Long id);
+    Boolean deleteById(Long id);
 
     /**
-     * 根据id获取图片信息
+     * 根据主键更新图片信息
+     *
+     * @param entity
+     * @return
+     */
+    Boolean updateById(ImageEntity entity);
+
+    /**
+     * 根据主键获取图片信息
      *
      * @param id
      * @return
@@ -45,10 +45,10 @@ public interface ImageMapper {
     ImageEntity getById(Long id);
 
     /**
-     * 获取已删除的id，以复用
+     * 获取已删除的图片主键
      *
      * @return
      */
-    Long getDeledId();
+    Long getDeletedId();
 
 }

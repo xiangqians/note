@@ -11,9 +11,9 @@ public interface UserService {
     /**
      * 重置密码
      *
-     * @param userEntity
+     * @param entity
      * @return
      */
-    Boolean resetPasswd(UserEntity userEntity);
+    Boolean resetPassword(UserEntity entity);
 
 }

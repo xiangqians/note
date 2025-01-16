@@ -1,4 +1,4 @@
-.idea
-target
-log
-lib
+.idea/
+target/
+log/
+data/

@@ -3,10 +3,9 @@ package org.xiangqian.note.entity;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.xiangqian.note.util.DateUtil;
+import org.xiangqian.note.util.TimeUtil;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -30,12 +29,12 @@ public class UserEntity implements UserDetails {
     /**
      * 密码
      */
-    private String passwd;
+    private String password;
 
     /**
      * 新密码
      */
-    private String newPasswd;
+    private String newPassword;
 
     /**
      * 连续错误登陆次数，超过3次则锁定用户
@@ -48,7 +47,7 @@ public class UserEntity implements UserDetails {
     private String lastLoginHost;
 
     /**
-     * 上一次登录时间戳（单位s）
+     * 上一次登录时间戳，单位s
      */
     private Long lastLoginTime;
 
@@ -58,27 +57,27 @@ public class UserEntity implements UserDetails {
     private String currentLoginHost;
 
     /**
-     * 当前登录时间戳（单位s）
+     * 当前登录时间戳，单位s
      */
     private Long currentLoginTime;
 
     /**
-     * 创建时间戳（单位s）
+     * 创建时间戳，单位s
      */
-    private Long addTime;
+    private Long createTime;
 
     /**
-     * 修改时间戳（单位s）
+     * 修改时间戳，单位s
      */
-    private Long updTime;
+    private Long updateTime;
 
     /**
-     * 获取已被锁定时间（单位s）
+     * 获取已被锁定时间，单位s
      *
      * @return
      */
     public long getLockedTime() {
-        return Duration.ofHours(24).toSeconds() - (DateUtil.toSecond(LocalDateTime.now()) - updTime);
+        return Duration.ofHours(24).toSeconds() - (TimeUtil.now() - updateTime);
     }
 
     /**
@@ -98,7 +97,7 @@ public class UserEntity implements UserDetails {
      */
     @Override
     public String getPassword() {
-        return passwd;
+        return password;
     }
 
     /**
@@ -111,7 +110,7 @@ public class UserEntity implements UserDetails {
         // 连续输错密码小于3次
         return deny < 3
                 // 锁定24小时
-                || Duration.ofSeconds(DateUtil.toSecond(LocalDateTime.now()) - updTime).toHours() >= 24;
+                || Duration.ofSeconds(TimeUtil.now() - updateTime).toHours() >= 24;
     }
 
     /**

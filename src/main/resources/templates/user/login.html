@@ -7,34 +7,38 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
-    <link rel="stylesheet" th:href="@{/static/css/body.css}" type="text/css" />
+    <link rel="stylesheet" th:href="@{/static/custom/body.css}" type="text/css" />
+    <link rel="stylesheet" th:href="@{/static/custom/user/login.css}" type="text/css" />
     <title>登录</title>
 </head>
 <body>
 <div th:replace="top"></div>
 <center>
-    <left>
-        <form method="post" th:action="@{'/login?t=' + ${vo.timestamp}}">
-            <table>
-                <tbody>
-                <tr style="display: none;">
-                    <td><span style="font-weight: bold;">*</span><label>用户名</label></td>
-                    <td><input name="username" type="text" value="admin" required></td>
-                </tr>
-                <tr>
-                    <td><span style="font-weight: bold;">*</span><label>密码</label></td>
-                    <td><input name="password" type="password" required autofocus></td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <button type="submit">登录</button>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </form>
-    </left>
+    <form method="post" th:action="@{'/login?t=' + ${timestamp}}">
+        <table>
+            <tbody>
+            <tr>
+                <td><span>*</span><label>用户名</label></td>
+                <td><input name="username" type="text" value="admin"></td>
+            </tr>
+            <tr>
+                <td><span>*</span><label>密码</label></td>
+                <td><input name="password" type="password" required autofocus></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button type="submit">登录</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
 </center>
 <div th:replace="bottom"></div>
 </body>
 </html>
+<script type="text/javascript">
+    window.onload = function () {
+        localStorage.setItem('cut', '');
+    };
+</script>

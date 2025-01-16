@@ -1,0 +1,25 @@
+/**
+ * @author xiangqian
+ * @date 10:16 2024/11/23
+ */
+
+body > center form table {
+    /* 将表格的单元格边框合并为单一的边框 */
+    border-collapse: collapse;
+}
+
+/* 选择第一个 <tr> 元素 */
+body > center table tbody tr:first-child {
+    /* 隐藏元素，完全从页面布局中移除该元素，不会占据任何空间，也不会影响页面中的其他元素 */
+    display: none;
+}
+
+body > center table tbody tr td {
+    /* 设置元素右边的内边距 */
+    padding-right: 20px;
+}
+
+body > center span {
+    /* 设置字体加粗 */
+    font-weight: bold;
+}

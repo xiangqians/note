@@ -6,6 +6,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.xiangqian.note.entity.UserEntity;
 
 /**
+ * 安全工具
+ *
  * @author xiangqian
  * @date 15:26 2024/03/02
  */
@@ -16,9 +18,8 @@ public class SecurityUtil {
      *
      * @return
      */
-    public static UserEntity getUser() {
+    public static UserEntity getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
         if (authentication == null) {
             return null;
         }

@@ -10,8 +10,26 @@ import org.xiangqian.note.entity.UserEntity;
 @Mapper
 public interface UserMapper {
 
-    Boolean updByName(UserEntity userEntity);
+    /**
+     * 更新用户信息
+     *
+     * @param entity
+     * @return
+     */
+    Boolean update(UserEntity entity);
 
-    UserEntity getByName(String name);
+    /**
+     * 重置连续错误登陆次数为 0
+     *
+     * @return
+     */
+    Boolean resetDeny();
+
+    /**
+     * 获取用户信息
+     *
+     * @return
+     */
+    UserEntity get();
 
 }

@@ -1,0 +1,60 @@
+<!--
+ | @author xiangqian
+ | @date 21:10 2024/12/06
+ |-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
+    <title th:text="${name} + ' 排序规则'"></title>
+    <style>
+        body {
+            /* 父容器宽度为视口的 100% */
+            width: 100vw;
+            /* 父容器高度为视口的 100% */
+            height: 100vh;
+
+            padding: 5px 10px 10px 10px;
+            font-family: "Mona Sans", "Mona Sans Fallback", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            word-break: keep-all;
+            display: flex;
+        }
+
+        textarea {
+            /* 宽度为父容器的 80% */
+            width: 80%;
+            /* 高度为父容器的 60% */
+            height: 60%;
+            padding: 10px;
+            /* 使 padding 和 border 包含在宽度和高度内 */
+            box-sizing: border-box;
+            /* 禁止用户调整大小 */
+            resize: none;
+        }
+    </style>
+</head>
+<body>
+<textarea th:text="${content}"></textarea>
+</body>
+</html>
+<script type="text/javascript" th:src="@{/static/jquery/jquery.js}"></script>
+<script type="text/javascript" th:src="@{/static/custom/http.js}"></script>
+<script type="text/javascript" th:src="@{/static/markdown-it/md5.js}"></script>
+<script type="text/javascript" th:src="@{/static/custom/auto-save.js}"></script>
+<script type="text/javascript">
+    ;
+    $(function () {
+        let contextPath = "[[${contextPath}]]";
+        // console.log(contextPath);
+
+        let id = "[[${id}]]";
+        // console.log(id);
+
+        let url = contextPath + "/note/" + id + "/sort";
+        // console.log(url);
+
+        let autoSave = new AutoSave(url, $("title"), $("textarea"));
+        autoSave.start();
+    });
+</script>

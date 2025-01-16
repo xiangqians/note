@@ -6,264 +6,67 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" th:href="@{/static/css/bootstrap.css}">
-    <link rel="stylesheet" type="text/css" th:href="@{/static/css/highlight.css}">
-    <link rel="stylesheet" type="text/css" th:href="@{/static/css/markdown.css}">
-    <title th:text="${vo.name + '.' + vo.type}"></title>
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-
-        .toc {
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: #f4f4f4;
-            border: 1px solid #ddd;
-            padding: 10px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        /* button禁用状态样式 */
-        button.disabled {
-            /* 降低按钮透明度 */
-            opacity: 0.5;
-            /* 设置光标样式为禁用状态 */
-            cursor: not-allowed;
-            /* 禁止按钮点击事件 */
-            pointer-events: none;
-        }
-    </style>
+    <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
+    <link rel="stylesheet" type="text/css" th:href="@{/static/markdown-it/bootstrap.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/static/markdown-it/highlight.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/static/markdown-it/markdown.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/static/custom/note/md/view.css}">
+    <title th:text="${name}"></title>
 <body>
-<div style="padding-left: 15px; padding-top: 10px; height: 4%;">
-    <button edit="0">编辑</button>
-    <button class="disabled" style="margin-left: 5px;" save>保存</button>
+<!-- 目录 -->
+<div class="col-xs-2 full-height">
+    <div id="toc" class="full-height"></div>
 </div>
-<div style="padding-top: 15px; padding-bottom: 15px; height: 96%;">
-    <!-- 编辑页 -->
-    <div id="editor" class="full-height" style="display: none;">
-        <textarea class="source full-height" style="resize: none;" th:text="${vo.content}"></textarea>
-    </div>
-
-    <!-- 渲染页 -->
-    <div id="preview" class="col-xs-10 full-height">
-        <div class="result-html full-height"></div>
-    </div>
-
-    <!-- 目录 -->
-    <div class="col-xs-2 full-height">
-        <div id="toc" class="full-height"></div>
-    </div>
+<!-- 预览 -->
+<div id="preview" class="col-xs-10 full-height">
+    <div class="result-html full-height"></div>
+</div>
+<!-- 编辑页 -->
+<div id="editor" class="full-height" style="display: none;">
+    <textarea class="source full-height" th:text="${content}"></textarea>
 </div>
 </body>
 </html>
-<script type="text/javascript" th:src="@{/static/js/jquery.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/body.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/md5.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/lodash.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/bootstrap.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/markdown_it.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/twemoji.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/markdown_it_emoji.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/markdown_it_sub.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/markdown_it_sup.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/markdown_it_ins.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/markdown_it_mark.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/markdown_it_footnote.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/markdown_it_deflist.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/markdown_it_task_lists.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/markdown_it_anchor.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/markdown_it_toc_done_right.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/highlight.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/markdown.js}"></script>
-<script th:inline="javascript">
+<script type="text/javascript">
     ;
-    window.contextPath = /*[[@{/}]]*/
-    if (window.contextPath === '/') {
-        window.contextPath = ''
-    }
+    window.contextPath = "[[${contextPath}]]";
+    // console.log(window.contextPath);
+    window.twemoji = {
+        base: "[[${contextPath}]]/static/markdown-it/twemoji"
+    };
+    window.id = "[[${id}]]";
+    // console.log(window.id);
+</script>
+<script type="text/javascript" th:src="@{/static/jquery/jquery.js}"></script>
+<script type="text/javascript" th:src="@{/static/custom/http.js}"></script>
+<script type="text/javascript" th:src="@{/static/custom/note/md/view.js}"></script>
+<script type="text/javascript" th:src="@{/static/markdown-it/md5.js}"></script>
+<script type="text/javascript" th:src="@{/static/custom/auto-save.js}"></script>
+<script type="text/javascript" th:src="@{/static/markdown-it/lodash.js}"></script>
+<script type="text/javascript" th:src="@{/static/markdown-it/bootstrap.js}"></script>
+<script type="text/javascript" th:src="@{/static/markdown-it/markdown-it.js}"></script>
+<script type="text/javascript" th:src="@{/static/markdown-it/twemoji.js}"></script>
+<script type="text/javascript" th:src="@{/static/markdown-it/markdown-it-emoji.js}"></script>
+<script type="text/javascript" th:src="@{/static/markdown-it/markdown-it-sub.js}"></script>
+<script type="text/javascript" th:src="@{/static/markdown-it/markdown-it-sup.js}"></script>
+<script type="text/javascript" th:src="@{/static/markdown-it/markdown-it-ins.js}"></script>
+<script type="text/javascript" th:src="@{/static/markdown-it/markdown-it-mark.js}"></script>
+<script type="text/javascript" th:src="@{/static/markdown-it/markdown-it-footnote.js}"></script>
+<script type="text/javascript" th:src="@{/static/markdown-it/markdown-it-deflist.js}"></script>
+<script type="text/javascript" th:src="@{/static/markdown-it/markdown-it-task-lists.js}"></script>
+<script type="text/javascript" th:src="@{/static/markdown-it/markdown-it-anchor.js}"></script>
+<script type="text/javascript" th:src="@{/static/markdown-it/markdown-it-toc-done-right.js}"></script>
+<script type="text/javascript" th:src="@{/static/markdown-it/highlight.js}"></script>
+<script type="text/javascript" th:src="@{/static/markdown-it/markdown.js}"></script>
+<script type="text/javascript">
+    ;
     $(function () {
-        // 移除以 "col-xs-" 开头的class
-        function removeColXsClass(index, className) {
-            return (className.match(/(^|\s)col-xs-\S+/g) || []).join(' ')
-        }
+        let url = window.contextPath + "/note/" + window.id + "/content";
+        // console.log(url);
 
-        let $editor = $("#editor")
-        let $preview = $("#preview")
+        let autoSave = new AutoSave(url, $("title"), $("textarea"));
+        autoSave.start();
+    });
 
-        // 编辑
-        $('button[edit]').click(function (event) {
-            $editor.removeClass(removeColXsClass)
-            $preview.removeClass(removeColXsClass)
-
-            // 获取目标元素
-            let $element = $(event.currentTarget)
-            let value = $element.attr('edit')
-            if ("1" === value) {
-                $editor.removeAttr('edit')
-                $editor.css("display", "none")
-                $preview.addClass("col-xs-10")
-
-                $element.attr('edit', '0')
-                $element.text('编辑')
-            } else {
-                $editor.attr('edit', '')
-                $editor.css("display", "")
-                $editor.addClass("col-xs-5")
-                $preview.addClass("col-xs-5")
-
-                $element.attr('edit', '1')
-                $element.text('退出编辑')
-            }
-        })
-
-        let $title = $('title')
-        let title = $title.text()
-
-        let $textarea = $($editor.find('textarea')[0])
-        function getContent() {
-            return $textarea.val()
-        }
-
-        let hash = md5(getContent())
-        // console.log(hash)
-
-        function hasChanged() {
-            return hash !== md5(getContent())
-        }
-
-        // 保存
-        let $save = $('button[save]')
-        $save.click(function (event) {
-            const id = /*[[${vo.id}]]*/
-            let url = window.contextPath + '/note/' + id + '/content?t=' + new Date().getTime()
-            console.log(url)
-            let formData = new FormData()
-            formData.append('content', getContent())
-            http(url, 'PUT', formData, function (response, status, xhr) {
-                // console.log(response)
-                let code = response.code
-                if (code === 'ok') {
-                    hash = md5(getContent())
-                    $title.text(title)
-                    $save.addClass('disabled')
-                    alert('保存成功')
-                    return
-                }
-
-                let msg = response.msg
-                alert('保存失败 ' + msg)
-            }, undefined)
-        })
-
-        $('textarea').on('input', function () {
-            if (hasChanged()) {
-                $title.text('*' + title)
-                $save.removeClass('disabled')
-            } else {
-                $title.text(title)
-                $save.addClass('disabled')
-            }
-        })
-
-        // 前端js获取剪切板中的文本或者图片文件数据
-        // 监听paste事件，在进行粘贴的时候会触发
-        // https://developer.mozilla.org/en-US/docs/Web/API/Element/paste_event
-        document.addEventListener('paste', function (event) {
-            // 获取粘贴板数据项
-            const items = (event.clipboardData || event.originalEvent.clipboardData).items;
-            // console.log('items', items)
-
-            // dropEffect
-            // String，默认是 none
-            // let dropEffect = clipboardData.dropEffect
-            // console.log('dropEffect', dropEffect)
-
-            // effectAllowed
-            // String，默认是 uninitialized
-            // let effectAllowed = clipboardData.effectAllowed
-            // console.log('effectAllowed', effectAllowed)
-
-            // files
-            // FileList，文件列表
-            // let files = clipboardData.files
-            // console.log('files', files)
-
-            // items
-            // DataTransferItemList，剪切板中的各项数据，Chrome有该属性，Safari没有。
-            //
-            // DataTransferItem属性：
-            // 1、kind：一般为string或者file
-            // 2、type：具体的数据类型，例如具体是哪种类型字符串或者哪种类型的文件，即MIME-Type
-            // DataTransferItem方法：
-            // 1、getAsFile：如果kind是file，可以用该方法获取到文件
-            // 2、getAsString：入参是回调函数；如果kind是string，可以用该方法获取到字符串，字符串需要用回调函数得到，回调函数的第一个参数就是剪切板中的字符串
-            //
-            // let items = clipboardData.items
-            // console.log('items', items)
-
-            // types
-            // Array，剪切板中的数据类型 该属性在Safari下比较混乱
-            // 一般types中常见的值有：text/plain（普通字符串）、text/html（带有样式的html）、Files（文件）。
-            // let types = clipboardData.types
-            // console.log('types', types)
-
-            for (let i = 0, length = items.length; i < length; i++) {
-                let item = items[i]
-                console.log('item', item)
-                const kind = item.kind
-                if (kind === 'file') {
-                    const type = item.type
-                    if (/^image\/[jpeg|png|gif|jpg]/.test(type)) {
-                        // blob 就是从剪切板获得的文件 可以进行上传或其他操作
-                        let blob = item.getAsFile()
-                        if (blob.size === 0) {
-                            continue
-                        }
-
-                        // 上传图片
-                        let url = window.contextPath + '/iav/upload?t=' + new Date().getTime()
-                        let formData = new FormData()
-                        let fileName = type.replace('/', '.')
-                        formData.append('file', blob, fileName)
-                        console.log(url, formData)
-                        http(url, 'POST', formData, function (response, status, xhr) {
-                            console.log(response)
-                            let code = response.code
-                            if (code === 'ok') {
-                                let iav = response.data
-                                document.execCommand('insertText', false, '![' + iav.name + '](/iav/' + iav.id + '/stream)')
-                                return
-                            }
-                            let msg = response.msg
-                            alert(msg)
-                        }, undefined)
-
-                        // 阻止默认行为
-                        // Prevent the default handler from running.
-                        event.preventDefault()
-                        return
-                    } else {
-                        alert('不支持粘贴此数据项类型：' + type)
-                    }
-                }
-            }
-        })
-
-        // onbeforeunload
-        window.onbeforeunload = function (event) {
-            let e = window.event || event
-            if (hasChanged()) {
-                e.returnValue = '数据发生改变。'
-                return e.returnValue
-            }
-        }
-    })
-    ;
 </script>

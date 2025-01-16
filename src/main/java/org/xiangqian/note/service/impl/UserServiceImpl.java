@@ -27,44 +27,39 @@ import java.util.List;
 public class UserServiceImpl implements UserService, ApplicationRunner {
 
     @Autowired
+    private UserMapper mapper;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
     private SessionRegistry sessionRegistry;
 
-    @Autowired
-    private UserMapper userMapper;
-
     @Override
-    public Boolean resetPasswd(UserEntity userEntity) {
+    public Boolean resetPassword(UserEntity entity) {
         // 校验密码
-        String passwd = userEntity.getPasswd();
-        Assert.isTrue(StringUtils.isNotEmpty(passwd), "密码不能为空");
-        Assert.isTrue(passwd.length() <= 128, "密码长度不能大于128个字符");
+        String password = entity.getPassword();
+        Assert.isTrue(StringUtils.isNotEmpty(password), "密码不能为空");
+        Assert.isTrue(password.length() <= 128, "密码长度不能大于128个字符");
 
         // 校验新密码
-        String newPasswd = userEntity.getNewPasswd();
-        Assert.isTrue(StringUtils.isNotEmpty(newPasswd), "新密码不能为空");
-        Assert.isTrue(newPasswd.length() <= 128, "新密码长度不能大于128个字符");
+        String newPassword = entity.getNewPassword();
+        Assert.isTrue(StringUtils.isNotEmpty(newPassword), "新密码不能为空");
+        Assert.isTrue(newPassword.length() <= 128, "新密码长度不能大于128个字符");
 
         // 获取当前已通过身份验证用户
-        UserEntity securityUserEntity = SecurityUtil.getUser();
+        UserEntity authenticatedEntity = SecurityUtil.getAuthenticatedUser();
 
         // 校验密码是否正确
-        Assert.isTrue(passwordEncoder.matches(passwd, securityUserEntity.getPassword()), "密码不正确");
-
-        // 用户名
-        String name = securityUserEntity.getName();
+        Assert.isTrue(passwordEncoder.matches(password, authenticatedEntity.getPassword()), "密码不正确");
 
         // 更新密码
-        UserEntity updUserEntity = new UserEntity();
-        updUserEntity.setName(name);
-        updUserEntity.setPasswd(passwordEncoder.encode(newPasswd));
-        if (userMapper.updByName(updUserEntity)) {
-            expireNow(name);
+        UserEntity updateEntity = new UserEntity();
+        updateEntity.setPassword(passwordEncoder.encode(newPassword));
+        if (mapper.update(updateEntity)) {
+            expireNow(authenticatedEntity.getName());
             return true;
         }
-
         return false;
     }
 
@@ -74,29 +69,26 @@ public class UserServiceImpl implements UserService, ApplicationRunner {
      * @param name {@link UserEntity#getName()}
      */
     private void expireNow(String name) {
-        UserEntity userEntity = new UserEntity();
-        userEntity.setName(name);
+        UserEntity entity = new UserEntity();
+        entity.setName(name);
 
-        List<SessionInformation> sessions = sessionRegistry.getAllSessions(userEntity,
+        List<SessionInformation> sessions = sessionRegistry.getAllSessions(entity,
                 // 是否包括过期的会话
-                false);
+                true);
         if (CollectionUtils.isNotEmpty(sessions)) {
             sessions.forEach(SessionInformation::expireNow);
         }
     }
 
     /**
-     * 每次启动成功重置连续错误登陆次数
+     * 每次启动后重置连续错误登陆次数为 0
      *
      * @param args
      * @throws Exception
      */
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        UserEntity updUserEntity = new UserEntity();
-        updUserEntity.setName("admin");
-        updUserEntity.setDeny(0);
-        userMapper.updByName(updUserEntity);
+        mapper.resetDeny();
     }
 
 }

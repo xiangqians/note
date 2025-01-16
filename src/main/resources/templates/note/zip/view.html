@@ -7,72 +7,70 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.ico}">
-    <title th:text="${vo.name + '.' + vo.type}"></title>
+    <link rel="stylesheet" th:href="@{/static/custom/body.css}" type="text/css" />
+    <title th:text="${name}"></title>
     <style>
-        body a {
-            padding: 0;
-            margin: 0;
-            /* 去掉<a>标签文本下划线 */
-            text-decoration: none;
+        table {
+            /* 自动宽度 */
+            width: auto;
+            /* 将表格的单元格边框合并为单一的边框 */
+            border-collapse: collapse;
         }
 
-        table tbody tr td {
+        /* 添加表头和表体之间的分隔线，表头的底部添加一条黑色的中线 */
+        table thead tr {
+            border-bottom: 2px solid #000;
+        }
+
+        table td {
+            /* 上内边距 */
+            padding-top: 2px;
+            /* 下内边距 */
+            padding-bottom: 2px;
+            /* 左内边距 */
+            padding-left: 0px;
+            /* 右内边距 */
             padding-right: 20px;
+            /* 文本或行内元素的左对齐 */
+            text-align: left;
         }
     </style>
 </head>
 <body>
-<h3>Index of&nbsp;&nbsp;<a th:href="@{'/note/' + ${vo.id} + '/view?t=' + ${timestamp}}">~</a><span th:if="${vo.ps == null}">/</span><span th:each="p : ${vo.ps}" th:with="key='/' + ${T(org.xiangqian.note.util.Md5Util).encryptHex(p.name)}">/<a th:href="@{${key}}" th:text="${p.name}"></a></span></h3>
-<table>
-    <thead>
-    <tr>
-        <td>Name</td>
-        <td>Size</td>
-        <td>Last modified</td>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="child : ${vo.childList != null ? vo.childList.data : null}">
-        <td><a th:href="${'/' + child.name + '/view?t=' + timestamp}" th:text="${child.name + (child.type == 'folder' ? '/' : '')}"></a></td>
-        <td th:text="${child.type == 'folder' ? '-' : T(org.xiangqian.note.util.FileUtil).humanByte(child.size, 'KB')}"></td>
-        <td th:text="${T(org.xiangqian.note.util.DateUtil).humanSecond(child.updTime)}"></td>
-    </tr>
-    </tbody>
-</table>
+<div th:replace="top"></div>
+<center th:switch="${zipEntry.type}">
+    <h3 th:with="isParentListEmpty=${#lists.isEmpty(zipEntry.parentList)}">&nbsp;<a th:href="@{'/note/' + ${id} + '/view?t=' + ${timestamp}}">~</a>
+        <th:block th:if="${isParentListEmpty}">/</th:block>
+        <th:block th:if="${not isParentListEmpty}" th:each="parent, stat : ${zipEntry.parentList}">/<a th:href="@{'/note/' + ${id} + '/view?name=' + ${parent.path} + '&t=' + ${timestamp}}" th:text="${parent.name}"></a><th:block th:if="${stat.isLast() and parent.type == 'folder'}">/</th:block></th:block>
+    </h3>
+
+    <table th:case="'folder'">
+        <thead>
+        <tr>
+            <td>名称</td>
+            <td>大小</td>
+            <td>最近一次修改时间</td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${zipEntry.childList != null}" th:each="child : ${zipEntry.childList}">
+            <td><a th:href="@{'/note/' + ${id} + '/view?name=' + ${child.path} + '&t=' + ${timestamp}}" th:text="${child.name + (child.type == 'folder' ? '/' : '')}"></a></td>
+            <td th:text="${child.type == 'folder' ? '-' : T(org.xiangqian.note.util.FileUtil).humanSize(child.size)}"></td>
+            <td th:text="${T(org.xiangqian.note.util.TimeUtil).human(child.lastModifiedTime)}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <pre th:case="text" th:text="${zipEntry.content}"></pre>
+
+    <iframe th:case="pdf" th:src="@{'/note/' + ${id} + '/view?name=' + ${zipEntry.path} + '&special=true&t=' + ${timestamp}}" width="100%" style="height: 80vh;"></iframe>
+
+    <img th:case="image" th:alt="${zipEntry.name}" th:src="@{'/note/' + ${id} + '?name=' + ${zipEntry.path} + '&t=' + ${timestamp}}">
+
+    <p th:case="*">不支持查看文件，<a th:href="@{'/note/' + ${id} + '/download?name=' + ${zipEntry.path} + '&t=' + ${timestamp}}">下载</a></p>
+
+</center>
 </body>
 </html>
-<script type="text/javascript" th:src="@{/static/js/jquery.js}"></script>
-<script th:inline="javascript">
-    ;
-    $(function () {
-        let key = null
-        let name = null
-        let contextPath = /*[[@{/}]]*/
-        let baseUrl = '/note/' + /*[[${vo.id}]]*/
-        let map = new Map()
-        /*[# th:each="p : ${vo.ps}"]*/
-            key = contextPath + /*[[${T(org.xiangqian.note.util.Md5Util).encryptHex(p.name)}]]*/
-            name = /*[[${p.name}]]*/
-            baseUrl += '/' + name
-            map.set(key, baseUrl + '/view?t=' + Math.floor(new Date().getTime() / 1000))
-        /*[/]*/
-        // console.log(map)
-
-        let $aArr = $('h3 a')
-        for(let i = 0, length = $aArr.length; i < length; i++){
-            let $a = $($aArr[i])
-            let key = $a.attr('href')
-            let value = map.get(key)
-            if(value != null){
-                $a.attr('href', value)
-            }
-        }
-
-        $aArr = $('table tbody tr td a')
-        for(let i = 0, length = $aArr.length; i < length; i++){
-            let $a = $($aArr[i])
-            let href = $a.attr('href')
-            $a.attr('href', baseUrl + href)
-        }
-    })
+<script type="text/javascript">
 </script>

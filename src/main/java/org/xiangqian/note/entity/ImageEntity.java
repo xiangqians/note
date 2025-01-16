@@ -22,28 +22,28 @@ public class ImageEntity {
     private String name;
 
     /**
-     * 类型（png、jpg、gif、webp、ico）
+     * 类型，png、jpg、gif、webp、ico
      */
     private String type;
 
     /**
-     * 大小（单位byte）
+     * 大小，单位byte
      */
     private Long size;
 
     /**
-     * 是否已删除（0-否，1-是）
+     * 是否已删除，0-否，1-是
      */
-    private Integer del;
+    private Integer delete;
 
     /**
-     * 创建时间戳（单位s）
+     * 创建时间戳，单位s
      */
-    private Long addTime;
+    private Long createTime;
 
     /**
-     * 修改时间戳（单位s）
+     * 修改时间戳，单位s
      */
-    private Long updTime;
+    private Long updateTime;
 
 }

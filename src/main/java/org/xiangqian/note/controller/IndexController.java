@@ -3,7 +3,7 @@ package org.xiangqian.note.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
 
 /**
  * @author xiangqian
@@ -14,15 +14,9 @@ import org.springframework.web.servlet.ModelAndView;
 @RequestMapping("/")
 public class IndexController extends AbsController {
 
-//    @Autowired
-//    private NoteController noteController;
-
     @RequestMapping
-    public ModelAndView index(ModelAndView modelAndView) {
-//        return noteController.list(modelAndView, 0L, new NoteEntity(), 1);
-
-        modelAndView.setViewName("index");
-        return modelAndView;
+    public RedirectView index() {
+        return redirectView("/note/0/list", null);
     }
 
 }

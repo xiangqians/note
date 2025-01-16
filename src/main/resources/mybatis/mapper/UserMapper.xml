@@ -2,25 +2,29 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.xiangqian.note.mapper.UserMapper">
 
-    <update id="updByName">
+    <update id="update">
         UPDATE `user`
-        <trim prefix="SET" suffixOverrides=",">
-            <if test="passwd != null">`passwd` = #{passwd},</if>
+        <set>
+            <if test="password != null">`password` = #{password},</if>
             <if test="deny != null">`deny` = #{deny},</if>
             <if test="lastLoginHost != null">`last_login_host` = #{lastLoginHost},</if>
             <if test="lastLoginTime != null">`last_login_time` = #{lastLoginTime},</if>
             <if test="currentLoginHost != null">`current_login_host` = #{currentLoginHost},</if>
             <if test="currentLoginTime != null">`current_login_time` = #{currentLoginTime},</if>
-            <if test="addTime != null">add_time = #{addTime},</if>
-            <if test="updTime != null">upd_time = #{updTime},</if>
-        </trim>
-        WHERE `name` = #{name}
+            <if test="createTime != null">`create_time` = #{createTime},</if>
+            <if test="updateTime != null">`update_time` = #{updateTime},</if>
+        </set>
+        WHERE `name` = 'admin'
     </update>
 
-    <select id="getByName" resultType="org.xiangqian.note.entity.UserEntity">
-        SELECT u.`name`, u.`passwd`, u.`deny`, u.`last_login_host`, u.`last_login_time`, u.`current_login_host`, u.`current_login_time`, u.`add_time`, u.`upd_time`
-        FROM `user` u
-        WHERE `name` = #{name}
+    <update id="resetDeny">
+        UPDATE `user` SET `deny` = 0
+    </update>
+
+    <select id="get" resultType="org.xiangqian.note.entity.UserEntity">
+        SELECT `name`, `password`, `deny`, `last_login_host`, `last_login_time`, `current_login_host`, `current_login_time`, `create_time`, `update_time`
+        FROM `user`
+        WHERE `name` = 'admin'
         LIMIT 1
     </select>
 
