@@ -5,7 +5,7 @@ if [ -z "$PROCESS" ]; then
     echo "Process not found"
 else
     for pid in $PROCESS; do
-        echo "Kill process [ $pid ]"
+        #echo "Kill process [ $pid ]"
         kill -9 $pid
     done
 fi
